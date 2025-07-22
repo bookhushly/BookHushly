@@ -1,53 +1,61 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useAuthStore } from '@/lib/store'
-import { signOut } from '@/lib/auth'
-import { Menu, X, User, LogOut, Bell } from 'lucide-react'
-import { NotificationCenter } from '@/components/notifications/notification-center'
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useAuthStore } from "@/lib/store";
+import { signOut } from "@/lib/auth";
+import { Menu, X, User, LogOut, Bell } from "lucide-react";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
-  const { user, logout } = useAuthStore()
-  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut()
-    logout()
-    router.push('/')
-  }
+    await signOut();
+    logout();
+    router.push("/");
+  };
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Services', href: '/services' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
-  ]
+    { name: "Home", href: "/" },
+    { name: "Services", href: "/services" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b">
+    <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b px-4">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">B</span>
+            <div className="w-48 h-48 relative">
+              <Image
+                src="/logo.png" // Replace with actual filename if different
+                alt="Bookhushly Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
-              Bookhushly
-            </span>
           </div>
         </Link>
 
@@ -69,19 +77,29 @@ export function Header() {
           {user ? (
             <>
               {/* Notifications */}
-              <Popover open={showNotifications} onOpenChange={setShowNotifications}>
+              <Popover
+                open={showNotifications}
+                onOpenChange={setShowNotifications}
+              >
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" className="relative text-gray-600 hover:text-gray-900">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="relative text-gray-600 hover:text-gray-900"
+                  >
                     <Bell className="h-4 w-4" />
-                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center">
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center"
+                    >
                       3
                     </Badge>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0">
-                  <NotificationCenter 
-                    userId={user.id} 
-                    onClose={() => setShowNotifications(false)} 
+                  <NotificationCenter
+                    userId={user.id}
+                    onClose={() => setShowNotifications(false)}
                   />
                 </PopoverContent>
               </Popover>
@@ -89,14 +107,22 @@ export function Header() {
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
                     <User className="h-4 w-4 mr-2" />
-                    {user.user_metadata?.name || 'Account'}
+                    {user.user_metadata?.name || "Account"}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/${user.user_metadata?.role || 'customer'}`}>
+                    <Link
+                      href={`/dashboard/${
+                        user.user_metadata?.role || "customer"
+                      }`}
+                    >
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
@@ -110,10 +136,19 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900" asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-600 hover:text-gray-900"
+                asChild
+              >
                 <Link href="/login">Login</Link>
               </Button>
-              <Button size="sm" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-semibold" asChild>
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-semibold"
+                asChild
+              >
                 <Link href="/register">Register</Link>
               </Button>
             </>
@@ -123,11 +158,15 @@ export function Header() {
         {/* Mobile Menu Button */}
         <Button
           variant="ghost"
-          size="sm" 
+          size="sm"
           className="md:hidden text-gray-600 hover:text-gray-900"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {isMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </Button>
       </div>
 
@@ -149,7 +188,9 @@ export function Header() {
               {user ? (
                 <>
                   <Link
-                    href={`/dashboard/${user.user_metadata?.role || 'customer'}`}
+                    href={`/dashboard/${
+                      user.user_metadata?.role || "customer"
+                    }`}
                     className="block px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -185,5 +226,5 @@ export function Header() {
         </div>
       )}
     </header>
-  )
+  );
 }

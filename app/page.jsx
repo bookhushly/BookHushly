@@ -165,43 +165,50 @@ export default function Home() {
             </div>
 
             {/* Search Interface */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-2xl mb-12">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-6 md:p-10 shadow-2xl mb-12 space-y-10 border border-gray-100">
+              {/* Search Bar Section */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+                {/* Search Input */}
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     placeholder="Search services..."
-                    className="pl-12 h-14 text-lg border-0 bg-gray-50 focus:bg-white transition-colors"
+                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
                   />
                 </div>
+
+                {/* Location Input */}
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     placeholder="Location"
-                    className="pl-12 h-14 text-lg border-0 bg-gray-50 focus:bg-white transition-colors"
+                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
                   />
                 </div>
+
+                {/* Date Picker */}
                 <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
-                    placeholder="mm/dd/yyyy"
                     type="date"
-                    className="pl-12 h-14 text-lg border-0 bg-gray-50 focus:bg-white transition-colors"
+                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white text-gray-600 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
                   />
                 </div>
+
+                {/* Search Button */}
                 <Button
                   size="lg"
-                  className="h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg font-semibold"
+                  className="h-14 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold text-white rounded-xl shadow-md transition-all"
                 >
                   Search
                 </Button>
               </div>
 
               {/* Category Buttons */}
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                 <Button
                   variant="outline"
-                  className="bg-blue-600 text-white border-blue-600 hover:bg-blue-700 px-6 py-3"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none hover:from-blue-700 hover:to-purple-700 px-5 py-2.5 rounded-full text-sm md:text-base shadow"
                   asChild
                 >
                   <Link href="/services">
@@ -214,7 +221,7 @@ export default function Home() {
                   <Button
                     key={category.value}
                     variant="outline"
-                    className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50 px-6 py-3"
+                    className="bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 hover:text-black px-5 py-2.5 rounded-full text-sm md:text-base transition-all shadow-sm"
                     asChild
                   >
                     <Link href={`/services?category=${category.value}`}>
@@ -250,44 +257,68 @@ export default function Home() {
       </section>
 
       {/* Trust Indicators */}
-      <section className="py-16 bg-gradient-to-r from-blue-50 to-purple-50">
+      {/* Trust Indicators */}
+      <section className="py-16 bg-blue-50">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold mb-4 text-blue-900">
               Trusted by Leading African Businesses
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-blue-700 max-w-2xl mx-auto">
               Join thousands of satisfied customers and verified service
               providers across the continent
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-60">
-            {/* Mock company logos */}
-            <div className="text-center">
-              <div className="h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center mb-2">
-                <span className="text-white font-bold text-lg">COMPANY</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center mb-12">
+            <div className="flex items-center justify-center">
+              <div className="h-14 px-8 bg-white border-2 border-blue-200 flex items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <span className="text-blue-800 font-semibold text-sm tracking-wide">
+                  FLUTTERWAVE
+                </span>
               </div>
             </div>
-            <div className="text-center">
-              <div className="h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center mb-2">
-                <span className="text-white font-bold text-lg">BRAND</span>
+            <div className="flex items-center justify-center">
+              <div className="h-14 px-8 bg-white border-2 border-green-200 flex items-center justify-center hover:border-green-400 hover:bg-green-50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <span className="text-green-800 font-semibold text-sm tracking-wide">
+                  JUMIA
+                </span>
               </div>
             </div>
-            <div className="text-center">
-              <div className="h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center mb-2">
-                <span className="text-white font-bold text-lg">CORP</span>
+            <div className="flex items-center justify-center">
+              <div className="h-14 px-8 bg-white border-2 border-purple-200 flex items-center justify-center hover:border-purple-400 hover:bg-purple-50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <span className="text-purple-800 font-semibold text-sm tracking-wide">
+                  KONGA
+                </span>
               </div>
             </div>
-            <div className="text-center">
-              <div className="h-16 bg-gradient-to-r from-orange-600 to-red-600 rounded-lg flex items-center justify-center mb-2">
-                <span className="text-white font-bold text-lg">GROUP</span>
+            <div className="flex items-center justify-center">
+              <div className="h-14 px-8 bg-white border-2 border-orange-200 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-all duration-300 shadow-sm hover:shadow-md">
+                <span className="text-orange-800 font-semibold text-sm tracking-wide">
+                  PAYSTACK
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg border border-blue-200 p-8 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+              <div className="p-4 bg-blue-600 text-white rounded-lg">
+                <div className="text-3xl font-bold mb-2">25,000+</div>
+                <div className="text-blue-100 text-sm">Active Users</div>
+              </div>
+              <div className="p-4 bg-purple-600 text-white rounded-lg">
+                <div className="text-3xl font-bold mb-2">12</div>
+                <div className="text-purple-100 text-sm">African Countries</div>
+              </div>
+              <div className="p-4 bg-yellow-500 text-white rounded-lg">
+                <div className="text-3xl font-bold mb-2">4.8/5</div>
+                <div className="text-yellow-100 text-sm">Customer Rating</div>
               </div>
             </div>
           </div>
         </div>
       </section>
-
       {/* Featured Services */}
       <section className="py-20 bg-white">
         <div className="container">
@@ -309,10 +340,16 @@ export default function Home() {
                 key={category.value}
                 className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover:scale-105 bg-gradient-to-br from-white to-gray-50 overflow-hidden"
               >
-                <div className="h-48 bg-gradient-to-br from-blue-100 via-purple-100 to-blue-50 flex items-center justify-center relative">
-                  <div className="text-8xl opacity-30 group-hover:opacity-50 transition-opacity">
-                    {category.icon}
-                  </div>
+                <div className="h-48 relative overflow-hidden">
+                  <Image
+                    src={category.image}
+                    alt={category.alt}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                  {/* Overlay for better text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   <div className="absolute top-4 right-4">
                     <Badge className="bg-white/90 text-gray-700">
                       {(index + 1) * 150}+ providers
@@ -361,28 +398,37 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-900 via-purple-900 to-blue-800 text-white relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+      <section className="py-24 bg-gradient-to-br from-blue-950 via-purple-950 to-indigo-900 text-white relative overflow-hidden">
+        {/* Enhanced Background Patterns */}
+        <div className="absolute inset-0">
+          {/* Animated gradient orbs */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+          {/* Refined dot pattern */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 opacity-10"
             style={{
               backgroundImage:
-                'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-              backgroundSize: "60px 60px",
+                "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)",
+              backgroundSize: "30px 30px",
             }}
           ></div>
+
+          {/* Geometric shapes */}
+          <div className="absolute top-20 right-20 w-20 h-20 border border-white/20 rotate-45 animate-spin-slow"></div>
+          <div className="absolute bottom-32 left-16 w-16 h-16 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-full animate-bounce-slow"></div>
         </div>
 
         <div className="container relative z-10">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-yellow-400 text-black">
+          <div className="text-center mb-20">
+            <Badge className="mb-6 bg-gradient-to-r from-yellow-400 to-orange-400 text-black font-semibold px-4 py-2 text-sm">
               Why Choose Bookhushly?
             </Badge>
-            <h2 className="text-4xl font-bold mb-6">
+            <h2 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
               Built for African Excellence
             </h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed">
               We provide a secure, reliable platform that connects you with the
               finest service providers across the continent
             </p>
@@ -392,27 +438,45 @@ export default function Home() {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 transition-all duration-300 group"
+                className="group relative bg-white/5 backdrop-blur-xl border border-white/10 text-white hover:bg-white/10 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 overflow-hidden"
               >
-                <CardHeader className="text-center">
-                  <div className="mx-auto mb-4 text-yellow-400 group-hover:scale-110 transition-transform duration-300">
+                {/* Card glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/0 via-yellow-400/5 to-yellow-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                {/* Animated border */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -skew-x-12 -translate-x-full group-hover:translate-x-full animation-duration-1000"></div>
+
+                <CardHeader className="text-center relative z-10 pb-6">
+                  <div className="mx-auto mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                     {feature.icon}
                   </div>
-                  <CardTitle className="text-xl text-white">
+                  <CardTitle className="text-xl font-bold text-white group-hover:text-yellow-300 transition-colors duration-300">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="text-center">
-                  <CardDescription className="text-blue-100">
+                <CardContent className="text-center relative z-10">
+                  <CardDescription className="text-blue-100 leading-relaxed group-hover:text-white transition-colors duration-300">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
+
+                {/* Bottom accent line */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
               </Card>
             ))}
           </div>
+
+          {/* Call to action section */}
+          <div className="text-center mt-20">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm rounded-full border border-white/20">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              <span className="text-sm font-medium text-white">
+                Join 50,000+ satisfied customers across Africa
+              </span>
+            </div>
+          </div>
         </div>
       </section>
-
       {/* Testimonials Section */}
       <section className="py-20 bg-gray-50">
         <div className="container">
@@ -468,17 +532,20 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                'url("data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z"/%3E%3C/g%3E%3C/svg%3E")',
-              backgroundSize: "40px 40px",
-            }}
-          ></div>
+      <section className="py-20 bg-blue-900 text-white relative overflow-hidden">
+        {/* Geometric Background - Modern but not AI-like */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-blue-800"></div>
+          <div className="absolute top-0 left-0 w-full h-full">
+            {/* Subtle diagonal lines */}
+            <div className="absolute top-0 left-1/4 w-px h-full bg-white/5 transform rotate-12"></div>
+            <div className="absolute top-0 left-2/4 w-px h-full bg-white/5 transform rotate-12"></div>
+            <div className="absolute top-0 left-3/4 w-px h-full bg-white/5 transform rotate-12"></div>
+
+            {/* Corner accents */}
+            <div className="absolute top-0 right-0 w-32 h-32 border-r-2 border-t-2 border-yellow-400/30"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 border-l-2 border-b-2 border-purple-400/30"></div>
+          </div>
         </div>
 
         <div className="container text-center relative z-10">
@@ -490,10 +557,11 @@ export default function Home() {
               Join thousands of satisfied customers and verified service
               providers on Africa's leading service platform
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-semibold px-8 py-4 text-lg shadow-2xl hover:shadow-yellow-500/25 transition-all duration-300 transform hover:scale-105"
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 asChild
               >
                 <Link href="/register">
@@ -505,7 +573,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-blue-900 px-8 py-4 text-lg backdrop-blur-sm bg-white/10 transition-all duration-300"
+                className="border-2 border-white text-blue-900 hover:bg-white  px-8 py-4 text-lg transition-all duration-300"
                 asChild
               >
                 <Link href="/services">
@@ -515,23 +583,33 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div>
-                <TrendingUp className="h-8 w-8 mx-auto mb-2 text-yellow-400" />
-                <div className="text-sm text-blue-200">Growing Fast</div>
+            {/* Trust Indicators - Enhanced Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 hover:bg-white/15 transition-colors">
+                <TrendingUp className="h-10 w-10 mx-auto mb-3 text-yellow-400" />
+                <div className="font-semibold mb-1">Growing Fast</div>
+                <div className="text-sm text-blue-200">
+                  +300% growth this year
+                </div>
               </div>
-              <div>
-                <Shield className="h-8 w-8 mx-auto mb-2 text-yellow-400" />
-                <div className="text-sm text-blue-200">100% Secure</div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 hover:bg-white/15 transition-colors">
+                <Shield className="h-10 w-10 mx-auto mb-3 text-green-400" />
+                <div className="font-semibold mb-1">100% Secure</div>
+                <div className="text-sm text-blue-200">Bank-grade security</div>
               </div>
-              <div>
-                <CheckCircle className="h-8 w-8 mx-auto mb-2 text-yellow-400" />
-                <div className="text-sm text-blue-200">Verified Quality</div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 hover:bg-white/15 transition-colors">
+                <CheckCircle className="h-10 w-10 mx-auto mb-3 text-purple-400" />
+                <div className="font-semibold mb-1">Verified Quality</div>
+                <div className="text-sm text-blue-200">
+                  All providers vetted
+                </div>
               </div>
-              <div>
-                <Globe className="h-8 w-8 mx-auto mb-2 text-yellow-400" />
-                <div className="text-sm text-blue-200">Africa-Wide</div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20 hover:bg-white/15 transition-colors">
+                <Globe className="h-10 w-10 mx-auto mb-3 text-orange-400" />
+                <div className="font-semibold mb-1">Africa-Wide</div>
+                <div className="text-sm text-blue-200">
+                  12+ countries served
+                </div>
               </div>
             </div>
           </div>
