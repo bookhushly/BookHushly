@@ -1,0 +1,1 @@
+"use strict";exports.id=977,exports.ids=[977],exports.modules={73137:(e,r,s)=>{e.exports=s(20399)},53830:(e,r,s)=>{e.exports=s(73137).vendored["react-rsc"].React},48144:(e,r,s)=>{e.exports=s(73137).vendored["react-shared"].ReactJsxRuntime}};

@@ -1,55 +1,141 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+
 import {
   Card,
-  CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardContent,
+  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import {
-  Search,
   MapPin,
-  Star,
-  Users,
-  Clock,
-  Filter,
   Grid,
   List,
-  Heart,
-  Share2,
+  Filter,
+  Search,
+  Star,
   Verified,
-  TrendingUp,
 } from "lucide-react";
-import { CATEGORIES } from "@/lib/constants";
 
-// Services content component
+import { CATEGORIES } from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
+
 function ServicesContent() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [listings, setListings] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+
+  const searchParams = useSearchParams();
+
+  // Get initial values from search params
+  const initialSearch = searchParams.get("search") || "";
+  const initialLocation = searchParams.get("location") || "all";
+  const initialCategory = searchParams.get("category") || "all";
+
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [selectedLocation, setSelectedLocation] = useState(initialLocation);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [viewMode, setViewMode] = useState("grid");
+
+  // Update state when search params change
+  useEffect(() => {
+    const search = searchParams.get("search") || "";
+    const location = searchParams.get("location") || "all";
+    const category = searchParams.get("category") || "all";
+
+    setSearchQuery(search);
+    setSelectedLocation(location);
+    setSelectedCategory(category);
+  }, [searchParams]);
+
+  // Fetch listings from Supabase
+  useEffect(() => {
+    async function fetchListings() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("active", true)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        setListings(data);
+        setFetchError(null);
+      } catch (error) {
+        console.error("Error fetching listings:", error.message);
+        setFetchError(error.message);
+        setListings([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchListings();
+  }, []);
+
+  // Filter listings based on search params and filters
+  useEffect(() => {
+    if (loading) return;
+
+    let result = [...listings];
+
+    // Apply search query filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (l) =>
+          l.title.toLowerCase().includes(q) ||
+          l.description.toLowerCase().includes(q) ||
+          l.location.toLowerCase().includes(q)
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategory !== "all") {
+      result = result.filter((l) => l.category === selectedCategory);
+    }
+
+    // Apply location filter
+    if (selectedLocation !== "all") {
+      result = result.filter((l) =>
+        l.location.toLowerCase().includes(selectedLocation.toLowerCase())
+      );
+    }
+
+    setFiltered(result);
+  }, [listings, searchQuery, selectedCategory, selectedLocation, loading]);
+
+  if (loading) {
+    return <ServicesLoading />;
+  }
 
   return (
     <div className="container py-8">
-      {/* Header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-brand-600 to-brand-800 bg-clip-text text-transparent">
-          Browse Premium Services
+          {searchQuery
+            ? `Results for "${searchQuery}"`
+            : "Browse Premium Services"}
         </h1>
         <p className="text-lg text-muted-foreground">
           Discover quality hospitality, logistics, and security services across
@@ -57,78 +143,89 @@ function ServicesContent() {
         </p>
       </div>
 
-      {/* Search and Filters */}
-      <div className="mb-8 space-y-4 animate-fade-in">
+      {/* Error fallback */}
+      {fetchError && (
+        <div className="bg-red-100 text-red-700 p-4 rounded mb-6">
+          ⚠️ Error fetching services: {fetchError}
+        </div>
+      )}
+
+      {/* Search & Filters */}
+      <div className="mb-8 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search services, locations, or vendors..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-brand-200 focus:ring-brand-500 focus:border-brand-500"
+              className="pl-10"
             />
           </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full lg:w-48 border-gray-200 focus:ring-brand-500">
+
+          <Select
+            value={selectedCategory}
+            onValueChange={(value) => {
+              setSelectedCategory(value);
+              // Update URL without page reload
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("category", value);
+              window.history.pushState(null, "", `?${params.toString()}`);
+            }}
+          >
+            <SelectTrigger>
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {CATEGORIES.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  <div className="flex items-center">
-                    <span className="mr-2">{category.icon}</span>
-                    {category.label}
-                  </div>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c.value} value={c.value}>
+                  {c.icon} {c.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-            <SelectTrigger className="w-full lg:w-48 border-gray-200 focus:ring-brand-500">
+
+          <Select
+            value={selectedLocation}
+            onValueChange={(value) => {
+              setSelectedLocation(value);
+              // Update URL without page reload
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("location", value);
+              window.history.pushState(null, "", `?${params.toString()}`);
+            }}
+          >
+            <SelectTrigger>
               <SelectValue placeholder="All Locations" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Locations</SelectItem>
-              <SelectItem value="lagos">🏙️ Lagos</SelectItem>
-              <SelectItem value="abuja">🏛️ Abuja</SelectItem>
-              <SelectItem value="kano">🏘️ Kano</SelectItem>
-              <SelectItem value="port-harcourt">🏭 Port Harcourt</SelectItem>
-              <SelectItem value="ibadan">🌳 Ibadan</SelectItem>
+              {Array.from(new Set(listings.map((l) => l.location))).map(
+                (loc) => (
+                  <SelectItem key={loc} value={loc.toLowerCase()}>
+                    {loc}
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            className="border-brand-200 hover:bg-brand-50 hover:border-brand-300"
-          >
+
+          <Button variant="outline" size="icon">
             <Filter className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Enhanced Filter Stats and View Toggle */}
-        <div className="flex items-center justify-between bg-hospitality-warm rounded-xl p-4 border border-hospitality-gold/20">
-          <div className="flex items-center space-x-6">
-            <p className="text-sm font-medium text-hospitality-luxury">
-              Showing <span className="font-bold text-brand-600">24</span> of{" "}
-              <span className="font-bold">156</span> premium services
-            </p>
-            <div className="flex items-center text-sm text-hospitality-trust">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              <span className="font-medium">89% satisfaction rate</span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between p-4 bg-gray-100 rounded-xl">
+          <p>
+            Showing <b>{filtered.length}</b> of <b>{listings.length}</b>{" "}
+            services
+          </p>
+          <div className="space-x-2">
             <Button
               variant={viewMode === "grid" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("grid")}
-              className={
-                viewMode === "grid"
-                  ? "bg-brand-600 hover:bg-brand-700"
-                  : "hover:bg-brand-50"
-              }
             >
               <Grid className="h-4 w-4 mr-2" />
               Grid
@@ -137,11 +234,6 @@ function ServicesContent() {
               variant={viewMode === "list" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("list")}
-              className={
-                viewMode === "list"
-                  ? "bg-brand-600 hover:bg-brand-700"
-                  : "hover:bg-brand-50"
-              }
             >
               <List className="h-4 w-4 mr-2" />
               List
@@ -150,298 +242,98 @@ function ServicesContent() {
         </div>
       </div>
 
-      {/* Service Listings Grid */}
-      <div
-        className={`${
-          viewMode === "grid"
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            : "space-y-4"
-        }`}
-      >
-        {Array.from({ length: 12 }).map((_, index) => {
-          const category = CATEGORIES[index % CATEGORIES.length];
-          const isPremium = index % 3 === 0;
-          const isVerified = index % 2 === 0;
-
-          const serviceTitle = [
-            "Luxury Hotel Suite",
-            "Event Security Service",
-            "Catering & Restaurant",
-            "Logistics & Delivery",
-          ][index % 4];
-
-          const serviceLocation = [
-            "Victoria Island, Lagos",
-            "Wuse 2, Abuja",
-            "GRA, Port Harcourt",
-          ][index % 3];
-
-          if (viewMode === "list") {
-            return (
-              <Card
-                key={index}
-                className="card-hospitality hover:shadow-brand group cursor-pointer overflow-hidden relative"
-              >
-                <div className="flex">
-                  {/* Image Section */}
-                  <div className="w-48 aspect-video relative">
-                    <Image
-                      src={category.image}
-                      alt={category.alt}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-10" />
-
-                    {isPremium && (
-                      <Badge className="absolute top-2 left-2 z-20 bg-hospitality-gold text-hospitality-luxury shadow-gold">
-                        Premium
-                      </Badge>
-                    )}
-
-                    <div className="absolute top-2 right-2 glass rounded-full px-2 py-1 text-xs font-medium flex items-center z-20">
-                      <Star className="h-3 w-3 text-hospitality-gold mr-1 fill-current" />
-                      4.{8 + (index % 2)}
-                    </div>
-                  </div>
-
-                  {/* Text Content */}
-                  <div className="flex-1 p-6 z-0 relative">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center space-x-2">
-                        <CardTitle className="text-xl group-hover:text-brand-600 transition-colors line-clamp-1">
-                          {serviceTitle}
-                        </CardTitle>
-                        {isVerified && (
-                          <Verified className="h-4 w-4 text-hospitality-trust" />
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center text-sm text-muted-foreground mb-2">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {serviceLocation}
-                    </div>
-
-                    <CardDescription className="line-clamp-2 mb-4 text-sm">
-                      Professional {category.label.toLowerCase()} service with
-                      excellent quality and customer satisfaction guaranteed.
-                      Experience luxury hospitality at its finest.
-                    </CardDescription>
-
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center">
-                          <Users className="h-3 w-3 mr-1" />
-                          Up to {20 + index * 10} people
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {index % 2 === 0 ? "2-4 hours" : "Full day"}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl font-bold text-hospitality-luxury">
-                          ₦{(50000 + index * 25000).toLocaleString()}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {index % 2 === 0 ? "/day" : "/event"}
-                        </span>
-                        <Button
-                          size="sm"
-                          asChild
-                          className="bg-brand-600 hover:bg-brand-700"
-                        >
-                          <Link href={`/services/${index + 1}`}>View</Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            );
+      {/* Listings or fallback */}
+      {filtered.length === 0 ? (
+        <div className="text-center mt-12">
+          <h3 className="text-xl font-semibold text-gray-700">
+            No results found
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Try adjusting your search terms or filters.
+          </p>
+          <Button
+            className="mt-4"
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedCategory("all");
+              setSelectedLocation("all");
+              // Reset URL params
+              window.history.pushState(null, "", "/services");
+            }}
+          >
+            Reset Filters
+          </Button>
+        </div>
+      ) : (
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "space-y-4"
           }
-
-          // Grid View
-          return (
-            <Card
-              key={index}
-              className="card-hospitality hover:shadow-brand group cursor-pointer overflow-hidden relative transition-all duration-300 hover:scale-[1.02]"
-            >
-              <div className="relative aspect-video">
-                <Image
-                  src={category.image}
-                  alt={category.alt}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-110 duration-300"
-                />
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent z-10" />
-
-                {/* Badges */}
-                <Badge
-                  className={`absolute top-3 left-3 z-20 text-xs shadow-md ${
-                    isPremium
-                      ? "bg-hospitality-gold text-hospitality-luxury"
-                      : "bg-brand-600 text-white"
-                  }`}
-                >
-                  {isPremium ? "Premium" : category.label}
-                </Badge>
-
-                <div className="absolute top-3 right-3 glass rounded-full px-2 py-1 text-xs font-medium flex items-center z-20">
-                  <Star className="h-3 w-3 text-hospitality-gold mr-1 fill-current" />
-                  4.{8 + (index % 2)}
-                </div>
-
-                {/* Action Icons */}
-                <div className="absolute bottom-3 right-3 z-20 flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 glass hover:bg-white/30"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 glass hover:bg-white/30"
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <CardHeader className="pb-2 z-0 relative">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-lg group-hover:text-brand-600 transition-colors line-clamp-1">
-                    {serviceTitle}
-                  </CardTitle>
-                  {isVerified && (
-                    <Verified className="h-4 w-4 text-hospitality-trust" />
-                  )}
-                </div>
-
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  {serviceLocation}
-                </div>
-              </CardHeader>
-
-              <CardContent className="pt-0 z-0 relative">
-                <CardDescription className="line-clamp-2 mb-3 text-sm">
-                  Professional {category.label.toLowerCase()} service with
-                  top-notch quality. Satisfaction guaranteed.
-                </CardDescription>
-
-                <div className="flex items-center justify-between mb-3 text-sm text-muted-foreground">
-                  <div className="flex items-center">
-                    <Users className="h-3 w-3 mr-1" />
-                    Up to {20 + index * 10} people
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {index % 2 === 0 ? "2-4 hours" : "Full day"}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-hospitality-luxury">
-                    ₦{(50000 + index * 25000).toLocaleString()}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {index % 2 === 0 ? "/day" : "/event"}
-                  </span>
-                  <Button
-                    size="sm"
-                    asChild
-                    className="bg-brand-600 hover:bg-brand-700"
-                  >
-                    <Link href={`/services/${index + 1}`}>View</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Enhanced Load More */}
-      <div className="mt-12 text-center">
-        <Button
-          variant="outline"
-          size="lg"
-          className="btn-hospitality text-black hover:text-black border-brand-300 hover:bg-brand-50 hover:border-brand-500 px-8"
         >
-          Load More Premium Services
-        </Button>
-        <p className="text-sm text-muted-foreground mt-2">
-          Showing 24 of 156 services •{" "}
-          <span className="text-hospitality-trust font-medium">
-            132 more available
-          </span>
-        </p>
-      </div>
+          {filtered.map((service) => {
+            const category =
+              CATEGORIES.find((c) => c.value === service.category) || {};
+            const isPremium = service.price > 100000;
+            const isVerified = service.active;
+
+            return (
+              <Link key={service.id} href={`/services/${service.id}`} passHref>
+                <Card className="hover:shadow-lg transition-shadow">
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={category.image || "/placeholder.jpg"}
+                      alt={category.alt || "Service image"}
+                      fill
+                      className="object-cover rounded-t"
+                    />
+                    {isPremium && (
+                      <Badge className="absolute top-2 left-2">Premium</Badge>
+                    )}
+                    <div className="absolute top-2 right-2 flex items-center text-xs bg-white/80 rounded-full p-1">
+                      <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                      4.8
+                    </div>
+                  </div>
+                  <CardHeader>
+                    <div className="flex items-center space-x-2">
+                      <CardTitle>{service.title}</CardTitle>
+                      {isVerified && (
+                        <Verified className="h-4 w-4 text-blue-500" />
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {service.location}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription>{service.description}</CardDescription>
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="text-lg font-bold">
+                        ₦{Number(service.price).toLocaleString()}
+                      </span>
+                      <Button size="sm">View</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-// Enhanced Loading component
 function ServicesLoading() {
   return (
-    <div className="container ">
-      <div className="mb-8 animate-pulse">
-        <Skeleton className="h-10 w-80 mb-2 bg-gradient-to-r from-brand-100 to-brand-200" />
-        <Skeleton className="h-6 w-96 bg-gray-100" />
-      </div>
-
-      <div className="mb-8 space-y-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <Skeleton className="h-12 flex-1 bg-gradient-to-r from-brand-50 to-brand-100" />
-          <Skeleton className="h-12 w-48 bg-brand-50" />
-          <Skeleton className="h-12 w-48 bg-brand-50" />
-          <Skeleton className="h-12 w-12 bg-brand-50" />
-        </div>
-        <Skeleton className="h-16 w-full bg-hospitality-warm rounded-xl" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array.from({ length: 8 }).map((_, index) => (
-          <Card key={index} className="overflow-hidden animate-pulse">
-            <Skeleton className="aspect-video bg-gradient-to-br from-brand-100 to-brand-200" />
-            <CardHeader>
-              <Skeleton className="h-6 w-3/4 bg-brand-100" />
-              <Skeleton className="h-4 w-1/2 bg-gray-100" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-4 w-full mb-2 bg-gray-100" />
-              <Skeleton className="h-4 w-2/3 mb-4 bg-gray-100" />
-              <div className="flex justify-between items-center">
-                <Skeleton className="h-6 w-24 bg-hospitality-gold/30" />
-                <Skeleton className="h-9 w-28 bg-brand-100" />
-              </div>
-            </CardContent>
-          </Card>
+    <div className="container py-8">
+      <Skeleton className="h-8 w-96 mb-4" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-64 bg-gray-200 animate-pulse" />
         ))}
       </div>
     </div>
@@ -451,7 +343,6 @@ function ServicesLoading() {
 export default function ServicesPage() {
   return (
     <Suspense fallback={<ServicesLoading />}>
-      {/* Enhanced Hero Section */}
       <section className="relative bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 text-white py-24 overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <div
@@ -465,7 +356,6 @@ export default function ServicesPage() {
           ></div>
         </div>
 
-        {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-4 -right-4 w-24 h-24 bg-hospitality-gold/20 rounded-full animate-float"></div>
           <div className="absolute top-1/2 -left-8 w-16 h-16 bg-white/10 rounded-full animate-pulse-slow"></div>
@@ -488,13 +378,12 @@ export default function ServicesPage() {
             </h1>
             <p className="text-xl lg:text-2xl text-brand-100 mb-8 max-w-3xl mx-auto text-balance">
               Browse through our curated selection of verified hospitality,
-              logistics, and security services across Africa.
+              logistics, and security services across Africa.{" "}
               <span className="text-hospitality-gold-light font-medium">
                 Premium quality guaranteed.
               </span>
             </p>
 
-            {/* Quick stats */}
             <div className="flex flex-wrap justify-center gap-8 mt-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-hospitality-gold">

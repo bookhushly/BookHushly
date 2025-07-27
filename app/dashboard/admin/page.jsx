@@ -1,19 +1,25 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { AuthGuard } from '@/components/auth/auth-guard'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { AdminAnalytics } from '@/components/analytics/admin-analytics'
-import { useAuthStore } from '@/lib/store'
-import { 
-  Users, 
-  Building, 
-  Calendar, 
+import { useState, useEffect } from "react";
+import { AuthGuard } from "@/components/auth/auth-guard";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { AdminAnalytics } from "@/components/analytics/admin-analytics";
+import { useAuthStore } from "@/lib/store";
+import {
+  Users,
+  Building,
+  Calendar,
   DollarSign,
   TrendingUp,
   CheckCircle,
@@ -22,83 +28,24 @@ import {
   Bell,
   BarChart3,
   PieChart,
-  Activity
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { format } from 'date-fns'
+  Activity,
+} from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { useAdminDashboardData } from "@/hooks/useAdminDashboardData";
 
 export default function AdminDashboard() {
-  const { user } = useAuthStore()
-  const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(null)
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalVendors: 0,
-    totalBookings: 0,
-    totalRevenue: 0,
-    pendingApprovals: 0,
-    activeListings: 0,
-    monthlyGrowth: 0,
-    conversionRate: 0
-  })
-  const [pendingVendors, setPendingVendors] = useState([])
-  const [recentUsers, setRecentUsers] = useState([])
-  const [recentBookings, setRecentBookings] = useState([])
+  const { user } = useAuthStore();
 
-  useEffect(() => {
-    const loadAdminData = async () => {
-      if (!user) return
-
-      try {
-        setLoading(true)
-        
-        // Simulate loading with mock data
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Mock admin data
-        setStats({
-          totalUsers: 1250,
-          totalVendors: 89,
-          totalBookings: 456,
-          totalRevenue: 2500000,
-          pendingApprovals: 3,
-          activeListings: 234,
-          monthlyGrowth: 15.2,
-          conversionRate: 12.5
-        })
-        
-        setPendingVendors([])
-        setRecentUsers([])
-        setRecentBookings([])
-        
-      } catch (error) {
-        console.error('Admin dashboard error:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadAdminData()
-  }, [user])
-
-  const handleApproveVendor = async (vendorId, approved) => {
-    setActionLoading(vendorId)
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setPendingVendors(pendingVendors.filter(vendor => vendor.id !== vendorId))
-      
-      toast.success(`Vendor ${approved ? 'approved' : 'rejected'}!`, {
-        description: 'The vendor has been notified of the decision'
-      })
-    } catch (error) {
-      toast.error('Failed to update vendor status')
-    } finally {
-      setActionLoading(null)
-    }
-  }
+  const {
+    loading,
+    stats,
+    pendingVendors,
+    recentUsers,
+    recentBookings,
+    actionLoading,
+    handleApproveVendor,
+  } = useAdminDashboardData(user);
 
   if (loading) {
     return (
@@ -107,7 +54,7 @@ export default function AdminDashboard() {
           <LoadingSpinner className="h-8 w-8" />
         </div>
       </AuthGuard>
-    )
+    );
   }
 
   return (
@@ -137,7 +84,9 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Vendors</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Active Vendors
+              </CardTitle>
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -150,7 +99,9 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Bookings
+              </CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -163,14 +114,16 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Platform Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Platform Revenue
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₦{stats.totalRevenue.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
-                This month
-              </p>
+              <div className="text-2xl font-bold">
+                ₦{stats.totalRevenue.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">This month</p>
             </CardContent>
           </Card>
         </div>
@@ -207,15 +160,24 @@ export default function AdminDashboard() {
                   ) : (
                     <div className="space-y-4">
                       {pendingVendors.slice(0, 3).map((vendor) => (
-                        <div key={vendor.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div
+                          key={vendor.id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
                           <div>
-                            <h4 className="font-medium">{vendor.business_name}</h4>
-                            <p className="text-sm text-muted-foreground">{vendor.users?.name}</p>
+                            <h4 className="font-medium">
+                              {vendor.business_name}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              {vendor.users?.name}
+                            </p>
                           </div>
                           <div className="flex space-x-2">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleApproveVendor(vendor.id, true)}
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                handleApproveVendor(vendor.id, true)
+                              }
                               disabled={actionLoading === vendor.id}
                             >
                               {actionLoading === vendor.id ? (
@@ -224,10 +186,12 @@ export default function AdminDashboard() {
                                 <CheckCircle className="h-4 w-4" />
                               )}
                             </Button>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
-                              onClick={() => handleApproveVendor(vendor.id, false)}
+                              onClick={() =>
+                                handleApproveVendor(vendor.id, false)
+                              }
                               disabled={actionLoading === vendor.id}
                             >
                               <XCircle className="h-4 w-4" />
@@ -247,9 +211,7 @@ export default function AdminDashboard() {
                     <Activity className="mr-2 h-5 w-5" />
                     Recent Activity
                   </CardTitle>
-                  <CardDescription>
-                    Latest platform activity
-                  </CardDescription>
+                  <CardDescription>Latest platform activity</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -257,9 +219,11 @@ export default function AdminDashboard() {
                       <div key={index} className="flex items-center space-x-4">
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <div className="flex-1">
-                          <p className="text-sm">New booking for {booking.listings?.title}</p>
+                          <p className="text-sm">
+                            New booking for {booking.listings?.title}
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            {format(new Date(booking.created_at), 'PPp')}
+                            {format(new Date(booking.created_at), "PPp")}
                           </p>
                         </div>
                       </div>
@@ -291,28 +255,40 @@ export default function AdminDashboard() {
                 {pendingVendors.length === 0 ? (
                   <div className="text-center py-8">
                     <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                    <p className="text-muted-foreground">All vendors are approved!</p>
+                    <p className="text-muted-foreground">
+                      All vendors are approved!
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {pendingVendors.map((vendor) => (
-                      <Card key={vendor.id} className="border-yellow-200 bg-yellow-50/50">
+                      <Card
+                        key={vendor.id}
+                        className="border-yellow-200 bg-yellow-50/50"
+                      >
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
                             <div className="space-y-2">
-                              <h3 className="font-semibold">{vendor.business_name}</h3>
+                              <h3 className="font-semibold">
+                                {vendor.business_name}
+                              </h3>
                               <p className="text-sm text-muted-foreground">
-                                Owner: {vendor.users?.name} ({vendor.users?.email})
+                                Owner: {vendor.users?.name} (
+                                {vendor.users?.email})
                               </p>
-                              <p className="text-sm">{vendor.business_description}</p>
+                              <p className="text-sm">
+                                {vendor.business_description}
+                              </p>
                               <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                                 <span>📍 {vendor.business_address}</span>
                                 <span>📞 {vendor.phone_number}</span>
                               </div>
                             </div>
                             <div className="flex space-x-2">
-                              <Button 
-                                onClick={() => handleApproveVendor(vendor.id, true)}
+                              <Button
+                                onClick={() =>
+                                  handleApproveVendor(vendor.id, true)
+                                }
                                 disabled={actionLoading === vendor.id}
                               >
                                 {actionLoading === vendor.id ? (
@@ -324,9 +300,11 @@ export default function AdminDashboard() {
                                   </>
                                 )}
                               </Button>
-                              <Button 
+                              <Button
                                 variant="outline"
-                                onClick={() => handleApproveVendor(vendor.id, false)}
+                                onClick={() =>
+                                  handleApproveVendor(vendor.id, false)
+                                }
                                 disabled={actionLoading === vendor.id}
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
@@ -348,19 +326,26 @@ export default function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Users</CardTitle>
-                <CardDescription>
-                  Latest user registrations
-                </CardDescription>
+                <CardDescription>Latest user registrations</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {recentUsers.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div>
                         <h4 className="font-medium">{user.name}</h4>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
                       </div>
-                      <Badge variant={user.role === 'vendor' ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={
+                          user.role === "vendor" ? "default" : "secondary"
+                        }
+                      >
                         {user.role}
                       </Badge>
                     </div>
@@ -375,24 +360,33 @@ export default function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Bookings</CardTitle>
-                <CardDescription>
-                  Latest booking activity
-                </CardDescription>
+                <CardDescription>Latest booking activity</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {recentBookings.map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div>
-                        <h4 className="font-medium">{booking.listings?.title}</h4>
+                        <h4 className="font-medium">
+                          {booking.listings?.title}
+                        </h4>
                         <p className="text-sm text-muted-foreground">
-                          {format(new Date(booking.booking_date), 'PPP')} - ₦{booking.total_amount?.toLocaleString()}
+                          {format(new Date(booking.booking_date), "PPP")} - ₦
+                          {booking.total_amount?.toLocaleString()}
                         </p>
                       </div>
-                      <Badge variant={
-                        booking.status === 'completed' ? 'default' :
-                        booking.status === 'confirmed' ? 'secondary' : 'outline'
-                      }>
+                      <Badge
+                        variant={
+                          booking.status === "completed"
+                            ? "default"
+                            : booking.status === "confirmed"
+                              ? "secondary"
+                              : "outline"
+                        }
+                      >
                         {booking.status}
                       </Badge>
                     </div>
@@ -412,7 +406,9 @@ export default function AdminDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Financial Reports</CardTitle>
-                  <CardDescription>Revenue and transaction reports</CardDescription>
+                  <CardDescription>
+                    Revenue and transaction reports
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button variant="outline" className="w-full justify-start">
@@ -430,7 +426,9 @@ export default function AdminDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>User Reports</CardTitle>
-                  <CardDescription>User activity and engagement</CardDescription>
+                  <CardDescription>
+                    User activity and engagement
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button variant="outline" className="w-full justify-start">
@@ -467,5 +465,5 @@ export default function AdminDashboard() {
         </Tabs>
       </div>
     </AuthGuard>
-  )
+  );
 }

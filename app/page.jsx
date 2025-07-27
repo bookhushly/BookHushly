@@ -1,4 +1,7 @@
+"use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // use next/router for older Next versions
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,6 +31,19 @@ import { CATEGORIES } from "@/lib/constants";
 import Image from "next/image";
 
 export default function Home() {
+  const [search, setSearch] = useState("");
+  const [location, setLocation] = useState("");
+  const [date, setDate] = useState("");
+  const router = useRouter();
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (location) params.set("location", location);
+    if (date) params.set("date", date);
+
+    router.push(`/services?${params.toString()}`);
+  };
   const features = [
     {
       icon: <Search className="h-8 w-8" />,
@@ -172,8 +188,10 @@ export default function Home() {
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search services..."
-                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
+                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white text-black hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
                   />
                 </div>
 
@@ -181,8 +199,10 @@ export default function Home() {
                 <div className="relative">
                   <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                     placeholder="Location"
-                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
+                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white text-black hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
                   />
                 </div>
 
@@ -190,6 +210,8 @@ export default function Home() {
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
                     type="date"
                     className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white text-gray-600 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
                   />
@@ -197,6 +219,7 @@ export default function Home() {
 
                 {/* Search Button */}
                 <Button
+                  onClick={handleSearch}
                   size="lg"
                   className="h-14 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold text-white rounded-xl shadow-md transition-all"
                 >

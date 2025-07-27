@@ -38,7 +38,9 @@ export default function PaymentPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
+  console.log("Search Params:", searchParams.toString());
   const bookingId = searchParams.get("booking");
+  console.log("Booking ID:", bookingId);
   const reference = searchParams.get("reference");
 
   const [loading, setLoading] = useState(true);

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/send-payment-sms": {},
+    "/book/[id]": {},
+    "/dashboard/vendor/listings/[id]": {},
+    "/services/[id]": {}
+  }
+}

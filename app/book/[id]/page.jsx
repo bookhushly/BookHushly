@@ -1,10 +1,28 @@
+import { supabase } from "@/lib/supabase";
 import BookServiceClient from "../../../components/book/BookServiceClient";
 
 export async function generateStaticParams() {
-  const serviceIds = Array.from({ length: 20 }, (_, i) => ({
-    id: (i + 1).toString(),
-  }));
-  return serviceIds;
+  try {
+    const { data: services, error } = await supabase
+      .from("listings")
+      .select("id")
+      .eq("active", true);
+
+    if (error) {
+      console.error(
+        "Error fetching services for book static generation:",
+        error
+      );
+      return [];
+    }
+
+    return services.map((service) => ({
+      id: service.id.toString(),
+    }));
+  } catch (err) {
+    console.error("Exception in generateStaticParams for book service:", err);
+    return [];
+  }
 }
 
 export default function BookServicePageWrapper() {
