@@ -16,6 +16,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/store";
 import {
   getVendorProfile,
@@ -31,6 +42,8 @@ import {
   ArrowLeft,
   CheckCircle,
   AlertCircle,
+  ExternalLink,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -41,6 +54,7 @@ export default function KYCPage() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [existingProfile, setExistingProfile] = useState(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [formData, setFormData] = useState({
     business_name: "",
     business_description: "",
@@ -56,6 +70,7 @@ export default function KYCPage() {
     website_url: "",
   });
   const [error, setError] = useState("");
+
   useEffect(() => {
     if (user) {
       console.log("✅ User is logged in:", user);
@@ -95,6 +110,10 @@ export default function KYCPage() {
             years_in_operation: profile.years_in_operation || "",
             website_url: profile.website_url || "",
           });
+          // If profile exists and was previously approved, consider terms accepted
+          if (profile.approved) {
+            setTermsAccepted(true);
+          }
         }
       } catch (error) {
         console.error("Load profile error:", error);
@@ -121,12 +140,19 @@ export default function KYCPage() {
       "business_address",
       "phone_number",
     ];
+
     for (const field of required) {
       if (!formData[field].trim()) {
         setError(`${field.replace("_", " ")} is required`);
         return false;
       }
     }
+
+    if (!termsAccepted) {
+      setError("You must accept the Terms and Conditions to proceed");
+      return false;
+    }
+
     return true;
   };
 
@@ -177,6 +203,260 @@ export default function KYCPage() {
       setLoading(false);
     }
   };
+
+  const TermsAndConditionsModal = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant="link"
+          className="p-0 h-auto text-blue-600 hover:text-blue-800"
+        >
+          Terms and Conditions
+          <ExternalLink className="ml-1 h-3 w-3" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center text-xl">
+            <Shield className="mr-2 h-5 w-5" />
+            Terms and Conditions for Listers
+          </DialogTitle>
+          <DialogDescription>
+            Please read these terms carefully before proceeding with your
+            listing registration.
+          </DialogDescription>
+        </DialogHeader>
+
+        <ScrollArea className="h-[60vh] pr-4">
+          <div className="space-y-6 text-sm">
+            {/* Section 1 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                1. Agreement Overview
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                By listing your <span className="font-medium">listing</span> on
+                BOOKHUSHLY.com ("Platform"), you agree to these legally binding
+                Terms and Conditions. This agreement is governed by the laws of
+                the Federal Republic of Nigeria.
+              </p>
+            </div>
+
+            {/* Section 2 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                2. Eligibility
+              </h3>
+              <p className="text-muted-foreground mb-2">Listers must:</p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>Own or have legal rights to manage the listing</li>
+                <li>
+                  Register with valid identification (e.g., NIN, CAC, or BVN, as
+                  applicable)
+                </li>
+                <li>
+                  Provide accurate and up-to-date information about the listing
+                </li>
+                <li>
+                  Comply with all local, state, and federal housing and safety
+                  regulations
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 3 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                3. Commission Structure
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  A <span className="font-medium">10% commission</span> is
+                  charged on the total value of each successful booking
+                </li>
+                <li>Commission is automatically deducted at payout</li>
+                <li>
+                  The total booking value includes rent, service fees, cleaning
+                  charges, and VAT (if applicable)
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 4 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                4. Payout Terms
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  Payouts are made in Nigerian Naira (NGN) to the lister's
+                  verified local bank account
+                </li>
+                <li>
+                  Disbursement occurs within{" "}
+                  <span className="font-medium">5 business days</span> after
+                  guest check-in, minus commission and applicable deductions
+                </li>
+                <li>
+                  The Platform may delay payouts in cases of disputes or
+                  suspected fraud
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 5 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                5. Taxes & Regulatory Compliance
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  Listers are solely responsible for all applicable taxes
+                  (personal or corporate income tax, VAT, etc.)
+                </li>
+                <li>
+                  BOOKHUSHLY.com may provide withholding tax certificates upon
+                  request, in line with the Nigerian FIRS rules
+                </li>
+                <li>
+                  Listers are responsible for ensuring tax compliance based on
+                  their business structure and location
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 6 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                6. Cancellations & Refunds
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  Commission remains payable if cancellation occurs outside your
+                  defined cancellation window
+                </li>
+                <li>
+                  Listers must clearly outline cancellation and refund policies
+                  on each listing
+                </li>
+                <li>
+                  BOOKHUSHLY.com reserves the right to override cancellation
+                  policies for guest protection under exceptional circumstances
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 7 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                7. Listing Conduct
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  Fraudulent, misleading, or illegal listings may result in
+                  immediate removal and legal action
+                </li>
+                <li>
+                  Listers must comply with the Nigeria Data Protection Act
+                  (NDPA) and may not collect, share, or use guest data without
+                  consent
+                </li>
+                <li>
+                  Professional conduct is expected in all interactions with
+                  guests and Platform staff
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 8 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                8. Limitation of Liability
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  BOOKHUSHLY.com is not liable for losses, damages, or disputes
+                  resulting from listings or guest actions
+                </li>
+                <li>
+                  Listers are strongly advised to maintain adequate listing and
+                  liability insurance
+                </li>
+                <li>
+                  The Platform is not responsible for guest behavior or listing
+                  damage
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 9 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                9. Account Termination
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  You may delist or pause your listings anytime via your
+                  dashboard
+                </li>
+                <li>
+                  BOOKHUSHLY.com may suspend or terminate your account for
+                  breach of these terms or 12 months of inactivity
+                </li>
+                <li>
+                  In the event of termination, pending payouts (minus
+                  deductions) will be processed per policy
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 10 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                10. Dispute Resolution
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>
+                  All disputes will be resolved in good faith. Unresolved
+                  disputes may be submitted to arbitration in Lagos, under the
+                  Arbitration and Conciliation Act, Cap A18 Laws of Nigeria
+                </li>
+                <li>
+                  Each party will bear its own legal costs unless otherwise
+                  agreed
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 11 */}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base text-foreground">
+                11. Amendments
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                <li>BOOKHUSHLY.com may update these Terms with prior notice</li>
+                <li>
+                  Continued use of the Platform after notice constitutes
+                  acceptance of the revised terms
+                </li>
+              </ul>
+            </div>
+          </div>
+        </ScrollArea>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() =>
+              document.querySelector('[data-state="open"]')?.click()
+            }
+          >
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 
   if (pageLoading) {
     return (
@@ -444,12 +724,39 @@ export default function KYCPage() {
             </CardContent>
           </Card>
 
+          {/* Terms and Conditions */}
+          <Card className="border-blue-200 bg-blue-50/50">
+            <CardContent className="pt-6">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="terms"
+                  checked={termsAccepted}
+                  onCheckedChange={setTermsAccepted}
+                  className="mt-1"
+                />
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-relaxed cursor-pointer"
+                  >
+                    I have read and agree to the <TermsAndConditionsModal /> *
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    By checking this box, you acknowledge that you have read,
+                    understood, and agree to be bound by our Terms and
+                    Conditions for listing on BOOKHUSHLY.com.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
             <Button type="button" variant="outline" asChild>
               <Link href="/dashboard/vendor">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !termsAccepted}>
               {loading ? (
                 <>
                   <LoadingSpinner className="mr-2 h-4 w-4" />

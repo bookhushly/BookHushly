@@ -635,7 +635,6 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
             </button>
           </div>
         </div>
-
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
@@ -794,8 +793,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
             </div>
           ) : null}
         </div>
-
-        {/* Action Buttons - Sticky Footer */}
+        9{/* Action Buttons - Sticky Footer */}
         {booking && (
           <div className="flex-shrink-0 bg-white border-t border-gray-200 p-6 relative">
             {/* Blur overlay for mobile */}

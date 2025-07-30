@@ -80,17 +80,11 @@ export default function ContactPage() {
       description: "Mon-Fri 9AM-6PM WAT",
       color: "text-hospitality-trust",
     },
-    {
-      icon: <MapPin className="h-5 w-5" />,
-      title: "Visit Us",
-      details: "Lagos, Nigeria",
-      description: "Victoria Island Business District",
-      color: "text-hospitality-gold",
-    },
+
     {
       icon: <Clock className="h-5 w-5" />,
       title: "Business Hours",
-      details: "9:00 AM - 6:00 PM",
+      details: "24/7",
       description: "Monday to Friday (WAT)",
       color: "text-brand-600",
     },

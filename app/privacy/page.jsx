@@ -1,15 +1,21 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Shield, 
-  Eye, 
-  Lock, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Shield,
+  Eye,
+  Lock,
   Database,
   Users,
   Globe,
   FileText,
-  AlertTriangle
-} from 'lucide-react'
+  AlertTriangle,
+} from "lucide-react";
 
 export default function PrivacyPage() {
   return (
@@ -25,7 +31,8 @@ export default function PrivacyPage() {
               Privacy Policy
             </h1>
             <p className="text-xl text-primary-foreground/90">
-              Your privacy is important to us. Learn how we collect, use, and protect your data.
+              Your privacy is important to us. Learn how we collect, use, and
+              protect your data.
             </p>
             <p className="text-sm text-primary-foreground/70 mt-4">
               Last updated: January 2025
@@ -37,7 +44,6 @@ export default function PrivacyPage() {
       {/* Privacy Content */}
       <section className="py-16">
         <div className="container max-w-4xl">
-          
           {/* Introduction */}
           <Card className="mb-8">
             <CardHeader>
@@ -48,22 +54,26 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
-                Bookhushly Limited ("we," "our," or "us") is committed to protecting your privacy. 
-                This Privacy Policy explains how we collect, use, disclose, and safeguard your 
-                information when you use our platform.
+                Bookhushly Limited ("we," "our," or "us") is committed to
+                protecting your privacy. This Privacy Policy explains how we
+                collect, use, disclose, and safeguard your information when you
+                use our platform.
               </p>
               <p>
-                This policy applies to all users of our services, including customers, vendors, 
-                and website visitors. By using our services, you consent to the data practices 
-                described in this policy.
+                This policy applies to all users of our services, including
+                customers, vendors, and website plators. By using our services,
+                you consent to the data practices described in this policy.
               </p>
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <div className="flex items-start space-x-2">
                   <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-blue-900">Our Commitment</p>
+                    <p className="text-sm font-medium text-blue-900">
+                      Our Commitment
+                    </p>
                     <p className="text-sm text-blue-700">
-                      We are committed to transparency and giving you control over your personal data.
+                      We are committed to transparency and giving you control
+                      over your personal data.
                     </p>
                   </div>
                 </div>
@@ -82,10 +92,14 @@ export default function PrivacyPage() {
             <CardContent className="space-y-6">
               <div>
                 <h4 className="font-semibold mb-3">2.1 Personal Information</h4>
-                <p className="mb-4">We collect information you provide directly to us, including:</p>
+                <p className="mb-4">
+                  We collect information you provide directly to us, including:
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="border rounded-lg p-4">
-                    <h5 className="font-medium text-primary mb-2">Account Information</h5>
+                    <h5 className="font-medium text-primary mb-2">
+                      Account Information
+                    </h5>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       <li>• Name and email address</li>
                       <li>• Phone number</li>
@@ -94,7 +108,9 @@ export default function PrivacyPage() {
                     </ul>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h5 className="font-medium text-primary mb-2">Business Information (Vendors)</h5>
+                    <h5 className="font-medium text-primary mb-2">
+                      Business Information (Vendors)
+                    </h5>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       <li>• Business name and description</li>
                       <li>• Business registration documents</li>
@@ -107,11 +123,17 @@ export default function PrivacyPage() {
 
               <div>
                 <h4 className="font-semibold mb-3">2.2 Usage Information</h4>
-                <p>We automatically collect certain information about your use of our services:</p>
+                <p>
+                  We automatically collect certain information about your use of
+                  our services:
+                </p>
                 <ul className="mt-2 space-y-1">
                   <li className="flex items-start space-x-2">
                     <span className="text-primary mt-1">•</span>
-                    <span>Device information (IP address, browser type, operating system)</span>
+                    <span>
+                      Device information (IP address, browser type, operating
+                      system)
+                    </span>
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className="text-primary mt-1">•</span>
@@ -131,8 +153,9 @@ export default function PrivacyPage() {
               <div>
                 <h4 className="font-semibold mb-3">2.3 Payment Information</h4>
                 <p>
-                  Payment information is processed by our secure payment partners (Paystack and Flutterwave). 
-                  We do not store complete payment card information on our servers.
+                  Payment information is processed by our secure payment
+                  partners (Paystack and Flutterwave). We do not store complete
+                  payment card information on our servers.
                 </p>
               </div>
             </CardContent>
@@ -198,36 +221,42 @@ export default function PrivacyPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p>We may share your information in the following circumstances:</p>
-              
+              <p>
+                We may share your information in the following circumstances:
+              </p>
+
               <div className="space-y-4">
                 <div className="border-l-4 border-blue-500 pl-4">
                   <h5 className="font-medium">With Service Providers</h5>
                   <p className="text-sm text-muted-foreground">
-                    We share necessary information with vendors to facilitate service delivery 
-                    (e.g., contact details for confirmed bookings).
+                    We share necessary information with vendors to facilitate
+                    service delivery (e.g., contact details for confirmed
+                    bookings).
                   </p>
                 </div>
-                
+
                 <div className="border-l-4 border-green-500 pl-4">
                   <h5 className="font-medium">With Payment Processors</h5>
                   <p className="text-sm text-muted-foreground">
-                    Payment information is shared with Paystack and Flutterwave to process transactions securely.
+                    Payment information is shared with Paystack and Flutterwave
+                    to process transactions securely.
                   </p>
                 </div>
-                
+
                 <div className="border-l-4 border-yellow-500 pl-4">
                   <h5 className="font-medium">For Legal Compliance</h5>
                   <p className="text-sm text-muted-foreground">
-                    We may disclose information when required by law or to protect our rights and safety.
+                    We may disclose information when required by law or to
+                    protect our rights and safety.
                   </p>
                 </div>
-                
+
                 <div className="border-l-4 border-red-500 pl-4">
                   <h5 className="font-medium">Business Transfers</h5>
                   <p className="text-sm text-muted-foreground">
-                    In the event of a merger, acquisition, or sale, user information may be transferred 
-                    as part of the business assets.
+                    In the event of a merger, acquisition, or sale, user
+                    information may be transferred as part of the business
+                    assets.
                   </p>
                 </div>
               </div>
@@ -236,9 +265,12 @@ export default function PrivacyPage() {
                 <div className="flex items-start space-x-2">
                   <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-red-900">We Never Sell Your Data</p>
+                    <p className="text-sm font-medium text-red-900">
+                      We Never Sell Your Data
+                    </p>
                     <p className="text-sm text-red-700">
-                      We do not sell, rent, or trade your personal information to third parties for marketing purposes.
+                      We do not sell, rent, or trade your personal information
+                      to third parties for marketing purposes.
                     </p>
                   </div>
                 </div>
@@ -256,10 +288,11 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
-                We implement appropriate technical and organizational measures to protect your 
-                personal information against unauthorized access, alteration, disclosure, or destruction.
+                We implement appropriate technical and organizational measures
+                to protect your personal information against unauthorized
+                access, alteration, disclosure, or destruction.
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 border rounded-lg">
                   <Lock className="h-8 w-8 text-green-600 mx-auto mb-2" />
@@ -295,11 +328,16 @@ export default function PrivacyPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p>You have the following rights regarding your personal information:</p>
-              
+              <p>
+                You have the following rights regarding your personal
+                information:
+              </p>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="border rounded-lg p-4">
-                  <h5 className="font-medium text-primary mb-2">Access & Portability</h5>
+                  <h5 className="font-medium text-primary mb-2">
+                    Access & Portability
+                  </h5>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• Request a copy of your data</li>
                     <li>• Export your information</li>
@@ -307,7 +345,9 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="border rounded-lg p-4">
-                  <h5 className="font-medium text-primary mb-2">Control & Correction</h5>
+                  <h5 className="font-medium text-primary mb-2">
+                    Control & Correction
+                  </h5>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• Update your information</li>
                     <li>• Correct inaccurate data</li>
@@ -315,7 +355,9 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="border rounded-lg p-4">
-                  <h5 className="font-medium text-primary mb-2">Deletion & Restriction</h5>
+                  <h5 className="font-medium text-primary mb-2">
+                    Deletion & Restriction
+                  </h5>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• Request data deletion</li>
                     <li>• Restrict processing</li>
@@ -323,7 +365,9 @@ export default function PrivacyPage() {
                   </ul>
                 </div>
                 <div className="border rounded-lg p-4">
-                  <h5 className="font-medium text-primary mb-2">Consent Management</h5>
+                  <h5 className="font-medium text-primary mb-2">
+                    Consent Management
+                  </h5>
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• Withdraw consent</li>
                     <li>• Opt-out of marketing</li>
@@ -333,8 +377,9 @@ export default function PrivacyPage() {
               </div>
 
               <p className="text-sm text-muted-foreground">
-                To exercise these rights, please contact us at privacy@bookhushly.com. 
-                We will respond to your request within 30 days.
+                To exercise these rights, please contact us at
+                privacy@bookhushly.com. We will respond to your request within
+                30 days.
               </p>
             </CardContent>
           </Card>
@@ -349,9 +394,10 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent>
               <p>
-                Your information may be transferred to and processed in countries other than Nigeria. 
-                We ensure that such transfers are subject to appropriate safeguards, including 
-                standard contractual clauses and adequacy decisions.
+                Your information may be transferred to and processed in
+                countries other than Nigeria. We ensure that such transfers are
+                subject to appropriate safeguards, including standard
+                contractual clauses and adequacy decisions.
               </p>
             </CardContent>
           </Card>
@@ -362,7 +408,9 @@ export default function PrivacyPage() {
               <CardTitle>8. Data Retention</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p>We retain your personal information for as long as necessary to:</p>
+              <p>
+                We retain your personal information for as long as necessary to:
+              </p>
               <ul className="space-y-1">
                 <li className="flex items-start space-x-2">
                   <span className="text-primary mt-1">•</span>
@@ -382,7 +430,8 @@ export default function PrivacyPage() {
                 </li>
               </ul>
               <p>
-                When we no longer need your information, we will securely delete or anonymize it.
+                When we no longer need your information, we will securely delete
+                or anonymize it.
               </p>
             </CardContent>
           </Card>
@@ -394,10 +443,11 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent>
               <p>
-                Our services are not intended for children under 18 years of age. We do not 
-                knowingly collect personal information from children under 18. If you are a 
-                parent or guardian and believe your child has provided us with personal information, 
-                please contact us immediately.
+                Our services are not intended for children under 18 years of
+                age. We do not knowingly collect personal information from
+                children under 18. If you are a parent or guardian and believe
+                your child has provided us with personal information, please
+                contact us immediately.
               </p>
             </CardContent>
           </Card>
@@ -409,9 +459,10 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent>
               <p>
-                We may update this Privacy Policy from time to time. We will notify you of any 
-                changes by posting the new Privacy Policy on this page and updating the "Last updated" 
-                date. For material changes, we will provide additional notice.
+                We may update this Privacy Policy from time to time. We will
+                notify you of any changes by posting the new Privacy Policy on
+                this page and updating the "Last updated" date. For material
+                changes, we will provide additional notice.
               </p>
             </CardContent>
           </Card>
@@ -423,20 +474,27 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent>
               <p className="mb-4">
-                If you have any questions about this Privacy Policy or our data practices, 
-                please contact us:
+                If you have any questions about this Privacy Policy or our data
+                practices, please contact us:
               </p>
               <div className="space-y-2">
-                <p><strong>Email:</strong> privacy@bookhushly.com</p>
-                <p><strong>Phone:</strong> +234 901 234 5678</p>
-                <p><strong>Address:</strong> Victoria Island, Lagos, Nigeria</p>
-                <p><strong>Data Protection Officer:</strong> dpo@bookhushly.com</p>
+                <p>
+                  <strong>Email:</strong> privacy@bookhushly.com
+                </p>
+                <p>
+                  <strong>Phone:</strong> +234 901 234 5678
+                </p>
+                <p>
+                  <strong>Address:</strong> Victoria Island, Lagos, Nigeria
+                </p>
+                <p>
+                  <strong>Data Protection Officer:</strong> dpo@bookhushly.com
+                </p>
               </div>
             </CardContent>
           </Card>
-
         </div>
       </section>
     </div>
-  )
+  );
 }

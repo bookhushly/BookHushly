@@ -1029,15 +1029,7 @@ export default function PaymentPage() {
                       .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Platform Fee (5%):</span>
-                  <span>
-                    ₦
-                    {((booking.total_amount * 0.05) / 1.05)
-                      .toFixed(0)
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  </span>
-                </div>
+
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
                   <span>Total:</span>
                   <span>₦{booking.total_amount?.toLocaleString()}</span>

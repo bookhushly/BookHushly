@@ -461,10 +461,7 @@ export default function BookServiceClient() {
                   <span>Service fee</span>
                   <span>₦{service.price?.toLocaleString() || "0"}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Platform fee (5%)</span>
-                  <span>₦{((service.price || 0) * 0.05).toLocaleString()}</span>
-                </div>
+
                 <div className="border-t pt-3">
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>

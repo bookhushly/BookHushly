@@ -906,12 +906,7 @@ export default function ServiceDetailClient({ service }) {
                     ₦{service.price.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Platform fee</span>
-                  <span className="font-medium">
-                    ₦{(service.price * 0.05).toLocaleString()}
-                  </span>
-                </div>
+
                 <hr className="border-gray-200" />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
