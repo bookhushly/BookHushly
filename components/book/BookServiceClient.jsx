@@ -37,6 +37,7 @@ import { Calendar } from "../ui/calendar";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { LoadingSpinner } from "../ui/loading-spinner";
+import { data } from "autoprefixer";
 
 export default function BookServiceClient() {
   const params = useParams();
@@ -68,6 +69,7 @@ export default function BookServiceClient() {
         setServiceLoading(true);
 
         const { data: serviceData, error } = await getListing(params.id);
+        console.log(data);
         if (error) {
           console.error("Error fetching listing:", error);
           setServiceError("Failed to load service details");
@@ -135,9 +137,6 @@ export default function BookServiceClient() {
     return servicePrice + platformFee;
   };
 
-  const referenceRef = useRef(`book-${crypto.randomUUID()}`);
-  console.log("Booking reference:", referenceRef.current);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm() || !service || !user) return;
@@ -152,6 +151,7 @@ export default function BookServiceClient() {
         booking_date: selectedDate.toISOString().split("T")[0],
         booking_time: formData.time,
         guests: parseInt(formData.guests),
+
         duration: formData.duration || null,
         special_requests: formData.special_requests || null,
         contact_phone: formData.contact_phone,
@@ -159,7 +159,6 @@ export default function BookServiceClient() {
         total_amount: calculateTotal(),
         status: "pending",
         payment_status: "pending",
-        payment_reference: "",
       };
       console.log("Booking payload →", bookingData);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -19,6 +20,14 @@ import {
   initializePayment,
   verifyPayment,
   initializeClientPayment,
+  checkNOWPaymentsStatus,
+  searchAvailableCurrencies,
+  getCurrencyDetails,
+  getMinimumPaymentAmount,
+  getEstimatedCryptoPrice,
+  createNOWPaymentsInvoice,
+  getNOWPaymentsStatus,
+  getExchangeRate,
 } from "@/lib/payments";
 
 import {
@@ -28,8 +37,13 @@ import {
   XCircle,
   ArrowLeft,
   Lock,
-  Smartphone,
-  Globe,
+  Wallet,
+  Bitcoin,
+  Info,
+  Clock,
+  Search,
+  X,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -38,16 +52,29 @@ export default function PaymentPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
-  console.log("Search Params:", searchParams.toString());
+
   const bookingId = searchParams.get("booking");
-  console.log("Booking ID:", bookingId);
   const reference = searchParams.get("reference");
+  const paymentStatus = searchParams.get("status");
 
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [booking, setBooking] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState("pending");
+  const [currentPaymentStatus, setCurrentPaymentStatus] = useState("pending");
   const [error, setError] = useState("");
+
+  // Crypto payment states
+  const [cryptoStep, setCryptoStep] = useState(1); // 1: Check API, 2: Search Currency, 3: Show Details, 4: Payment
+  const [apiStatus, setApiStatus] = useState(null);
+  const [currencySearchQuery, setCurrencySearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const [selectedCurrencyDetails, setSelectedCurrencyDetails] = useState(null);
+  const [minimumAmount, setMinimumAmount] = useState(null);
+  const [minimumAmountCurrency, setMinimumAmountCurrency] = useState(null);
+  const [estimatedAmount, setEstimatedAmount] = useState(null);
+  const [invoice, setInvoice] = useState(null);
 
   useEffect(() => {
     const loadBookingData = async () => {
@@ -67,8 +94,10 @@ export default function PaymentPage() {
 
         setBooking(data);
 
-        // If we have a reference, verify the payment
-        if (reference) {
+        // Check if payment was successful from URL params
+        if (paymentStatus === "success" && reference) {
+          setCurrentPaymentStatus("success");
+        } else if (reference && reference !== "null") {
           await verifyPaymentStatus(reference);
         }
       } catch (err) {
@@ -79,36 +108,239 @@ export default function PaymentPage() {
     };
 
     loadBookingData();
-  }, [bookingId, reference]);
+  }, [bookingId, reference, paymentStatus]);
 
   const verifyPaymentStatus = async (paymentReference) => {
     try {
       const { data, error } = await verifyPayment(paymentReference);
 
       if (error) {
-        setPaymentStatus("failed");
+        setCurrentPaymentStatus("failed");
         setError("Payment verification failed");
         return;
       }
 
-      if (data.status === "success") {
-        setPaymentStatus("success");
-        // Update booking payment status
+      if (data.status === "success" || data.payment_status === "finished") {
+        setCurrentPaymentStatus("success");
         await updatePaymentStatus(bookingId, "completed", paymentReference);
         toast.success("Payment successful!", {
           description: "Your booking has been confirmed",
         });
       } else {
-        setPaymentStatus("failed");
+        setCurrentPaymentStatus("failed");
         setError("Payment was not successful");
       }
     } catch (err) {
-      setPaymentStatus("failed");
+      setCurrentPaymentStatus("failed");
       setError("Payment verification failed");
     }
   };
 
-  const handlePayment = async (provider) => {
+  // Step 1: Check NOWPayments API Status
+  const checkCryptoAPIStatus = async () => {
+    setPaymentLoading(true);
+    setError("");
+
+    try {
+      const { data, error } = await checkNOWPaymentsStatus();
+
+      if (error) {
+        setError("Crypto payment service is currently unavailable");
+        setApiStatus("error");
+        return;
+      }
+
+      setApiStatus(data);
+      setCryptoStep(2);
+    } catch (err) {
+      setError("Failed to check crypto payment availability");
+      setApiStatus("error");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce(async (query) => {
+      if (!query || query.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+
+      setSearchLoading(true);
+      try {
+        const { data, error } = await searchAvailableCurrencies(query);
+
+        if (error) {
+          console.error("Currency search error:", error);
+          setSearchResults([]);
+          return;
+        }
+
+        setSearchResults(data || []);
+      } catch (err) {
+        console.error("Search error:", err);
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 500),
+    []
+  );
+
+  // Handle search input change
+  const handleSearchInputChange = (e) => {
+    const query = e.target.value;
+    setCurrencySearchQuery(query);
+    debouncedSearch(query);
+  };
+
+  // Handle currency selection
+  const handleCurrencySelection = async (currency) => {
+    setSelectedCurrency(currency);
+    setPaymentLoading(true);
+    setError("");
+    setCurrencySearchQuery("");
+    setSearchResults([]);
+
+    try {
+      // Get currency details
+      // Step 1: Get currency details
+      const { data: currencyDetails } = await getCurrencyDetails(currency);
+      setSelectedCurrencyDetails(currencyDetails);
+
+      // Step 2: Convert booking amount to USD
+      const { data: converted, error } = await getExchangeRate(
+        booking.total_amount,
+        "NGN",
+        "USD"
+      );
+
+      if (error || !converted?.result) {
+        throw new Error("Failed to get exchange rate");
+      }
+
+      const amountInUSD = converted.result;
+
+      // Step 3: Get minimum payment amount in usd of selected currency
+      const { data: minData, error: minError } = await getMinimumPaymentAmount(
+        "usd",
+        currency
+      );
+      console.log("Minimum payment data:", minData.min_amount);
+      if (minError || !minData) {
+        setError("Failed to get minimum payment amount for this currency");
+        return;
+      }
+
+      const minAmountUSD = minData.min_amount;
+      setMinimumAmount(minAmountUSD);
+
+      // Step 4: Check if booking amount in usd meets minimum requirement
+      if (amountInUSD < minimumAmount) {
+        setError(
+          `This cryptocurrency requires a minimum payment of ₦${minimumAmount.toLocaleString()} ` +
+            `(${parseFloat(minData.min_amount).toFixed(8)} ${currency.toUpperCase()}). ` +
+            `Your booking amount is $${amountInUSD.toLocaleString()}. ` +
+            `Please choose a different cryptocurrency with a lower minimum amount.`
+        );
+        return;
+      }
+
+      // Step 4: Get crypto price estimate for booking amount
+      const { data: estimateData, error: estimateError } =
+        await getEstimatedCryptoPrice(amountInUSD, "usd", currency);
+
+      if (estimateError || !estimateData) {
+        setError("Failed to get crypto price estimate");
+        return;
+      }
+
+      setEstimatedAmount(estimateData);
+
+      console.log(minAmountUSD, "Minimum amount in USD:");
+      console.log(currency, "Selected currency:", currency);
+      const {
+        data: minimumAmountinSelectedCurrency,
+        error: minimumAmountError,
+      } = await getEstimatedCryptoPrice(minAmountUSD, "usd", currency);
+      console.log(estimateData, "Estimated amount data:");
+      if (
+        minimumAmountError ||
+        !minimumAmountinSelectedCurrency?.estimated_amount
+      ) {
+        throw new Error("Failed to get exchange rate");
+      }
+
+      setMinimumAmountCurrency(
+        minimumAmountinSelectedCurrency.estimated_amount
+      );
+      // All validations passed
+      setCryptoStep(3);
+
+      console.log(
+        `Payment setup successful: ${estimateData.estimated_amount} ${currency.toUpperCase()}`
+      );
+    } catch (err) {
+      console.error("Currency selection error:", err);
+      setError("An error occurred while processing currency selection");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Step 4: Create Invoice and Initiate Payment
+  const initiateCryptoPayment = async () => {
+    if (!booking || !user || !selectedCurrency) return;
+
+    setPaymentLoading(true);
+    setError("");
+
+    try {
+      const paymentData = {
+        email: user.email,
+        amount: estimatedAmount.estimated_amount, // Convert to kobo
+        currency: selectedCurrency,
+        reference: `BH_${bookingId}_${Date.now()}`,
+        callback_url: `${window.location.origin}/payments?booking=${bookingId}`,
+        metadata: {
+          booking_id: bookingId,
+          customer_id: user.id,
+          service_title: booking.listings?.title,
+          customer_name: user.user_metadata?.name || "Customer",
+        },
+      };
+
+      const { data, error } = await createNOWPaymentsInvoice(
+        paymentData,
+        selectedCurrency
+      );
+
+      if (error) {
+        setError(error.message || "Failed to create payment invoice");
+        return;
+      }
+
+      setInvoice(data);
+      setCryptoStep(4);
+
+      // Redirect to NOWPayments invoice page
+      if (data.invoice_url) {
+        setTimeout(() => {
+          window.location.href = data.invoice_url;
+        }, 3000);
+      }
+    } catch (err) {
+      setError("Payment initialization failed");
+      toast.error("Failed to initialize crypto payment");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  // Regular Paystack payment handler
+  const handlePaystackPayment = async () => {
     if (!booking || !user) return;
 
     setPaymentLoading(true);
@@ -117,7 +349,7 @@ export default function PaymentPage() {
     try {
       const paymentData = {
         email: user.email,
-        amount: booking.total_amount * 100, // Convert to kobo/cents
+        amount: booking.total_amount * 100,
         currency: "NGN",
         reference: `BH_${bookingId}_${Date.now()}`,
         callback_url: `${window.location.origin}/payments?booking=${bookingId}`,
@@ -129,63 +361,15 @@ export default function PaymentPage() {
         },
       };
 
-      // Try client-side payment first (for better UX)
+      // Try client-side payment first
       try {
-        const response = await initializeClientPayment(paymentData, provider);
+        const response = await initializeClientPayment(paymentData, "paystack");
 
         if (response.status === "success" || response.status === "successful") {
-          // Verify payment
           const verification = await verifyPayment(paymentData.reference);
 
           if (verification.data?.status === "success") {
-            // Send confirmation notifications
-            await fetch("/api/send-payment-email", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                to: user.email,
-                bookingDetails: {
-                  customerName: user.user_metadata?.name || "Customer",
-                  serviceTitle: booking.listings?.title,
-                  amount: booking.total_amount.toLocaleString(),
-                  reference: paymentData.reference,
-                  provider: provider,
-                  paymentDate: new Date().toLocaleDateString(),
-                  bookingUrl: `${window.location.origin}/dashboard/customer?tab=bookings`,
-                },
-              }),
-            });
-
-            if (booking.contact_phone) {
-              await fetch("/api/send-payment-sms", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  phone: booking.contact_phone,
-                  data: {
-                    serviceTitle: booking.listings?.title,
-                    amount: booking.total_amount.toLocaleString(),
-                    reference: paymentData.reference,
-                  },
-                }),
-              });
-            }
-
-            if (booking.contact_phone) {
-              await fetch("/api/send-payment-sms", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  phone: booking.contact_phone,
-                  data: {
-                    serviceTitle: booking.listings?.title,
-                    amount: booking.total_amount.toLocaleString(),
-                    reference: paymentData.reference,
-                  },
-                }),
-              });
-            }
-
+            await sendPaymentNotifications(paymentData, "paystack");
             router.push(
               `/payments?booking=${bookingId}&reference=${paymentData.reference}&status=success`
             );
@@ -200,7 +384,7 @@ export default function PaymentPage() {
       }
 
       // Fallback to server-side payment
-      const { data, error } = await initializePayment(provider, paymentData);
+      const { data, error } = await initializePayment("paystack", paymentData);
 
       if (error) {
         setError(error.message);
@@ -208,7 +392,6 @@ export default function PaymentPage() {
         return;
       }
 
-      // Redirect to payment gateway
       if (data.authorization_url) {
         window.location.href = data.authorization_url;
       }
@@ -220,6 +403,61 @@ export default function PaymentPage() {
     }
   };
 
+  const sendPaymentNotifications = async (paymentData, provider) => {
+    try {
+      await fetch("/api/send-payment-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: user.email,
+          bookingDetails: {
+            customerName: user.user_metadata?.name || "Customer",
+            serviceTitle: booking.listings?.title,
+            amount: booking.total_amount.toLocaleString(),
+            reference: paymentData.reference,
+            provider: provider,
+            paymentDate: new Date().toLocaleDateString(),
+            bookingUrl: `${window.location.origin}/dashboard/customer?tab=bookings`,
+          },
+        }),
+      });
+    } catch (error) {
+      console.error("Notification sending failed:", error);
+    }
+  };
+
+  const resetCryptoFlow = () => {
+    setCryptoStep(1);
+    setSelectedCurrency(null);
+    setSelectedCurrencyDetails(null);
+    setMinimumAmount(null);
+    setMinimumAmountCurrency(null);
+    setEstimatedAmount(null);
+    setInvoice(null);
+    setApiStatus(null);
+    setCurrencySearchQuery("");
+    setSearchResults([]);
+    setError("");
+  };
+
+  const clearSearch = () => {
+    setCurrencySearchQuery("");
+    setSearchResults([]);
+  };
+
+  // Debounce utility function
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -228,7 +466,7 @@ export default function PaymentPage() {
     );
   }
 
-  if (paymentStatus === "success") {
+  if (currentPaymentStatus === "success") {
     return (
       <div className="container max-w-2xl py-8">
         <Card className="text-center">
@@ -269,7 +507,7 @@ export default function PaymentPage() {
     );
   }
 
-  if (paymentStatus === "failed") {
+  if (currentPaymentStatus === "failed") {
     return (
       <div className="container max-w-2xl py-8">
         <Card className="text-center">
@@ -292,7 +530,7 @@ export default function PaymentPage() {
             )}
             <div className="space-y-2">
               <Button
-                onClick={() => setPaymentStatus("pending")}
+                onClick={() => setCurrentPaymentStatus("pending")}
                 className="w-full"
               >
                 Try Again
@@ -350,17 +588,18 @@ export default function PaymentPage() {
                 Choose Payment Method
               </CardTitle>
               <CardDescription>
-                Select your preferred payment provider
+                Select your preferred payment option
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {error && (
                 <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
-              {/* Paystack */}
+              {/* Paystack Payment Option */}
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -376,7 +615,7 @@ export default function PaymentPage() {
                       </div>
                     </div>
                     <Button
-                      onClick={() => handlePayment("paystack")}
+                      onClick={handlePaystackPayment}
                       disabled={paymentLoading}
                     >
                       {paymentLoading ? (
@@ -389,52 +628,320 @@ export default function PaymentPage() {
                 </CardContent>
               </Card>
 
-              {/* Flutterwave */}
+              {/* Crypto Payment Option */}
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <Globe className="h-6 w-6 text-orange-600" />
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                          <Bitcoin className="h-6 w-6 text-orange-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Pay with Crypto</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Bitcoin, Ethereum, USDT & 200+ more
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold">Flutterwave</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Card, Mobile Money, Bank
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => handlePayment("flutterwave")}
-                      disabled={paymentLoading}
-                    >
-                      {paymentLoading ? (
-                        <LoadingSpinner className="h-4 w-4" />
-                      ) : (
-                        "Pay with Flutterwave"
+                      {cryptoStep === 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={checkCryptoAPIStatus}
+                          disabled={paymentLoading}
+                        >
+                          {paymentLoading ? (
+                            <LoadingSpinner className="h-4 w-4" />
+                          ) : (
+                            "Pay with Crypto"
+                          )}
+                        </Button>
                       )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Mobile Money */}
-              <Card className="cursor-pointer hover:shadow-md transition-shadow opacity-60">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Smartphone className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Mobile Money</h3>
-                        <p className="text-sm text-muted-foreground">
-                          MTN, Airtel, 9mobile
-                        </p>
-                      </div>
                     </div>
-                    <Badge variant="secondary">Coming Soon</Badge>
+
+                    {/* Crypto Payment Flow */}
+                    {cryptoStep > 1 && (
+                      <div className="border-t pt-4 space-y-4">
+                        {/* Step 2: Currency Search */}
+                        {cryptoStep === 2 && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">
+                                Search Cryptocurrency
+                              </h4>
+                              <Badge variant="secondary" className="text-xs">
+                                Step 2 of 4
+                              </Badge>
+                            </div>
+
+                            <div className="relative">
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                <Input
+                                  type="text"
+                                  placeholder="Type first 3 characters (e.g., btc, eth, usdt)..."
+                                  value={currencySearchQuery}
+                                  onChange={handleSearchInputChange}
+                                  className="pl-10 pr-10"
+                                />
+                                {currencySearchQuery && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                                    onClick={clearSearch}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+
+                              {/* Search Results */}
+                              {(searchLoading || searchResults.length > 0) && (
+                                <div className="absolute top-full mt-1 w-full bg-white border rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
+                                  {searchLoading ? (
+                                    <div className="flex items-center justify-center p-4">
+                                      <LoadingSpinner className="h-4 w-4 mr-2" />
+                                      <span className="text-sm">
+                                        Searching...
+                                      </span>
+                                    </div>
+                                  ) : searchResults.length > 0 ? (
+                                    searchResults.map((currency) => (
+                                      <button
+                                        key={currency}
+                                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center justify-between border-b last:border-b-0"
+                                        onClick={() =>
+                                          handleCurrencySelection(currency)
+                                        }
+                                        disabled={paymentLoading}
+                                      >
+                                        <div className="flex items-center">
+                                          <Bitcoin className="h-4 w-4 mr-3 text-orange-500" />
+                                          <div>
+                                            <div className="font-medium">
+                                              {currency.toUpperCase()}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                              Click to select
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </button>
+                                    ))
+                                  ) : currencySearchQuery.length >= 2 ? (
+                                    <div className="p-4 text-center text-gray-500 text-sm">
+                                      No currencies found for "
+                                      {currencySearchQuery}"
+                                    </div>
+                                  ) : null}
+                                </div>
+                              )}
+                            </div>
+
+                            <Alert>
+                              <Info className="h-4 w-4" />
+                              <AlertDescription>
+                                Type at least 2 characters to search from 200+
+                                available cryptocurrencies. Note: Each
+                                cryptocurrency has a different minimum payment
+                                amount. Popular options: btc, eth, usdt, usdc,
+                                ltc, bch, bnb, ada, xrp, doge
+                              </AlertDescription>
+                            </Alert>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={resetCryptoFlow}
+                              className="text-gray-500"
+                            >
+                              Back to payment methods
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Step 3: Show Payment Details */}
+                        {cryptoStep === 3 &&
+                          selectedCurrency &&
+                          minimumAmount &&
+                          estimatedAmount && (
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium">Payment Details</h4>
+                                <Badge variant="secondary" className="text-xs">
+                                  Step 3 of 4
+                                </Badge>
+                              </div>
+
+                              <div className="bg-green-50 p-4 rounded-lg space-y-3">
+                                <div className="flex items-center space-x-2 text-green-700 mb-2">
+                                  <CheckCircle className="h-4 w-4" />
+                                  <span className="font-medium text-sm">
+                                    Payment amount meets minimum requirement
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">
+                                    Selected Currency:
+                                  </span>
+                                  <div className="flex items-center">
+                                    <Bitcoin className="h-4 w-4 mr-2 text-orange-500" />
+                                    <Badge variant="outline">
+                                      {selectedCurrency.toUpperCase()}
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                {selectedCurrencyDetails && (
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium">
+                                      Currency Name:
+                                    </span>
+                                    <span className="text-sm">
+                                      {selectedCurrencyDetails.name}
+                                    </span>
+                                  </div>
+                                )}
+
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">
+                                    Amount to Pay:
+                                  </span>
+                                  <span className="font-mono text-sm font-semibold">
+                                    {parseFloat(
+                                      estimatedAmount.estimated_amount
+                                    ).toFixed(8)}{" "}
+                                    {selectedCurrency.toUpperCase()}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">
+                                    Minimum Required:
+                                  </span>
+                                  <span className="font-mono text-sm text-gray-600">
+                                    {parseFloat(minimumAmountCurrency).toFixed(
+                                      8
+                                    )}{" "}
+                                    {selectedCurrency.toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <Alert>
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>
+                                  The crypto amount is calculated in real-time
+                                  and may vary slightly during payment
+                                  processing due to market fluctuations.
+                                </AlertDescription>
+                              </Alert>
+
+                              <div className="flex space-x-2">
+                                <Button
+                                  onClick={initiateCryptoPayment}
+                                  disabled={paymentLoading}
+                                  className="flex-1"
+                                >
+                                  {paymentLoading ? (
+                                    <LoadingSpinner className="h-4 w-4 mr-2" />
+                                  ) : null}
+                                  Create Payment Invoice
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => setCryptoStep(2)}
+                                  disabled={paymentLoading}
+                                >
+                                  Change Currency
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Step 4: Payment Processing */}
+                        {cryptoStep === 4 && invoice && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">Payment Created</h4>
+                              <Badge variant="secondary" className="text-xs">
+                                Step 4 of 4
+                              </Badge>
+                            </div>
+
+                            <div className="bg-green-50 p-4 rounded-lg space-y-3">
+                              <div className="flex items-center space-x-2 text-green-700">
+                                <CheckCircle className="h-5 w-5" />
+                                <span className="font-medium">
+                                  Payment invoice created successfully!
+                                </span>
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span>Payment Amount:</span>
+                                  <span className="font-mono">
+                                    {parseFloat(invoice.pay_amount).toFixed(8)}{" "}
+                                    {invoice.pay_currency.toUpperCase()}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                  <span>USD Value:</span>
+                                  <span className="font-mono">
+                                    $
+                                    {parseFloat(invoice.price_amount).toFixed(
+                                      2
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                  <span>Order ID:</span>
+                                  <span className="font-mono text-xs">
+                                    {invoice.order_id}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center space-x-2 text-blue-600">
+                                <Clock className="h-4 w-4" />
+                                <span className="text-sm">
+                                  Redirecting to payment page in 3 seconds...
+                                </span>
+                              </div>
+                            </div>
+
+                            <Alert>
+                              <Info className="h-4 w-4" />
+                              <AlertDescription>
+                                You will be redirected to complete your payment.
+                                After successful payment, you'll be brought back
+                                to this site automatically.
+                              </AlertDescription>
+                            </Alert>
+
+                            <div className="flex space-x-2">
+                              <Button
+                                onClick={() =>
+                                  (window.location.href = invoice.invoice_url)
+                                }
+                                className="flex-1"
+                              >
+                                Continue to Payment →
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={resetCryptoFlow}
+                                size="sm"
+                              >
+                                Start Over
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -462,6 +969,21 @@ export default function PaymentPage() {
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   <span>Verified Merchants</span>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-amber-50 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <Wallet className="h-4 w-4 text-amber-600 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-amber-800">
+                      Crypto Payment Notice
+                    </p>
+                    <p className="text-amber-700">
+                      Cryptocurrency transactions are irreversible. Please
+                      ensure all details are correct before proceeding. Each
+                      cryptocurrency has different minimum payment requirements.
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -521,6 +1043,27 @@ export default function PaymentPage() {
                   <span>₦{booking.total_amount?.toLocaleString()}</span>
                 </div>
               </div>
+
+              {/* Show crypto equivalent if currency is selected */}
+              {selectedCurrency && estimatedAmount && (
+                <div className="bg-orange-50 p-3 rounded-lg mt-4">
+                  <div className="text-sm">
+                    <div className="font-medium text-orange-800 mb-1">
+                      Crypto Equivalent:
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-orange-700">
+                        {selectedCurrency.toUpperCase()}:
+                      </span>
+                      <span className="font-mono text-orange-800">
+                        {parseFloat(estimatedAmount.estimated_amount).toFixed(
+                          8
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -530,11 +1073,49 @@ export default function PaymentPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <p>• Payment is processed securely through our partners</p>
-              <p>• Refunds available as per vendor cancellation policy</p>
-              <p>• Payment confirmation sent via email and SMS</p>
+              <p>• Refunds available for card payments as per vendor policy</p>
+              <p>• Crypto payments are final and non-refundable</p>
+              <p>• Payment confirmation sent via email</p>
+              <p>• Each cryptocurrency has different minimum amounts</p>
               <p>• 24/7 customer support for payment issues</p>
             </CardContent>
           </Card>
+
+          {/* Crypto Help Card */}
+          {cryptoStep > 1 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <Bitcoin className="h-5 w-5 mr-2 text-orange-500" />
+                  Crypto Payment Help
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  • Search by typing currency symbols (btc, eth, usdt, etc.)
+                </p>
+                <p>• Prices are calculated in real-time</p>
+                <p>
+                  • Each cryptocurrency has different minimum payment amounts
+                </p>
+                <p>
+                  • If your booking amount is below the minimum, try a different
+                  crypto
+                </p>
+                <p>• Transactions are processed on blockchain networks</p>
+                <p>• Payment confirmation may take a few minutes</p>
+                <div className="mt-3 p-2 bg-blue-50 rounded text-blue-700 text-xs">
+                  <strong>Popular low-minimum choices:</strong> USDT, USDC
+                  (usually lower minimums than BTC/ETH)
+                </div>
+                <div className="mt-2 p-2 bg-amber-50 rounded text-amber-700 text-xs">
+                  <strong>Note:</strong> If you see a "minimum amount" error,
+                  try selecting USDT or USDC which typically have lower minimum
+                  requirements.
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

@@ -188,6 +188,7 @@ export default function VendorBookingsPage() {
         <div className="mb-8">
           <Link
             href="/dashboard/vendor"
+            replace
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

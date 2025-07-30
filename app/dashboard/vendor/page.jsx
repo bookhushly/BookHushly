@@ -29,7 +29,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import Link from "next/link";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { Button } from "@/components/ui/button";
-import { getBooking } from "@/lib/database";
+import { getBooking, getBookings } from "@/lib/database";
 
 export default function VendorDashboard() {
   const { user } = useAuthStore();
@@ -101,7 +101,7 @@ export default function VendorDashboard() {
     if (!user) return;
     setLoading(true);
 
-    const { data, error } = await getBooking(user.id); // Fetch by vendorId
+    const { data, error } = await getBookings(user.id, "vendor"); // Fetch by vendorId
     if (error) {
       toast.error("Failed to load bookings");
       console.error(error);

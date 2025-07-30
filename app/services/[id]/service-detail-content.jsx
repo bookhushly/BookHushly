@@ -2,14 +2,638 @@
 
 import { useState } from "react";
 import { CATEGORIES } from "@/lib/constants";
+import { extractCategoryData } from "@/lib/category-forms";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Star } from "lucide-react";
+import {
+  MapPin,
+  Star,
+  Users,
+  Clock,
+  Bed,
+  Bath,
+  Utensils,
+  Calendar,
+  Truck,
+  Shield,
+  Building,
+  Wifi,
+  Car,
+  Phone,
+  Mail,
+  CheckCircle,
+  MapIcon,
+  Timer,
+  Award,
+  Package,
+} from "lucide-react";
+
+// Category-specific detail renderers
+const CategoryDetailsRenderer = ({ service, categoryData, category }) => {
+  switch (category.value) {
+    case "hotels":
+      return <HotelDetails service={service} categoryData={categoryData} />;
+    case "food":
+      return (
+        <RestaurantDetails service={service} categoryData={categoryData} />
+      );
+    case "events":
+      return <EventDetails service={service} categoryData={categoryData} />;
+    case "logistics":
+      return <LogisticsDetails service={service} categoryData={categoryData} />;
+    case "security":
+      return <SecurityDetails service={service} categoryData={categoryData} />;
+    default:
+      return <GenericDetails service={service} categoryData={categoryData} />;
+  }
+};
+
+// Hotel-specific details
+const HotelDetails = ({ service, categoryData }) => (
+  <div className="space-y-8">
+    {/* Room Information */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+        <Building className="w-5 h-5 mr-2 text-brand-600" />
+        Accommodation Details
+      </h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {categoryData.room_type && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Bed className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Room Type</div>
+            <div className="font-semibold capitalize">
+              {categoryData.room_type.replace("_", " ")}
+            </div>
+          </div>
+        )}
+        {service.capacity && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Guests</div>
+            <div className="font-semibold">{service.capacity}</div>
+          </div>
+        )}
+        {categoryData.bedrooms && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Bed className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Bedrooms</div>
+            <div className="font-semibold">{categoryData.bedrooms}</div>
+          </div>
+        )}
+        {categoryData.bathrooms && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Bath className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Bathrooms</div>
+            <div className="font-semibold">{categoryData.bathrooms}</div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Check-in/Check-out */}
+    {(categoryData.check_in_time || categoryData.check_out_time) && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+            <Clock className="w-5 h-5 mr-2 text-brand-600" />
+            Check-in & Check-out
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {categoryData.check_in_time && (
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="font-medium">Check-in</div>
+                  <div className="text-sm text-gray-600">
+                    {categoryData.check_in_time}
+                  </div>
+                </div>
+              </div>
+            )}
+            {categoryData.check_out_time && (
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <div className="font-medium">Check-out</div>
+                  <div className="text-sm text-gray-600">
+                    {categoryData.check_out_time}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Amenities */}
+    {categoryData.amenities && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Hotel Amenities
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {categoryData.amenities.split(",").map((amenity, index) => (
+              <div key={index} className="flex items-center space-x-3">
+                <Wifi className="w-4 h-4 text-brand-600" />
+                <span className="text-sm text-gray-700">{amenity.trim()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+);
+
+// Restaurant-specific details
+const RestaurantDetails = ({ service, categoryData }) => (
+  <div className="space-y-8">
+    {/* Restaurant Information */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+        <Utensils className="w-5 h-5 mr-2 text-brand-600" />
+        Restaurant Details
+      </h3>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {categoryData.cuisine_type && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Utensils className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Cuisine</div>
+            <div className="font-semibold capitalize">
+              {categoryData.cuisine_type.replace("_", " ")}
+            </div>
+          </div>
+        )}
+        {service.capacity && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Seating</div>
+            <div className="font-semibold">{service.capacity} seats</div>
+          </div>
+        )}
+        {service.operating_hours && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Clock className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Hours</div>
+            <div className="font-semibold text-xs">
+              {service.operating_hours}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Service Types */}
+    {categoryData.service_type && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Available Services
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {(Array.isArray(categoryData.service_type)
+              ? categoryData.service_type
+              : [categoryData.service_type]
+            ).map((type, index) => (
+              <span
+                key={index}
+                className="bg-brand-100 text-brand-800 text-sm font-medium px-3 py-1 rounded-full"
+              >
+                {type
+                  .replace("_", " ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
+              </span>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Special Diets */}
+    {categoryData.special_diets && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Dietary Options
+          </h3>
+          <p className="text-gray-600">{categoryData.special_diets}</p>
+        </div>
+      </>
+    )}
+
+    {/* Delivery Areas */}
+    {categoryData.delivery_areas && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+            <MapIcon className="w-5 h-5 mr-2 text-brand-600" />
+            Delivery Areas
+          </h3>
+          <p className="text-gray-600">{categoryData.delivery_areas}</p>
+        </div>
+      </>
+    )}
+  </div>
+);
+
+// Event-specific details
+const EventDetails = ({ service, categoryData }) => (
+  <div className="space-y-8">
+    {/* Event Information */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+        <Calendar className="w-5 h-5 mr-2 text-brand-600" />
+        Event Service Details
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {service.capacity && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Max Guests</div>
+            <div className="font-semibold">{service.capacity}</div>
+          </div>
+        )}
+        {service.duration && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Timer className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Duration</div>
+            <div className="font-semibold">{service.duration}</div>
+          </div>
+        )}
+        {categoryData.advance_booking && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Calendar className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Advance Booking</div>
+            <div className="font-semibold">{categoryData.advance_booking}</div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Event Types */}
+    {categoryData.event_types && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Event Types We Handle
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {(Array.isArray(categoryData.event_types)
+              ? categoryData.event_types
+              : [categoryData.event_types]
+            ).map((type, index) => (
+              <span
+                key={index}
+                className="bg-brand-100 text-brand-800 text-sm font-medium px-3 py-1 rounded-full"
+              >
+                {type
+                  .replace("_", " ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
+              </span>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Services Included */}
+    {categoryData.services_included && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Services Included
+          </h3>
+          <p className="text-gray-600">{categoryData.services_included}</p>
+        </div>
+      </>
+    )}
+
+    {/* Equipment Provided */}
+    {categoryData.equipment_provided && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Equipment & Items Provided
+          </h3>
+          <p className="text-gray-600">{categoryData.equipment_provided}</p>
+        </div>
+      </>
+    )}
+  </div>
+);
+
+// Logistics-specific details
+const LogisticsDetails = ({ service, categoryData }) => (
+  <div className="space-y-8">
+    {/* Logistics Information */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+        <Truck className="w-5 h-5 mr-2 text-brand-600" />
+        Logistics Service Details
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {categoryData.weight_limit && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Package className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Weight Limit</div>
+            <div className="font-semibold">{categoryData.weight_limit}</div>
+          </div>
+        )}
+        {categoryData.delivery_time && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Timer className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Delivery Time</div>
+            <div className="font-semibold">{categoryData.delivery_time}</div>
+          </div>
+        )}
+        {categoryData.tracking_available && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <MapIcon className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Tracking</div>
+            <div className="font-semibold capitalize">
+              {categoryData.tracking_available}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Service Types */}
+    {categoryData.service_types && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Available Services
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {(Array.isArray(categoryData.service_types)
+              ? categoryData.service_types
+              : [categoryData.service_types]
+            ).map((type, index) => (
+              <span
+                key={index}
+                className="bg-brand-100 text-brand-800 text-sm font-medium px-3 py-1 rounded-full"
+              >
+                {type
+                  .replace("_", " ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
+              </span>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Vehicle Types */}
+    {categoryData.vehicle_types && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+            <Car className="w-5 h-5 mr-2 text-brand-600" />
+            Available Vehicles
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {(Array.isArray(categoryData.vehicle_types)
+              ? categoryData.vehicle_types
+              : [categoryData.vehicle_types]
+            ).map((vehicle, index) => (
+              <span
+                key={index}
+                className="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full"
+              >
+                {vehicle
+                  .replace("_", " ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
+              </span>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Insurance Coverage */}
+    {categoryData.insurance_covered && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Insurance Coverage
+          </h3>
+          <div className="flex items-center space-x-3">
+            <Shield className="w-5 h-5 text-brand-600" />
+            <span className="text-gray-700 capitalize">
+              {categoryData.insurance_covered.replace("_", " ")}
+            </span>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+);
+
+// Security-specific details
+const SecurityDetails = ({ service, categoryData }) => (
+  <div className="space-y-8">
+    {/* Security Information */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+        <Shield className="w-5 h-5 mr-2 text-brand-600" />
+        Security Service Details
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {categoryData.team_size && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Team Size</div>
+            <div className="font-semibold">{categoryData.team_size}</div>
+          </div>
+        )}
+        {categoryData.experience_years && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Award className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Experience</div>
+            <div className="font-semibold">
+              {categoryData.experience_years} years
+            </div>
+          </div>
+        )}
+        {categoryData.response_time && (
+          <div className="bg-gray-50 p-4 rounded-lg text-center">
+            <Timer className="w-6 h-6 mx-auto mb-2 text-brand-600" />
+            <div className="text-sm text-gray-600">Response Time</div>
+            <div className="font-semibold">{categoryData.response_time}</div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Security Types */}
+    {categoryData.security_types && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Security Services
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {(Array.isArray(categoryData.security_types)
+              ? categoryData.security_types
+              : [categoryData.security_types]
+            ).map((type, index) => (
+              <span
+                key={index}
+                className="bg-brand-100 text-brand-800 text-sm font-medium px-3 py-1 rounded-full"
+              >
+                {type
+                  .replace("_", " ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
+              </span>
+            ))}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Duration Options */}
+    {categoryData.duration && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Service Duration Options
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {Array.isArray(categoryData.duration) ? (
+              categoryData.duration.map((dur, index) => (
+                <span
+                  key={index}
+                  className="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full"
+                >
+                  {dur
+                    .replace("_", " ")
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}
+                </span>
+              ))
+            ) : (
+              <span className="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">
+                {String(categoryData.duration)
+                  .replace("_", " ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
+              </span>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+
+    {/* Certifications */}
+    {categoryData.certifications && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Certifications & Licenses
+          </h3>
+          <p className="text-gray-600">{categoryData.certifications}</p>
+        </div>
+      </>
+    )}
+
+    {/* Equipment */}
+    {categoryData.equipment && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Equipment & Technology
+          </h3>
+          <p className="text-gray-600">{categoryData.equipment}</p>
+        </div>
+      </>
+    )}
+
+    {/* Background Check */}
+    {categoryData.background_check && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Background Verification
+          </h3>
+          <div className="flex items-center space-x-3">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            <span className="text-gray-700 capitalize">
+              {categoryData.background_check.replace("_", " ")}
+            </span>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+);
+
+// Generic details fallback
+const GenericDetails = ({ service, categoryData }) => (
+  <div className="space-y-8">
+    {categoryData.features && categoryData.features.length > 0 && (
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">
+          Features & Amenities
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {categoryData.features.map((feature, index) => (
+            <div key={index} className="flex items-center space-x-3">
+              <div className="w-5 h-5 bg-success-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-3 h-3 text-success-600" />
+              </div>
+              <span className="text-sm text-gray-700">{feature}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
 
 export default function ServiceDetailClient({ service }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const category = CATEGORIES.find((cat) => cat.value === service.category);
-  console.log(service);
+  const categoryData = extractCategoryData(service);
+
+  console.log("Service:", service);
+  console.log("Category Data:", categoryData);
+
   return (
     <div className="container py-8">
       <div className="mb-6">
@@ -17,7 +641,6 @@ export default function ServiceDetailClient({ service }) {
           href="/services"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-brand-600 transition-colors"
         >
-          {/* Back button icon */}
           Back to Services
         </Link>
       </div>
@@ -76,17 +699,7 @@ export default function ServiceDetailClient({ service }) {
                   </span>
                   {service.active && (
                     <span className="bg-success-100 text-success-800 text-xs font-semibold px-3 py-1 rounded-full flex items-center">
-                      <svg
-                        className="w-3 h-3 mr-1"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <CheckCircle className="w-3 h-3 mr-1" />
                       Verified
                     </span>
                   )}
@@ -118,62 +731,50 @@ export default function ServiceDetailClient({ service }) {
                 </p>
               </div>
 
-              {/* Features & Amenities */}
-              {service.features?.length > 0 && (
-                <>
-                  <hr className="border-gray-200" />
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 text-gray-900">
-                      Features & Amenities
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {service.features.map((feature, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-3"
-                        >
-                          <div className="w-5 h-5 bg-success-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <svg
-                              className="w-3 h-3 text-success-600"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
-                          <span className="text-sm t ext-gray-700">
-                            {feature}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
+              {/* Category-specific details */}
+              <hr className="border-gray-200" />
+              <CategoryDetailsRenderer
+                service={service}
+                categoryData={categoryData}
+                category={category}
+              />
 
               {/* Requirements */}
-              {service.requirements?.length > 0 && (
+              {categoryData.requirements &&
+                categoryData.requirements.length > 0 && (
+                  <>
+                    <hr className="border-gray-200" />
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                        Requirements
+                      </h3>
+                      <ul className="space-y-2">
+                        {categoryData.requirements.map((requirement, index) => (
+                          <li
+                            key={index}
+                            className="text-sm text-gray-600 flex items-start"
+                          >
+                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                            {requirement}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                )}
+
+              {/* Service Areas */}
+              {service.service_areas && (
                 <>
                   <hr className="border-gray-200" />
                   <div>
-                    <h3 className="text-lg font-semibold mb-4 text-gray-900">
-                      Requirements
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+                      <MapIcon className="w-5 h-5 mr-2 text-brand-600" />
+                      Service Areas
                     </h3>
-                    <ul className="space-y-2">
-                      {service.requirements.map((requirement, index) => (
-                        <li
-                          key={index}
-                          className="text-sm text-gray-600 flex items-start"
-                        >
-                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                          {requirement}
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {service.service_areas}
+                    </p>
                   </div>
                 </>
               )}
@@ -212,17 +813,7 @@ export default function ServiceDetailClient({ service }) {
                     </h4>
                     {service.vendor.approved && (
                       <span className="bg-success-100 text-success-800 text-xs font-semibold px-3 py-1 rounded-full flex items-center">
-                        <svg
-                          className="w-3 h-3 mr-1"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <CheckCircle className="w-3 h-3 mr-1" />
                         Verified
                       </span>
                     )}
@@ -231,13 +822,7 @@ export default function ServiceDetailClient({ service }) {
                   <div className="space-y-3">
                     {service.vendor.phone && (
                       <div className="flex items-center space-x-3 text-sm">
-                        <svg
-                          className="w-4 h-4 text-gray-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                        </svg>
+                        <Phone className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-700">
                           {service.vendor.phone}
                         </span>
@@ -245,14 +830,7 @@ export default function ServiceDetailClient({ service }) {
                     )}
                     {service.vendor.email && (
                       <div className="flex items-center space-x-3 text-sm">
-                        <svg
-                          className="w-4 h-4 text-gray-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                        </svg>
+                        <Mail className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-700">
                           {service.vendor.email}
                         </span>
@@ -274,7 +852,15 @@ export default function ServiceDetailClient({ service }) {
                   ₦{service.price.toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {service.duration || "Per session"}
+                  {service.price_unit === "per_hour"
+                    ? "per hour"
+                    : service.price_unit === "per_day"
+                      ? "per day"
+                      : service.price_unit === "per_person"
+                        ? "per person"
+                        : service.price_unit === "per_km"
+                          ? "per km"
+                          : service.duration || "Per session"}
                 </div>
               </div>
               <span
@@ -297,17 +883,7 @@ export default function ServiceDetailClient({ service }) {
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Calendar className="w-4 h-4 mr-2" />
                 {service.availability === "available"
                   ? "Book Now"
                   : "Currently Unavailable"}
@@ -355,13 +931,7 @@ export default function ServiceDetailClient({ service }) {
                     href={`tel:${service.vendor.phone}`}
                     className="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-brand-300 transition-colors"
                   >
-                    <svg
-                      className="w-4 h-4 mr-2 text-gray-500"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                    </svg>
+                    <Phone className="w-4 h-4 mr-2 text-gray-500" />
                     Call Vendor
                   </a>
                 )}
@@ -370,14 +940,7 @@ export default function ServiceDetailClient({ service }) {
                     href={`mailto:${service.vendor.email}`}
                     className="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-brand-300 transition-colors"
                   >
-                    <svg
-                      className="w-4 h-4 mr-2 text-gray-500"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
+                    <Mail className="w-4 h-4 mr-2 text-gray-500" />
                     Send Message
                   </a>
                 )}

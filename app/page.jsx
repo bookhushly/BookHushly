@@ -281,67 +281,7 @@ export default function Home() {
 
       {/* Trust Indicators */}
       {/* Trust Indicators */}
-      <section className="py-16 bg-blue-50">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 text-blue-900">
-              Trusted by Leading African Businesses
-            </h2>
-            <p className="text-blue-700 max-w-2xl mx-auto">
-              Join thousands of satisfied customers and verified service
-              providers across the continent
-            </p>
-          </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center mb-12">
-            <div className="flex items-center justify-center">
-              <div className="h-14 px-8 bg-white border-2 border-blue-200 flex items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 shadow-sm hover:shadow-md">
-                <span className="text-blue-800 font-semibold text-sm tracking-wide">
-                  FLUTTERWAVE
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center justify-center">
-              <div className="h-14 px-8 bg-white border-2 border-green-200 flex items-center justify-center hover:border-green-400 hover:bg-green-50 transition-all duration-300 shadow-sm hover:shadow-md">
-                <span className="text-green-800 font-semibold text-sm tracking-wide">
-                  JUMIA
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center justify-center">
-              <div className="h-14 px-8 bg-white border-2 border-purple-200 flex items-center justify-center hover:border-purple-400 hover:bg-purple-50 transition-all duration-300 shadow-sm hover:shadow-md">
-                <span className="text-purple-800 font-semibold text-sm tracking-wide">
-                  KONGA
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center justify-center">
-              <div className="h-14 px-8 bg-white border-2 border-orange-200 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-all duration-300 shadow-sm hover:shadow-md">
-                <span className="text-orange-800 font-semibold text-sm tracking-wide">
-                  PAYSTACK
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border border-blue-200 p-8 shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div className="p-4 bg-blue-600 text-white rounded-lg">
-                <div className="text-3xl font-bold mb-2">25,000+</div>
-                <div className="text-blue-100 text-sm">Active Users</div>
-              </div>
-              <div className="p-4 bg-purple-600 text-white rounded-lg">
-                <div className="text-3xl font-bold mb-2">12</div>
-                <div className="text-purple-100 text-sm">African Countries</div>
-              </div>
-              <div className="p-4 bg-yellow-500 text-white rounded-lg">
-                <div className="text-3xl font-bold mb-2">4.8/5</div>
-                <div className="text-yellow-100 text-sm">Customer Rating</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
       {/* Featured Services */}
       <section className="py-20 bg-white">
         <div className="container">
@@ -501,58 +441,6 @@ export default function Home() {
         </div>
       </section>
       {/* Testimonials Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-green-100 text-green-800 border-green-200">
-              Customer Stories
-            </Badge>
-            <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              What Our Community Says
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Real experiences from customers and vendors who trust Bookhushly
-              for their service needs
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card
-                key={index}
-                className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white"
-              >
-                <CardHeader>
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">{testimonial.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {testimonial.role} • {testimonial.company}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-1">
-                    {Array.from({ length: testimonial.rating }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 text-yellow-500 fill-current"
-                      />
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground italic">
-                    "{testimonial.content}"
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-blue-900 text-white relative overflow-hidden">

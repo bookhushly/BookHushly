@@ -8,8 +8,6 @@ export async function middleware(req) {
     const supabase = createMiddlewareClient({ req, res });
     await supabase.auth.getSession();
   } catch (error) {
-    console.error("Middleware auth error:", error);
-    // Optionally clear invalid cookies
     res.cookies.set("sb-auth-token", "", {
       path: "/",
       expires: new Date(0),

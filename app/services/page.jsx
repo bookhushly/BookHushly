@@ -32,9 +32,17 @@ import {
   Search,
   Star,
   Verified,
+  Users,
+  Clock,
+  Shield,
+  Truck,
+  Utensils,
+  Building,
+  Calendar,
 } from "lucide-react";
 
 import { CATEGORIES } from "@/lib/constants";
+import { extractCategoryData } from "@/lib/category-forms";
 import { supabase } from "@/lib/supabase";
 
 function ServicesContent() {
@@ -76,7 +84,7 @@ function ServicesContent() {
           .select("*")
           .eq("active", true)
           .order("created_at", { ascending: false });
-
+        console.log(data);
         if (error) throw error;
 
         setListings(data);
@@ -106,7 +114,10 @@ function ServicesContent() {
         (l) =>
           l.title.toLowerCase().includes(q) ||
           l.description.toLowerCase().includes(q) ||
-          l.location.toLowerCase().includes(q)
+          l.location.toLowerCase().includes(q) ||
+          (l.features && l.features.toLowerCase().includes(q)) ||
+          (l.category_data &&
+            JSON.stringify(l.category_data).toLowerCase().includes(q))
       );
     }
 
@@ -125,6 +136,140 @@ function ServicesContent() {
     setFiltered(result);
   }, [listings, searchQuery, selectedCategory, selectedLocation, loading]);
 
+  const getPublicImageUrl = (path) => {
+    if (!path) return null;
+    // Extract the path after 'listing-images/'
+    const pathParts = path.split("listing-images/");
+    const filePath = pathParts.length > 1 ? pathParts[1] : path;
+
+    const { data } = supabase.storage
+      .from("listing-images")
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
+  // Updated getServiceImage function
+  const getServiceImage = (service) => {
+    // Check if media_urls exists and has at least one URL
+    if (service.media_urls && service.media_urls.length > 0) {
+      const publicUrl = getPublicImageUrl(service.media_urls[0]);
+      return publicUrl || "/placeholder.jpg";
+    }
+
+    // Fallback to category image if no service image
+    const category = CATEGORIES.find((c) => c.value === service.category);
+    return category?.image || "/placeholder.jpg";
+  };
+
+  // Get category-specific details for display
+  const getCategorySpecificInfo = (service) => {
+    const categoryData = extractCategoryData(service);
+    const category = service.category;
+
+    switch (category) {
+      case "hotels":
+        return {
+          icon: <Building className="h-4 w-4" />,
+          details: [
+            service.capacity && `${service.capacity} guests`,
+            categoryData.room_type && `${categoryData.room_type} room`,
+            categoryData.bedrooms && `${categoryData.bedrooms} bedrooms`,
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          priceLabel: "per night",
+        };
+
+      case "food":
+        return {
+          icon: <Utensils className="h-4 w-4" />,
+          details: [
+            categoryData.cuisine_type && categoryData.cuisine_type,
+            service.capacity && `${service.capacity} seats`,
+            service.operating_hours && service.operating_hours,
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          priceLabel: "per person",
+        };
+
+      case "events":
+        return {
+          icon: <Calendar className="h-4 w-4" />,
+          details: [
+            service.capacity && `Up to ${service.capacity} guests`,
+            service.duration && service.duration,
+            categoryData.event_types &&
+              categoryData.event_types.slice(0, 2).join(", "),
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          priceLabel: "starting from",
+        };
+
+      case "logistics":
+        return {
+          icon: <Truck className="h-4 w-4" />,
+          details: [
+            categoryData.service_types &&
+              categoryData.service_types.slice(0, 2).join(", "),
+            categoryData.weight_limit && `Max: ${categoryData.weight_limit}`,
+            service.service_areas && "Multiple areas",
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          priceLabel: "starting from",
+        };
+
+      case "security":
+        return {
+          icon: <Shield className="h-4 w-4" />,
+          details: [
+            categoryData.security_types &&
+              categoryData.security_types.slice(0, 2).join(", "),
+            categoryData.team_size && categoryData.team_size,
+            categoryData.response_time &&
+              `Response: ${categoryData.response_time}`,
+          ]
+            .filter(Boolean)
+            .join(" • "),
+          priceLabel:
+            service.price_unit === "per_hour" ? "per hour" : "starting from",
+        };
+
+      default:
+        return {
+          icon: <Star className="h-4 w-4" />,
+          details: service.features ? service.features.split("\n")[0] : "",
+          priceLabel: "starting from",
+        };
+    }
+  };
+
+  // Format price based on category
+  const formatPrice = (service) => {
+    const price = Number(service.price);
+    const priceUnit = service.price_unit || "fixed";
+
+    if (priceUnit === "fixed" || priceUnit === "per_event") {
+      return `₦${price.toLocaleString()}`;
+    } else {
+      const unitLabel =
+        {
+          per_hour: "/hr",
+          per_day: "/day",
+          per_person: "/person",
+          per_km: "/km",
+          negotiable: "",
+        }[priceUnit] || "";
+
+      return priceUnit === "negotiable"
+        ? "Negotiable"
+        : `₦${price.toLocaleString()}${unitLabel}`;
+    }
+  };
+
   if (loading) {
     return <ServicesLoading />;
   }
@@ -135,7 +280,9 @@ function ServicesContent() {
         <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-brand-600 to-brand-800 bg-clip-text text-transparent">
           {searchQuery
             ? `Results for "${searchQuery}"`
-            : "Browse Premium Services"}
+            : selectedCategory !== "all"
+              ? `${CATEGORIES.find((c) => c.value === selectedCategory)?.label || selectedCategory} Services`
+              : "Browse Premium Services"}
         </h1>
         <p className="text-lg text-muted-foreground">
           Discover quality hospitality, logistics, and security services across
@@ -169,11 +316,15 @@ function ServicesContent() {
               setSelectedCategory(value);
               // Update URL without page reload
               const params = new URLSearchParams(searchParams.toString());
-              params.set("category", value);
+              if (value === "all") {
+                params.delete("category");
+              } else {
+                params.set("category", value);
+              }
               window.history.pushState(null, "", `?${params.toString()}`);
             }}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -192,11 +343,15 @@ function ServicesContent() {
               setSelectedLocation(value);
               // Update URL without page reload
               const params = new URLSearchParams(searchParams.toString());
-              params.set("location", value);
+              if (value === "all") {
+                params.delete("location");
+              } else {
+                params.set("location", value);
+              }
               window.history.pushState(null, "", `?${params.toString()}`);
             }}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="All Locations" />
             </SelectTrigger>
             <SelectContent>
@@ -220,6 +375,12 @@ function ServicesContent() {
           <p>
             Showing <b>{filtered.length}</b> of <b>{listings.length}</b>{" "}
             services
+            {selectedCategory !== "all" && (
+              <span className="text-muted-foreground">
+                {" "}
+                in {CATEGORIES.find((c) => c.value === selectedCategory)?.label}
+              </span>
+            )}
           </p>
           <div className="space-x-2">
             <Button
@@ -277,46 +438,128 @@ function ServicesContent() {
               CATEGORIES.find((c) => c.value === service.category) || {};
             const isPremium = service.price > 100000;
             const isVerified = service.active;
+            const serviceImage = getServiceImage(service);
+            const categoryInfo = getCategorySpecificInfo(service);
+            const formattedPrice = formatPrice(service);
 
             return (
               <Link key={service.id} href={`/services/${service.id}`} passHref>
-                <Card className="hover:shadow-lg transition-shadow">
-                  <div className="relative w-full h-48">
+                <Card
+                  className={`hover:shadow-lg transition-all duration-300 ${
+                    viewMode === "list" ? "flex flex-row" : ""
+                  }`}
+                >
+                  <div
+                    className={`relative ${
+                      viewMode === "list" ? "w-64 h-48" : "w-full h-48"
+                    }`}
+                  >
                     <Image
-                      src={category.image || "/placeholder.jpg"}
-                      alt={category.alt || "Service image"}
+                      src={serviceImage}
+                      alt={`${service.title} service image`}
                       fill
-                      className="object-cover rounded-t"
+                      className={`object-cover ${
+                        viewMode === "list" ? "rounded-l" : "rounded-t"
+                      }`}
+                      priority={false}
+                      unoptimized={process.env.NODE_ENV !== "production"}
+                      onError={(e) => {
+                        const category = CATEGORIES.find(
+                          (c) => c.value === service.category
+                        );
+                        e.currentTarget.src =
+                          category?.image || "/placeholder.jpg";
+                        e.currentTarget.onerror = null;
+                      }}
                     />
                     {isPremium && (
-                      <Badge className="absolute top-2 left-2">Premium</Badge>
+                      <Badge className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 to-yellow-600">
+                        ✨ Premium
+                      </Badge>
                     )}
-                    <div className="absolute top-2 right-2 flex items-center text-xs bg-white/80 rounded-full p-1">
-                      <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                    <div className="absolute top-2 right-2 flex items-center text-xs bg-white/90 rounded-full px-2 py-1">
+                      <Star className="h-3 w-3 text-yellow-500 mr-1 fill-current" />
                       4.8
                     </div>
+                    <Badge
+                      variant="secondary"
+                      className="absolute bottom-2 left-2 bg-black/70 text-white"
+                    >
+                      {category.icon} {category.label}
+                    </Badge>
                   </div>
-                  <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <CardTitle>{service.title}</CardTitle>
-                      {isVerified && (
-                        <Verified className="h-4 w-4 text-blue-500" />
+
+                  <div className={viewMode === "list" ? "flex-1" : ""}>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <CardTitle className="text-lg line-clamp-1">
+                              {service.title}
+                            </CardTitle>
+                            {isVerified && (
+                              <Verified className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center mb-2">
+                            <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                            {service.location}
+                          </div>
+                          {categoryInfo.details && (
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              {categoryInfo.icon}
+                              <span className="ml-1 line-clamp-1">
+                                {categoryInfo.details}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="pt-0">
+                      <CardDescription className="line-clamp-2 mb-4">
+                        {service.description}
+                      </CardDescription>
+
+                      {/* Category-specific features */}
+                      {service.features && (
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {service.features
+                            .split("\n")
+                            .slice(0, 2)
+                            .map((feature, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-xs py-0 px-2"
+                              >
+                                {feature.split(":")[0]}
+                              </Badge>
+                            ))}
+                        </div>
                       )}
-                    </div>
-                    <div className="text-sm text-muted-foreground flex items-center">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {service.location}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>{service.description}</CardDescription>
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="text-lg font-bold">
-                        ₦{Number(service.price).toLocaleString()}
-                      </span>
-                      <Button size="sm">View</Button>
-                    </div>
-                  </CardContent>
+
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-lg font-bold">
+                            {formattedPrice}
+                          </span>
+                          {categoryInfo.priceLabel && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              {categoryInfo.priceLabel}
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          className="bg-brand-600 hover:bg-brand-700"
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </div>
                 </Card>
               </Link>
             );

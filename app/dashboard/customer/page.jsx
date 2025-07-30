@@ -26,6 +26,7 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  Eye,
 } from "lucide-react";
 import Link from "next/link";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -33,6 +34,7 @@ import { ReviewForm } from "@/components/reviews/review-form";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { getBookings } from "@/lib/database";
+import { BookingDetailsModal } from "@/components/BookingDetailsModal";
 
 export default function CustomerDashboard() {
   const { user } = useAuthStore();
@@ -45,6 +47,10 @@ export default function CustomerDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Add these handler functions
 
   useEffect(() => {
     const loadCustomerData = async () => {
@@ -54,12 +60,14 @@ export default function CustomerDashboard() {
         setLoading(true);
 
         const { data, error } = await getBookings(user.id, "customer");
+        console.log(data);
 
         if (error) {
           toast.error("Failed to fetch bookings");
           console.error("Fetch bookings error:", error);
           return;
         }
+        console.log("Fetched bookings:", data);
 
         setBookings(data || []);
 
@@ -115,6 +123,16 @@ export default function CustomerDashboard() {
       default:
         return <AlertCircle className="h-4 w-4" />;
     }
+  };
+
+  const handleViewDetails = (bookingId) => {
+    setSelectedBookingId(bookingId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedBookingId(null);
   };
 
   if (loading) {
@@ -220,25 +238,17 @@ export default function CustomerDashboard() {
                       Browse Services
                     </Link>
                   </Button>
+
                   <Button
                     variant="outline"
                     asChild
                     className="w-full justify-start"
+                    onClick={() => setActiveTab("favorites")}
                   >
-                    <Link href="/search">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      Search by Location
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    asChild
-                    className="w-full justify-start"
-                  >
-                    <Link href="/dashboard/customer?tab=favorites">
+                    <span>
                       <Heart className="mr-2 h-4 w-4" />
                       View Favorites
-                    </Link>
+                    </span>
                   </Button>
                 </CardContent>
               </Card>
@@ -285,7 +295,12 @@ export default function CustomerDashboard() {
                           </Badge>
                         </div>
                       ))}
-                      <Button variant="outline" asChild className="w-full">
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="w-full"
+                        onClick={() => setActiveTab("bookings")}
+                      >
                         <Link href="/dashboard/customer?tab=bookings">
                           View All Bookings
                         </Link>
@@ -298,27 +313,28 @@ export default function CustomerDashboard() {
           </TabsContent>
 
           <TabsContent value="bookings" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">My Bookings</h2>
-              <Button asChild>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <h2 className="text-xl sm:text-2xl font-bold">My Bookings</h2>
+              <Button asChild className="w-full sm:w-auto">
                 <Link href="/services">
                   <Calendar className="mr-2 h-4 w-4" />
-                  Book New Service
+                  <span className="hidden xs:inline">Book New Service</span>
+                  <span className="xs:hidden">Book Service</span>
                 </Link>
               </Button>
             </div>
 
             {bookings.length === 0 ? (
               <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+                  <Calendar className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 text-center">
                     No bookings yet
                   </h3>
-                  <p className="text-muted-foreground text-center mb-4">
+                  <p className="text-sm sm:text-base text-muted-foreground text-center mb-4 max-w-md">
                     Start exploring our services and make your first booking
                   </p>
-                  <Button asChild>
+                  <Button asChild className="w-full sm:w-auto">
                     <Link href="/services">Browse Services</Link>
                   </Button>
                 </CardContent>
@@ -330,95 +346,112 @@ export default function CustomerDashboard() {
                     key={booking.id}
                     className="hover:shadow-lg transition-shadow"
                   >
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">
+                    <CardHeader className="pb-3 sm:pb-6">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base sm:text-lg leading-tight">
                             {booking.listings?.title}
                           </CardTitle>
-                          <CardDescription>
-                            by {booking.listings?.vendors?.business_name}
+                          <CardDescription className="text-sm mt-1">
+                            by {booking.listings?.vendor_name}
                           </CardDescription>
                         </div>
-                        <Badge className={getStatusColor(booking.status)}>
+                        <Badge
+                          className={`${getStatusColor(booking.status)} shrink-0 self-start sm:self-auto`}
+                        >
                           {getStatusIcon(booking.status)}
-                          <span className="ml-1 capitalize">
+                          <span className="ml-1 capitalize text-xs sm:text-sm">
                             {booking.status}
                           </span>
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                        <div className="flex items-center text-sm">
-                          <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <span>
+
+                    <CardContent className="pt-0">
+                      {/* Booking Details Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+                        <div className="flex items-center text-xs sm:text-sm">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-muted-foreground shrink-0" />
+                          <span className="truncate">
                             {format(new Date(booking.booking_date), "PPP")}
                           </span>
                         </div>
-                        <div className="flex items-center text-sm">
-                          <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <div className="flex items-center text-xs sm:text-sm">
+                          <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-muted-foreground shrink-0" />
                           <span>{booking.booking_time}</span>
                         </div>
-                        <div className="flex items-center text-sm">
-                          <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <div className="flex items-center text-xs sm:text-sm">
+                          <User className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-muted-foreground shrink-0" />
                           <span>
                             {booking.guests} guest
                             {booking.guests > 1 ? "s" : ""}
                           </span>
                         </div>
-                        <div className="flex items-center text-sm">
-                          <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <div className="flex items-center text-xs sm:text-sm font-medium">
+                          <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-muted-foreground shrink-0" />
                           <span>₦{booking.total_amount?.toLocaleString()}</span>
                         </div>
                       </div>
 
+                      {/* Special Requests */}
                       {booking.special_requests && (
-                        <div className="mb-4">
-                          <h5 className="font-medium text-sm mb-1">
+                        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                          <h5 className="font-medium text-xs sm:text-sm mb-1">
                             Special Requests:
                           </h5>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                             {booking.special_requests}
                           </p>
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <div className="flex items-center">
-                            <Phone className="h-3 w-3 mr-1" />
-                            <span>{booking.contact_phone}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Mail className="h-3 w-3 mr-1" />
-                            <span>{booking.contact_email}</span>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          {booking.status === "completed" && (
-                            <Button variant="outline" size="sm">
-                              <Star className="h-4 w-4 mr-1" />
-                              Review
-                            </Button>
-                          )}
-                          {booking.status === "pending" && (
-                            <Button variant="outline" size="sm">
-                              Cancel
-                            </Button>
-                          )}
+                      {/* Contact Info and Actions */}
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        {/* Contact Information */}
+
+                        {/* Action Buttons */}
+                        {/* Action Buttons */}
+                        <div className="flex flex-col xs:flex-row gap-2 xs:gap-3 shrink-0">
+                          {/* View Details Button - Always Present */}
                           <Button
                             variant="outline"
-                            size="lg"
-                            asChild
-                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                            size="sm"
+                            onClick={() => handleViewDetails(booking.id)}
+                            className="w-full xs:w-auto"
                           >
-                            <Link
-                              href={`/payments?booking=${booking.id}&reference=${booking.payment_reference}`}
-                            >
-                              Pay now
-                            </Link>
+                            <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            <span className="text-xs sm:text-sm">
+                              View Details
+                            </span>
                           </Button>
+
+                          {booking.status === "completed" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full xs:w-auto"
+                            >
+                              <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <span className="text-xs sm:text-sm">Review</span>
+                            </Button>
+                          )}
+
+                          {booking.status === "confirmed" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="w-full xs:w-auto bg-purple-600 hover:bg-purple-700 text-white border-purple-600 hover:border-purple-700 order-1 xs:order-2"
+                            >
+                              <Link
+                                href={`/payments?booking=${booking.id}&reference=${booking.payment_reference}`}
+                              >
+                                <span className="text-xs sm:text-sm font-medium">
+                                  Pay Now
+                                </span>
+                              </Link>
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -426,6 +459,11 @@ export default function CustomerDashboard() {
                 ))}
               </div>
             )}
+            <BookingDetailsModal
+              isOpen={isModalOpen}
+              onClose={handleCloseModal}
+              bookingId={selectedBookingId}
+            />
           </TabsContent>
 
           <TabsContent value="favorites" className="space-y-6">

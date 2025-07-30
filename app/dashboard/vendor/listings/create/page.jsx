@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import {
@@ -23,9 +23,14 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuthStore, useListingStore } from "@/lib/store";
-import { createListing } from "@/lib/database";
+import { createListing, getVendorProfile } from "@/lib/database";
 import { CATEGORIES } from "@/lib/constants";
+import {
+  getCategoryFormConfig,
+  prepareCategoryData,
+} from "@/lib/category-forms";
 import {
   ArrowLeft,
   Upload,
@@ -41,35 +46,85 @@ import { toast } from "sonner";
 
 export default function CreateListingPage() {
   const { user } = useAuthStore();
+  const [vendor, setVendor] = useState([]);
   const { addListing } = useListingStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "",
-    price: "",
-    location: "",
-    capacity: "",
-    duration: "",
-    availability: "available",
-    features: "",
-    requirements: "",
-    cancellation_policy: "",
-    media_urls: [],
-  });
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [formData, setFormData] = useState({});
   const [error, setError] = useState("");
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
 
+  // Get current category configuration
+  const categoryConfig = selectedCategory
+    ? getCategoryFormConfig(selectedCategory)
+    : null;
+
+  useEffect(() => {
+    const fetchVendorProfile = async () => {
+      const { data, error } = await getVendorProfile(user.id);
+
+      if (error) {
+        setError(error);
+      } else {
+        setVendor(data);
+      }
+    };
+
+    if (user?.id) {
+      fetchVendorProfile();
+    }
+  }, [user?.id]);
+
+  // Initialize form data when category changes
+  useEffect(() => {
+    if (selectedCategory && categoryConfig) {
+      const initialData = {};
+      categoryConfig.fields.forEach((field) => {
+        if (field.type === "multiselect") {
+          initialData[field.name] = [];
+        } else {
+          initialData[field.name] = "";
+        }
+      });
+      initialData.availability = "available";
+      setFormData(initialData);
+    }
+  }, [selectedCategory, categoryConfig]);
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setError("");
+  };
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
     if (error) setError("");
   };
+
+  const handleMultiSelectChange = (fieldName, value, checked) => {
+    setFormData((prev) => {
+      const currentValues = prev[fieldName] || [];
+      if (checked) {
+        return {
+          ...prev,
+          [fieldName]: [...currentValues, value],
+        };
+      } else {
+        return {
+          ...prev,
+          [fieldName]: currentValues.filter((v) => v !== value),
+        };
+      }
+    });
+    if (error) setError("");
+  };
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []);
     setImages(files);
@@ -87,14 +142,32 @@ export default function CreateListingPage() {
   };
 
   const validateForm = () => {
-    const required = ["title", "description", "category", "price", "location"];
-    for (const field of required) {
-      if (!formData[field].trim()) {
-        setError(`${field.replace("_", " ")} is required`);
-        return false;
+    if (!selectedCategory) {
+      setError("Please select a category");
+      return false;
+    }
+
+    if (!categoryConfig) {
+      setError("Invalid category selected");
+      return false;
+    }
+
+    // Validate required fields
+    for (const field of categoryConfig.fields) {
+      if (field.required) {
+        const value = formData[field.name];
+        if (
+          !value ||
+          (typeof value === "string" && !value.trim()) ||
+          (Array.isArray(value) && value.length === 0)
+        ) {
+          setError(`${field.label} is required`);
+          return false;
+        }
       }
     }
 
+    // Validate price
     if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
       setError("Please enter a valid price");
       return false;
@@ -135,12 +208,20 @@ export default function CreateListingPage() {
     try {
       const uploadedImageUrls = await uploadImages();
 
+      // Prepare data based on category
+      const categoryData = prepareCategoryData(
+        {
+          ...formData,
+          media_urls: uploadedImageUrls,
+        },
+        selectedCategory
+      );
+
       const listingData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        capacity: formData.capacity ? parseInt(formData.capacity) : null,
-        media_urls: uploadedImageUrls,
+        ...categoryData,
         vendor_id: user.id,
+        vendor_name: vendor.business_name,
+        vendor_phone: vendor.phone_number,
         active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -170,6 +251,104 @@ export default function CreateListingPage() {
     }
   };
 
+  const renderField = (field) => {
+    const value =
+      formData[field.name] || (field.type === "multiselect" ? [] : "");
+
+    switch (field.type) {
+      case "text":
+      case "url":
+      case "time":
+        return (
+          <Input
+            id={field.name}
+            name={field.name}
+            type={field.type}
+            placeholder={field.placeholder}
+            value={value}
+            onChange={handleChange}
+            required={field.required}
+          />
+        );
+
+      case "number":
+        return (
+          <Input
+            id={field.name}
+            name={field.name}
+            type="number"
+            placeholder={field.placeholder}
+            value={value}
+            onChange={handleChange}
+            min={field.name === "price" ? "0" : undefined}
+            step={field.name === "price" ? "0.01" : undefined}
+            required={field.required}
+          />
+        );
+
+      case "textarea":
+        return (
+          <Textarea
+            id={field.name}
+            name={field.name}
+            placeholder={field.placeholder}
+            value={value}
+            onChange={handleChange}
+            rows={3}
+            required={field.required}
+          />
+        );
+
+      case "select":
+        return (
+          <Select
+            value={value}
+            onValueChange={(val) => handleSelectChange(field.name, val)}
+            required={field.required}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={`Select ${field.label.toLowerCase()}`}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options?.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
+      case "multiselect":
+        return (
+          <div className="space-y-2">
+            {field.options?.map((option) => (
+              <div key={option.value} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${field.name}-${option.value}`}
+                  checked={value.includes(option.value)}
+                  onCheckedChange={(checked) =>
+                    handleMultiSelectChange(field.name, option.value, checked)
+                  }
+                />
+                <Label
+                  htmlFor={`${field.name}-${option.value}`}
+                  className="text-sm font-normal"
+                >
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <AuthGuard requiredRole="vendor">
       <div className="container max-w-4xl py-8">
@@ -194,267 +373,137 @@ export default function CreateListingPage() {
             </Alert>
           )}
 
-          {/* Basic Information */}
+          {/* Category Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
+              <CardTitle>Select Category</CardTitle>
               <CardDescription>
-                Essential details about your service
+                Choose the category that best describes your service
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Service Title *</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  placeholder="e.g., Luxury Hotel Suite, Event Security Service"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            <CardContent>
+              <Select
+                value={selectedCategory}
+                onValueChange={handleCategoryChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      <div className="flex items-center">
+                        <span className="mr-2">{category.icon}</span>
+                        {category.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="Describe your service in detail..."
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  required
-                />
-              </div>
+          {/* Dynamic Form Fields */}
+          {categoryConfig && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{categoryConfig.title}</CardTitle>
+                <CardDescription>{categoryConfig.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {categoryConfig.fields.map((field) => (
+                  <div key={field.name} className="space-y-2">
+                    <Label htmlFor={field.name}>
+                      {field.label}
+                      {field.required && (
+                        <span className="text-red-500 ml-1">*</span>
+                      )}
+                    </Label>
+                    {renderField(field)}
+                  </div>
+                ))}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Availability Status */}
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
+                  <Label htmlFor="availability">Availability Status</Label>
                   <Select
+                    value={formData.availability || "available"}
                     onValueChange={(value) =>
-                      handleSelectChange("category", value)
+                      handleSelectChange("availability", value)
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {CATEGORIES.map((category) => (
-                        <SelectItem key={category.value} value={category.value}>
-                          <div className="flex items-center">
-                            <span className="mr-2">{category.icon}</span>
-                            {category.label}
-                          </div>
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="available">Available</SelectItem>
+                      <SelectItem value="busy">Busy</SelectItem>
+                      <SelectItem value="unavailable">Unavailable</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price (₦) *</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="price"
-                      name="price"
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.price}
-                      onChange={handleChange}
-                      className="pl-10"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Location & Capacity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Service Details</CardTitle>
-              <CardDescription>
-                Location and capacity information
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="location">Location *</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          {/* Media Upload */}
+          {selectedCategory && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Media</CardTitle>
+                <CardDescription>
+                  Upload photos to showcase your service
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="media">Upload Images</Label>
                   <Input
-                    id="location"
-                    name="location"
-                    placeholder="e.g., Victoria Island, Lagos"
-                    value={formData.location}
-                    onChange={handleChange}
-                    className="pl-10"
-                    required
+                    id="media"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="capacity">Capacity (Optional)</Label>
-                  <div className="relative">
-                    <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="capacity"
-                      name="capacity"
-                      type="number"
-                      placeholder="e.g., 50 guests"
-                      value={formData.capacity}
-                      onChange={handleChange}
-                      className="pl-10"
-                      min="1"
-                    />
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    {imagePreviews.map((src, idx) => (
+                      <img
+                        key={idx}
+                        src={src}
+                        alt={`preview-${idx}`}
+                        className="rounded-md object-cover w-full h-32"
+                      />
+                    ))}
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration (Optional)</Label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="duration"
-                      name="duration"
-                      placeholder="e.g., 2 hours, 1 day"
-                      value={formData.duration}
-                      onChange={handleChange}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Additional Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Information</CardTitle>
-              <CardDescription>
-                Features, requirements, and policies
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="features">Features & Amenities</Label>
-                <Textarea
-                  id="features"
-                  name="features"
-                  placeholder="List key features and amenities (e.g., WiFi, AC, Security, etc.)"
-                  value={formData.features}
-                  onChange={handleChange}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="requirements">Requirements</Label>
-                <Textarea
-                  id="requirements"
-                  name="requirements"
-                  placeholder="Any special requirements or conditions"
-                  value={formData.requirements}
-                  onChange={handleChange}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cancellation_policy">Cancellation Policy</Label>
-                <Textarea
-                  id="cancellation_policy"
-                  name="cancellation_policy"
-                  placeholder="Describe your cancellation and refund policy"
-                  value={formData.cancellation_policy}
-                  onChange={handleChange}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="availability">Availability</Label>
-                <Select
-                  value={formData.availability}
-                  onValueChange={(value) =>
-                    handleSelectChange("availability", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="busy">Busy</SelectItem>
-                    <SelectItem value="unavailable">Unavailable</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Media Upload Placeholder */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Media</CardTitle>
-              <CardDescription>
-                Upload photos to showcase your service
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="media">Upload Images</Label>
-                <Input
-                  id="media"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                />
-              </div>
-
-              {imagePreviews.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  {imagePreviews.map((src, idx) => (
-                    <img
-                      key={idx}
-                      src={src}
-                      alt={`preview-${idx}`}
-                      className="rounded-md object-cover w-full h-32"
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Submit Button */}
-          <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" asChild>
-              <Link href="/dashboard/vendor">Cancel</Link>
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <LoadingSpinner className="mr-2 h-4 w-4" />
-                  Creating Listing...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Create Listing
-                </>
-              )}
-            </Button>
-          </div>
+          {selectedCategory && (
+            <div className="flex justify-end space-x-4">
+              <Button type="button" variant="outline" asChild>
+                <Link href="/dashboard/vendor">Cancel</Link>
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <LoadingSpinner className="mr-2 h-4 w-4" />
+                    Creating Listing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Create Listing
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </form>
       </div>
     </AuthGuard>
