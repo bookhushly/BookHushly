@@ -33,12 +33,12 @@ export default function LoginPage() {
   const { user, setUser } = useAuthStore();
   const router = useRouter();
 
-  useEffect(() => {
-    if (user) {
-      const role = user.user_metadata?.role || "customer";
-      router.push(`/dashboard/${role}`);
-    }
-  }, [user, router]);
+  // useEffect(() => {
+  //   if (user) {
+  //     const role = user.user_metadata?.role || "customer";
+  //     router.push(`/dashboard/${role}`);
+  //   }
+  // }, [user, router]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({

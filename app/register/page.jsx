@@ -109,6 +109,9 @@ export default function RegisterPage() {
         userData
       );
 
+      if (data) {
+        router.push(`/login`);
+      }
       if (error) {
         setError(error.message);
         toast.error("Registration failed", {
@@ -133,13 +136,12 @@ export default function RegisterPage() {
           console.error("Profile creation error:", profileError);
           // Don't block registration if profile creation fails
         }
+        router.push(`/login`);
 
         setUser(data.user);
         toast.success("Account created successfully!", {
           description: `Welcome to Bookhushly! Redirecting to your ${formData.role} dashboard...`,
         });
-
-        router.push(`/login`);
       }
     } catch (err) {
       setError("An unexpected error occurred");
