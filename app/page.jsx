@@ -171,7 +171,7 @@ export default function Home() {
                 </span>
               </Badge>
               <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-6">
-                <span className="text-white">Your Hospitality</span>
+                <span className="text-white">Hospitality</span>
                 <span className="block bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-300 bg-clip-text text-transparent">
                   Platform
                 </span>
