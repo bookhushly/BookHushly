@@ -165,11 +165,13 @@ export default function Home() {
           <div className="w-full max-w-4xl mx-auto text-center">
             {/* Heading */}
             <div className="mb-12">
-              <Badge className="mb-6 bg-yellow-400 text-black border-0 px-6 py-2 text-sm font-semibold">
-                🌍 Your Complete
+              <Badge className="mb-6 bg-yellow-400 text-black border-0 px-6 py-2 text-sm font-medium tracking-wide">
+                <span className="font-['Inter',_'SF_Pro_Display',_system-ui,_sans-serif] font-semibold">
+                  Your Journey, Seamlessly Booked
+                </span>
               </Badge>
               <h1 className="text-5xl lg:text-7xl font-bold leading-tight mb-6">
-                <span className="text-white">Hospitality</span>
+                <span className="text-white">Your Hospitality</span>
                 <span className="block bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-300 bg-clip-text text-transparent">
                   Platform
                 </span>

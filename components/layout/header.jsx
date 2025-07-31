@@ -45,14 +45,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b px-4">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="flex items-center space-x-2">
-            <div className="w-48 h-48 relative">
+        <Link href="/" className="flex items-center space-x-2 ">
+          <div className="flex items-center space-x-2 pr-3">
+            <div className="w-28 h-28 relative overflow-visible">
               <Image
-                src="/logo.png" // Replace with actual filename if different
+                src="/logo.png"
                 alt="Bookhushly Logo"
                 fill
-                className="object-contain"
+                className="object-contain scale-150"
                 priority
               />
             </div>

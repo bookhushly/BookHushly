@@ -908,9 +908,14 @@ export default function ServiceDetailClient({ service }) {
                 </div>
 
                 <hr className="border-gray-200" />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span>₦{(service.price * 1.05).toLocaleString()}</span>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span>₦{(service.price * 1.05).toLocaleString()}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-right">
+                    (Includes 5% VAT)
+                  </p>
                 </div>
               </div>
             </div>
