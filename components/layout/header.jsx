@@ -110,7 +110,7 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 hover:text-white"
                   >
                     <User className="h-4 w-4 mr-2" />
                     {user.user_metadata?.name || "Account"}
@@ -146,7 +146,7 @@ export function Header() {
               </Button>
               <Button
                 size="sm"
-                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-semibold"
+                className="bg-purple-700 hover:bg-purple-600 text-white font-semibold"
                 asChild
               >
                 <Link href="/register">Register</Link>

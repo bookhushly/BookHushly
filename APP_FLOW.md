@@ -15,8 +15,9 @@ Bookhushly is a platform that connects customers with verified service providers
 ## 🔄 Complete User Flow
 
 ### 1. Landing & Discovery
+
 ```
-Homepage (/) 
+Homepage (/)
 ├── Browse Services (/services)
 ├── Search Services (/search)
 ├── About Us (/about)
@@ -27,6 +28,7 @@ Homepage (/)
 ```
 
 ### 2. Authentication Flow
+
 ```
 Guest User
 ├── Register (/register)
@@ -50,17 +52,20 @@ Guest User
 ## 🛤️ Customer Journey
 
 ### Phase 1: Discovery
+
 1. **Homepage (/)** - Browse featured services and categories
 2. **Services Page (/services)** - View all available services
 3. **Search (/search)** - Filter by category, location, price
 4. **Service Detail (/services/[id])** - View service details, vendor info, reviews
 
 ### Phase 2: Booking
+
 1. **Book Service (/book/[id])** - Fill booking form with details
 2. **Payment (/payments)** - Choose payment method (Paystack/Flutterwave)
 3. **Confirmation** - Receive booking confirmation
 
 ### Phase 3: Management
+
 1. **Customer Dashboard (/dashboard/customer)**
    - Overview with stats
    - My Bookings tab
@@ -72,6 +77,7 @@ Guest User
 ## 🏢 Vendor Journey
 
 ### Phase 1: Registration & Verification
+
 1. **Register as Vendor (/register)** - Choose vendor role
 2. **KYC Verification (/dashboard/vendor/kyc)**
    - Business Information
@@ -81,6 +87,7 @@ Guest User
 3. **Admin Approval** - Wait for admin to approve KYC
 
 ### Phase 2: Service Management
+
 1. **Vendor Dashboard (/dashboard/vendor)**
    - Overview with stats
    - Quick actions
@@ -94,6 +101,7 @@ Guest User
    - Update pricing and availability
 
 ### Phase 3: Booking Management
+
 1. **Booking Requests (/dashboard/vendor/bookings)**
    - View pending requests
    - Confirm or decline bookings
@@ -107,6 +115,7 @@ Guest User
 ## 👑 Admin Journey
 
 ### Admin Dashboard (/dashboard/admin)
+
 1. **Overview Tab**
    - Platform statistics
    - Pending vendor approvals
@@ -140,15 +149,17 @@ Guest User
 ## 🔐 Authentication & Authorization
 
 ### Route Protection
+
 - **Public Routes**: /, /services, /about, /contact, /help, /blog, /careers
-- **Auth Required**: All /dashboard/* routes
+- **Auth Required**: All /dashboard/\* routes
 - **Role-based Access**:
   - `/dashboard/customer` - Customer role only
-  - `/dashboard/vendor` - Vendor role only  
+  - `/dashboard/vendor` - Vendor role only
   - `/dashboard/admin` - Admin role only
 - **Unauthorized Access**: Redirects to `/unauthorized`
 
 ### Session Management
+
 - Uses Zustand for state management
 - Supabase for authentication
 - Automatic session persistence
@@ -159,6 +170,7 @@ Guest User
 ## 💳 Payment Flow
 
 ### Customer Payment Process
+
 1. **Service Selection** - Choose service and click "Book Now"
 2. **Booking Form** - Fill in booking details and requirements
 3. **Payment Page (/payments)**
@@ -169,6 +181,7 @@ Guest User
 5. **Vendor Notification** - Vendor receives booking request
 
 ### Payment Status Tracking
+
 - **Pending** - Payment initiated
 - **Completed** - Payment successful, booking confirmed
 - **Failed** - Payment failed, booking cancelled
@@ -179,6 +192,7 @@ Guest User
 ## 📱 Key Features
 
 ### For Customers
+
 - ✅ Browse and search services
 - ✅ View detailed service information
 - ✅ Book services with instant confirmation
@@ -188,6 +202,7 @@ Guest User
 - ✅ Notification center
 
 ### For Vendors
+
 - ✅ KYC verification process
 - ✅ Service listing management
 - ✅ Booking request handling
@@ -196,6 +211,7 @@ Guest User
 - ✅ Availability management
 
 ### For Admins
+
 - ✅ Vendor approval workflow
 - ✅ Platform analytics
 - ✅ User management
@@ -207,6 +223,7 @@ Guest User
 ## 🎯 Current Status
 
 ### ✅ Working Features
+
 - Complete UI/UX design
 - Authentication system
 - Role-based access control
@@ -216,13 +233,15 @@ Guest User
 - Notification system (UI)
 
 ### ⚠️ Needs Configuration
+
 - Database connection (Supabase)
 - Payment providers (Paystack/Flutterwave)
-- Email service (SendGrid)
-- SMS service (Twilio)
+- Email service (Resend)
+
 - File upload service (Cloudinary)
 
 ### 🔧 Mock Data Currently Used
+
 - User profiles
 - Service listings
 - Bookings
@@ -235,6 +254,7 @@ Guest User
 ## 🚀 Getting Started
 
 ### For New Users
+
 1. Visit homepage (/)
 2. Click "Register" in header
 3. Choose your role (Customer/Vendor)
@@ -242,11 +262,13 @@ Guest User
 5. Access your dashboard
 
 ### For Existing Users
+
 1. Click "Login" in header
 2. Enter credentials
 3. Automatically redirected to role-specific dashboard
 
 ### Quick Navigation
+
 - **Header**: Always visible with login/register or user menu
 - **Footer**: Links to all main pages
 - **Dashboards**: Role-specific navigation and features

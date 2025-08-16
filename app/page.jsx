@@ -165,7 +165,7 @@ export default function Home() {
           <div className="w-full max-w-4xl mx-auto text-center">
             {/* Heading */}
             <div className="mb-12">
-              <Badge className="mb-6 bg-yellow-400 text-black border-0 px-6 py-2 text-sm font-medium tracking-wide">
+              <Badge className="mb-6 bg-purple-800 hover:bg-purple-800 text-white border-0 px-6 py-2 text-sm font-medium tracking-wide">
                 <span className="font-['Inter',_'SF_Pro_Display',_system-ui,_sans-serif] font-semibold">
                   Your Journey, Seamlessly Booked
                 </span>
@@ -442,13 +442,13 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Testimonials Section */}
+      {/* Testimonials Section *
 
       {/* CTA Section */}
-      <section className="py-20 bg-blue-900 text-white relative overflow-hidden">
+      <section className="py-20 bg-pruple-900 text-white relative overflow-hidden">
         {/* Geometric Background - Modern but not AI-like */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-blue-800"></div>
+          <div className="absolute inset-0 bg-purple-800"></div>
           <div className="absolute top-0 left-0 w-full h-full">
             {/* Subtle diagonal lines */}
             <div className="absolute top-0 left-1/4 w-px h-full bg-white/5 transform rotate-12"></div>
@@ -486,7 +486,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-blue-900 hover:bg-white  px-8 py-4 text-lg transition-all duration-300"
+                className="border-2 border-white text-purple-900 hover:bg-white  px-8 py-4 text-lg transition-all duration-300"
                 asChild
               >
                 <Link href="/services">

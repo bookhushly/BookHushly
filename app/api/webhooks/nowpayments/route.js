@@ -60,7 +60,7 @@ export async function POST(request) {
 async function sendPaymentNotifications(payload) {
   try {
     // You can implement notification logic here
-    // This could include sending emails or SMS confirmations
+
     console.log("Sending payment notifications for:", payload.order_id);
 
     await fetch("/api/send-payment-email", {

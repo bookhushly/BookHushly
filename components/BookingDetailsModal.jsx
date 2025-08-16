@@ -60,7 +60,7 @@ const formatDateTime = (dateString) => {
 const HotelBookingDetails = ({ booking }) => (
   <div className="space-y-6">
     {/* Room Information */}
-    <div className="bg-blue-50 rounded-lg p-6">
+    <div className="bg-purple-50 rounded-lg p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center">
         <Home className="h-5 w-5 mr-2 text-blue-600" />
         Accommodation Details
@@ -233,7 +233,7 @@ const FoodBookingDetails = ({ booking }) => (
 
     {/* Delivery Information */}
     {booking.listings?.category_data?.service_type?.includes("delivery") && (
-      <div className="bg-blue-50 rounded-lg p-6">
+      <div className="bg-purple-50 rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-3 flex items-center">
           <Truck className="h-5 w-5 mr-2 text-blue-600" />
           Delivery Information
@@ -283,7 +283,7 @@ const EventsBookingDetails = ({ booking }) => (
 
     {/* Services Included */}
     {booking.listings?.category_data?.services_included && (
-      <div className="bg-blue-50 rounded-lg p-6">
+      <div className="bg-purple-50 rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center">
           <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
           Services Included
@@ -330,7 +330,7 @@ const EventsBookingDetails = ({ booking }) => (
 const LogisticsBookingDetails = ({ booking }) => (
   <div className="space-y-6">
     {/* Service Information */}
-    <div className="bg-blue-50 rounded-lg p-6">
+    <div className="bg-purple-50 rounded-lg p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center">
         <Truck className="h-5 w-5 mr-2 text-blue-600" />
         Logistics Service Details
@@ -467,7 +467,7 @@ const SecurityBookingDetails = ({ booking }) => (
 
     {/* Qualifications */}
     {booking.listings?.category_data?.certifications && (
-      <div className="bg-blue-50 rounded-lg p-6">
+      <div className="bg-purple-50 rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center">
           <CheckCircle className="h-5 w-5 mr-2 text-blue-600" />
           Certifications & Qualifications
@@ -543,7 +543,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
       case "pending":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "completed":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-purple-100 text-blue-800 border-blue-200";
       case "cancelled":
         return "bg-red-100 text-red-800 border-red-200";
       default:
@@ -710,9 +710,9 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
 
               {/* Special Requests */}
               {booking.special_requests && (
-                <div className="bg-blue-50 rounded-lg p-6">
+                <div className="bg-purple-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold mb-3 flex items-center">
-                    <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                    <FileText className="h-5 w-5 mr-2 text-purple-600" />
                     Special Requests
                   </h3>
                   <p className="text-gray-700 leading-relaxed">

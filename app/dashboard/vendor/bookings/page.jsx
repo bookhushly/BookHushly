@@ -383,7 +383,7 @@ export default function VendorBookingsPage() {
                     .map((booking) => (
                       <Card
                         key={booking.id}
-                        className="border-blue-200 bg-blue-50/50"
+                        className="border-purple-200 bg-purple-50/50"
                       >
                         <CardHeader>
                           <div className="flex justify-between items-start">

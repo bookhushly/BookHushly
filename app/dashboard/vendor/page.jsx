@@ -172,57 +172,65 @@ export default function VendorDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          {/* Total Listings */}
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Listings
               </CardTitle>
-              <Building className="h-4 w-4 text-muted-foreground" />
+              <Building className="h-5 w-5 opacity-80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalListings}</div>
-              <p className="text-xs text-muted-foreground">Active services</p>
+              <div className="text-3xl font-bold">{stats.totalListings}</div>
+              <p className="text-xs opacity-80">Active services</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+          {/* Active Bookings */}
+          <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700">
                 Active Bookings
               </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.activeBookings}</div>
-              <p className="text-xs text-muted-foreground">Current bookings</p>
+              <div className="text-3xl font-bold text-purple-700">
+                {stats.activeBookings}
+              </div>
+              <p className="text-xs text-gray-500">Current bookings</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          {/* Total Revenue */}
+          <Card className="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Revenue
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <DollarSign className="h-5 w-5 opacity-80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold">
                 ₦{stats.totalRevenue.toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">This month</p>
+              <p className="text-xs opacity-80">This month</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+          {/* Pending Requests */}
+          <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700">
                 Pending Requests
               </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Users className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingRequests}</div>
-              <p className="text-xs text-muted-foreground">Awaiting response</p>
+              <div className="text-3xl font-bold text-purple-700">
+                {stats.pendingRequests}
+              </div>
+              <p className="text-xs text-gray-500">Awaiting response</p>
             </CardContent>
           </Card>
         </div>
@@ -291,7 +299,7 @@ export default function VendorDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-4">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="text-sm">Account created</p>
                         <p className="text-xs text-muted-foreground">

@@ -24,28 +24,33 @@ A comprehensive platform connecting customers with verified hospitality, logisti
 ## 📦 Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd bookhushly
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 ```
 
 4. Update `.env` with your Supabase credentials:
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 5. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -87,16 +92,20 @@ The platform supports:
 ## 💳 Payment Integration
 
 ### Paystack Setup
+
 1. Get your API keys from [Paystack Dashboard](https://dashboard.paystack.com)
 2. Add to environment variables:
+
 ```
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_...
 PAYSTACK_SECRET_KEY=sk_test_...
 ```
 
 ### Flutterwave Setup
+
 1. Get your API keys from [Flutterwave Dashboard](https://dashboard.flutterwave.com)
 2. Add to environment variables:
+
 ```
 NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST-...
 FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST-...
@@ -107,11 +116,13 @@ FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST-...
 ### Netlify Deployment
 
 1. Build the project:
+
 ```bash
 npm run build
 ```
 
 2. Deploy to Netlify:
+
 - Connect your repository to Netlify
 - Set build command: `npm run build`
 - Set publish directory: `out`
@@ -120,6 +131,7 @@ npm run build
 ## 📱 Usage
 
 ### For Customers
+
 1. Register with email and password
 2. Browse available services
 3. Book services with instant confirmation
@@ -127,6 +139,7 @@ npm run build
 5. Leave reviews after service completion
 
 ### For Vendors
+
 1. Register as a vendor
 2. Complete KYC verification
 3. Create service listings
@@ -134,6 +147,7 @@ npm run build
 5. Receive payments and track earnings
 
 ### For Admins
+
 1. Access admin dashboard
 2. Review and approve vendor applications
 3. Monitor platform analytics
@@ -179,7 +193,6 @@ For support, email support@bookhushly.com or create an issue in the repository.
 - [ ] Advanced search and filtering
 - [ ] AI-powered recommendations
 - [ ] Multi-language support
-- [ ] SMS notifications
 - [ ] Advanced analytics
 - [ ] API for third-party integrations
 

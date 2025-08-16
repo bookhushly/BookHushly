@@ -157,55 +157,63 @@ export default function CustomerDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          {/* Total Bookings */}
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Bookings
               </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="h-5 w-5 opacity-80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalBookings}</div>
-              <p className="text-xs text-muted-foreground">All time bookings</p>
+              <div className="text-3xl font-bold">{stats.totalBookings}</div>
+              <p className="text-xs opacity-80">All time bookings</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+          {/* Pending */}
+          <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700">
+                Pending
+              </CardTitle>
+              <Clock className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingBookings}</div>
-              <p className="text-xs text-muted-foreground">
-                Awaiting confirmation
-              </p>
+              <div className="text-3xl font-bold text-purple-700">
+                {stats.pendingBookings}
+              </div>
+              <p className="text-xs text-gray-500">Awaiting confirmation</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          {/* Confirmed */}
+          <Card className="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              <CheckCircle className="h-5 w-5 opacity-80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold">
                 {stats.confirmedBookings}
               </div>
-              <p className="text-xs text-muted-foreground">Ready to go</p>
+              <p className="text-xs opacity-80">Ready to go</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
+          {/* Completed */}
+          <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700">
+                Completed
+              </CardTitle>
+              <Star className="h-5 w-5 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold text-purple-700">
                 {stats.completedBookings}
               </div>
-              <p className="text-xs text-muted-foreground">Finished services</p>
+              <p className="text-xs text-gray-500">Finished services</p>
             </CardContent>
           </Card>
         </div>
@@ -232,7 +240,10 @@ export default function CustomerDashboard() {
                   <CardDescription>Explore and book services</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button asChild className="w-full justify-start">
+                  <Button
+                    asChild
+                    className="w-full justify-start bg-purple-800"
+                  >
                     <Link href="/services">
                       <Calendar className="mr-2 h-4 w-4" />
                       Browse Services
@@ -334,7 +345,7 @@ export default function CustomerDashboard() {
                   <p className="text-sm sm:text-base text-muted-foreground text-center mb-4 max-w-md">
                     Start exploring our services and make your first booking
                   </p>
-                  <Button asChild className="w-full sm:w-auto">
+                  <Button asChild className="w-full sm:w-auto bg-purple-800">
                     <Link href="/services">Browse Services</Link>
                   </Button>
                 </CardContent>
@@ -523,12 +534,7 @@ export default function CustomerDashboard() {
                       Enable
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">SMS notifications</span>
-                    <Button variant="outline" size="sm">
-                      Enable
-                    </Button>
-                  </div>
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Marketing emails</span>
                     <Button variant="outline" size="sm">

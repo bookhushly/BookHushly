@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { emailTemplates } from "../../../lib/emailTemplate";
+import { NextResponse } from "next/server";
 
 const apiKey = process.env.RESEND_API_KEY;
 

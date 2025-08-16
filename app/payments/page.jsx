@@ -91,7 +91,7 @@ export default function PaymentPage() {
           setError("Failed to load booking details");
           return;
         }
-
+        console.log(data);
         setBooking(data);
 
         // Check if payment was successful from URL params
@@ -126,6 +126,7 @@ export default function PaymentPage() {
         toast.success("Payment successful!", {
           description: "Your booking has been confirmed",
         });
+        router.push(`/order-successful/${bookingId}`);
       } else {
         setCurrentPaymentStatus("failed");
         setError("Payment was not successful");
@@ -466,47 +467,6 @@ export default function PaymentPage() {
     );
   }
 
-  if (currentPaymentStatus === "success") {
-    return (
-      <div className="container max-w-2xl py-8">
-        <Card className="text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 text-green-500">
-              <CheckCircle className="h-16 w-16" />
-            </div>
-            <CardTitle className="text-2xl text-green-600">
-              Payment Successful!
-            </CardTitle>
-            <CardDescription>
-              Your booking has been confirmed and payment processed
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-semibold mb-2">{booking?.listings?.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                Booking Date: {booking?.booking_date}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Amount Paid: ₦{booking?.total_amount?.toLocaleString()}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Button asChild className="w-full">
-                <Link href="/dashboard/customer?tab=bookings">
-                  View My Bookings
-                </Link>
-              </Button>
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/services">Browse More Services</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (currentPaymentStatus === "failed") {
     return (
       <div className="container max-w-2xl py-8">
@@ -604,8 +564,8 @@ export default function PaymentPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <CreditCard className="h-6 w-6 text-blue-600" />
+                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <CreditCard className="h-6 w-6 text-purple-600" />
                       </div>
                       <div>
                         <h3 className="font-semibold">Paystack</h3>

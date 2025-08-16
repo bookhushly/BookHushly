@@ -725,7 +725,7 @@ export default function KYCPage() {
           </Card>
 
           {/* Terms and Conditions */}
-          <Card className="border-blue-200 bg-blue-50/50">
+          <Card className="border-purple-200 bg-purple-50/50">
             <CardContent className="pt-6">
               <div className="flex items-start space-x-3">
                 <Checkbox

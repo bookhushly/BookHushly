@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req) {
   try {
     const { to, bookingDetails } = await req.json();
 
-    const msg = {
+    await resend.emails.send({
+      from: process.env.RESEND_SENDER_EMAIL, // e.g. "noreply@yourdomain.com"
       to,
-      from: process.env.SENDGRID_SENDER_EMAIL, // Must be a verified sender
       subject: "Payment Confirmation",
       html: `
         <h2>Hello ${bookingDetails.customerName}</h2>
@@ -18,13 +18,11 @@ export async function POST(req) {
         <p>Ref: <strong>${bookingDetails.reference}</strong></p>
         <p><a href="${bookingDetails.bookingUrl}">View your booking</a></p>
       `,
-    };
-
-    await sgMail.send(msg);
+    });
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[SENDGRID ERROR]", err);
+    console.error("[RESEND ERROR]", err);
     return NextResponse.json(
       { error: "Email sending failed" },
       { status: 500 }

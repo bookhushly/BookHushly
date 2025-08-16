@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -58,19 +59,25 @@ export default function AboutPage() {
       role: "CEO & Founder",
       description:
         "Passionate about connecting African businesses with global opportunities.",
+      image: "/team/ceo.jpg", // Add your image path here
+      alt: "Adebanjo Samson - CEO & Founder of Bookhushly",
     },
-    {
-      name: "Fatima Abdullahi",
-      role: "CTO",
-      description:
-        "Tech enthusiast building scalable solutions for the African market.",
-    },
-    {
-      name: "Adedeji Ifedayo",
-      role: "Head of ICT",
-      description:
-        "Ensuring smooth operations and exceptional experiences through technology.",
-    },
+    // {
+    //   name: "Aboderin Daniel",
+    //   role: "CTO",
+    //   description:
+    //     "Tech enthusiast building scalable solutions for the African market.",
+    //   image: "/team/aboderin-daniel.jpg", // Add your image path here
+    //   alt: "Aboderin Daniel - CTO of Bookhushly",
+    // },
+    // {
+    //   name: "Adedeji Ifedayo",
+    //   role: "Head of ICT",
+    //   description:
+    //     "Ensuring smooth operations and exceptional experiences through technology.",
+    //   image: "/team/adedeji-ifedayo.jpg", // Add your image path here
+    //   alt: "Adedeji Ifedayo - Head of ICT at Bookhushly",
+    // },
   ];
 
   return (
@@ -227,7 +234,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Team Section - Updated with Next.js Image optimization */}
       <section className="py-16 bg-hospitality-warm">
         <div className="container">
           <div className="text-center mb-12">
@@ -245,11 +252,17 @@ export default function AboutPage() {
                 className="text-center card-hospitality group hover:shadow-gold transition-all duration-300 transform hover:scale-105"
               >
                 <CardHeader>
-                  <div className="w-20 h-20 bg-gradient-to-br from-brand-500 to-hospitality-gold rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold font-display group-hover:shadow-gold transition-all duration-300">
-                    {member.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                  <div className="relative w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full ring-4 ring-brand-100 group-hover:ring-hospitality-gold transition-all duration-300">
+                    <Image
+                      src={member.image}
+                      alt={member.alt}
+                      fill
+                      sizes="(max-width: 768px) 96px, 96px"
+                      className="object-cover object-center transition-transform duration-300 group-hover:scale-110"
+                      priority={index === 0} // Prioritize loading the first image
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                    />
                   </div>
                   <CardTitle className="font-display text-foreground">
                     {member.name}
