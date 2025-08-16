@@ -31,8 +31,8 @@ export async function POST(request) {
 
       await updatePaymentStatus(bookingId, "completed", payload.order_id);
 
-      // Send notifications
-      await sendPaymentNotifications(payload);
+      // // Send notifications
+      // await sendPaymentNotifications(payload);
 
       console.log("Payment completed successfully:", payload.order_id);
     } else if (payload.payment_status === "failed") {
