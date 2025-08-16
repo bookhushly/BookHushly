@@ -340,6 +340,29 @@ export default function PaymentPage() {
     }
   };
 
+  const sendPaymentNotifications = async (paymentData, provider) => {
+    try {
+      await fetch("/api/send-payment-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: user.email,
+          bookingDetails: {
+            customerName: user.user_metadata?.name || "Customer",
+            serviceTitle: booking.listings?.title,
+            amount: booking.total_amount.toLocaleString(),
+            reference: paymentData.reference,
+            provider: provider,
+            paymentDate: new Date().toLocaleDateString(),
+            bookingUrl: `${window.location.origin}/dashboard/customer?tab=bookings`,
+          },
+        }),
+      });
+    } catch (error) {
+      console.error("Notification sending failed:", error);
+    }
+  };
+
   // Regular Paystack payment handler
   const handlePaystackPayment = async () => {
     if (!booking || !user) return;
@@ -370,7 +393,6 @@ export default function PaymentPage() {
           const verification = await verifyPayment(paymentData.reference);
 
           if (verification.data?.status === "success") {
-            await sendPaymentNotifications(paymentData, "paystack");
             router.push(
               `/payments?booking=${bookingId}&reference=${paymentData.reference}&status=success`
             );
@@ -401,29 +423,6 @@ export default function PaymentPage() {
       toast.error("Payment failed to initialize");
     } finally {
       setPaymentLoading(false);
-    }
-  };
-
-  const sendPaymentNotifications = async (paymentData, provider) => {
-    try {
-      await fetch("/api/send-payment-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: user.email,
-          bookingDetails: {
-            customerName: user.user_metadata?.name || "Customer",
-            serviceTitle: booking.listings?.title,
-            amount: booking.total_amount.toLocaleString(),
-            reference: paymentData.reference,
-            provider: provider,
-            paymentDate: new Date().toLocaleDateString(),
-            bookingUrl: `${window.location.origin}/dashboard/customer?tab=bookings`,
-          },
-        }),
-      });
-    } catch (error) {
-      console.error("Notification sending failed:", error);
     }
   };
 
