@@ -69,14 +69,14 @@ export default function ContactPage() {
     {
       icon: <Mail className="h-5 w-5" />,
       title: "Email Us",
-      details: "support@bookhushly.com",
+      details: "help@bookhushly.com",
       description: "Send us an email anytime",
       color: "text-brand-500",
     },
     {
       icon: <Phone className="h-5 w-5" />,
       title: "Call Us",
-      details: "+234 901 234 5678",
+      details: "+447493810995",
       description: "Mon-Fri 9AM-6PM WAT",
       color: "text-hospitality-trust",
     },
