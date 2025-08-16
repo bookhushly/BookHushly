@@ -76,7 +76,7 @@ export default function ContactPage() {
     {
       icon: <Phone className="h-5 w-5" />,
       title: "Call Us",
-      details: "+447493810995",
+      details: "+2348147695625",
       description: "Mon-Fri 9AM-6PM WAT",
       color: "text-hospitality-trust",
     },
