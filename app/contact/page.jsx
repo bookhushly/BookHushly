@@ -435,9 +435,7 @@ export default function ContactPage() {
                     className="btn-hospitality bg-danger-500 hover:bg-danger-600 shadow-hard"
                   >
                     <Phone className="mr-2 h-4 w-4" />
-                    <span className="font-body">
-                      Emergency: +234 901 234 5678
-                    </span>
+                    <span className="font-body">Emergency: +2348147695625</span>
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground font-body">

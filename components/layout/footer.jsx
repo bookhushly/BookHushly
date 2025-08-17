@@ -6,7 +6,7 @@ export function Footer() {
 
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
-      <div className="container py-16">
+      <div className="container py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex">
@@ -130,43 +130,6 @@ export function Footer() {
                   className="text-blue-200 hover:text-white transition-colors"
                 >
                   Privacy Policy
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4 text-yellow-400">Get Started</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/register"
-                  className="text-blue-200 hover:text-white transition-colors"
-                >
-                  Sign Up
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/login"
-                  className="text-blue-200 hover:text-white transition-colors"
-                >
-                  Login
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/services"
-                  className="text-blue-200 hover:text-white transition-colors"
-                >
-                  Browse Services
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/help"
-                  className="text-blue-200 hover:text-white transition-colors"
-                >
-                  Help Center
                 </Link>
               </li>
             </ul>

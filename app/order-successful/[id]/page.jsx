@@ -66,9 +66,25 @@ export default function BookingReceiptPage() {
 
     fetchBooking();
   }, [id]);
+  const getBase64FromUrl = async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to load image at ${url}`);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+  };
 
-  // Generate premium PDF ticket
-  const handleDownloadPDF = async () => {
+  // Helper: Always return a safe string
+  const safeText = (value, fallback = "N/A") => {
+    if (value === undefined || value === null || value === "") return fallback;
+    return String(value);
+  };
+
+  const handleDownloadPDF = async (booking) => {
     if (!booking) return;
 
     const doc = new jsPDF({
@@ -77,7 +93,7 @@ export default function BookingReceiptPage() {
       format: "a4",
     });
 
-    // Colors (RGB values)
+    // Colors
     const purple = [124, 58, 237];
     const lightPurple = [233, 213, 255];
     const dark = [31, 41, 55];
@@ -88,97 +104,82 @@ export default function BookingReceiptPage() {
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, 210, 297, "F");
 
-    // Add logo from public folder
-    try {
-      const logoResponse = await fetch("/logo.png");
-      if (logoResponse.ok) {
-        const logoBlob = await logoResponse.blob();
-        const logoDataUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(logoBlob);
-        });
+    // Header background
+    const headerTop = 10;
+    const headerHeight = 35;
+    doc.setFillColor(...lightPurple);
+    doc.rect(15, headerTop, 180, headerHeight, "F");
 
-        // Add the logo image to PDF
-        doc.addImage(logoDataUrl, "PNG", 20, 15, 25, 25);
-      } else {
-        console.warn("Logo not found at /logo.png, trying /logo2.png");
-        // Try alternative logo path
-        const logoResponse2 = await fetch("/logo2.png");
-        if (logoResponse2.ok) {
-          const logoBlob2 = await logoResponse2.blob();
-          const logoDataUrl2 = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(logoBlob2);
-          });
-          doc.addImage(logoDataUrl2, "PNG", 20, 15, 25, 25);
-        }
-      }
+    // Logo
+    try {
+      const logoDataUrl = await getBase64FromUrl("/logo.png");
+      const logoWidth = 70;
+      const logoHeight = 70;
+      const yCentered = headerTop + (headerHeight - logoHeight) / 2;
+      const xPos = 1; // left inset
+      doc.addImage(logoDataUrl, "PNG", xPos, yCentered, logoWidth, logoHeight);
     } catch (err) {
       console.error("Error loading logo:", err);
-      // Add fallback text logo if image fails
-      doc.setTextColor(124, 58, 237);
+      doc.setTextColor(...purple);
       doc.setFontSize(14);
       doc.setFont(undefined, "bold");
-      doc.text("BH", 20, 30);
-      doc.setFontSize(8);
-      doc.text("LOGO", 20, 37);
+      doc.text("BH", 25, 30);
     }
 
-    // Header section background
-    doc.setFillColor(...lightPurple);
-    doc.rect(15, 10, 180, 35, "F");
-
-    // Company name and tagline
-    doc.setTextColor(...purple);
-    doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
-    doc.text("BookHushly", 55, 25);
-
-    doc.setFontSize(9);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(...gray);
-    doc.text("Premium Event Ticketing", 55, 32);
-
-    // QR Code (top right)
+    // QR Code (right-aligned in header)
     try {
       const qrCodeData = await QRCode.toDataURL(
-        `${window.location.origin}/booking-status/${booking.id}`,
+        `${window.location.origin}/booking-status/${safeText(booking.id, "0")}`,
         {
           width: 150,
           margin: 1,
           color: { dark: "#1F2937", light: "#FFFFFF" },
         }
       );
-      doc.addImage(qrCodeData, "PNG", 155, 15, 30, 30);
+      const qrSize = 25;
+      const qrX = 160; // near right side of header
+      const qrY = headerTop + (headerHeight - qrSize) / 2;
+      doc.addImage(qrCodeData, "PNG", qrX, qrY, qrSize, qrSize);
     } catch (err) {
       console.error("Error generating QR code:", err);
     }
 
-    // Main ticket border (extended)
+    // Company name + tagline (centered in header)
+    const centerX = 105; // (210 page width / 2)
+    doc.setTextColor(...purple);
+    doc.setFontSize(20);
+    doc.setFont(undefined, "bold");
+    doc.text("BookHushly", centerX, headerTop + 18, { align: "center" });
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(...gray);
+    doc.text("Premium Event Ticketing", centerX, headerTop + 26, {
+      align: "center",
+    });
+
+    // Main ticket border
     doc.setDrawColor(...purple);
     doc.setLineWidth(1);
-    doc.rect(15, 10, 180, 230); // extended to fit important info
+    doc.rect(15, 10, 180, 230);
 
     // Ticket ID
     doc.setTextColor(...purple);
     doc.setFontSize(14);
     doc.setFont(undefined, "bold");
-    doc.text(`TICKET #${booking.id}`, 20, 60);
+    doc.text(`TICKET #${safeText(booking.id, "0")}`, 20, 60);
 
     // Status
     doc.setFontSize(10);
-    doc.setTextColor(34, 197, 94); // Green for confirmed
-    doc.text(`Status: ${booking.status.toUpperCase()}`, 20, 68);
+    doc.setTextColor(34, 197, 94);
+    const status = booking?.status ? booking.status.toUpperCase() : "UNKNOWN";
+    doc.text(`Status: ${status}`, 20, 68);
 
     // Event title
     doc.setTextColor(...dark);
     doc.setFontSize(16);
     doc.setFont(undefined, "bold");
-    doc.text(booking.event_name || "Event Booking", 20, 80);
+    doc.text(safeText(booking?.listing.title, "Event Booking"), 20, 80);
 
     // Horizontal line
     doc.setDrawColor(...lightGray);
@@ -199,23 +200,25 @@ export default function BookingReceiptPage() {
 
       doc.setFont(undefined, "normal");
       doc.setTextColor(...gray);
-      // Handle Naira symbol properly
+
+      const safeValue = safeText(value);
       const displayValue =
         label === "Total Amount"
-          ? `NGN ${Number(booking.total_amount).toLocaleString()}`
-          : value;
+          ? `NGN ${Number(booking?.total_amount || 0).toLocaleString()}`
+          : safeValue;
+
       doc.text(displayValue, 70, yPos);
       yPos += 8;
     };
 
     addDetail("Date", booking.booking_date);
     addDetail("Time", booking.booking_time);
-    addDetail("Number of Guests", booking.guests.toString());
-    addDetail("Duration", booking.duration || "N/A");
+    addDetail("Number of Guests", booking.guests);
+    addDetail("Duration", booking.duration);
     addDetail("Total Amount", booking.total_amount);
     addDetail("Payment Status", booking.payment_status);
 
-    // IMPORTANT INFO section (inside purple border now)
+    // Important info
     doc.setTextColor(...purple);
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
@@ -262,7 +265,7 @@ export default function BookingReceiptPage() {
       instY += 7;
     });
 
-    // Contact section (below purple border)
+    // Contact section
     doc.setTextColor(...purple);
     doc.setFontSize(10);
     doc.setFont(undefined, "bold");
@@ -271,8 +274,8 @@ export default function BookingReceiptPage() {
     doc.setTextColor(...gray);
     doc.setFontSize(9);
     doc.setFont(undefined, "normal");
-    doc.text(`Email: ${booking.listing.vendor_name}`, 20, 265);
-    doc.text(`Phone: ${booking.listing?.vendor_phone}`, 20, 272);
+    doc.text(`Vendor: ${safeText(booking?.listing?.vendor_name)}`, 20, 265);
+    doc.text(`Phone: ${safeText(booking?.listing?.vendor_phone)}`, 20, 272);
 
     // Footer
     doc.setTextColor(...purple);
@@ -280,8 +283,8 @@ export default function BookingReceiptPage() {
     doc.setFont(undefined, "italic");
     doc.text("No apps. No stress. Just BookHushly.", 20, 290);
 
-    // Save the PDF
-    doc.save(`BookHushly-Ticket-${booking.id}.pdf`);
+    // Save PDF
+    doc.save(`BookHushly-Ticket-${safeText(booking.id, "0")}.pdf`);
   };
 
   if (loading) {
@@ -365,7 +368,7 @@ export default function BookingReceiptPage() {
           {/* Event Details */}
           <div className="p-6 bg-gradient-to-br from-purple-50 to-white">
             <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              {booking.listing?.name || "Event Booking"}
+              {booking.listing?.title || "Event Booking"}
             </h3>
 
             <div className="grid grid-cols-2 gap-6">
@@ -505,7 +508,7 @@ export default function BookingReceiptPage() {
         {/* Download Button */}
         <div className="mt-8 text-center">
           <button
-            onClick={handleDownloadPDF}
+            onClick={() => handleDownloadPDF(booking)}
             className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 mx-auto"
           >
             <span>📥</span>
