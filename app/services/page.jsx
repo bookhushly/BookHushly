@@ -39,6 +39,9 @@ import {
   Utensils,
   Building,
   Calendar,
+  Car,
+  PartyPopper,
+  UtensilsCrossed,
 } from "lucide-react";
 
 import { CATEGORIES } from "@/lib/constants";
@@ -270,6 +273,26 @@ function ServicesContent() {
     }
   };
 
+  // Helper function to get appropriate button text and icon based on category
+  const getButtonConfig = (category) => {
+    switch (category) {
+      case "food":
+        return { text: "Order Now", icon: UtensilsCrossed };
+      case "car_rentals":
+        return { text: "Rent Now", icon: Car };
+      case "logistics":
+        return { text: "Ship Now", icon: Truck };
+      case "security":
+        return { text: "Hire Now", icon: Shield };
+      case "events":
+        return { text: "Book Event", icon: PartyPopper };
+      case "hotels":
+      case "serviced_apartments":
+      default:
+        return { text: "View Details", icon: Building };
+    }
+  };
+
   if (loading) {
     return <ServicesLoading />;
   }
@@ -441,6 +464,8 @@ function ServicesContent() {
             const serviceImage = getServiceImage(service);
             const categoryInfo = getCategorySpecificInfo(service);
             const formattedPrice = formatPrice(service);
+            const buttonConfig = getButtonConfig(service.category);
+            const ButtonIcon = buttonConfig.icon;
 
             return (
               <Link key={service.id} href={`/services/${service.id}`} passHref>
@@ -555,7 +580,8 @@ function ServicesContent() {
                           size="sm"
                           className="bg-brand-600 hover:bg-brand-700"
                         >
-                          View Details
+                          <ButtonIcon className="mr-2 h-4 w-4" />
+                          {buttonConfig.text}
                         </Button>
                       </div>
                     </CardContent>
