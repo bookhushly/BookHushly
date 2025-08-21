@@ -73,24 +73,24 @@ export default function Home() {
 
   const stats = [
     {
-      value: "2,500+",
-      label: "Service Providers",
-      icon: <Users className="h-6 w-6" />,
-    },
-    {
-      value: "50,000+",
-      label: "Happy Customers",
-      icon: <Star className="h-6 w-6" />,
+      value: "10+",
+      label: "Initial Partners",
+      icon: <Users className="h-5 w-5" />,
     },
     {
       value: "100+",
-      label: "Cities Covered",
-      icon: <Globe className="h-6 w-6" />,
+      label: "Early Users",
+      icon: <Star className="h-5 w-5" />,
     },
     {
-      value: "99.8%",
-      label: "Success Rate",
-      icon: <Award className="h-6 w-6" />,
+      value: "2+",
+      label: "Cities Launched",
+      icon: <Globe className="h-5 w-5" />,
+    },
+    {
+      value: "24/7",
+      label: "Customer Support",
+      icon: <Award className="h-5 w-5" />,
     },
   ];
 
