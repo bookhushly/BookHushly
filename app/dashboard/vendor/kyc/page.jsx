@@ -17,16 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { TermsAndConditionsModal } from "@/components/kyc/Terms&ConditionModal";
 import { useAuthStore } from "@/lib/store";
 import {
   getVendorProfile,
@@ -38,15 +29,19 @@ import {
   FileText,
   Building,
   Phone,
-  MapPin,
   ArrowLeft,
   CheckCircle,
   AlertCircle,
-  ExternalLink,
-  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function KYCPage() {
   const { user } = useAuthStore();
@@ -70,6 +65,15 @@ export default function KYCPage() {
     website_url: "",
   });
   const [error, setError] = useState("");
+  const businessCategories = [
+    { value: "hotels", label: "Hotels" },
+    { value: "food_restaurants", label: "Food & Restaurants" },
+    { value: "serviced_apartments", label: "Serviced Apartments" },
+    { value: "events", label: "Events" },
+    { value: "car_rentals", label: "Car Rentals" },
+    { value: "logistics", label: "Logistics" },
+    { value: "security", label: "Security" },
+  ];
 
   useEffect(() => {
     if (user) {
@@ -168,7 +172,7 @@ export default function KYCPage() {
       const profileData = {
         user_id: user.id,
         ...formData,
-        approved: false, // Always set to false for admin review
+        approved: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -184,13 +188,87 @@ export default function KYCPage() {
         setError(result.error.message);
         toast.error("KYC submission failed", {
           description: result.error.message,
+          style: {
+            background: "white",
+            color: "#1f2937",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          },
         });
         return;
       }
 
+      // Send email notification to admin
+      const sendEmails = async () => {
+        try {
+          const emailData = [
+            {
+              to: "aboderindaniel482@gmail.com",
+              templateName: "kycSubmissionNotice",
+              data: {
+                vendorName: formData.business_name || "New Vendor",
+                businessName: formData.business_name || "Not provided",
+                businessCategory: formData.business_category,
+                email: formData.email || user.email || "Not provided",
+                phone: formData.phone || "Not provided",
+                dashboardUrl: `${window.location.origin}/admin/`,
+              },
+            },
+          ];
+
+          const responses = await Promise.all(
+            emailData.map(async (email) => {
+              const response = await fetch("/api/send-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(email),
+              });
+              if (!response.ok)
+                throw new Error(`Email failed: ${response.statusText}`);
+              return response.json();
+            })
+          );
+
+          const allSuccess = responses.every((res) => res.success);
+          if (!allSuccess) {
+            console.warn("Some emails failed to send");
+            toast.error("KYC submitted, but admin notification failed", {
+              style: {
+                background: "white",
+                color: "#1f2937",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              },
+            });
+          }
+        } catch (error) {
+          console.error("Email error:", error);
+          toast.error("KYC submitted, but admin notification failed", {
+            style: {
+              background: "white",
+              color: "#1f2937",
+              border: "1px solid #e5e7eb",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            },
+          });
+        }
+      };
+
+      await sendEmails(); // Call the email function
+
       toast.success("KYC submitted successfully!", {
         description:
-          "Your profile is now under review. You will be notified once approved.",
+          "Your profile is under review. You'll be notified once approved.",
+        style: {
+          background: "white",
+          color: "#1f2937",
+          border: "1px solid #e5e7eb",
+          borderRadius: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        },
       });
 
       router.push("/dashboard/vendor");
@@ -198,265 +276,18 @@ export default function KYCPage() {
       setError("An unexpected error occurred");
       toast.error("KYC submission failed", {
         description: "An unexpected error occurred",
+        style: {
+          background: "white",
+          color: "#1f2937",
+          border: "1px solid #e5e7eb",
+          borderRadius: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        },
       });
     } finally {
       setLoading(false);
     }
   };
-
-  const TermsAndConditionsModal = () => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant="link"
-          className="p-0 h-auto text-blue-600 hover:text-blue-800"
-        >
-          Terms and Conditions
-          <ExternalLink className="ml-1 h-3 w-3" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center text-xl">
-            <Shield className="mr-2 h-5 w-5" />
-            Terms and Conditions for Listers
-          </DialogTitle>
-          <DialogDescription>
-            Please read these terms carefully before proceeding with your
-            listing registration.
-          </DialogDescription>
-        </DialogHeader>
-
-        <ScrollArea className="h-[60vh] pr-4">
-          <div className="space-y-6 text-sm">
-            {/* Section 1 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                1. Agreement Overview
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                By listing your <span className="font-medium">listing</span> on
-                BOOKHUSHLY.com ("Platform"), you agree to these legally binding
-                Terms and Conditions. This agreement is governed by the laws of
-                the Federal Republic of Nigeria.
-              </p>
-            </div>
-
-            {/* Section 2 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                2. Eligibility
-              </h3>
-              <p className="text-muted-foreground mb-2">Listers must:</p>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>Own or have legal rights to manage the listing</li>
-                <li>
-                  Register with valid identification (e.g., NIN, CAC, or BVN, as
-                  applicable)
-                </li>
-                <li>
-                  Provide accurate and up-to-date information about the listing
-                </li>
-                <li>
-                  Comply with all local, state, and federal housing and safety
-                  regulations
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 3 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                3. Commission Structure
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  A <span className="font-medium">10% commission</span> is
-                  charged on the total value of each successful booking
-                </li>
-                <li>Commission is automatically deducted at payout</li>
-                <li>
-                  The total booking value includes rent, service fees, cleaning
-                  charges, and VAT (if applicable)
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 4 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                4. Payout Terms
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  Payouts are made in Nigerian Naira (NGN) to the lister's
-                  verified local bank account
-                </li>
-                <li>
-                  Disbursement occurs within{" "}
-                  <span className="font-medium">5 business days</span> after
-                  guest check-in, minus commission and applicable deductions
-                </li>
-                <li>
-                  The Platform may delay payouts in cases of disputes or
-                  suspected fraud
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 5 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                5. Taxes & Regulatory Compliance
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  Listers are solely responsible for all applicable taxes
-                  (personal or corporate income tax, VAT, etc.)
-                </li>
-                <li>
-                  BOOKHUSHLY.com may provide withholding tax certificates upon
-                  request, in line with the Nigerian FIRS rules
-                </li>
-                <li>
-                  Listers are responsible for ensuring tax compliance based on
-                  their business structure and location
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 6 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                6. Cancellations & Refunds
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  Commission remains payable if cancellation occurs outside your
-                  defined cancellation window
-                </li>
-                <li>
-                  Listers must clearly outline cancellation and refund policies
-                  on each listing
-                </li>
-                <li>
-                  BOOKHUSHLY.com reserves the right to override cancellation
-                  policies for guest protection under exceptional circumstances
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 7 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                7. Listing Conduct
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  Fraudulent, misleading, or illegal listings may result in
-                  immediate removal and legal action
-                </li>
-                <li>
-                  Listers must comply with the Nigeria Data Protection Act
-                  (NDPA) and may not collect, share, or use guest data without
-                  consent
-                </li>
-                <li>
-                  Professional conduct is expected in all interactions with
-                  guests and Platform staff
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 8 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                8. Limitation of Liability
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  BOOKHUSHLY.com is not liable for losses, damages, or disputes
-                  resulting from listings or guest actions
-                </li>
-                <li>
-                  Listers are strongly advised to maintain adequate listing and
-                  liability insurance
-                </li>
-                <li>
-                  The Platform is not responsible for guest behavior or listing
-                  damage
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 9 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                9. Account Termination
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  You may delist or pause your listings anytime via your
-                  dashboard
-                </li>
-                <li>
-                  BOOKHUSHLY.com may suspend or terminate your account for
-                  breach of these terms or 12 months of inactivity
-                </li>
-                <li>
-                  In the event of termination, pending payouts (minus
-                  deductions) will be processed per policy
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 10 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                10. Dispute Resolution
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>
-                  All disputes will be resolved in good faith. Unresolved
-                  disputes may be submitted to arbitration in Lagos, under the
-                  Arbitration and Conciliation Act, Cap A18 Laws of Nigeria
-                </li>
-                <li>
-                  Each party will bear its own legal costs unless otherwise
-                  agreed
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 11 */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-base text-foreground">
-                11. Amendments
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
-                <li>BOOKHUSHLY.com may update these Terms with prior notice</li>
-                <li>
-                  Continued use of the Platform after notice constitutes
-                  acceptance of the revised terms
-                </li>
-              </ul>
-            </div>
-          </div>
-        </ScrollArea>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() =>
-              document.querySelector('[data-state="open"]')?.click()
-            }
-          >
-            Close
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 
   if (pageLoading) {
     return (
@@ -545,15 +376,44 @@ export default function KYCPage() {
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="business_category">Business Category</Label>
-                  <Input
-                    id="business_category"
+                  <Label
+                    htmlFor="business_category"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Business Category
+                  </Label>
+                  <Select
                     name="business_category"
-                    placeholder="e.g., Hotel, Restaurant, Security"
                     value={formData.business_category}
-                    onChange={handleChange}
-                  />
+                    onValueChange={(value) =>
+                      handleChange({
+                        target: { name: "business_category", value },
+                      })
+                    }
+                  >
+                    <SelectTrigger
+                      id="business_category"
+                      className="h-11 bg-white border border-gray-200 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)] !text-black"
+                    >
+                      <SelectValue
+                        placeholder="Select a category"
+                        className="text-black placeholder:text-black"
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                      {businessCategories.map((category) => (
+                        <SelectItem
+                          key={category.value}
+                          value={category.value}
+                          className="text-sm !text-black hover:bg-gray-50 focus:bg-gray-50 transition-colors duration-200"
+                        >
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

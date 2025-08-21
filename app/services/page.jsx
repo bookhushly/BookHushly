@@ -409,6 +409,7 @@ function ServicesContent() {
             <Button
               variant={viewMode === "grid" ? "default" : "outline"}
               size="sm"
+              className="hidden md:block"
               onClick={() => setViewMode("grid")}
             >
               <Grid className="h-4 w-4 mr-2" />

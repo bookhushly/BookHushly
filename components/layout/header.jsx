@@ -139,7 +139,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-600 hover:text-white"
                 asChild
               >
                 <Link href="/login">Login</Link>

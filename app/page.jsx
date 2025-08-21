@@ -161,7 +161,7 @@ export default function Home() {
         </div>
 
         {/* Content */}
-        <div className="container relative z-10 py-20 flex items-center min-h-screen">
+        <div className="container relative z-10 py-10 flex items-center min-h-screen">
           <div className="w-full max-w-4xl mx-auto text-center">
             {/* Heading */}
             <div className="mb-12">
@@ -185,37 +185,37 @@ export default function Home() {
             {/* Search Interface */}
             <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-6 md:p-10 shadow-2xl mb-12 space-y-10 border border-gray-100">
               {/* Search Bar Section */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 {/* Search Input */}
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <div className="relative group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-hover:text-blue-600 transition-colors duration-200" />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search services..."
-                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white text-black hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
+                    className="pl-10 h-11 text-sm bg-white border border-gray-200 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)]"
                   />
                 </div>
 
                 {/* Location Input */}
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <div className="relative group">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-hover:text-blue-600 transition-colors duration-200" />
                   <Input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="Location"
-                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white text-black hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
+                    className="pl-10 h-11 text-sm bg-white border border-gray-200 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)]"
                   />
                 </div>
 
                 {/* Date Picker */}
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <div className="relative group">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-hover:text-blue-600 transition-colors duration-200" />
                   <Input
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     type="date"
-                    className="pl-12 h-14 text-sm md:text-base border border-gray-300 bg-white text-gray-600 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 transition-all rounded-xl shadow-sm"
+                    className="pl-10 h-11 text-sm bg-white text-gray-600 border border-gray-200 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)]"
                   />
                 </div>
 
@@ -223,21 +223,21 @@ export default function Home() {
                 <Button
                   onClick={handleSearch}
                   size="lg"
-                  className="h-14 w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold text-white rounded-xl shadow-md transition-all"
+                  className="h-11 w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-0.5"
                 >
                   Search
                 </Button>
               </div>
 
               {/* Category Buttons */}
-              <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+              <div className="flex flex-wrap justify-center gap-2">
                 <Button
                   variant="outline"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none hover:from-blue-700 hover:to-purple-700 px-5 py-2.5 rounded-full text-sm md:text-base shadow"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none hover:from-blue-600 hover:to-purple-600 px-4 py-1.5 rounded-full text-sm font-medium shadow-[0_2px_6px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_10px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-0.5"
                   asChild
                 >
                   <Link href="/services">
-                    <Search className="h-4 w-4 mr-2" />
+                    <Search className="h-4 w-4 mr-1" />
                     All Services
                   </Link>
                 </Button>
@@ -246,18 +246,17 @@ export default function Home() {
                   <Button
                     key={category.value}
                     variant="outline"
-                    className="bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 hover:text-black px-5 py-2.5 rounded-full text-sm md:text-base transition-all shadow-sm"
+                    className="bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:text-gray-900 px-4 py-1.5 rounded-full text-sm font-medium shadow-[0_2px_6px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_10px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-0.5"
                     asChild
                   >
                     <Link href={`/services?category=${category.value}`}>
-                      <span className="mr-2">{category.icon}</span>
+                      <span className="mr-1">{category.icon}</span>
                       {category.label}
                     </Link>
                   </Button>
                 ))}
               </div>
             </div>
-
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat, index) => (
@@ -486,7 +485,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-purple-900 hover:bg-white  px-8 py-4 text-lg transition-all duration-300"
+                className="border-2 border-white text-purple-900 hover:bg-white hover:text-purple-600  px-8 py-4 text-lg transition-all duration-300"
                 asChild
               >
                 <Link href="/services">

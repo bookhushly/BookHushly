@@ -37,14 +37,13 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "customer",
+    role: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { user, setUser } = useAuthStore();
   const router = useRouter();
 
   // useEffect(() => {
@@ -138,9 +137,8 @@ export default function RegisterPage() {
         }
         router.push(`/login`);
 
-        setUser(data.user);
         toast.success("Account created successfully!", {
-          description: `Welcome to Bookhushly! Redirecting to your ${formData.role} dashboard...`,
+          description: `Welcome to Bookhushly! Kindly Login to Start Your Journey with Bookhushly `,
         });
       }
     } catch (err) {
