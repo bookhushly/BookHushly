@@ -67,7 +67,10 @@ export default function VendorDashboard() {
 
   // QR Code Functions
   const generateQRCode = async () => {
-    if (!vendorProfile?.id) return;
+    if (!vendorProfile?.id) {
+      toast.error("Vendor profile ID is missing");
+      return;
+    }
 
     try {
       setIsGeneratingQR(true);
@@ -90,7 +93,10 @@ export default function VendorDashboard() {
   };
 
   const copyProfileLink = async () => {
-    if (!vendorProfile?.id) return;
+    if (!vendorProfile?.id) {
+      toast.error("Vendor profile ID is missing");
+      return;
+    }
 
     try {
       const profileUrl = `${window.location.origin}/vendor-profile/${vendorProfile.id}`;
@@ -103,65 +109,116 @@ export default function VendorDashboard() {
     }
   };
 
-  const downloadQRPDF = () => {
-    if (!qrCodeDataUrl || !vendorProfile) return;
+  const downloadQRPDF = async () => {
+    if (!qrCodeDataUrl || !vendorProfile) {
+      toast.error("Cannot generate PDF: Missing QR code or vendor profile");
+      return;
+    }
 
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // Add logo area (placeholder for now - you'll need to add your actual logo)
-    pdf.setFontSize(24);
-    pdf.setTextColor(124, 58, 237); // Purple color
-    pdf.text("Bookhushly", pageWidth / 2, 30, { align: "center" });
+    // Load logo from public folder
+    let logoBase64;
+    try {
+      const logoResponse = await fetch(`${window.location.origin}/logo.png`);
+      if (!logoResponse.ok) throw new Error("Logo not found");
+      const logoBlob = await logoResponse.blob();
+      logoBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(logoBlob);
+        reader.onloadend = () => resolve(reader.result);
+      });
+    } catch (error) {
+      console.error("Error loading logo:", error);
+      toast.error("Failed to load logo for PDF");
+      return;
+    }
 
-    // Add title
-    pdf.setFontSize(18);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Vendor Profile QR Code", pageWidth / 2, 50, { align: "center" });
+    // Add subtle background gradient
+    pdf.setFillColor(245, 243, 255); // Light purple background
+    pdf.rect(0, 0, pageWidth, pageHeight, "F");
 
-    // Add business name
-    pdf.setFontSize(16);
-    pdf.text(
-      vendorProfile.business_name || "Vendor Profile",
-      pageWidth / 2,
-      65,
-      {
-        align: "center",
-      }
-    );
-
-    // Add QR code
-    const qrSize = 80;
-    const qrX = (pageWidth - qrSize) / 2;
-    const qrY = 80;
-    pdf.addImage(qrCodeDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
-
-    // Add URL below QR code
-    const profileUrl = `${window.location.origin}/vendor-profile/${vendorProfile.id}`;
-    pdf.setFontSize(10);
+    // Header
+    pdf.addImage(logoBase64, "PNG", pageWidth / 2 - 30, 15, 60, 18); // Centered logo
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(22);
+    pdf.setTextColor(124, 58, 237); // Purple brand color
+    pdf.text("Bookhushly", pageWidth / 2, 45, { align: "center" });
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(12);
     pdf.setTextColor(100, 100, 100);
-    pdf.text(profileUrl, pageWidth / 2, qrY + qrSize + 20, {
+    pdf.text("Connect with Your Customers", pageWidth / 2, 55, {
       align: "center",
     });
 
-    // Add instructions
-    pdf.setFontSize(12);
+    // Vendor Information Section
+    pdf.setFillColor(255, 255, 255);
+    pdf.roundedRect(20, 70, pageWidth - 40, 70, 5, 5, "F"); // White card background
+    pdf.setFontSize(16);
     pdf.setTextColor(0, 0, 0);
     pdf.text(
-      "Scan this QR code to view our services and make bookings",
+      vendorProfile.business_name || "Your Business Name",
       pageWidth / 2,
-      qrY + qrSize + 35,
+      85,
       { align: "center" }
     );
 
-    // Add footer
+    pdf.setFontSize(11);
+    pdf.setTextColor(80, 80, 80);
+    pdf.text(
+      `Contact: ${vendorProfile.phone_number || "N/A"}`,
+      pageWidth / 2,
+      100,
+      { align: "center" }
+    );
+    pdf.text(
+      `Email: ${vendorProfile.users?.email || "N/A"}`,
+      pageWidth / 2,
+      110,
+      { align: "center" }
+    );
+
+    const description =
+      vendorProfile.business_description ||
+      "Discover our services on Bookhushly";
+    const descriptionLines = pdf.splitTextToSize(description, pageWidth - 60);
+    pdf.text(descriptionLines, pageWidth / 2, 120, { align: "center" });
+
+    // QR Code Section
+    pdf.setFontSize(14);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("Scan to Visit Vendor Profile", pageWidth / 2, 160, {
+      align: "center",
+    });
+
+    const qrSize = 80;
+    const qrX = pageWidth / 2 - qrSize / 2;
+    const qrY = 170;
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setFillColor(255, 255, 255);
+    pdf.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 3, 3, "FD"); // QR code background
+    pdf.addImage(qrCodeDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
+
+    // Profile URL
+    const profileUrl = `${window.location.origin}/vendor-profile/${vendorProfile.id}`;
+    pdf.setFontSize(10);
+    pdf.setTextColor(124, 58, 237);
+    pdf.textWithLink(profileUrl, pageWidth / 2, qrY + qrSize + 15, {
+      align: "center",
+      url: profileUrl,
+    });
+
+    // Footer
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(20, pageHeight - 25, pageWidth - 20, pageHeight - 25); // Divider
     pdf.setFontSize(8);
     pdf.setTextColor(150, 150, 150);
     pdf.text(
-      "Generated on " + new Date().toLocaleDateString(),
+      `Generated on ${new Date().toLocaleDateString()} | © Bookhushly`,
       pageWidth / 2,
-      pageHeight - 20,
+      pageHeight - 15,
       { align: "center" }
     );
 
@@ -183,7 +240,7 @@ export default function VendorDashboard() {
 
         if (vendorError) throw vendorError;
         setVendorProfile(vendor);
-
+        console.log("Vendor Profile:", vendor);
         if (vendor?.approved) {
           const { data: vendorListings, error: listingError } = await supabase
             .from("listings")
@@ -202,7 +259,7 @@ export default function VendorDashboard() {
           setListings([]);
         }
 
-        // toast feedback
+        // Toast feedback
         if (!vendor) {
           toast.info("Complete your KYC to create listings.");
         } else if (!vendor.approved && vendor.status === "reviewing") {
@@ -227,7 +284,7 @@ export default function VendorDashboard() {
     if (!user) return;
     setLoading(true);
 
-    const { data, error } = await getBookings(user.id, "vendor"); // Fetch by vendorId
+    const { data, error } = await getBookings(user.id, "vendor");
     if (error) {
       toast.error("Failed to load bookings");
       console.error(error);
@@ -299,7 +356,6 @@ export default function VendorDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Total Listings */}
           <Card className="bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
@@ -313,7 +369,6 @@ export default function VendorDashboard() {
             </CardContent>
           </Card>
 
-          {/* Active Bookings */}
           <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-purple-700">
@@ -329,7 +384,6 @@ export default function VendorDashboard() {
             </CardContent>
           </Card>
 
-          {/* Total Revenue */}
           <Card className="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
@@ -345,7 +399,6 @@ export default function VendorDashboard() {
             </CardContent>
           </Card>
 
-          {/* Pending Requests */}
           <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-purple-700">
@@ -373,7 +426,6 @@ export default function VendorDashboard() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Quick Actions */}
               <Card>
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
@@ -409,12 +461,11 @@ export default function VendorDashboard() {
                   >
                     <Link href="/dashboard/vendor/kyc">
                       <FileText className="mr-2 h-4 w-4" />
-                      {vendorProfile ? "Update" : "Complete"} KYC
+                      {vendorProfile?.approved ? "Update" : "Complete"} KYC
                     </Link>
                   </Button>
 
-                  {/* QR Code Generator - Only show if vendor has listings */}
-                  {vendorProfile?.approved && listings.length > 0 && (
+                  {vendorProfile?.approved && (
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
@@ -436,7 +487,6 @@ export default function VendorDashboard() {
                         </DialogHeader>
 
                         <div className="space-y-4">
-                          {/* QR Code Display */}
                           <Card>
                             <CardContent className="flex flex-col items-center justify-center p-6">
                               {isGeneratingQR ? (
@@ -457,7 +507,6 @@ export default function VendorDashboard() {
                             </CardContent>
                           </Card>
 
-                          {/* Profile Link */}
                           <Card>
                             <CardHeader className="pb-2">
                               <CardTitle className="text-sm">
@@ -518,7 +567,6 @@ export default function VendorDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Recent Activity */}
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Activity</CardTitle>
@@ -548,11 +596,13 @@ export default function VendorDashboard() {
                         </div>
                       </div>
                     )}
-                    {vendorProfile?.approved && listings.length > 0 && (
+                    {vendorProfile?.approved && (
                       <div className="flex items-center space-x-4">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <div className="flex-1">
-                          <p className="text-sm">Profile QR code available</p>
+                          <p className="text-sm">
+                            Vendor Approved! Profile QR code available
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             Share your services with customers
                           </p>
@@ -735,7 +785,7 @@ export default function VendorDashboard() {
                           </Badge>
                         </div>
                       </div>
-                      {vendorProfile.approved && listings.length > 0 && (
+                      {vendorProfile.approved && (
                         <div>
                           <label className="text-sm font-medium">
                             Share Profile
@@ -765,7 +815,6 @@ export default function VendorDashboard() {
                               </DialogHeader>
 
                               <div className="space-y-4">
-                                {/* QR Code Display */}
                                 <Card>
                                   <CardContent className="flex flex-col items-center justify-center p-6">
                                     {isGeneratingQR ? (
@@ -786,7 +835,6 @@ export default function VendorDashboard() {
                                   </CardContent>
                                 </Card>
 
-                                {/* Profile Link */}
                                 <Card>
                                   <CardHeader className="pb-2">
                                     <CardTitle className="text-sm">

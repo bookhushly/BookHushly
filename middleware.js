@@ -20,6 +20,6 @@ export async function middleware(req) {
 export const config = {
   matcher: [
     "/app/:path*", // All paths starting with /app/
-    "/((?!api|_next/static|_next/image|favicon.ico).*)", // Explicitly exclude API routes
+    "/((?!api|_next/static|_next/image).*)", // Explicitly exclude API routes
   ],
 };
