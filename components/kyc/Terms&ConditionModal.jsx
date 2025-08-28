@@ -84,7 +84,8 @@ export function TermsAndConditionsModal() {
               <ul className="list-disc list-inside space-y-1 ml-4">
                 <li>
                   A <span className="font-medium">2.5% commission</span> is
-                  charged on the total value of each successful booking.
+                  charged on the total value of each successful booking after 3
+                  months. Enjoy BookHushly for free until then!
                 </li>
                 <li>Commission is automatically deducted at payout.</li>
                 <li>

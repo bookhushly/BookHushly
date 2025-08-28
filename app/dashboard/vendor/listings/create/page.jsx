@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import {
@@ -39,6 +39,7 @@ import {
   Clock,
   Users,
   Image as ImageIcon,
+  Ticket,
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -51,20 +52,24 @@ export default function CreateListingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [eventType, setEventType] = useState("");
   const [formData, setFormData] = useState({});
   const [error, setError] = useState("");
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
 
-  // Get current category configuration
-  const categoryConfig = selectedCategory
-    ? getCategoryFormConfig(selectedCategory)
-    : null;
+  // Memoize categoryConfig to prevent unnecessary re-computation
+  const categoryConfig = useMemo(
+    () =>
+      selectedCategory
+        ? getCategoryFormConfig(selectedCategory, eventType)
+        : null,
+    [selectedCategory, eventType]
+  );
 
   useEffect(() => {
     const fetchVendorProfile = async () => {
       const { data, error } = await getVendorProfile(user.id);
-
       if (error) {
         setError(error);
       } else {
@@ -77,24 +82,28 @@ export default function CreateListingPage() {
     }
   }, [user?.id]);
 
-  // Initialize form data when category changes
+  // Initialize form data when category or event type changes
   useEffect(() => {
     if (selectedCategory && categoryConfig) {
       const initialData = {};
       categoryConfig.fields.forEach((field) => {
-        if (field.type === "multiselect") {
-          initialData[field.name] = [];
-        } else {
-          initialData[field.name] = "";
-        }
+        initialData[field.name] = field.type === "multiselect" ? [] : "";
       });
       initialData.availability = "available";
       setFormData(initialData);
+    } else {
+      setFormData({});
     }
-  }, [selectedCategory, categoryConfig]);
+  }, [selectedCategory, eventType, categoryConfig]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
+    setEventType(""); // Reset event type when category changes
+    setError("");
+  };
+
+  const handleEventTypeChange = (type) => {
+    setEventType(type);
     setError("");
   };
 
@@ -111,10 +120,7 @@ export default function CreateListingPage() {
     setFormData((prev) => {
       const currentValues = prev[fieldName] || [];
       if (checked) {
-        return {
-          ...prev,
-          [fieldName]: [...currentValues, value],
-        };
+        return { ...prev, [fieldName]: [...currentValues, value] };
       } else {
         return {
           ...prev,
@@ -128,16 +134,12 @@ export default function CreateListingPage() {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []);
     setImages(files);
-
     const previews = files.map((file) => URL.createObjectURL(file));
     setImagePreviews(previews);
   };
 
   const handleSelectChange = (name, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError("");
   };
 
@@ -147,8 +149,13 @@ export default function CreateListingPage() {
       return false;
     }
 
+    if (selectedCategory === "events" && !eventType) {
+      setError("Please select an event type");
+      return false;
+    }
+
     if (!categoryConfig) {
-      setError("Invalid category selected");
+      setError("Invalid category configuration");
       return false;
     }
 
@@ -157,7 +164,8 @@ export default function CreateListingPage() {
       if (field.required) {
         const value = formData[field.name];
         if (
-          !value ||
+          value === undefined ||
+          value === null ||
           (typeof value === "string" && !value.trim()) ||
           (Array.isArray(value) && value.length === 0)
         ) {
@@ -169,8 +177,28 @@ export default function CreateListingPage() {
 
     // Validate price
     if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
-      setError("Please enter a valid price");
+      setError("Please enter a valid price greater than 0");
       return false;
+    }
+
+    // Validate ticket count and event date for event organizers
+    if (selectedCategory === "events" && eventType === "event_organizer") {
+      if (
+        !formData.total_tickets ||
+        isNaN(parseInt(formData.total_tickets)) ||
+        parseInt(formData.total_tickets) <= 0
+      ) {
+        setError("Please enter a valid number of total tickets greater than 0");
+        return false;
+      }
+
+      if (
+        !formData.event_date ||
+        isNaN(new Date(formData.event_date).getTime())
+      ) {
+        setError("Please enter a valid event date");
+        return false;
+      }
     }
 
     return true;
@@ -178,7 +206,6 @@ export default function CreateListingPage() {
 
   const uploadImages = async () => {
     const uploadedUrls = [];
-
     for (const image of images) {
       const filePath = `${user.id}/${Date.now()}-${image.name}`;
       const { data, error } = await supabase.storage
@@ -193,7 +220,6 @@ export default function CreateListingPage() {
 
       uploadedUrls.push(urlData.publicUrl);
     }
-
     return uploadedUrls;
   };
 
@@ -208,13 +234,15 @@ export default function CreateListingPage() {
     try {
       const uploadedImageUrls = await uploadImages();
 
-      // Prepare data based on category
+      // Prepare data based on category and event type
       const categoryData = prepareCategoryData(
         {
           ...formData,
           media_urls: uploadedImageUrls,
+          event_type: selectedCategory === "events" ? eventType : null,
         },
-        selectedCategory
+        selectedCategory,
+        eventType
       );
 
       const listingData = {
@@ -225,6 +253,11 @@ export default function CreateListingPage() {
         active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        event_type: selectedCategory === "events" ? eventType : null,
+        remaining_tickets:
+          selectedCategory === "events" && eventType === "event_organizer"
+            ? parseInt(formData.total_tickets)
+            : 0,
       };
 
       const { data, error } = await createListing(listingData);
@@ -253,12 +286,13 @@ export default function CreateListingPage() {
 
   const renderField = (field) => {
     const value =
-      formData[field.name] || (field.type === "multiselect" ? [] : "");
+      formData[field.name] ?? (field.type === "multiselect" ? [] : "");
 
     switch (field.type) {
       case "text":
       case "url":
       case "time":
+      case "date":
         return (
           <Input
             id={field.name}
@@ -280,7 +314,11 @@ export default function CreateListingPage() {
             placeholder={field.placeholder}
             value={value}
             onChange={handleChange}
-            min={field.name === "price" ? "0" : undefined}
+            min={
+              field.name === "price" || field.name === "total_tickets"
+                ? "0"
+                : undefined
+            }
             step={field.name === "price" ? "0.01" : undefined}
             required={field.required}
           />
@@ -345,6 +383,9 @@ export default function CreateListingPage() {
         );
 
       default:
+        console.warn(
+          `Unsupported field type: ${field.type} for field: ${field.name}`
+        );
         return null;
     }
   };
@@ -402,6 +443,36 @@ export default function CreateListingPage() {
               </Select>
             </CardContent>
           </Card>
+
+          {/* Event Type Selection for Events Category */}
+          {selectedCategory === "events" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Event Type</CardTitle>
+                <CardDescription>
+                  Specify whether you are offering an event center or organizing
+                  an event
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={eventType}
+                  onValueChange={handleEventTypeChange}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="event_center">Event Center</SelectItem>
+                    <SelectItem value="event_organizer">
+                      Event Organizer
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Dynamic Form Fields */}
           {categoryConfig && (

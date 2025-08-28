@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CATEGORIES } from "@/lib/constants";
 import { extractCategoryData } from "@/lib/category-forms";
 import Link from "next/link";
@@ -26,7 +26,15 @@ import {
   Timer,
   Award,
   Package,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
 } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
+
+// Optimize by memoizing category find
+const getCategory = (categoryValue) =>
+  CATEGORIES.find((cat) => cat.value === categoryValue);
 
 // Category-specific detail renderers
 const CategoryDetailsRenderer = ({ service, categoryData, category }) => {
@@ -48,7 +56,7 @@ const CategoryDetailsRenderer = ({ service, categoryData, category }) => {
   }
 };
 
-// Hotel-specific details
+// Hotel-specific details with table
 const HotelDetails = ({ service, categoryData }) => (
   <div className="space-y-8">
     {/* Room Information */}
@@ -57,38 +65,50 @@ const HotelDetails = ({ service, categoryData }) => (
         <Building className="w-5 h-5 mr-2 text-brand-600" />
         Accommodation Details
       </h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {categoryData.room_type && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Bed className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Room Type</div>
-            <div className="font-semibold capitalize">
-              {categoryData.room_type.replace("_", " ")}
-            </div>
-          </div>
-        )}
-        {service.capacity && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Guests</div>
-            <div className="font-semibold">{service.capacity}</div>
-          </div>
-        )}
-        {categoryData.bedrooms && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Bed className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Bedrooms</div>
-            <div className="font-semibold">{categoryData.bedrooms}</div>
-          </div>
-        )}
-        {categoryData.bathrooms && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Bath className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Bathrooms</div>
-            <div className="font-semibold">{categoryData.bathrooms}</div>
-          </div>
-        )}
-      </div>
+      <table className="w-full border-collapse text-sm">
+        <tbody>
+          {categoryData.room_type && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Room Type</td>
+              <td className="border px-4 py-2 capitalize">
+                {categoryData.room_type.replace("_", " ")}
+              </td>
+            </tr>
+          )}
+          {service.capacity && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Guests</td>
+              <td className="border px-4 py-2">{service.capacity}</td>
+            </tr>
+          )}
+          {categoryData.bedrooms && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Bedrooms</td>
+              <td className="border px-4 py-2">{categoryData.bedrooms}</td>
+            </tr>
+          )}
+          {categoryData.bathrooms && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Bathrooms</td>
+              <td className="border px-4 py-2">{categoryData.bathrooms}</td>
+            </tr>
+          )}
+          {categoryData.minimum_stay && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Minimum Stay</td>
+              <td className="border px-4 py-2">{categoryData.minimum_stay}</td>
+            </tr>
+          )}
+          {categoryData.maximum_capacity && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Maximum Capacity</td>
+              <td className="border px-4 py-2">
+                {categoryData.maximum_capacity}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
 
     {/* Check-in/Check-out */}
@@ -132,14 +152,15 @@ const HotelDetails = ({ service, categoryData }) => (
       </>
     )}
 
-    {/* Amenities */}
+    {/* Amenities - Collapsible if long */}
     {categoryData.amenities && (
       <>
         <hr className="border-gray-200" />
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <details className="group">
+          <summary className="text-lg font-semibold mb-4 text-gray-900 cursor-pointer flex items-center">
             Hotel Amenities
-          </h3>
+            <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+          </summary>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {categoryData.amenities.split(",").map((amenity, index) => (
               <div key={index} className="flex items-center space-x-3">
@@ -148,51 +169,46 @@ const HotelDetails = ({ service, categoryData }) => (
               </div>
             ))}
           </div>
-        </div>
+        </details>
       </>
     )}
   </div>
 );
 
-// Restaurant-specific details
+// Restaurant-specific details with table where effective
 const RestaurantDetails = ({ service, categoryData }) => (
   <div className="space-y-8">
-    {/* Restaurant Information */}
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
         <Utensils className="w-5 h-5 mr-2 text-brand-600" />
         Restaurant Details
       </h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {categoryData.cuisine_type && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Utensils className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Cuisine</div>
-            <div className="font-semibold capitalize">
-              {categoryData.cuisine_type.replace("_", " ")}
-            </div>
-          </div>
-        )}
-        {service.capacity && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Seating</div>
-            <div className="font-semibold">{service.capacity} seats</div>
-          </div>
-        )}
-        {service.operating_hours && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Clock className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Hours</div>
-            <div className="font-semibold text-xs">
-              {service.operating_hours}
-            </div>
-          </div>
-        )}
-      </div>
+      <table className="w-full border-collapse text-sm">
+        <tbody>
+          {categoryData.cuisine_type && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Cuisine</td>
+              <td className="border px-4 py-2 capitalize">
+                {categoryData.cuisine_type.replace("_", " ")}
+              </td>
+            </tr>
+          )}
+          {service.capacity && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Seating</td>
+              <td className="border px-4 py-2">{service.capacity} seats</td>
+            </tr>
+          )}
+          {service.operating_hours && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Hours</td>
+              <td className="border px-4 py-2">{service.operating_hours}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
 
-    {/* Service Types */}
     {categoryData.service_type && (
       <>
         <hr className="border-gray-200" />
@@ -221,20 +237,19 @@ const RestaurantDetails = ({ service, categoryData }) => (
       </>
     )}
 
-    {/* Special Diets */}
     {categoryData.special_diets && (
       <>
         <hr className="border-gray-200" />
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <details className="group">
+          <summary className="text-lg font-semibold mb-4 text-gray-900 cursor-pointer flex items-center">
             Dietary Options
-          </h3>
+            <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+          </summary>
           <p className="text-gray-600">{categoryData.special_diets}</p>
-        </div>
+        </details>
       </>
     )}
 
-    {/* Delivery Areas */}
     {categoryData.delivery_areas && (
       <>
         <hr className="border-gray-200" />
@@ -253,38 +268,37 @@ const RestaurantDetails = ({ service, categoryData }) => (
 // Event-specific details
 const EventDetails = ({ service, categoryData }) => (
   <div className="space-y-8">
-    {/* Event Information */}
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
         <Calendar className="w-5 h-5 mr-2 text-brand-600" />
         Event Service Details
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {service.capacity && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Max Guests</div>
-            <div className="font-semibold">{service.capacity}</div>
-          </div>
-        )}
-        {service.duration && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Timer className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Duration</div>
-            <div className="font-semibold">{service.duration}</div>
-          </div>
-        )}
-        {categoryData.advance_booking && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Calendar className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Advance Booking</div>
-            <div className="font-semibold">{categoryData.advance_booking}</div>
-          </div>
-        )}
-      </div>
+      <table className="w-full border-collapse text-sm">
+        <tbody>
+          {service.capacity && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Max Guests</td>
+              <td className="border px-4 py-2">{service.capacity}</td>
+            </tr>
+          )}
+          {service.duration && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Duration</td>
+              <td className="border px-4 py-2">{service.duration}</td>
+            </tr>
+          )}
+          {categoryData.advance_booking && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Advance Booking</td>
+              <td className="border px-4 py-2">
+                {categoryData.advance_booking}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
 
-    {/* Event Types */}
     {categoryData.event_types && (
       <>
         <hr className="border-gray-200" />
@@ -313,29 +327,29 @@ const EventDetails = ({ service, categoryData }) => (
       </>
     )}
 
-    {/* Services Included */}
     {categoryData.services_included && (
       <>
         <hr className="border-gray-200" />
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <details className="group">
+          <summary className="text-lg font-semibold mb-4 text-gray-900 cursor-pointer flex items-center">
             Services Included
-          </h3>
+            <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+          </summary>
           <p className="text-gray-600">{categoryData.services_included}</p>
-        </div>
+        </details>
       </>
     )}
 
-    {/* Equipment Provided */}
     {categoryData.equipment_provided && (
       <>
         <hr className="border-gray-200" />
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <details className="group">
+          <summary className="text-lg font-semibold mb-4 text-gray-900 cursor-pointer flex items-center">
             Equipment & Items Provided
-          </h3>
+            <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+          </summary>
           <p className="text-gray-600">{categoryData.equipment_provided}</p>
-        </div>
+        </details>
       </>
     )}
   </div>
@@ -344,40 +358,37 @@ const EventDetails = ({ service, categoryData }) => (
 // Logistics-specific details
 const LogisticsDetails = ({ service, categoryData }) => (
   <div className="space-y-8">
-    {/* Logistics Information */}
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
         <Truck className="w-5 h-5 mr-2 text-brand-600" />
         Logistics Service Details
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {categoryData.weight_limit && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Package className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Weight Limit</div>
-            <div className="font-semibold">{categoryData.weight_limit}</div>
-          </div>
-        )}
-        {categoryData.delivery_time && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Timer className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Delivery Time</div>
-            <div className="font-semibold">{categoryData.delivery_time}</div>
-          </div>
-        )}
-        {categoryData.tracking_available && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <MapIcon className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Tracking</div>
-            <div className="font-semibold capitalize">
-              {categoryData.tracking_available}
-            </div>
-          </div>
-        )}
-      </div>
+      <table className="w-full border-collapse text-sm">
+        <tbody>
+          {categoryData.weight_limit && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Weight Limit</td>
+              <td className="border px-4 py-2">{categoryData.weight_limit}</td>
+            </tr>
+          )}
+          {categoryData.delivery_time && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Delivery Time</td>
+              <td className="border px-4 py-2">{categoryData.delivery_time}</td>
+            </tr>
+          )}
+          {categoryData.tracking_available && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Tracking</td>
+              <td className="border px-4 py-2 capitalize">
+                {categoryData.tracking_available}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
 
-    {/* Service Types */}
     {categoryData.service_types && (
       <>
         <hr className="border-gray-200" />
@@ -406,7 +417,6 @@ const LogisticsDetails = ({ service, categoryData }) => (
       </>
     )}
 
-    {/* Vehicle Types */}
     {categoryData.vehicle_types && (
       <>
         <hr className="border-gray-200" />
@@ -436,7 +446,6 @@ const LogisticsDetails = ({ service, categoryData }) => (
       </>
     )}
 
-    {/* Insurance Coverage */}
     {categoryData.insurance_covered && (
       <>
         <hr className="border-gray-200" />
@@ -459,40 +468,37 @@ const LogisticsDetails = ({ service, categoryData }) => (
 // Security-specific details
 const SecurityDetails = ({ service, categoryData }) => (
   <div className="space-y-8">
-    {/* Security Information */}
     <div>
       <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
         <Shield className="w-5 h-5 mr-2 text-brand-600" />
         Security Service Details
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {categoryData.team_size && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Team Size</div>
-            <div className="font-semibold">{categoryData.team_size}</div>
-          </div>
-        )}
-        {categoryData.experience_years && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Award className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Experience</div>
-            <div className="font-semibold">
-              {categoryData.experience_years} years
-            </div>
-          </div>
-        )}
-        {categoryData.response_time && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <Timer className="w-6 h-6 mx-auto mb-2 text-brand-600" />
-            <div className="text-sm text-gray-600">Response Time</div>
-            <div className="font-semibold">{categoryData.response_time}</div>
-          </div>
-        )}
-      </div>
+      <table className="w-full border-collapse text-sm">
+        <tbody>
+          {categoryData.team_size && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Team Size</td>
+              <td className="border px-4 py-2">{categoryData.team_size}</td>
+            </tr>
+          )}
+          {categoryData.experience_years && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Experience</td>
+              <td className="border px-4 py-2">
+                {categoryData.experience_years} years
+              </td>
+            </tr>
+          )}
+          {categoryData.response_time && (
+            <tr>
+              <td className="border px-4 py-2 font-medium">Response Time</td>
+              <td className="border px-4 py-2">{categoryData.response_time}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
 
-    {/* Security Types */}
     {categoryData.security_types && (
       <>
         <hr className="border-gray-200" />
@@ -521,7 +527,6 @@ const SecurityDetails = ({ service, categoryData }) => (
       </>
     )}
 
-    {/* Duration Options */}
     {categoryData.duration && (
       <>
         <hr className="border-gray-200" />
@@ -557,33 +562,32 @@ const SecurityDetails = ({ service, categoryData }) => (
       </>
     )}
 
-    {/* Certifications */}
     {categoryData.certifications && (
       <>
         <hr className="border-gray-200" />
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <details className="group">
+          <summary className="text-lg font-semibold mb-4 text-gray-900 cursor-pointer flex items-center">
             Certifications & Licenses
-          </h3>
+            <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+          </summary>
           <p className="text-gray-600">{categoryData.certifications}</p>
-        </div>
+        </details>
       </>
     )}
 
-    {/* Equipment */}
     {categoryData.equipment && (
       <>
         <hr className="border-gray-200" />
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+        <details className="group">
+          <summary className="text-lg font-semibold mb-4 text-gray-900 cursor-pointer flex items-center">
             Equipment & Technology
-          </h3>
+            <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+          </summary>
           <p className="text-gray-600">{categoryData.equipment}</p>
-        </div>
+        </details>
       </>
     )}
 
-    {/* Background Check */}
     {categoryData.background_check && (
       <>
         <hr className="border-gray-200" />
@@ -628,27 +632,73 @@ const GenericDetails = ({ service, categoryData }) => (
 
 export default function ServiceDetailClient({ service }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const category = CATEGORIES.find((cat) => cat.value === service.category);
-  const categoryData = extractCategoryData(service);
+  const [similarServices, setSimilarServices] = useState([]);
+  const [isZoomed, setIsZoomed] = useState(false);
 
-  console.log("Service:", service);
-  console.log("Category Data:", categoryData);
+  const category = useMemo(
+    () => getCategory(service.category),
+    [service.category]
+  );
+  const categoryData = useMemo(() => extractCategoryData(service), [service]);
+
+  // Fetch similar services on mount for "You Might Also Like"
+  useEffect(() => {
+    const fetchSimilar = async () => {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      );
+      const { data } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("category", service.category)
+        .neq("id", service.id)
+        .eq("active", true)
+        .limit(4)
+        .order("price", { ascending: true });
+      setSimilarServices(data || []);
+    };
+    fetchSimilar();
+  }, [service.category, service.id]);
+
+  const handlePrev = () => {
+    setSelectedImageIndex((prev) =>
+      prev > 0 ? prev - 1 : (service.media_urls?.length || 1) - 1
+    );
+  };
+
+  const handleNext = () => {
+    setSelectedImageIndex((prev) =>
+      prev < (service.media_urls?.length || 1) - 1 ? prev + 1 : 0
+    );
+  };
 
   return (
     <div className="container py-8">
-      <div className="mb-6">
+      {/* Breadcrumbs */}
+      <div className="mb-6 text-sm text-muted-foreground">
+        <Link href="/" className="hover:text-brand-600">
+          Home
+        </Link>{" "}
+        &gt;
+        <Link href="/services" className="hover:text-brand-600 ml-1">
+          Services
+        </Link>{" "}
+        &gt;
         <Link
-          href="/services"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-brand-600 transition-colors"
+          href={`/services?category=${category?.value}`}
+          className="hover:text-brand-600 ml-1"
         >
-          Back to Services
-        </Link>
+          {category?.label}
+        </Link>{" "}
+        &gt;
+        <span className="ml-1">{service.title}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Image Gallery */}
+          {/* Image Gallery with arrows and zoom */}
           <div className="space-y-4">
             <div className="relative aspect-[4/3] rounded-xl overflow-hidden shadow-medium">
               <Image
@@ -659,10 +709,50 @@ export default function ServiceDetailClient({ service }) {
                 }
                 alt={`${service.title} - Main Image`}
                 fill
-                className="object-cover hover:scale-105 transition-transform duration-300"
-                priority
+                className="object-cover transition-transform duration-300 hover:scale-105"
+                priority={selectedImageIndex === 0}
+                loading={selectedImageIndex !== 0 ? "lazy" : undefined}
               />
+              <button
+                onClick={handlePrev}
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleNext}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsZoomed(true)}
+                className="absolute bottom-2 right-2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white"
+                aria-label="Zoom image"
+              >
+                <ZoomIn className="w-5 h-5" />
+              </button>
             </div>
+
+            {isZoomed && (
+              <div
+                className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+                onClick={() => setIsZoomed(false)}
+              >
+                <Image
+                  src={
+                    service.media_urls?.[selectedImageIndex] ||
+                    "/placeholder.jpg"
+                  }
+                  alt={`${service.title} - Zoomed Image`}
+                  className="max-w-[90%] max-h-[90%] object-contain"
+                  width={1200}
+                  height={900}
+                />
+              </div>
+            )}
 
             {service.media_urls?.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
@@ -679,9 +769,9 @@ export default function ServiceDetailClient({ service }) {
                     <Image
                       src={url}
                       alt={`${service.title} thumbnail ${index + 1}`}
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      loading="lazy"
                     />
                   </button>
                 ))}
@@ -717,19 +807,32 @@ export default function ServiceDetailClient({ service }) {
                     {service.rating || "4.8"} ({service.review_count || "0"}{" "}
                     reviews)
                   </div>
+                  {service.duration && (
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1 text-gray-500" />
+                      {service.duration}
+                    </div>
+                  )}
+                  {service.capacity && (
+                    <div className="flex items-center">
+                      <Users className="w-4 h-4 mr-1 text-gray-500" />
+                      {service.capacity}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-gray-900">
+              <details className="group open:mb-4">
+                <summary className="text-lg font-semibold mb-3 text-gray-900 cursor-pointer flex items-center">
                   Description
-                </h3>
+                  <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+                </summary>
                 <p className="text-gray-600 leading-relaxed">
                   {service.description}
                 </p>
-              </div>
+              </details>
 
               {/* Category-specific details */}
               <hr className="border-gray-200" />
@@ -744,10 +847,11 @@ export default function ServiceDetailClient({ service }) {
                 categoryData.requirements.length > 0 && (
                   <>
                     <hr className="border-gray-200" />
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                    <details className="group">
+                      <summary className="text-lg font-semibold mb-4 text-gray-900 cursor-pointer flex items-center">
                         Requirements
-                      </h3>
+                        <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+                      </summary>
                       <ul className="space-y-2">
                         {categoryData.requirements.map((requirement, index) => (
                           <li
@@ -759,7 +863,7 @@ export default function ServiceDetailClient({ service }) {
                           </li>
                         ))}
                       </ul>
-                    </div>
+                    </details>
                   </>
                 )}
 
@@ -783,14 +887,15 @@ export default function ServiceDetailClient({ service }) {
               {service.cancellation_policy && (
                 <>
                   <hr className="border-gray-200" />
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 text-gray-900">
+                  <details className="group">
+                    <summary className="text-lg font-semibold mb-3 text-gray-900 cursor-pointer flex items-center">
                       Cancellation Policy
-                    </h3>
+                      <ChevronRight className="w-5 h-5 ml-2 transition-transform group-open:rotate-90" />
+                    </summary>
                     <p className="text-sm text-gray-600 leading-relaxed">
                       {service.cancellation_policy}
                     </p>
-                  </div>
+                  </details>
                 </>
               )}
             </div>
@@ -818,7 +923,6 @@ export default function ServiceDetailClient({ service }) {
                       </span>
                     )}
                   </div>
-                  {/* Vendor contact info */}
                   <div className="space-y-3">
                     {service.vendor.phone && (
                       <div className="flex items-center space-x-3 text-sm">
@@ -838,6 +942,46 @@ export default function ServiceDetailClient({ service }) {
                     )}
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* You Might Also Like */}
+          {similarServices.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">
+                You Might Also Like
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {similarServices.map((sim) => (
+                  <Link
+                    key={sim.id}
+                    href={`/services/${sim.id}`}
+                    className="card-hospitality block"
+                  >
+                    <div className="relative h-40 rounded-t-lg overflow-hidden">
+                      <Image
+                        src={sim.media_urls?.[0] || "/placeholder.jpg"}
+                        alt={sim.title}
+                        fill
+                        className="object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-900">
+                        {sim.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 flex items-center">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        {sim.location}
+                      </p>
+                      <p className="font-bold text-brand-600 mt-2">
+                        ₦{sim.price.toLocaleString()}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           )}
@@ -900,13 +1044,27 @@ export default function ServiceDetailClient({ service }) {
               <hr className="border-gray-200" />
 
               <div className="space-y-3">
-                <hr className="border-gray-200" />
-                <div className="space-y-1">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
-                    <span>₦{service.price.toLocaleString()}</span>
-                  </div>
-                </div>
+                <table className="w-full text-sm">
+                  <tbody>
+                    {service.security_deposit && (
+                      <tr>
+                        <td className="py-1">Security Deposit</td>
+                        <td className="py-1 text-right">
+                          ₦{service.security_deposit.toLocaleString()}
+                        </td>
+                      </tr>
+                    )}
+                    <tr className="font-bold border-t">
+                      <td className="py-1">Total</td>
+                      <td className="py-1 text-right">
+                        ₦
+                        {(
+                          service.price + (service.security_deposit || 0)
+                        ).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

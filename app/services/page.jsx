@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+  Suspense,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -23,6 +30,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import {
   MapPin,
@@ -32,16 +40,14 @@ import {
   Search,
   Star,
   Verified,
-  Users,
-  Clock,
-  Shield,
-  Truck,
-  Utensils,
   Building,
   Calendar,
   Car,
   PartyPopper,
   UtensilsCrossed,
+  Truck,
+  Shield,
+  Utensils,
 } from "lucide-react";
 
 import { CATEGORIES } from "@/lib/constants";
@@ -53,8 +59,13 @@ function ServicesContent() {
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const searchParams = useSearchParams();
+  const observer = useRef(null);
+  const ITEMS_PER_PAGE = 12;
 
   // Get initial values from search params
   const initialSearch = searchParams.get("search") || "";
@@ -75,38 +86,52 @@ function ServicesContent() {
     setSearchQuery(search);
     setSelectedLocation(location);
     setSelectedCategory(category);
+    setPage(1); // Reset page on filter change
+    setHasMore(true); // Reset hasMore
   }, [searchParams]);
 
-  // Fetch listings from Supabase
-  useEffect(() => {
-    async function fetchListings() {
+  // Fetch listings with pagination
+  const fetchListings = useCallback(
+    async (pageNum, reset = false) => {
+      if (!hasMore || isLoadingMore) return;
+      setIsLoadingMore(true);
+
       try {
-        setLoading(true);
-        const { data, error } = await supabase
+        let query = supabase
           .from("listings")
           .select("*")
           .eq("active", true)
-          .order("created_at", { ascending: false });
-        console.log(data);
+          .order("created_at", { ascending: false })
+          .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1);
+
+        const { data, error } = await query;
         if (error) throw error;
 
-        setListings(data);
+        setListings((prev) =>
+          reset ? data || [] : [...prev, ...(data || [])]
+        );
+        setHasMore(data?.length === ITEMS_PER_PAGE);
         setFetchError(null);
       } catch (error) {
         console.error("Error fetching listings:", error.message);
         setFetchError(error.message);
-        setListings([]);
+        setListings((prev) => (reset ? [] : prev));
       } finally {
-        setLoading(false);
+        setIsLoadingMore(false);
+        if (pageNum === 1) setLoading(false);
       }
-    }
+    },
+    [hasMore]
+  );
 
-    fetchListings();
-  }, []);
+  // Initial fetch and fetch on page change
+  useEffect(() => {
+    fetchListings(page, page === 1);
+  }, [page, fetchListings]);
 
   // Filter listings based on search params and filters
-  useEffect(() => {
-    if (loading) return;
+  const filteredListings = useMemo(() => {
+    if (loading) return [];
 
     let result = [...listings];
 
@@ -136,12 +161,31 @@ function ServicesContent() {
       );
     }
 
-    setFiltered(result);
+    return result;
   }, [listings, searchQuery, selectedCategory, selectedLocation, loading]);
+
+  // Infinite scroll observer
+  const lastListingRef = useCallback(
+    (node) => {
+      if (isLoadingMore || !hasMore) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+            setPage((prev) => prev + 1);
+          }
+        },
+        { threshold: 0.1, rootMargin: "100px" }
+      );
+
+      if (node) observer.current.observe(node);
+    },
+    [isLoadingMore, hasMore]
+  );
 
   const getPublicImageUrl = (path) => {
     if (!path) return null;
-    // Extract the path after 'listing-images/'
     const pathParts = path.split("listing-images/");
     const filePath = pathParts.length > 1 ? pathParts[1] : path;
 
@@ -152,20 +196,16 @@ function ServicesContent() {
     return data.publicUrl;
   };
 
-  // Updated getServiceImage function
   const getServiceImage = (service) => {
-    // Check if media_urls exists and has at least one URL
     if (service.media_urls && service.media_urls.length > 0) {
       const publicUrl = getPublicImageUrl(service.media_urls[0]);
       return publicUrl || "/placeholder.jpg";
     }
 
-    // Fallback to category image if no service image
     const category = CATEGORIES.find((c) => c.value === service.category);
     return category?.image || "/placeholder.jpg";
   };
 
-  // Get category-specific details for display
   const getCategorySpecificInfo = (service) => {
     const categoryData = extractCategoryData(service);
     const category = service.category;
@@ -250,7 +290,6 @@ function ServicesContent() {
     }
   };
 
-  // Format price based on category
   const formatPrice = (service) => {
     const price = Number(service.price);
     const priceUnit = service.price_unit || "fixed";
@@ -273,7 +312,6 @@ function ServicesContent() {
     }
   };
 
-  // Helper function to get appropriate button text and icon based on category
   const getButtonConfig = (category) => {
     switch (category) {
       case "food":
@@ -313,14 +351,12 @@ function ServicesContent() {
         </p>
       </div>
 
-      {/* Error fallback */}
       {fetchError && (
         <div className="bg-red-100 text-red-700 p-4 rounded mb-6">
           ⚠️ Error fetching services: {fetchError}
         </div>
       )}
 
-      {/* Search & Filters */}
       <div className="mb-8 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative flex-1">
@@ -337,7 +373,6 @@ function ServicesContent() {
             value={selectedCategory}
             onValueChange={(value) => {
               setSelectedCategory(value);
-              // Update URL without page reload
               const params = new URLSearchParams(searchParams.toString());
               if (value === "all") {
                 params.delete("category");
@@ -364,7 +399,6 @@ function ServicesContent() {
             value={selectedLocation}
             onValueChange={(value) => {
               setSelectedLocation(value);
-              // Update URL without page reload
               const params = new URLSearchParams(searchParams.toString());
               if (value === "all") {
                 params.delete("location");
@@ -396,7 +430,7 @@ function ServicesContent() {
 
         <div className="flex items-center justify-between p-4 bg-gray-100 rounded-xl">
           <p>
-            Showing <b>{filtered.length}</b> of <b>{listings.length}</b>{" "}
+            Showing <b>{filteredListings.length}</b> of <b>{listings.length}</b>{" "}
             services
             {selectedCategory !== "all" && (
               <span className="text-muted-foreground">
@@ -427,8 +461,7 @@ function ServicesContent() {
         </div>
       </div>
 
-      {/* Listings or fallback */}
-      {filtered.length === 0 ? (
+      {filteredListings.length === 0 ? (
         <div className="text-center mt-12">
           <h3 className="text-xl font-semibold text-gray-700">
             No results found
@@ -442,7 +475,6 @@ function ServicesContent() {
               setSearchQuery("");
               setSelectedCategory("all");
               setSelectedLocation("all");
-              // Reset URL params
               window.history.pushState(null, "", "/services");
             }}
           >
@@ -457,7 +489,7 @@ function ServicesContent() {
               : "space-y-4"
           }
         >
-          {filtered.map((service) => {
+          {filteredListings.map((service, index) => {
             const category =
               CATEGORIES.find((c) => c.value === service.category) || {};
             const isPremium = service.price > 100000;
@@ -474,6 +506,11 @@ function ServicesContent() {
                   className={`hover:shadow-lg transition-all duration-300 ${
                     viewMode === "list" ? "flex flex-row" : ""
                   }`}
+                  ref={
+                    index === filteredListings.length - 1
+                      ? lastListingRef
+                      : null
+                  }
                 >
                   <div
                     className={`relative ${
@@ -487,7 +524,7 @@ function ServicesContent() {
                       className={`object-cover ${
                         viewMode === "list" ? "rounded-l" : "rounded-t"
                       }`}
-                      priority={false}
+                      loading="lazy"
                       unoptimized={process.env.NODE_ENV !== "production"}
                       onError={(e) => {
                         const category = CATEGORIES.find(
@@ -548,7 +585,6 @@ function ServicesContent() {
                         {service.description}
                       </CardDescription>
 
-                      {/* Category-specific features */}
                       {service.features && (
                         <div className="flex flex-wrap gap-1 mb-4">
                           {service.features
@@ -591,6 +627,12 @@ function ServicesContent() {
               </Link>
             );
           })}
+        </div>
+      )}
+
+      {isLoadingMore && (
+        <div className="flex justify-center py-8">
+          <LoadingSpinner className="h-8 w-8 text-brand-600" />
         </div>
       )}
     </div>

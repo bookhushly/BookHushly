@@ -46,6 +46,15 @@ import { Button } from "@/components/ui/button";
 import { getBookings } from "@/lib/database";
 import QRCode from "qrcode";
 import jsPDF from "jspdf";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge as UIBadge } from "@/components/ui/badge";
 
 export default function VendorDashboard() {
   const { user } = useAuthStore();
@@ -141,17 +150,10 @@ export default function VendorDashboard() {
     pdf.rect(0, 0, pageWidth, pageHeight, "F");
 
     // Header
-    pdf.addImage(logoBase64, "PNG", pageWidth / 2 - 30, 15, 60, 18); // Centered logo
+    pdf.addImage(logoBase64, "PNG", pageWidth / 2 - 30, 15, 60, 60); // Centered logo with square dimensions
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(22);
     pdf.setTextColor(124, 58, 237); // Purple brand color
-    pdf.text("Bookhushly", pageWidth / 2, 45, { align: "center" });
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(12);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text("Connect with Your Customers", pageWidth / 2, 55, {
-      align: "center",
-    });
 
     // Vendor Information Section
     pdf.setFillColor(255, 255, 255);
@@ -200,15 +202,6 @@ export default function VendorDashboard() {
     pdf.setFillColor(255, 255, 255);
     pdf.roundedRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 3, 3, "FD"); // QR code background
     pdf.addImage(qrCodeDataUrl, "PNG", qrX, qrY, qrSize, qrSize);
-
-    // Profile URL
-    const profileUrl = `${window.location.origin}/vendor-profile/${vendorProfile.id}`;
-    pdf.setFontSize(10);
-    pdf.setTextColor(124, 58, 237);
-    pdf.textWithLink(profileUrl, pageWidth / 2, qrY + qrSize + 15, {
-      align: "center",
-      url: profileUrl,
-    });
 
     // Footer
     pdf.setDrawColor(200, 200, 200);
@@ -330,15 +323,19 @@ export default function VendorDashboard() {
   return (
     <AuthGuard requiredRole="vendor">
       <div className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Vendor Dashboard</h1>
+        <div className="mb-8 animate-fade-in">
+          <h1 className="text-3xl font-bold mb-2 text-brand-900">
+            Vendor Dashboard
+          </h1>
           <p className="text-muted-foreground">
             Welcome back, {user?.user_metadata?.name || "Vendor"}
           </p>
         </div>
 
         {/* Approval Status Alert */}
-        <Alert className="mb-6" variant={variant}>
+        <Alert
+          className={`mb-6 border-${variant}-200 bg-${variant}-50 animate-slide-in`}
+        >
           <Icon className="w-5 h-5 mr-2" />
           <AlertDescription>
             {message}
@@ -346,7 +343,10 @@ export default function VendorDashboard() {
               <span>
                 {" "}
                 —{" "}
-                <Link href="/dashboard/vendor/kyc" className="underline">
+                <Link
+                  href="/dashboard/vendor/kyc"
+                  className="underline hover:text-brand-600"
+                >
                   Start Verification
                 </Link>
               </span>
@@ -356,7 +356,7 @@ export default function VendorDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
+          <Card className="bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-medium rounded-3xl hover:shadow-hard hover:scale-105 transition-all duration-300 transform">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Listings
@@ -369,22 +369,22 @@ export default function VendorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
+          <Card className="bg-white shadow-soft border border-brand-100 rounded-3xl hover:shadow-medium hover:scale-105 transition-all duration-300 transform glass">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-purple-700">
+              <CardTitle className="text-sm font-medium text-brand-700">
                 Active Bookings
               </CardTitle>
-              <Calendar className="h-5 w-5 text-purple-500" />
+              <Calendar className="h-5 w-5 text-brand-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-700">
+              <div className="text-3xl font-bold text-brand-700">
                 {stats.activeBookings}
               </div>
               <p className="text-xs text-gray-500">Current bookings</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg rounded-2xl hover:scale-[1.02] transition-all">
+          <Card className="bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-medium rounded-3xl hover:shadow-hard hover:scale-105 transition-all duration-300 transform">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Revenue
@@ -399,15 +399,15 @@ export default function VendorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-md border border-purple-200 rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all">
+          <Card className="bg-white shadow-soft border border-brand-100 rounded-3xl hover:shadow-medium hover:scale-105 transition-all duration-300 transform glass">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-purple-700">
+              <CardTitle className="text-sm font-medium text-brand-700">
                 Pending Requests
               </CardTitle>
-              <Users className="h-5 w-5 text-purple-500" />
+              <Users className="h-5 w-5 text-brand-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-700">
+              <div className="text-3xl font-bold text-brand-700">
                 {stats.pendingRequests}
               </div>
               <p className="text-xs text-gray-500">Awaiting response</p>
@@ -417,16 +417,24 @@ export default function VendorDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="listings">Listings</TabsTrigger>
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-brand-50 rounded-2xl p-1">
+            <TabsTrigger value="overview" className="rounded-xl">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="listings" className="rounded-xl">
+              Listings
+            </TabsTrigger>
+            <TabsTrigger value="bookings" className="rounded-xl">
+              Bookings
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="rounded-xl">
+              Profile
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-6 animate-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+              <Card className="shadow-soft rounded-3xl hover:shadow-medium transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
                   <CardDescription>
@@ -436,7 +444,7 @@ export default function VendorDashboard() {
                 <CardContent className="space-y-4">
                   <Button
                     asChild
-                    className="w-full justify-start"
+                    className="w-full justify-start btn-hospitality"
                     disabled={!vendorProfile?.approved}
                   >
                     <Link href="/dashboard/vendor/listings/create">
@@ -447,7 +455,7 @@ export default function VendorDashboard() {
                   <Button
                     variant="outline"
                     asChild
-                    className="w-full justify-start"
+                    className="w-full justify-start border-brand-200 hover:border-brand-300"
                   >
                     <Link href="/dashboard/vendor/bookings">
                       <Calendar className="mr-2 h-4 w-4" />
@@ -457,7 +465,7 @@ export default function VendorDashboard() {
                   <Button
                     variant="outline"
                     asChild
-                    className="w-full justify-start"
+                    className="w-full justify-start border-brand-200 hover:border-brand-300"
                   >
                     <Link href="/dashboard/vendor/kyc">
                       <FileText className="mr-2 h-4 w-4" />
@@ -470,14 +478,14 @@ export default function VendorDashboard() {
                       <DialogTrigger asChild>
                         <Button
                           variant="outline"
-                          className="w-full justify-start"
+                          className="w-full justify-start border-brand-200 hover:border-brand-300"
                           onClick={generateQRCode}
                         >
                           <QrCode className="mr-2 h-4 w-4" />
                           Generate Profile QR Code
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
+                      <DialogContent className="sm:max-w-md rounded-2xl">
                         <DialogHeader>
                           <DialogTitle>Your Profile QR Code</DialogTitle>
                           <DialogDescription>
@@ -487,27 +495,27 @@ export default function VendorDashboard() {
                         </DialogHeader>
 
                         <div className="space-y-4">
-                          <Card>
-                            <CardContent className="flex flex-col items-center justify-center p-6">
+                          <Card className="border-0 shadow-none">
+                            <CardContent className="flex flex-col items-center justify-center p-6 bg-brand-50 rounded-2xl">
                               {isGeneratingQR ? (
                                 <div className="flex items-center justify-center h-32 w-32">
-                                  <LoadingSpinner className="h-8 w-8" />
+                                  <LoadingSpinner className="h-8 w-8 text-brand-600" />
                                 </div>
                               ) : qrCodeDataUrl ? (
                                 <img
                                   src={qrCodeDataUrl}
                                   alt="Profile QR Code"
-                                  className="w-32 h-32"
+                                  className="w-32 h-32 rounded-lg shadow-soft"
                                 />
                               ) : (
-                                <div className="h-32 w-32 bg-gray-200 rounded flex items-center justify-center">
-                                  <QrCode className="h-8 w-8 text-gray-400" />
+                                <div className="h-32 w-32 bg-white rounded-lg flex items-center justify-center shadow-soft">
+                                  <QrCode className="h-8 w-8 text-brand-400" />
                                 </div>
                               )}
                             </CardContent>
                           </Card>
 
-                          <Card>
+                          <Card className="border-0 shadow-none">
                             <CardHeader className="pb-2">
                               <CardTitle className="text-sm">
                                 Profile Link
@@ -523,16 +531,16 @@ export default function VendorDashboard() {
                                       : ""
                                   }
                                   readOnly
-                                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
+                                  className="flex-1 px-3 py-2 text-sm border border-brand-200 rounded-lg bg-brand-50 focus:ring-brand-300"
                                 />
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   onClick={copyProfileLink}
-                                  className="flex items-center space-x-1"
+                                  className="flex items-center space-x-1 border-brand-200 hover:bg-brand-100"
                                 >
                                   {copied ? (
-                                    <Check className="h-4 w-4 text-green-600" />
+                                    <Check className="h-4 w-4 text-success-600" />
                                   ) : (
                                     <Copy className="h-4 w-4" />
                                   )}
@@ -547,7 +555,7 @@ export default function VendorDashboard() {
                             variant="outline"
                             onClick={generateQRCode}
                             disabled={isGeneratingQR}
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto border-brand-200 hover:bg-brand-100"
                           >
                             <Share2 className="mr-2 h-4 w-4" />
                             Regenerate QR Code
@@ -555,7 +563,7 @@ export default function VendorDashboard() {
                           <Button
                             onClick={downloadQRPDF}
                             disabled={!qrCodeDataUrl}
-                            className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700"
+                            className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700"
                           >
                             <Download className="mr-2 h-4 w-4" />
                             Download PDF
@@ -567,7 +575,7 @@ export default function VendorDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-soft rounded-3xl hover:shadow-medium transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Recent Activity</CardTitle>
                   <CardDescription>
@@ -576,8 +584,8 @@ export default function VendorDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <div className="flex items-center space-x-4 animate-pulse-slow">
+                      <div className="w-2 h-2 bg-brand-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="text-sm">Account created</p>
                         <p className="text-xs text-muted-foreground">
@@ -586,8 +594,8 @@ export default function VendorDashboard() {
                       </div>
                     </div>
                     {vendorProfile && (
-                      <div className="flex items-center space-x-4">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <div className="flex items-center space-x-4 animate-pulse-slow">
+                        <div className="w-2 h-2 bg-warning-500 rounded-full"></div>
                         <div className="flex-1">
                           <p className="text-sm">KYC submitted</p>
                           <p className="text-xs text-muted-foreground">
@@ -597,8 +605,8 @@ export default function VendorDashboard() {
                       </div>
                     )}
                     {vendorProfile?.approved && (
-                      <div className="flex items-center space-x-4">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex items-center space-x-4 animate-pulse-slow">
+                        <div className="w-2 h-2 bg-success-500 rounded-full"></div>
                         <div className="flex-1">
                           <p className="text-sm">
                             Vendor Approved! Profile QR code available
@@ -615,10 +623,14 @@ export default function VendorDashboard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="listings" className="space-y-6">
+          <TabsContent value="listings" className="space-y-6 animate-fade-in">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">My Listings</h2>
-              <Button asChild disabled={!vendorProfile?.approved}>
+              <h2 className="text-2xl font-bold text-brand-900">My Listings</h2>
+              <Button
+                asChild
+                disabled={!vendorProfile?.approved}
+                className="btn-hospitality bg-brand-600 hover:bg-brand-700"
+              >
                 <Link href="/dashboard/vendor/listings/create">
                   <Plus className="mr-2 h-4 w-4" />
                   Create Listing
@@ -627,10 +639,10 @@ export default function VendorDashboard() {
             </div>
 
             {listings.length === 0 ? (
-              <Card>
+              <Card className="shadow-soft rounded-3xl">
                 <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Building className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                  <Building className="h-12 w-12 text-brand-400 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2 text-brand-900">
                     No listings yet
                   </h3>
                   <p className="text-muted-foreground text-center mb-4">
@@ -639,7 +651,7 @@ export default function VendorDashboard() {
                       : "Complete KYC verification to create listings"}
                   </p>
                   {vendorProfile?.approved && (
-                    <Button asChild>
+                    <Button asChild className="bg-brand-600 hover:bg-brand-700">
                       <Link href="/dashboard/vendor/listings/create">
                         Create Your First Listing
                       </Link>
@@ -648,65 +660,69 @@ export default function VendorDashboard() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {listings.map((listing) => (
-                  <Card
-                    key={listing.id}
-                    className="hover:shadow-lg transition-shadow"
-                  >
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">
-                          {listing.title}
-                        </CardTitle>
-                        <Badge
+              <Table className="bg-white rounded-3xl shadow-soft overflow-hidden">
+                <TableHeader>
+                  <TableRow className="bg-brand-50">
+                    <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {listings.map((listing) => (
+                    <TableRow
+                      key={listing.id}
+                      className="hover:bg-brand-50 transition-colors"
+                    >
+                      <TableCell className="font-medium">
+                        {listing.title}
+                      </TableCell>
+                      <TableCell>{listing.category}</TableCell>
+                      <TableCell>₦{listing.price?.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <UIBadge
                           variant={listing.active ? "default" : "secondary"}
                         >
                           {listing.active ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
-                      <CardDescription>{listing.category}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                        {listing.description}
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-semibold">
-                          ₦{listing.price?.toLocaleString()}
-                        </span>
-                        <Button variant="outline" size="sm" asChild>
+                        </UIBadge>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm" asChild>
                           <Link
                             href={`/dashboard/vendor/listings/${listing.id}`}
                           >
                             Edit
                           </Link>
                         </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </TabsContent>
 
-          <TabsContent value="bookings" className="space-y-6">
-            <h2 className="text-2xl font-bold">Booking Requests</h2>
+          <TabsContent value="bookings" className="space-y-6 animate-fade-in">
+            <h2 className="text-2xl font-bold text-brand-900">
+              Booking Requests
+            </h2>
 
             {loading ? (
-              <Card>
+              <Card className="shadow-soft rounded-3xl">
                 <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                  <Calendar className="h-12 w-12 text-brand-400 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2 text-brand-900">
                     Loading bookings...
                   </h3>
                 </CardContent>
               </Card>
             ) : bookings.length === 0 ? (
-              <Card>
+              <Card className="shadow-soft rounded-3xl">
                 <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                  <Calendar className="h-12 w-12 text-brand-400 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2 text-brand-900">
                     No bookings yet
                   </h3>
                   <p className="text-muted-foreground text-center">
@@ -716,42 +732,48 @@ export default function VendorDashboard() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
-                {bookings.map((booking) => (
-                  <Card key={booking.id}>
-                    <CardContent className="p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-lg font-semibold">
-                            {booking.listings?.title}
-                          </p>
-                          <p className="text-muted-foreground text-sm">
-                            {booking.booking_date} at {booking.booking_time}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Guests: {booking.guests} • Total: ₦
-                            {booking.total_amount}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="capitalize">
+              <Table className="bg-white rounded-3xl shadow-soft overflow-hidden">
+                <TableHeader>
+                  <TableRow className="bg-brand-50">
+                    <TableHead>Listing</TableHead>
+                    <TableHead>Date & Time</TableHead>
+                    <TableHead>Guests</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bookings.map((booking) => (
+                    <TableRow
+                      key={booking.id}
+                      className="hover:bg-brand-50 transition-colors"
+                    >
+                      <TableCell className="font-medium">
+                        {booking.listings?.title}
+                      </TableCell>
+                      <TableCell>
+                        {booking.booking_date} at {booking.booking_time}
+                      </TableCell>
+                      <TableCell>{booking.guests}</TableCell>
+                      <TableCell>₦{booking.total_amount}</TableCell>
+                      <TableCell>
+                        <UIBadge variant="outline" className="capitalize">
                           {booking.status}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Contact: {booking.contact_email} /{" "}
-                        {booking.contact_phone}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                        </UIBadge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </TabsContent>
 
-          <TabsContent value="profile" className="space-y-6">
-            <h2 className="text-2xl font-bold">Vendor Profile</h2>
+          <TabsContent value="profile" className="space-y-6 animate-fade-in">
+            <h2 className="text-2xl font-bold text-brand-900">
+              Vendor Profile
+            </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+              <Card className="shadow-soft rounded-3xl hover:shadow-medium transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Business Information</CardTitle>
                   <CardDescription>
@@ -764,7 +786,7 @@ export default function VendorDashboard() {
                   {vendorProfile ? (
                     <div className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-brand-800">
                           Business Name
                         </label>
                         <p className="text-sm text-muted-foreground">
@@ -772,9 +794,11 @@ export default function VendorDashboard() {
                         </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium">Status</label>
+                        <label className="text-sm font-medium text-brand-800">
+                          Status
+                        </label>
                         <div className="flex items-center space-x-2 mt-1">
-                          <Badge
+                          <UIBadge
                             variant={
                               vendorProfile.approved ? "default" : "secondary"
                             }
@@ -782,12 +806,12 @@ export default function VendorDashboard() {
                             {vendorProfile.approved
                               ? "Approved"
                               : "Pending Review"}
-                          </Badge>
+                          </UIBadge>
                         </div>
                       </div>
                       {vendorProfile.approved && (
                         <div>
-                          <label className="text-sm font-medium">
+                          <label className="text-sm font-medium text-brand-800">
                             Share Profile
                           </label>
                           <p className="text-sm text-muted-foreground mb-3">
@@ -797,14 +821,14 @@ export default function VendorDashboard() {
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
-                                className="w-full justify-start"
+                                className="w-full justify-start border-brand-200 hover:border-brand-300 hover:bg-brand-50"
                                 onClick={generateQRCode}
                               >
                                 <QrCode className="mr-2 h-4 w-4" />
                                 Generate Profile QR Code
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
+                            <DialogContent className="sm:max-w-md rounded-2xl">
                               <DialogHeader>
                                 <DialogTitle>Your Profile QR Code</DialogTitle>
                                 <DialogDescription>
@@ -815,27 +839,27 @@ export default function VendorDashboard() {
                               </DialogHeader>
 
                               <div className="space-y-4">
-                                <Card>
-                                  <CardContent className="flex flex-col items-center justify-center p-6">
+                                <Card className="border-0 shadow-none">
+                                  <CardContent className="flex flex-col items-center justify-center p-6 bg-brand-50 rounded-2xl">
                                     {isGeneratingQR ? (
                                       <div className="flex items-center justify-center h-32 w-32">
-                                        <LoadingSpinner className="h-8 w-8" />
+                                        <LoadingSpinner className="h-8 w-8 text-brand-600" />
                                       </div>
                                     ) : qrCodeDataUrl ? (
                                       <img
                                         src={qrCodeDataUrl}
                                         alt="Profile QR Code"
-                                        className="w-32 h-32"
+                                        className="w-32 h-32 rounded-lg shadow-soft"
                                       />
                                     ) : (
-                                      <div className="h-32 w-32 bg-gray-200 rounded flex items-center justify-center">
-                                        <QrCode className="h-8 w-8 text-gray-400" />
+                                      <div className="h-32 w-32 bg-white rounded-lg flex items-center justify-center shadow-soft">
+                                        <QrCode className="h-8 w-8 text-brand-400" />
                                       </div>
                                     )}
                                   </CardContent>
                                 </Card>
 
-                                <Card>
+                                <Card className="border-0 shadow-none">
                                   <CardHeader className="pb-2">
                                     <CardTitle className="text-sm">
                                       Profile Link
@@ -851,16 +875,16 @@ export default function VendorDashboard() {
                                             : ""
                                         }
                                         readOnly
-                                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
+                                        className="flex-1 px-3 py-2 text-sm border border-brand-200 rounded-lg bg-brand-50 focus:ring-brand-300"
                                       />
                                       <Button
                                         size="sm"
                                         variant="outline"
                                         onClick={copyProfileLink}
-                                        className="flex items-center space-x-1"
+                                        className="flex items-center space-x-1 border-brand-200 hover:bg-brand-100"
                                       >
                                         {copied ? (
-                                          <Check className="h-4 w-4 text-green-600" />
+                                          <Check className="h-4 w-4 text-success-600" />
                                         ) : (
                                           <Copy className="h-4 w-4" />
                                         )}
@@ -875,7 +899,7 @@ export default function VendorDashboard() {
                                   variant="outline"
                                   onClick={generateQRCode}
                                   disabled={isGeneratingQR}
-                                  className="w-full sm:w-auto"
+                                  className="w-full sm:w-auto border-brand-200 hover:bg-brand-100"
                                 >
                                   <Share2 className="mr-2 h-4 w-4" />
                                   Regenerate QR Code
@@ -883,7 +907,7 @@ export default function VendorDashboard() {
                                 <Button
                                   onClick={downloadQRPDF}
                                   disabled={!qrCodeDataUrl}
-                                  className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700"
+                                  className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700"
                                 >
                                   <Download className="mr-2 h-4 w-4" />
                                   Download PDF
@@ -893,18 +917,25 @@ export default function VendorDashboard() {
                           </Dialog>
                         </div>
                       )}
-                      <Button variant="outline" asChild>
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="border-brand-200 hover:bg-brand-50"
+                      >
                         <Link href="/dashboard/vendor/kyc">Update Profile</Link>
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <Upload className="h-12 w-12 text-brand-400 mx-auto mb-4" />
                       <p className="text-muted-foreground mb-4">
                         Complete your KYC verification to start accepting
                         bookings
                       </p>
-                      <Button asChild>
+                      <Button
+                        asChild
+                        className="bg-brand-600 hover:bg-brand-700"
+                      >
                         <Link href="/dashboard/vendor/kyc">Complete KYC</Link>
                       </Button>
                     </div>
@@ -912,7 +943,7 @@ export default function VendorDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-soft rounded-3xl hover:shadow-medium transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Account Settings</CardTitle>
                   <CardDescription>
@@ -921,19 +952,25 @@ export default function VendorDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Email</label>
+                    <label className="text-sm font-medium text-brand-800">
+                      Email
+                    </label>
                     <p className="text-sm text-muted-foreground">
                       {user?.email}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Name</label>
+                    <label className="text-sm font-medium text-brand-800">
+                      Name
+                    </label>
                     <p className="text-sm text-muted-foreground">
                       {user?.user_metadata?.name}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Role</label>
+                    <label className="text-sm font-medium text-brand-800">
+                      Role
+                    </label>
                     <p className="text-sm text-muted-foreground">Vendor</p>
                   </div>
                 </CardContent>

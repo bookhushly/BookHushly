@@ -10,8 +10,10 @@ export default function BookingStatusPage() {
   const supabase = createClientComponentClient();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [remainingTickets, setRemainingTickets] = useState(null);
+  const [scanProcessed, setScanProcessed] = useState(false);
+  const [scanAttempted, setScanAttempted] = useState(false);
 
-  // Fetch booking info
   useEffect(() => {
     if (!bookingId) return;
 
@@ -19,20 +21,118 @@ export default function BookingStatusPage() {
       setLoading(true);
       const { data, error } = await supabase
         .from("bookings")
-        .select("*")
+        .select(
+          `
+          *,
+          listing:listings (
+            id,
+            title,
+            remaining_tickets
+          )
+        `
+        )
         .eq("id", bookingId)
         .single();
-
-      if (error) console.error("Error fetching booking:", error);
-      else setBooking(data);
-
+      if (error) {
+        console.error("Error fetching booking:", error);
+      } else {
+        setBooking(data);
+        setRemainingTickets(data.listing?.remaining_tickets || 0);
+        console.log("Fetched booking:", data);
+        console.log("Listing ID:", data.listing?.id);
+      }
       setLoading(false);
     }
 
     fetchBooking();
   }, [bookingId]);
 
-  // UI: Loading state
+  useEffect(() => {
+    if (
+      !booking ||
+      !booking.listing ||
+      loading ||
+      remainingTickets === null ||
+      scanProcessed ||
+      scanAttempted
+    )
+      return;
+
+    const processScan = async () => {
+      let usageData = null;
+      try {
+        const { data, error } = await supabase
+          .from("ticket_usage")
+          .select("id")
+          .eq("booking_id", bookingId)
+          .single();
+        if (error) {
+          if (error.code === "PGRST116" && error.details.includes("0 rows")) {
+            console.log("No existing scan found, proceeding with scan.");
+          } else {
+            console.error("Error checking ticket usage:", error);
+            setScanAttempted(true);
+            return;
+          }
+        } else {
+          usageData = data;
+        }
+      } catch (e) {
+        console.error("Unexpected error checking ticket usage:", e);
+        setScanAttempted(true);
+        return;
+      }
+
+      if (usageData) {
+        setScanProcessed(true);
+        return;
+      }
+
+      const listingId = booking.listing?.id;
+      const bookingIdParam = booking.id;
+      if (!listingId) {
+        console.error("Listing ID is undefined, cannot proceed with scan");
+        setScanAttempted(true);
+        return;
+      }
+
+      if (booking.status === "confirmed" && remainingTickets > 0) {
+        setRemainingTickets((prev) => prev - 1);
+        const params = {
+          listing_id_param: listingId,
+          booking_id_param: bookingIdParam,
+        };
+        console.log("RPC Parameters:", params);
+        const { data, error } = await supabase.rpc(
+          "decrement_ticket_count",
+          params
+        );
+        console.log("RPC Response:", { data, error });
+        if (error) {
+          console.error("Error updating ticket count:", error);
+          setRemainingTickets((prev) => prev + 1);
+          setScanAttempted(true);
+        } else if (data !== null && data !== undefined) {
+          setRemainingTickets(data);
+          setScanProcessed(true);
+        } else {
+          console.log("No data returned, rolling back");
+          setRemainingTickets((prev) => prev + 1);
+          setScanAttempted(true);
+        }
+      }
+    };
+
+    processScan();
+  }, [
+    booking,
+    loading,
+    remainingTickets,
+    scanProcessed,
+    scanAttempted,
+    bookingId,
+  ]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-white">
@@ -43,7 +143,6 @@ export default function BookingStatusPage() {
     );
   }
 
-  // UI: Not found
   if (!booking) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-white text-center px-4">
@@ -57,7 +156,6 @@ export default function BookingStatusPage() {
     );
   }
 
-  // UI: Confirmed ticket
   if (booking.status === "confirmed") {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-white text-center px-4">
@@ -72,12 +170,20 @@ export default function BookingStatusPage() {
         <div className="mt-6 p-4 border-2 border-purple-600 rounded-lg bg-purple-50 shadow-lg">
           <p className="font-semibold text-purple-700">Booking ID:</p>
           <p className="text-sm text-gray-800">{booking.id}</p>
+          <p className="font-semibold text-purple-700 mt-2">
+            Remaining Tickets:
+          </p>
+          <p className="text-sm text-gray-800">{remainingTickets}</p>
+          {scanProcessed && (
+            <p className="text-green-600 text-sm mt-2">
+              This ticket has been successfully scanned and counted.
+            </p>
+          )}
         </div>
       </div>
     );
   }
 
-  // UI: Pending ticket
   if (booking.status === "pending") {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-white text-center px-4">
@@ -93,7 +199,6 @@ export default function BookingStatusPage() {
     );
   }
 
-  // UI: Cancelled or invalid
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-white text-center px-4">
       <XCircle className="w-20 h-20 text-red-500 mb-4" />
