@@ -35,13 +35,17 @@ async function getAccessToken() {
       secret: "****",
     });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     const response = await fetch("https://api.qoreid.com/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     const responseBody = await response.text();
     console.log("QoreID token response status:", response.status);
@@ -69,13 +73,53 @@ async function getAccessToken() {
 export async function POST(req) {
   try {
     const { type, value, firstname, lastname } = await req.json();
-    console.log("Verification request:", { type, value, firstname, lastname });
+    console.log("Verification request:", {
+      type,
+      value: type === "nin" ? "****" : value, // Mask NIN for logging
+      firstname: firstname ? "****" : undefined,
+      lastname: lastname ? "****" : undefined,
+    });
 
+    // Validate required fields
     if (!type || !value) {
       return NextResponse.json(
-        { error: "Verification type and value are required" },
+        {
+          valid: false,
+          error: "Verification type and value are required",
+          data: null,
+        },
         { status: 400 }
       );
+    }
+
+    // Validate NIN-specific inputs
+    if (type === "nin") {
+      if (!firstname || !lastname) {
+        return NextResponse.json(
+          {
+            valid: false,
+            error: "Firstname and lastname are required for NIN verification",
+            data: null,
+          },
+          { status: 400 }
+        );
+      }
+      if (!/^\d{11}$/.test(value)) {
+        return NextResponse.json(
+          { valid: false, error: "NIN must be an 11-digit number", data: null },
+          { status: 400 }
+        );
+      }
+      if (!/^[a-zA-Z\s]+$/.test(firstname) || !/^[a-zA-Z\s]+$/.test(lastname)) {
+        return NextResponse.json(
+          {
+            valid: false,
+            error: "Names must contain only letters and spaces",
+            data: null,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const accessToken = await getAccessToken();
@@ -89,23 +133,33 @@ export async function POST(req) {
         break;
       case "nin":
         endpoint = `${QOREID_API_URL}/ng/identities/nin/${value}`;
-        body = { firstname: firstname, lastname: lastname };
-
+        body = {
+          firstname: firstname.toUpperCase(),
+          lastname: lastname.toUpperCase(),
+        }; // Normalize to uppercase
         break;
       case "drivers_license":
         endpoint = `${QOREID_API_URL}/ng/identities/drivers-license/${value}`;
-        body = { firstname: firstname, lastname: lastname };
-
+        body = {
+          firstname: firstname.toUpperCase(),
+          lastname: lastname.toUpperCase(),
+        };
         break;
       default:
         return NextResponse.json(
-          { error: "Invalid verification type" },
+          { valid: false, error: "Invalid verification type", data: null },
           { status: 400 }
         );
     }
 
-    console.log("Making QoreID request to:", endpoint, body);
+    console.log("Making QoreID request to:", endpoint, {
+      ...body,
+      firstname: body.firstname ? "****" : undefined,
+      lastname: body.lastname ? "****" : undefined,
+    });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -113,25 +167,50 @@ export async function POST(req) {
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     const data = await response.json();
-    console.log("QoreID verification response:", data);
+    console.log("QoreID verification response:", {
+      id: data.id,
+      status: data.status,
+      applicant: data.applicant
+        ? { paymentMethodCode: data.applicant.paymentMethodCode }
+        : undefined,
+    });
 
-    if (!response.ok || (data && data.status !== "success")) {
+    // Validate response structure
+    if (!data?.status || !data?.status?.status) {
       return NextResponse.json(
         {
           valid: false,
-          error: data?.message || data?.error || "Verification failed",
+          error: "Invalid response format from verification service",
           data: null,
         },
-        { status: 400 }
+        { status: 500 }
       );
     }
 
+    // Check for verification failure
+    if (!response.ok || data.status.status !== "verified") {
+      return NextResponse.json(
+        {
+          valid: false,
+          error:
+            data.status.message ||
+            data.error ||
+            "Verification failed: Invalid data or mismatch",
+          data: null,
+        },
+        { status: response.ok ? 400 : response.status }
+      );
+    }
+
+    // Success case
     return NextResponse.json({
       valid: true,
-      data: data?.data || data,
+      data: type === "nin" ? data.nin : data?.data || data, // Use data.nin for NIN, fallback for others
       error: null,
     });
   } catch (error) {
