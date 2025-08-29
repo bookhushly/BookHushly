@@ -42,13 +42,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export default function KYCPage() {
   const { user } = useAuthStore();
@@ -65,8 +65,8 @@ export default function KYCPage() {
     phone_number: "",
     business_registration_number: "",
     nin: "",
-    nin_first_name: "", // New field for NIN first name
-    nin_last_name: "", // New field for NIN last name
+    nin_first_name: "",
+    nin_last_name: "",
     drivers_license: "",
     tax_identification_number: "",
     bank_account_name: "",
@@ -87,6 +87,53 @@ export default function KYCPage() {
     { value: "logistics", label: "Logistics" },
     { value: "security", label: "Security" },
   ];
+
+  // Custom Progress Bar Component
+  const CustomProgressBar = ({ currentStep, totalSteps }) => {
+    const progressPercentage = (currentStep / totalSteps) * 100;
+    const steps = [
+      "Business Information",
+      "Contact Information",
+      "Legal Information",
+      "Banking Information",
+      "Review & Consent",
+    ];
+
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          {steps.map((step, index) => (
+            <div key={index} className="flex-1 text-center">
+              <div
+                className={cn(
+                  "w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
+                  currentStep >= index + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-500"
+                )}
+              >
+                {index + 1}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">{step}</p>
+            </div>
+          ))}
+        </div>
+        <div className="relative h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="absolute h-full bg-blue-600 rounded-full transition-all duration-500 ease-in-out"
+            style={{ width: `${progressPercentage}%` }}
+            role="progressbar"
+            aria-valuenow={progressPercentage}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          />
+        </div>
+        <p className="text-sm text-gray-500 mt-2 text-center">
+          Step {currentStep} of {totalSteps}
+        </p>
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (user) {
@@ -120,7 +167,7 @@ export default function KYCPage() {
             business_registration_number:
               profile.business_registration_number || "",
             nin: profile.nin || "",
-            nin_first_name: profile.nin_first_name || "", // Load new fields
+            nin_first_name: profile.nin_first_name || "",
             nin_last_name: profile.nin_last_name || "",
             drivers_license: profile.drivers_license || "",
             tax_identification_number: profile.tax_identification_number || "",
@@ -170,7 +217,6 @@ export default function KYCPage() {
       5: [],
     };
 
-    // Validate required fields for the current step
     for (const field of requiredFields[currentStep]) {
       if (!formData[field].trim()) {
         setError(
@@ -180,7 +226,6 @@ export default function KYCPage() {
       }
     }
 
-    // Step 3: Legal Information validation
     if (currentStep === 3) {
       const requiresCAC = [
         "hotels",
@@ -221,7 +266,6 @@ export default function KYCPage() {
       }
     }
 
-    // Step 5: Consent validation
     if (currentStep === 5) {
       if (
         (formData.business_registration_number ||
@@ -265,7 +309,6 @@ export default function KYCPage() {
     try {
       let verificationResults = {};
 
-      // Verify CAC if provided
       if (formData.business_registration_number) {
         const response = await fetch("/api/verify", {
           method: "POST",
@@ -286,7 +329,6 @@ export default function KYCPage() {
         verificationResults.cac_data = data;
       }
 
-      // Verify NIN if provided
       if (formData.nin) {
         const response = await fetch("/api/verify", {
           method: "POST",
@@ -309,7 +351,9 @@ export default function KYCPage() {
         verificationResults.nin_data = data;
       }
 
-      // Verify Driver's License if required
+      const requiresDL = ["car_rentals", "logistics"].includes(
+        formData.business_category
+      );
       if (requiresDL && formData.drivers_license) {
         const response = await fetch("/api/verify", {
           method: "POST",
@@ -371,7 +415,6 @@ export default function KYCPage() {
         return;
       }
 
-      // Send email notification to admin
       const sendEmails = async () => {
         try {
           const emailData = [
@@ -421,6 +464,7 @@ export default function KYCPage() {
         } catch (error) {
           console.error("Email error:", error);
           toast.error("KYC submitted, but admin notification failed", {
+            description: error.message,
             style: {
               background: "white",
               color: "#1f2937",
@@ -505,21 +549,7 @@ export default function KYCPage() {
             </p>
           </div>
 
-          <div className="mb-8">
-            <Progress value={(currentStep / 5) * 100} className="w-full" />
-            <p className="text-sm text-gray-500 mt-2">
-              Step {currentStep} of 5:{" "}
-              {
-                [
-                  "Business Information",
-                  "Contact Information",
-                  "Legal Information",
-                  "Banking Information",
-                  "Review & Consent",
-                ][currentStep - 1]
-              }
-            </p>
-          </div>
+          <CustomProgressBar currentStep={currentStep} totalSteps={5} />
 
           {existingProfile && (
             <div className="mb-6">
@@ -557,7 +587,6 @@ export default function KYCPage() {
               </Alert>
             )}
 
-            {/* Step 1: Business Information */}
             {currentStep === 1 && (
               <Card className="shadow-sm">
                 <CardHeader>
@@ -669,7 +698,6 @@ export default function KYCPage() {
               </Card>
             )}
 
-            {/* Step 2: Contact Information */}
             {currentStep === 2 && (
               <Card className="shadow-sm">
                 <CardHeader>
@@ -711,7 +739,6 @@ export default function KYCPage() {
               </Card>
             )}
 
-            {/* Step 3: Legal Information */}
             {currentStep === 3 && (
               <Card className="shadow-sm">
                 <CardHeader>
@@ -758,7 +785,7 @@ export default function KYCPage() {
                           <span className="text-gray-500 cursor-help">ⓘ</span>
                         </TooltipTrigger>
                         <TooltipContent>
-                          Enter your 11-digit NIN. Provide the individual's
+                          Enter your 11-digit NIN. Provide the individual&apos;s
                           first and last name associated with the NIN.
                         </TooltipContent>
                       </Tooltip>
@@ -810,7 +837,7 @@ export default function KYCPage() {
                   {requiresDL && (
                     <div className="space-y-2">
                       <Label htmlFor="drivers_license">
-                        Driver's License Number *
+                        Driver&apos;s License Number *
                       </Label>
                       <Input
                         id="drivers_license"
@@ -841,7 +868,6 @@ export default function KYCPage() {
               </Card>
             )}
 
-            {/* Step 4: Banking Information */}
             {currentStep === 4 && (
               <Card className="shadow-sm">
                 <CardHeader>
@@ -894,7 +920,6 @@ export default function KYCPage() {
               </Card>
             )}
 
-            {/* Step 5: Verification Consent and Terms */}
             {currentStep === 5 && (
               <>
                 <Card className="border-blue-200 bg-blue-50/50 shadow-sm">
@@ -915,9 +940,9 @@ export default function KYCPage() {
                         </Label>
                         <p className="text-xs text-gray-500">
                           By checking this box, you agree to allow verification
-                          of your CAC, NIN, and/or Driver's License through our
-                          trusted partner, QoreID, in compliance with Nigeria
-                          Data Protection Regulation.
+                          of your CAC, NIN, and/or Driver&apos;s License through
+                          our trusted partner, QoreID, in compliance with
+                          Nigeria Data Protection Regulation.
                         </p>
                       </div>
                     </div>
@@ -953,7 +978,6 @@ export default function KYCPage() {
               </>
             )}
 
-            {/* Navigation Buttons */}
             <div className="flex justify-between space-x-4">
               {currentStep > 1 && (
                 <Button

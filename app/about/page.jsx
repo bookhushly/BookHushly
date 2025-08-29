@@ -116,7 +116,7 @@ export default function AboutPage() {
               About Bookhushly
             </h1>
             <p className="text-xl text-white/90 mb-8 font-body text-balance">
-              We're on a mission to connect Nigeria and Africa with quality
+              We&apos;re on a mission to connect Nigeria and Africa with quality
               hospitality, logistics, and security services through technology
               and trust.
             </p>

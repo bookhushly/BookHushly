@@ -44,8 +44,8 @@ export function TermsAndConditionsModal() {
               </h3>
               <p className="leading-relaxed">
                 By registering as a vendor on{" "}
-                <span className="font-medium">Bookhushly.com</span>{" "}
-                ("Platform"), you agree to these legally binding Terms and
+                <span className="font-medium">Bookhushly.com</span>
+                (Platform), you agree to these legally binding Terms and
                 Conditions, governed by the laws of the Federal Republic of
                 Nigeria.
               </p>

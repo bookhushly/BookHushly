@@ -7,7 +7,6 @@ import Link from "next/link";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { useAuthStore, useBookingStore } from "@/lib/store";
 import { createBooking, getListing } from "@/lib/database";
-import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
@@ -37,7 +36,6 @@ import { Calendar } from "../ui/calendar";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { LoadingSpinner } from "../ui/loading-spinner";
-import { data } from "autoprefixer";
 
 export default function BookServiceClient() {
   const params = useParams();
