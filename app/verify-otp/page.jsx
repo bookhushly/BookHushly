@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,23 +15,29 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { resetPassword } from "@/lib/auth";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { verifyOtpAndRedirect } from "@/lib/auth";
+import { Lock, ArrowLeft, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
-export default function ForgotPasswordPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
+export default function VerifyOtpPage() {
+  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState(""); // Pre-filled from localStorage or query if available
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Optionally pre-fill email from localStorage or query params if passed
+    const storedEmail = localStorage.getItem("resetEmail") || "";
+    if (storedEmail) setEmail(storedEmail);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email.trim()) {
-      setError("Email is required");
+    if (!otp.trim() || !email.trim()) {
+      setError("Email and OTP are required");
       return;
     }
 
@@ -38,24 +45,24 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      const { error } = await resetPassword(email);
+      const { data, error } = await verifyOtpAndRedirect(email, otp);
 
       if (error) {
         setError(error.message);
-        toast.error("Reset failed", {
+        toast.error("OTP verification failed", {
           description: error.message,
         });
         return;
       }
 
       setSuccess(true);
-      toast.success("OTP sent!", {
-        description: "Check your email for the OTP to reset your password",
+      toast.success("OTP verified!", {
+        description: "You can now set a new password",
       });
-      router.push("/verify-otp");
+      router.push("/reset-password");
     } catch (err) {
       setError("An unexpected error occurred");
-      toast.error("Reset failed", {
+      toast.error("OTP verification failed", {
         description: "An unexpected error occurred",
       });
     } finally {
@@ -72,28 +79,13 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto mb-4 text-green-500">
                 <CheckCircle className="h-16 w-16" />
               </div>
-              <CardTitle className="text-2xl">Check Your Email</CardTitle>
-              <CardDescription>
-                We've sent an OTP to {email}. Use it to reset your password in
-                the next page.
-              </CardDescription>
+              <CardTitle className="text-2xl">OTP Verified</CardTitle>
+              <CardDescription>You can now reset your password</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Didn't receive the OTP? Check your spam folder or try again.
-              </p>
-              <div className="space-y-2">
-                <Button
-                  onClick={() => setSuccess(false)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Try Again
-                </Button>
-                <Button asChild className="w-full">
-                  <Link href="/login">Back to Login</Link>
-                </Button>
-              </div>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link href="/reset-password">Reset Password</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -106,27 +98,23 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link
-            href="/login"
+            href="/forgot-password"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Login
+            Back to Forgot Password
           </Link>
-          <h1 className="text-3xl font-bold text-primary mb-2">
-            Reset Password
-          </h1>
+          <h1 className="text-3xl font-bold text-primary mb-2">Verify OTP</h1>
           <p className="text-muted-foreground">
-            Enter your email to receive an OTP
+            Enter the OTP sent to your email
           </p>
         </div>
 
         <Card className="shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">
-              Forgot Password?
-            </CardTitle>
+            <CardTitle className="text-2xl text-center">Enter OTP</CardTitle>
             <CardDescription className="text-center">
-              We'll send you an OTP to reset your password
+              Use the OTP from your email to proceed
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -139,18 +127,29 @@ export default function ForgotPasswordPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="otp">OTP</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (error) setError("");
-                    }}
+                    id="otp"
+                    name="otp"
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
                     className="pl-10"
                     required
                   />
@@ -161,25 +160,13 @@ export default function ForgotPasswordPage() {
                 {loading ? (
                   <>
                     <LoadingSpinner className="mr-2 h-4 w-4" />
-                    Sending OTP...
+                    Verifying OTP...
                   </>
                 ) : (
-                  "Send OTP"
+                  "Verify OTP"
                 )}
               </Button>
             </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Remember your password?{" "}
-                <Link
-                  href="/login"
-                  className="text-primary hover:underline font-medium"
-                >
-                  Sign in here
-                </Link>
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>

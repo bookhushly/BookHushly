@@ -103,7 +103,7 @@ export default function VendorDashboard() {
 
   const copyProfileLink = async () => {
     if (!vendorProfile?.id) {
-      toast.error("Vendor profile ID is missing");
+      toast.error("Vendor profile is missing");
       return;
     }
 
@@ -229,11 +229,12 @@ export default function VendorDashboard() {
           .from("vendors")
           .select("*")
           .eq("user_id", user.id)
-          .maybeSingle();
+          .maybeSingle(); // Changed from .single() to .maybeSingle()
 
-        if (vendorError) throw vendorError;
         setVendorProfile(vendor);
         console.log("Vendor Profile:", vendor);
+
+        // Only proceed with listings and stats if a vendor profile exists and is approved
         if (vendor?.approved) {
           const { data: vendorListings, error: listingError } = await supabase
             .from("listings")
@@ -252,16 +253,17 @@ export default function VendorDashboard() {
           setListings([]);
         }
 
-        // Toast feedback
-        if (!vendor) {
-          toast.info("Complete your KYC to create listings.");
-        } else if (!vendor.approved && vendor.status === "reviewing") {
-          toast.info("KYC under review.");
-        } else if (vendor.approved) {
-          toast.success("Vendor approved! You can now create listings.");
-        } else if (!vendor.approved && vendor.status === "denied") {
-          toast.error("KYC denied. Contact support.");
+        // Toast feedback only for existing vendor profiles
+        if (vendor) {
+          if (!vendor.approved && vendor.status === "reviewing") {
+            toast.info("KYC under review.");
+          } else if (vendor.approved) {
+            toast.success("Vendor approved! You can now create listings.");
+          } else if (!vendor.approved && vendor.status === "denied") {
+            toast.error("KYC denied. Contact support.");
+          }
         }
+        // No toast for !vendor case (vendor not found), as per requirement
       } catch (error) {
         console.error("Error loading vendor dashboard:", error);
         toast.error("Error loading dashboard.");
@@ -272,7 +274,6 @@ export default function VendorDashboard() {
 
     fetchData();
   }, [user]);
-
   const loadBookings = async () => {
     if (!user) return;
     setLoading(true);

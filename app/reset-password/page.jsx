@@ -1,96 +1,95 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { supabase } from '@/lib/supabase'
-import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react'
-import { toast } from 'sonner'
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { supabase } from "@/lib/supabase";
+import { Eye, EyeOff, Lock, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ResetPasswordPage() {
   const [formData, setFormData] = useState({
-    password: '',
-    confirmPassword: ''
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  
-  const router = useRouter()
-  const searchParams = useSearchParams()
+    password: "",
+    confirmPassword: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    // Check if we have the required tokens
-    const accessToken = searchParams.get('access_token')
-    const refreshToken = searchParams.get('refresh_token')
-    
-    if (!accessToken || !refreshToken) {
-      setError('Invalid reset link. Please request a new password reset.')
-    }
-  }, [searchParams])
+    // No token check needed since OTP is verified earlier
+  }, []);
 
   const handleChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
-    }))
-    if (error) setError('')
-  }
+      [e.target.name]: e.target.value,
+    }));
+    if (error) setError("");
+  };
 
   const validateForm = () => {
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
-      return false
+      setError("Password must be at least 6 characters");
+      return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
-      return false
+      setError("Passwords do not match");
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
-    
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setLoading(true);
+    setError("");
 
     try {
       const { error } = await supabase.auth.updateUser({
-        password: formData.password
-      })
-      
+        password: formData.password,
+      });
+
       if (error) {
-        setError(error.message)
-        toast.error('Password reset failed', {
-          description: error.message
-        })
-        return
+        setError(error.message);
+        toast.error("Password reset failed", {
+          description: error.message,
+        });
+        return;
       }
 
-      setSuccess(true)
-      toast.success('Password updated successfully!', {
-        description: 'You can now sign in with your new password'
-      })
+      setSuccess(true);
+      toast.success("Password updated successfully!", {
+        description: "You can now sign in with your new password",
+      });
+      setTimeout(() => router.push("/login"), 3000);
     } catch (err) {
-      setError('An unexpected error occurred')
-      toast.error('Password reset failed', {
-        description: 'An unexpected error occurred'
-      })
+      setError("An unexpected error occurred");
+      toast.error("Password reset failed", {
+        description: "An unexpected error occurred",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (success) {
     return (
@@ -103,25 +102,28 @@ export default function ResetPasswordPage() {
               </div>
               <CardTitle className="text-2xl">Password Updated</CardTitle>
               <CardDescription>
-                Your password has been successfully updated
+                Your password has been successfully updated. Redirecting to
+                login...
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild className="w-full">
-                <Link href="/login">Sign In Now</Link>
+                <Link href="/login">Go to Login</Link>
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-primary mb-2">Reset Password</h1>
+          <h1 className="text-3xl font-bold text-primary mb-2">
+            Reset Password
+          </h1>
           <p className="text-muted-foreground">Enter your new password</p>
         </div>
 
@@ -147,7 +149,7 @@ export default function ResetPasswordPage() {
                   <Input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter new password"
                     value={formData.password}
                     onChange={handleChange}
@@ -159,7 +161,11 @@ export default function ResetPasswordPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -171,7 +177,7 @@ export default function ResetPasswordPage() {
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm new password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
@@ -183,7 +189,11 @@ export default function ResetPasswordPage() {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -195,7 +205,7 @@ export default function ResetPasswordPage() {
                     Updating Password...
                   </>
                 ) : (
-                  'Update Password'
+                  "Update Password"
                 )}
               </Button>
             </form>
@@ -203,5 +213,5 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

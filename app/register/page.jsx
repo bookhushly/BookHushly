@@ -69,22 +69,44 @@ export default function RegisterPage() {
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) {
+    const { name, email, password, confirmPassword } = formData;
+
+    // Validate name
+    if (!name.trim()) {
       setError("Name is required");
       return false;
     }
-    if (!formData.email.trim()) {
+
+    // Validate email
+    if (!email.trim()) {
       setError("Email is required");
       return false;
     }
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
+
+    // Validate password
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!password) {
+      setError("Password is required");
       return false;
     }
-    if (formData.password !== formData.confirmPassword) {
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return false;
+    }
+    if (!passwordRegex.test(password)) {
+      setError(
+        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)"
+      );
+      return false;
+    }
+
+    // Validate confirm password
+    if (password !== confirmPassword) {
       setError("Passwords do not match");
       return false;
     }
+
     return true;
   };
 
