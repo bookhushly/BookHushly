@@ -52,7 +52,7 @@ export default function CreateListingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [eventType, setEventType] = useState("");
+  const [eventType, setEventType] = useState("event_center");
   const [formData, setFormData] = useState({});
   const [error, setError] = useState("");
   const [images, setImages] = useState([]);
