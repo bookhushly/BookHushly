@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -28,11 +28,35 @@ export function Header() {
   const [showNotifications, setShowNotifications] = useState(false);
   const { user, logout } = useAuthStore();
   const router = useRouter();
+  const menuRef = useRef(null);
+
+  // Handle click outside to close mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const handleLogout = async () => {
-    await signOut();
-    logout();
-    router.push("/");
+    try {
+      await signOut();
+      logout();
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsMenuOpen(false);
+    }
   };
 
   const navigation = [
@@ -43,19 +67,17 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b px-4">
-      <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2 ">
-          <div className="flex items-center space-x-2 pr-3">
-            <div className="w-28 h-28 relative overflow-visible">
-              <Image
-                src="/logo.png"
-                alt="Bookhushly Logo"
-                fill
-                className="object-contain scale-150"
-                priority
-              />
-            </div>
+    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-sm shadow-sm border-b px-3 sm:px-4">
+      <div className="container flex h-14 items-center justify-between">
+        <Link href="/" className="flex items-center">
+          <div className="w-28 h-28 relative">
+            <Image
+              src="/logo.png"
+              alt="Bookhushly Logo"
+              fill
+              className="object-contain scale-125"
+              priority
+            />
           </div>
         </Link>
 
@@ -65,7 +87,7 @@ export function Header() {
             <Link
               key={item.name}
               href={item.href}
-              className="transition-colors font-medium text-gray-600 hover:text-gray-900"
+              className="text-sm font-medium text-gray-600 hover:text-purple-700 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
             >
               {item.name}
             </Link>
@@ -73,7 +95,7 @@ export function Header() {
         </nav>
 
         {/* Desktop Auth */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-3">
           {user ? (
             <>
               {/* Notifications */}
@@ -85,18 +107,18 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="relative text-gray-600 hover:text-gray-900"
+                    className="relative text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                   >
                     <Bell className="h-4 w-4" />
                     <Badge
                       variant="destructive"
-                      className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center"
+                      className="absolute -top-1 -right-1 h-4 w-4 text-xs p-0 flex items-center justify-center rounded-full bg-red-500 text-white transition-transform duration-150 hover:scale-110"
                     >
                       3
                     </Badge>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="w-80 p-0">
+                <PopoverContent align="end" className="w-72 p-0">
                   <NotificationCenter
                     userId={user.id}
                     onClose={() => setShowNotifications(false)}
@@ -110,24 +132,28 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-600 hover:text-white"
+                    className="text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                   >
-                    <User className="h-4 w-4 mr-2" />
-                    {user.user_metadata?.name || "Account"}
+                    <User className="h-4 w-4 mr-1" />
+                    <span className="text-sm">
+                      {user.user_metadata?.name || "Account"}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem asChild>
                     <Link
-                      href={`/dashboard/${
-                        user.user_metadata?.role || "customer"
-                      }`}
+                      href={`/dashboard/${user.user_metadata?.role || "customer"}`}
+                      className="flex items-center text-sm"
                     >
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="flex items-center text-sm"
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </DropdownMenuItem>
@@ -139,14 +165,14 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-600 hover:text-white"
+                className="text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                 asChild
               >
                 <Link href="/login">Login</Link>
               </Button>
               <Button
                 size="sm"
-                className="bg-purple-700 hover:bg-purple-600 text-white font-semibold"
+                className="bg-purple-700 hover:bg-purple-600 text-white text-sm font-medium transition-colors duration-150"
                 asChild
               >
                 <Link href="/register">Register</Link>
@@ -159,7 +185,7 @@ export function Header() {
         <Button
           variant="ghost"
           size="sm"
-          className="md:hidden text-gray-600 hover:text-gray-900"
+          className="md:hidden text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           {isMenuOpen ? (
@@ -172,33 +198,38 @@ export function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-b shadow-lg">
+        <div
+          ref={menuRef}
+          className="md:hidden absolute top-14 left-0 w-full bg-white border-b shadow-md transform transition-all duration-200 ease-in-out translate-y-0 opacity-100"
+          style={{
+            transform: isMenuOpen ? "translateY(0)" : "translateY(-10px)",
+            opacity: isMenuOpen ? 1 : 0,
+          }}
+        >
+          <div className="px-3 pt-3 pb-4 space-y-2 sm:px-4">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="block px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                className="block px-3 py-2 text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.name}
               </Link>
             ))}
-            <div className="pt-2 border-t">
+            <div className="pt-3 border-t">
               {user ? (
                 <>
                   <Link
-                    href={`/dashboard/${
-                      user.user_metadata?.role || "customer"
-                    }`}
-                    className="block px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                    href={`/dashboard/${user.user_metadata?.role || "customer"}`}
+                    className="block px-3 py-2 text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                    className="block w-full text-left px-3 py-2 text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                   >
                     Logout
                   </button>
@@ -207,14 +238,14 @@ export function Header() {
                 <>
                   <Link
                     href="/login"
-                    className="block px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                    className="block px-3 py-2 text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Login
                   </Link>
                   <Link
                     href="/register"
-                    className="block px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                    className="block px-3 py-2 text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-colors duration-150 rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Register

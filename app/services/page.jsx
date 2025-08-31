@@ -12,7 +12,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { debounce } from "lodash";
 import {
   Card,
   CardHeader,
@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import {
   MapPin,
   Grid,
@@ -49,8 +49,8 @@ import {
   Truck,
   Shield,
   Utensils,
+  ChevronDown,
 } from "lucide-react";
-
 import { CATEGORIES } from "@/lib/constants";
 import { extractCategoryData } from "@/lib/category-forms";
 import { supabase } from "@/lib/supabase";
@@ -62,12 +62,13 @@ function ServicesContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const searchParams = useSearchParams();
   const observer = useRef(null);
   const ITEMS_PER_PAGE = 12;
 
-  // Get initial values from search params
+  // Initialize filters from search params
   const initialSearch = searchParams.get("search") || "";
   const initialLocation = searchParams.get("location") || "all";
   const initialCategory = searchParams.get("category") || "all";
@@ -76,6 +77,20 @@ function ServicesContent() {
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [viewMode, setViewMode] = useState("grid");
+
+  // Debounced search handler
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value) {
+        params.set("search", value);
+      } else {
+        params.delete("search");
+      }
+      window.history.pushState(null, "", `?${params.toString()}`);
+    }, 500),
+    [searchParams]
+  );
 
   // Update state when search params change
   useEffect(() => {
@@ -88,9 +103,10 @@ function ServicesContent() {
     setSelectedCategory(category);
     setPage(1);
     setHasMore(true);
+    setListings([]);
   }, [searchParams]);
 
-  // Fetch listings with pagination
+  // Fetch listings with pagination and caching
   const fetchListings = useCallback(
     async (pageNum, reset = false) => {
       if (!hasMore || isLoadingMore) return;
@@ -99,10 +115,25 @@ function ServicesContent() {
       try {
         let query = supabase
           .from("listings")
-          .select("*")
+          .select(
+            "id, vendor_id, title, description, category, price, location, capacity, duration, availability, features, media_urls, active, vendor_name, category_data, price_unit, operating_hours, service_areas, bedrooms, bathrooms, check_in_time, check_out_time, minimum_stay, maximum_capacity, vehicle_type, security_deposit, remaining_tickets, event_type"
+          )
           .eq("active", true)
           .order("created_at", { ascending: false })
           .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1);
+
+        // Apply filters to the query
+        if (selectedCategory !== "all") {
+          query = query.eq("category", selectedCategory);
+        }
+        if (selectedLocation !== "all") {
+          query = query.ilike("location", `%${selectedLocation}%`);
+        }
+        if (searchQuery) {
+          query = query.or(
+            `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%,features.ilike.%${searchQuery}%`
+          );
+        }
 
         const { data, error } = await query;
         if (error) throw error;
@@ -121,45 +152,13 @@ function ServicesContent() {
         if (pageNum === 1) setLoading(false);
       }
     },
-    [hasMore]
+    [hasMore, selectedCategory, selectedLocation, searchQuery]
   );
 
   // Initial fetch and fetch on page change
   useEffect(() => {
     fetchListings(page, page === 1);
   }, [page, fetchListings]);
-
-  // Filter listings based on search params and filters
-  const filteredListings = useMemo(() => {
-    if (loading) return [];
-
-    let result = [...listings];
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (l) =>
-          l.title.toLowerCase().includes(q) ||
-          l.description.toLowerCase().includes(q) ||
-          l.location.toLowerCase().includes(q) ||
-          (l.features && l.features.toLowerCase().includes(q)) ||
-          (l.category_data &&
-            JSON.stringify(l.category_data).toLowerCase().includes(q))
-      );
-    }
-
-    if (selectedCategory !== "all") {
-      result = result.filter((l) => l.category === selectedCategory);
-    }
-
-    if (selectedLocation !== "all") {
-      result = result.filter((l) =>
-        l.location.toLowerCase().includes(selectedLocation.toLowerCase())
-      );
-    }
-
-    return result;
-  }, [listings, searchQuery, selectedCategory, selectedLocation, loading]);
 
   // Infinite scroll observer
   const lastListingRef = useCallback(
@@ -173,7 +172,7 @@ function ServicesContent() {
             setPage((prev) => prev + 1);
           }
         },
-        { threshold: 0.1, rootMargin: "100px" }
+        { threshold: 0.1, rootMargin: "200px" }
       );
 
       if (node) observer.current.observe(node);
@@ -182,7 +181,7 @@ function ServicesContent() {
   );
 
   const getPublicImageUrl = (path) => {
-    if (!path) return null;
+    if (!path) return "/placeholder.jpg";
     const pathParts = path.split("listing-images/");
     const filePath = pathParts.length > 1 ? pathParts[1] : path;
 
@@ -190,15 +189,13 @@ function ServicesContent() {
       .from("listing-images")
       .getPublicUrl(filePath);
 
-    return data.publicUrl;
+    return data.publicUrl || "/placeholder.jpg";
   };
 
   const getServiceImage = (service) => {
     if (service.media_urls && service.media_urls.length > 0) {
-      const publicUrl = getPublicImageUrl(service.media_urls[0]);
-      return publicUrl || "/placeholder.jpg";
+      return getPublicImageUrl(service.media_urls[0]);
     }
-
     const category = CATEGORIES.find((c) => c.value === service.category);
     return category?.image || "/placeholder.jpg";
   };
@@ -209,53 +206,69 @@ function ServicesContent() {
 
     switch (category) {
       case "hotels":
+      case "serviced_apartments":
         return {
           icon: <Building className="h-4 w-4" />,
           details: [
-            service.capacity && `${service.capacity} guests`,
-            categoryData.room_type && `${categoryData.room_type} room`,
-            categoryData.bedrooms && `${categoryData.bedrooms} bedrooms`,
+            service.bedrooms &&
+              `${service.bedrooms} bedroom${service.bedrooms > 1 ? "s" : ""}`,
+            service.bathrooms &&
+              `${service.bathrooms} bathroom${service.bathrooms > 1 ? "s" : ""}`,
+            service.check_in_time && `Check-in: ${service.check_in_time}`,
+            service.minimum_stay && `Min. stay: ${service.minimum_stay}`,
           ]
             .filter(Boolean)
             .join(" • "),
-          priceLabel: "per night",
+          priceLabel:
+            service.price_unit === "per_night" ? "per night" : "starting from",
         };
       case "food":
         return {
           icon: <Utensils className="h-4 w-4" />,
           details: [
             categoryData.cuisine_type && categoryData.cuisine_type,
-            service.capacity && `${service.capacity} seats`,
             service.operating_hours && service.operating_hours,
+            service.capacity && `${service.capacity} seats`,
           ]
             .filter(Boolean)
             .join(" • "),
-          priceLabel: "per person",
+          priceLabel:
+            service.price_unit === "per_person"
+              ? "per person"
+              : "starting from",
         };
       case "events":
         return {
           icon: <Calendar className="h-4 w-4" />,
           details: [
-            service.capacity && `Up to ${service.capacity} guests`,
+            service.event_type && service.event_type.replace("_", " "),
+            service.remaining_tickets &&
+              `${service.remaining_tickets} tickets left`,
             service.duration && service.duration,
-            categoryData.event_types &&
-              categoryData.event_types.slice(0, 2).join(", "),
           ]
             .filter(Boolean)
             .join(" • "),
+          priceLabel:
+            service.price_unit === "per_event" ? "per event" : "starting from",
         };
       case "logistics":
+      case "car_rentals":
         return {
-          icon: <Truck className="h-4 w-4" />,
+          icon:
+            category === "logistics" ? (
+              <Truck className="h-4 w-4" />
+            ) : (
+              <Car className="h-4 w-4" />
+            ),
           details: [
-            categoryData.service_types &&
-              categoryData.service_types.slice(0, 2).join(", "),
+            service.vehicle_type && service.vehicle_type,
+            service.service_areas && service.service_areas,
             categoryData.weight_limit && `Max: ${categoryData.weight_limit}`,
-            service.service_areas && "Multiple areas",
           ]
             .filter(Boolean)
             .join(" • "),
-          priceLabel: "starting from",
+          priceLabel:
+            service.price_unit === "per_km" ? "per km" : "starting from",
         };
       case "security":
         return {
@@ -263,7 +276,8 @@ function ServicesContent() {
           details: [
             categoryData.security_types &&
               categoryData.security_types.slice(0, 2).join(", "),
-            categoryData.team_size && categoryData.team_size,
+            service.security_deposit &&
+              `Deposit: ₦${service.security_deposit.toLocaleString()}`,
             categoryData.response_time &&
               `Response: ${categoryData.response_time}`,
           ]
@@ -287,19 +301,20 @@ function ServicesContent() {
 
     if (priceUnit === "fixed" || priceUnit === "per_event") {
       return `₦${price.toLocaleString()}`;
+    } else if (priceUnit === "negotiable") {
+      return "Negotiable";
     } else {
       const unitLabel =
         {
           per_hour: "/hr",
           per_day: "/day",
+          per_night: "/night",
           per_person: "/person",
           per_km: "/km",
-          negotiable: "",
+          per_week: "/week",
+          per_month: "/month",
         }[priceUnit] || "";
-
-      return priceUnit === "negotiable"
-        ? "Negotiable"
-        : `₦${price.toLocaleString()}${unitLabel}`;
+      return `₦${price.toLocaleString()}${unitLabel}`;
     }
   };
 
@@ -317,15 +332,14 @@ function ServicesContent() {
         return { text: "Book Event", icon: PartyPopper };
       case "hotels":
       case "serviced_apartments":
+        return { text: "Book Now", icon: Building };
       default:
         return { text: "View Details", icon: Building };
     }
   };
 
-  // Helper function to parse and format features
   const formatFeatures = (features) => {
     try {
-      // If features is a JSON string, parse it; otherwise, assume it's already an array or string
       let parsedFeatures = features;
       if (typeof features === "string") {
         try {
@@ -334,7 +348,6 @@ function ServicesContent() {
           parsedFeatures = features.split("\n").filter(Boolean);
         }
       }
-      // Ensure it's an array and limit to 3 features for display
       return Array.isArray(parsedFeatures)
         ? parsedFeatures.slice(0, 3).map((f) => ({
             label: f.charAt(0).toUpperCase() + f.slice(1),
@@ -346,168 +359,240 @@ function ServicesContent() {
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    debouncedSearch(e.target.value);
+  };
+
   if (loading) {
     return <ServicesLoading />;
   }
 
   return (
-    <div className="container py-12">
+    <div className="container mx-auto px-4 py-12">
+      {/* Filter Bar */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
-        <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-brand-600 to-brand-800 bg-clip-text text-transparent">
-          {searchQuery
-            ? `Results for "${searchQuery}"`
-            : selectedCategory !== "all"
-              ? `${
-                  CATEGORIES.find((c) => c.value === selectedCategory)?.label ||
-                  selectedCategory
-                } Services`
-              : "Discover Premium Services"}
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl">
-          Explore our curated selection of hospitality, logistics, and security
-          services across Nigeria and Africa.
-        </p>
-      </motion.div>
-
-      {fetchError && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 shadow-sm"
-        >
-          ⚠️ Error fetching services: {fetchError}
-        </motion.div>
-      )}
-
-      <motion.div
-        className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 mb-8 rounded-xl shadow-sm"
+        className="sticky top-0 z-20 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 py-4 mb-8 rounded-xl shadow-sm border border-gray-100"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex flex-col md:flex-row gap-3 items-center">
-          <div className="relative flex-1 w-full md:w-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search services, locations, or vendors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 rounded-lg"
-            />
+        <div className="flex items-center justify-between gap-4">
+          {/* Desktop Filters */}
+          <div className="hidden md:flex items-center gap-3 flex-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                placeholder="Search services, locations, or vendors..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="pl-10 h-11 rounded-lg border-gray-200 focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <Select
+              value={selectedCategory}
+              onValueChange={(value) => {
+                setSelectedCategory(value);
+                const params = new URLSearchParams(searchParams.toString());
+                if (value === "all") {
+                  params.delete("category");
+                } else {
+                  params.set("category", value);
+                }
+                window.history.pushState(null, "", `?${params.toString()}`);
+                setPage(1);
+                setListings([]);
+              }}
+            >
+              <SelectTrigger className="w-[200px] h-11 rounded-lg border-gray-200">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {CATEGORIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.icon} {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={selectedLocation}
+              onValueChange={(value) => {
+                setSelectedLocation(value);
+                const params = new URLSearchParams(searchParams.toString());
+                if (value === "all") {
+                  params.delete("location");
+                } else {
+                  params.set("location", value);
+                }
+                window.history.pushState(null, "", `?${params.toString()}`);
+                setPage(1);
+                setListings([]);
+              }}
+            >
+              <SelectTrigger className="w-[200px] h-11 rounded-lg border-gray-200">
+                <SelectValue placeholder="All Locations" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Locations</SelectItem>
+                {Array.from(new Set(listings.map((l) => l.location)))
+                  .sort()
+                  .map((loc) => (
+                    <SelectItem key={loc} value={loc.toLowerCase()}>
+                      {loc}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <Select
-            value={selectedCategory}
-            onValueChange={(value) => {
-              setSelectedCategory(value);
-              const params = new URLSearchParams(searchParams.toString());
-              if (value === "all") {
-                params.delete("category");
-              } else {
-                params.set("category", value);
-              }
-              window.history.pushState(null, "", `?${params.toString()}`);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-[200px] h-10 rounded-lg">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {CATEGORIES.map((c) => (
-                <SelectItem key={c.value} value={c.value}>
-                  {c.icon} {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Mobile Filter Drawer */}
+          <div className="md:hidden flex items-center gap-3 w-full">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="pl-10 h-11 rounded-lg border-gray-200"
+              />
+            </div>
+            <Drawer open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <DrawerTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 rounded-lg"
+                >
+                  <Filter className="h-5 w-5" />
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="p-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Category
+                    </label>
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={(value) => {
+                        setSelectedCategory(value);
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
+                        if (value === "all") {
+                          params.delete("category");
+                        } else {
+                          params.set("category", value);
+                        }
+                        window.history.pushState(
+                          null,
+                          "",
+                          `?${params.toString()}`
+                        );
+                        setPage(1);
+                        setListings([]);
+                        setIsFilterOpen(false);
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-11 rounded-lg">
+                        <SelectValue placeholder="All Categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {CATEGORIES.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {c.icon} {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Location
+                    </label>
+                    <Select
+                      value={selectedLocation}
+                      onValueChange={(value) => {
+                        setSelectedLocation(value);
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
+                        if (value === "all") {
+                          params.delete("location");
+                        } else {
+                          params.set("location", value);
+                        }
+                        window.history.pushState(
+                          null,
+                          "",
+                          `?${params.toString()}`
+                        );
+                        setPage(1);
+                        setListings([]);
+                        setIsFilterOpen(false);
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-11 rounded-lg">
+                        <SelectValue placeholder="All Locations" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Locations</SelectItem>
+                        {Array.from(new Set(listings.map((l) => l.location)))
+                          .sort()
+                          .map((loc) => (
+                            <SelectItem key={loc} value={loc.toLowerCase()}>
+                              {loc}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    className="w-full bg-brand-600 hover:bg-brand-700 rounded-lg"
+                    onClick={() => setIsFilterOpen(false)}
+                  >
+                    Apply Filters
+                  </Button>
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
 
-          <Select
-            value={selectedLocation}
-            onValueChange={(value) => {
-              setSelectedLocation(value);
-              const params = new URLSearchParams(searchParams.toString());
-              if (value === "all") {
-                params.delete("location");
-              } else {
-                params.set("location", value);
-              }
-              window.history.pushState(null, "", `?${params.toString()}`);
-            }}
-          >
-            <SelectTrigger className="w-full md:w-[200px] h-10 rounded-lg">
-              <SelectValue placeholder="All Locations" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              {Array.from(new Set(listings.map((l) => l.location))).map(
-                (loc) => (
-                  <SelectItem key={loc} value={loc.toLowerCase()}>
-                    {loc}
-                  </SelectItem>
-                )
-              )}
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-10 w-10 rounded-lg"
-          >
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-muted-foreground">
-            Showing{" "}
-            <span className="font-medium">{filteredListings.length}</span> of{" "}
-            <span className="font-medium">{listings.length}</span> services
-            {selectedCategory !== "all" && (
-              <span>
-                {" "}
-                in {CATEGORIES.find((c) => c.value === selectedCategory)?.label}
-              </span>
-            )}
-          </p>
+          {/* View Mode Toggle */}
           <div className="flex gap-2">
             <Button
               variant={viewMode === "grid" ? "default" : "outline"}
-              size="sm"
-              className="h-9 rounded-lg"
+              size="icon"
+              className="h-11 w-11 rounded-lg"
               onClick={() => setViewMode("grid")}
             >
-              <Grid className="h-4 w-4 mr-2" />
-              Grid
+              <Grid className="h-5 w-5" />
             </Button>
             <Button
               variant={viewMode === "list" ? "default" : "outline"}
-              size="sm"
-              className="h-9 rounded-lg"
+              size="icon"
+              className="h-11 w-11 rounded-lg"
               onClick={() => setViewMode("list")}
             >
-              <List className="h-4 w-4 mr-2" />
-              List
+              <List className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </motion.div>
 
+      {/* Listings */}
       <AnimatePresence>
-        {filteredListings.length === 0 ? (
+        {listings.length === 0 && !loading ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="text-center py-12"
           >
-            <h3 className="text-xl font-semibold text-gray-700">
+            <h3 className="text-2xl font-semibold text-gray-700">
               No results found
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
@@ -520,6 +605,8 @@ function ServicesContent() {
                 setSelectedCategory("all");
                 setSelectedLocation("all");
                 window.history.pushState(null, "", "/services");
+                setPage(1);
+                setListings([]);
               }}
             >
               Reset Filters
@@ -536,7 +623,7 @@ function ServicesContent() {
             animate={{ opacity: 1 }}
             transition={{ staggerChildren: 0.1 }}
           >
-            {filteredListings.map((service, index) => {
+            {listings.map((service, index) => {
               const category =
                 CATEGORIES.find((c) => c.value === service.category) || {};
               const isPremium = service.price > 100000;
@@ -554,51 +641,50 @@ function ServicesContent() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
+                  ref={index === listings.length - 1 ? lastListingRef : null}
                 >
                   <Link href={`/services/${service.id}`} passHref>
                     <Card
-                      className={`group hover:shadow-xl transition-all duration-300 border border-gray-100/50 hover:border-brand-200 ${
+                      className={`group hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-brand-300 overflow-hidden rounded-xl ${
                         viewMode === "list" ? "flex flex-row" : ""
                       }`}
-                      ref={
-                        index === filteredListings.length - 1
-                          ? lastListingRef
-                          : null
-                      }
                     >
                       <div
                         className={`relative ${
-                          viewMode === "list" ? "w-64 h-48" : "w-full h-56"
+                          viewMode === "list"
+                            ? "w-48 h-40"
+                            : "w-full h-48 sm:h-56"
                         }`}
                       >
                         <Image
                           src={serviceImage}
-                          alt={`${service.title} service image`}
+                          alt={`${service.title} image`}
                           fill
-                          className={`object-cover transition-transform duration-300 group-hover:scale-105 ${
+                          className={`object-cover transition-transform duration-500 group-hover:scale-105 ${
                             viewMode === "list"
-                              ? "rounded-l-lg"
-                              : "rounded-t-lg"
+                              ? "rounded-l-xl"
+                              : "rounded-t-xl"
                           }`}
-                          loading="lazy"
-                          unoptimized={process.env.NODE_ENV !== "production"}
+                          sizes={
+                            viewMode === "list"
+                              ? "(max-width: 768px) 192px, 192px"
+                              : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          }
+                          priority={index < 4}
+                          loading={index < 4 ? "eager" : "lazy"}
                           onError={(e) => {
-                            const category = CATEGORIES.find(
-                              (c) => c.value === service.category
-                            );
                             e.currentTarget.src =
-                              category?.image || "/placeholder.jpg";
-                            e.currentTarget.onerror = null;
+                              category.image || "/placeholder.jpg";
                           }}
                         />
                         {isPremium && (
-                          <Badge className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white">
+                          <Badge className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-xs font-medium">
                             ✨ Premium
                           </Badge>
                         )}
                         <Badge
                           variant="secondary"
-                          className="absolute bottom-3 left-3 bg-black/70 text-white"
+                          className="absolute bottom-3 left-3 bg-black/70 text-white text-xs flex items-center gap-1"
                         >
                           {category.icon} {category.label}
                         </Badge>
@@ -608,8 +694,10 @@ function ServicesContent() {
                         </div>
                       </div>
 
-                      <div className={viewMode === "list" ? "flex-1" : ""}>
-                        <CardHeader className="pb-3 pt-4">
+                      <div
+                        className={viewMode === "list" ? "flex-1 p-4" : "p-4"}
+                      >
+                        <CardHeader className="p-0 mb-3">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
@@ -638,13 +726,13 @@ function ServicesContent() {
                           </div>
                         </CardHeader>
 
-                        <CardContent className="pt-0">
-                          <CardDescription className="line-clamp-2 text-sm mb-4">
+                        <CardContent className="p-0">
+                          <CardDescription className="line-clamp-2 text-sm mb-3">
                             {service.description}
                           </CardDescription>
 
                           {features.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-4">
+                            <div className="flex flex-wrap gap-2 mb-3">
                               {features.map((feature) => (
                                 <Badge
                                   key={feature.key}
@@ -659,7 +747,7 @@ function ServicesContent() {
 
                           <div className="flex justify-between items-center">
                             <div>
-                              <span className="text-lg font-bold">
+                              <span className="text-lg font-bold text-gray-900">
                                 {formattedPrice}
                               </span>
                               {categoryInfo.priceLabel && (
@@ -670,7 +758,7 @@ function ServicesContent() {
                             </div>
                             <Button
                               size="sm"
-                              className="bg-brand-600 hover:bg-brand-700 rounded-lg"
+                              className="bg-brand-600 hover:bg-brand-700 rounded-lg text-white"
                             >
                               <ButtonIcon className="mr-2 h-4 w-4" />
                               {buttonConfig.text}
@@ -702,13 +790,13 @@ function ServicesContent() {
 
 function ServicesLoading() {
   return (
-    <div className="container py-12">
-      <Skeleton className="h-8 w-96 mb-8" />
+    <div className="container mx-auto px-4 py-12">
+      <Skeleton className="h-8 w-96 mb-8 rounded-lg" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {[...Array(8)].map((_, i) => (
           <Skeleton
             key={i}
-            className="h-64 bg-gray-100 animate-pulse rounded-lg"
+            className="h-64 bg-gray-100 animate-pulse rounded-xl"
           />
         ))}
       </div>
@@ -718,58 +806,52 @@ function ServicesLoading() {
 
 export default function ServicesPage() {
   return (
-    <Suspense fallback={<ServicesLoading />}>
+    <>
+      {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 text-white py-24 overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div
-            className="absolute inset-0 hero-pattern"
-            style={{
-              backgroundImage:
-                'url("https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop")',
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          ></div>
-        </div>
-
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-4 -right-4 w-32 h-32 bg-hospitality-gold/20 rounded-full animate-float"></div>
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-20"
+          style={{
+            backgroundImage:
+              'url("https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop")',
+          }}
+        ></div>
+        <div className="absolute inset-0">
+          <div className="absolute -top-4 -right-4 w-32 h-32 bg-brand-400/20 rounded-full animate-float"></div>
           <div className="absolute top-1/2 -left-8 w-24 h-24 bg-white/10 rounded-full animate-pulse-slow"></div>
           <div
-            className="absolute bottom-10 right-1/4 w-28 h-28 bg-hospitality-gold/10 rounded-full animate-float"
+            className="absolute bottom-10 right-1/4 w-28 h-28 bg-brand-400/10 rounded-full animate-float"
             style={{ animationDelay: "1s" }}
           ></div>
         </div>
-
-        <div className="container relative z-10">
+        <div className="container relative z-10 mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto text-center"
           >
-            <Badge className="mb-6 bg-hospitality-gold text-hospitality-luxury px-4 py-2 shadow-md">
-              ✨ Premium Services Marketplace
+            <Badge className="mb-6 bg-brand-400 text-white px-4 py-2 text-sm font-medium shadow-md">
+              Premium Services Marketplace
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance">
-              Discover Quality
-              <span className="bg-gradient-to-r from-hospitality-gold to-hospitality-gold-light bg-clip-text text-transparent block">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-balance leading-tight">
+              Discover Exceptional
+              <span className="block bg-gradient-to-r from-brand-400 to-yellow-300 bg-clip-text text-transparent">
                 Services
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-brand-100 mb-8 max-w-3xl mx-auto text-balance">
+            <p className="text-lg sm:text-xl text-brand-100 mb-8 max-w-3xl mx-auto text-balance">
               Explore our curated selection of verified hospitality, logistics,
               and security services across Africa.{" "}
-              <span className="text-hospitality-gold-light font-medium">
-                Premium quality guaranteed.
+              <span className="text-brand-300 font-medium">
+                Book with confidence.
               </span>
             </p>
-
-            <div className="flex flex-wrap justify-center gap-6 md:gap-12 mt-8">
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-12">
               {[
-                { value: "156+", label: "Premium Services" },
-                { value: "89%", label: "Satisfaction Rate" },
-                { value: "5★", label: "Average Rating" },
+                { value: "200+", label: "Curated Services" },
+                { value: "92%", label: "Customer Satisfaction" },
+                { value: "4.9★", label: "Average Rating" },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -778,7 +860,7 @@ export default function ServicesPage() {
                   transition={{ delay: index * 0.2, duration: 0.5 }}
                   className="text-center"
                 >
-                  <div className="text-2xl md:text-3xl font-bold text-hospitality-gold">
+                  <div className="text-2xl sm:text-3xl font-bold text-brand-400">
                     {stat.value}
                   </div>
                   <div className="text-sm text-brand-200">{stat.label}</div>
@@ -789,7 +871,9 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <ServicesContent />
-    </Suspense>
+      <Suspense fallback={<ServicesLoading />}>
+        <ServicesContent />
+      </Suspense>
+    </>
   );
 }

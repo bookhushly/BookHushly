@@ -221,18 +221,27 @@ export default function VendorDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
 
       try {
+        // Fetch vendor profile
         const { data: vendor, error: vendorError } = await supabase
           .from("vendors")
           .select("*")
           .eq("user_id", user.id)
-          .maybeSingle(); // Changed from .single() to .maybeSingle()
+          .maybeSingle();
+
+        if (vendorError) {
+          console.error("Vendor fetch error:", vendorError);
+          throw vendorError; // Explicitly throw to handle in catch block
+        }
 
         setVendorProfile(vendor);
-        console.log("Vendor Profile:", vendor);
 
         // Only proceed with listings and stats if a vendor profile exists and is approved
         if (vendor?.approved) {
@@ -241,7 +250,11 @@ export default function VendorDashboard() {
             .select("*")
             .eq("vendor_id", vendor.id);
 
-          if (listingError) throw listingError;
+          if (listingError) {
+            console.error("Listings fetch error:", listingError);
+            throw listingError;
+          }
+
           setListings(vendorListings);
           setStats({
             totalListings: vendorListings.length,
@@ -256,17 +269,17 @@ export default function VendorDashboard() {
         // Toast feedback only for existing vendor profiles
         if (vendor) {
           if (!vendor.approved && vendor.status === "reviewing") {
-            toast.info("KYC under review.");
+            toast.info("Your KYC is under review.");
           } else if (vendor.approved) {
             toast.success("Vendor approved! You can now create listings.");
           } else if (!vendor.approved && vendor.status === "denied") {
-            toast.error("KYC denied. Contact support.");
+            toast.error("KYC denied. Please contact support.");
           }
         }
-        // No toast for !vendor case (vendor not found), as per requirement
+        // No toast for !vendor case, as required
       } catch (error) {
-        console.error("Error loading vendor dashboard:", error);
-        toast.error("Error loading dashboard.");
+        console.error("Error loading vendor dashboard:", error.message);
+        toast.error("Failed to load dashboard. Please try again later.");
       } finally {
         setLoading(false);
       }

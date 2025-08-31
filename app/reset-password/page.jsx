@@ -16,7 +16,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { supabase } from "@/lib/supabase";
-import { Eye, EyeOff, Lock, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Lock, CheckCircle, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ResetPasswordPage() {
@@ -31,10 +31,6 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    // No token check needed since OTP is verified earlier
-  }, []);
-
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -44,8 +40,13 @@ export default function ResetPasswordPage() {
   };
 
   const validateForm = () => {
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!passwordRegex.test(formData.password)) {
+      setError(
+        "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+      );
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
@@ -53,6 +54,15 @@ export default function ResetPasswordPage() {
       return false;
     }
     return true;
+  };
+
+  // Password requirements validation
+  const passwordRequirements = {
+    minLength: formData.password.length >= 8,
+    hasUppercase: /[A-Z]/.test(formData.password),
+    hasLowercase: /[a-z]/.test(formData.password),
+    hasNumber: /\d/.test(formData.password),
+    hasSpecialChar: /[@$!%*?&]/.test(formData.password),
   };
 
   const handleSubmit = async (e) => {
@@ -167,6 +177,49 @@ export default function ResetPasswordPage() {
                       <Eye className="h-4 w-4" />
                     )}
                   </button>
+                </div>
+                {/* Password Requirements Feedback */}
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <div className="flex items-center">
+                    {passwordRequirements.minLength ? (
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-500 mr-2" />
+                    )}
+                    At least 8 characters
+                  </div>
+                  <div className="flex items-center">
+                    {passwordRequirements.hasUppercase ? (
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-500 mr-2" />
+                    )}
+                    At least one uppercase letter
+                  </div>
+                  <div className="flex items-center">
+                    {passwordRequirements.hasLowercase ? (
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-500 mr-2" />
+                    )}
+                    At least one lowercase letter
+                  </div>
+                  <div className="flex items-center">
+                    {passwordRequirements.hasNumber ? (
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-500 mr-2" />
+                    )}
+                    At least one number
+                  </div>
+                  <div className="flex items-center">
+                    {passwordRequirements.hasSpecialChar ? (
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-500 mr-2" />
+                    )}
+                    At least one special character (@$!%*?&)
+                  </div>
                 </div>
               </div>
 

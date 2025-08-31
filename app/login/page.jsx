@@ -174,14 +174,14 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
                 <Link
                   href="/forgot-password"
                   className="text-sm text-primary hover:underline"
                 >
                   Forgot password?
                 </Link>
-              </div> */}
+              </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
@@ -197,7 +197,7 @@ export default function LoginPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/register"
                   className="text-primary hover:underline font-medium"
