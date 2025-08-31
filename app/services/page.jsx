@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-  Suspense,
-} from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -50,6 +43,8 @@ import {
   Shield,
   Utensils,
   ChevronDown,
+  SortAsc,
+  SortDesc,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 import { extractCategoryData } from "@/lib/category-forms";
@@ -63,12 +58,12 @@ function ServicesContent() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState("created_at_desc");
 
   const searchParams = useSearchParams();
   const observer = useRef(null);
   const ITEMS_PER_PAGE = 12;
 
-  // Initialize filters from search params
   const initialSearch = searchParams.get("search") || "";
   const initialLocation = searchParams.get("location") || "all";
   const initialCategory = searchParams.get("category") || "all";
@@ -78,21 +73,16 @@ function ServicesContent() {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [viewMode, setViewMode] = useState("grid");
 
-  // Debounced search handler
   const debouncedSearch = useCallback(
     debounce((value) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (value) {
-        params.set("search", value);
-      } else {
-        params.delete("search");
-      }
+      if (value) params.set("search", value);
+      else params.delete("search");
       window.history.pushState(null, "", `?${params.toString()}`);
     }, 500),
     [searchParams]
   );
 
-  // Update state when search params change
   useEffect(() => {
     const search = searchParams.get("search") || "";
     const location = searchParams.get("location") || "all";
@@ -106,7 +96,6 @@ function ServicesContent() {
     setListings([]);
   }, [searchParams]);
 
-  // Fetch listings with pagination and caching
   const fetchListings = useCallback(
     async (pageNum, reset = false) => {
       if (!hasMore || isLoadingMore) return;
@@ -119,16 +108,18 @@ function ServicesContent() {
             "id, vendor_id, title, description, category, price, location, capacity, duration, availability, features, media_urls, active, vendor_name, category_data, price_unit, operating_hours, service_areas, bedrooms, bathrooms, check_in_time, check_out_time, minimum_stay, maximum_capacity, vehicle_type, security_deposit, remaining_tickets, event_type"
           )
           .eq("active", true)
-          .order("created_at", { ascending: false })
           .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1);
 
-        // Apply filters to the query
-        if (selectedCategory !== "all") {
+        // Sorting
+        const parts = sortBy.split("_");
+        const sortDir = parts.pop();
+        const sortField = parts.join("_");
+        query = query.order(sortField, { ascending: sortDir === "asc" });
+
+        if (selectedCategory !== "all")
           query = query.eq("category", selectedCategory);
-        }
-        if (selectedLocation !== "all") {
+        if (selectedLocation !== "all")
           query = query.ilike("location", `%${selectedLocation}%`);
-        }
         if (searchQuery) {
           query = query.or(
             `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%,features.ilike.%${searchQuery}%`
@@ -152,15 +143,13 @@ function ServicesContent() {
         if (pageNum === 1) setLoading(false);
       }
     },
-    [hasMore, selectedCategory, selectedLocation, searchQuery]
+    [hasMore, selectedCategory, selectedLocation, searchQuery, sortBy]
   );
 
-  // Initial fetch and fetch on page change
   useEffect(() => {
     fetchListings(page, page === 1);
   }, [page, fetchListings]);
 
-  // Infinite scroll observer
   const lastListingRef = useCallback(
     (node) => {
       if (isLoadingMore || !hasMore) return;
@@ -210,81 +199,57 @@ function ServicesContent() {
         return {
           icon: <Building className="h-4 w-4" />,
           details: [
-            service.bedrooms &&
-              `${service.bedrooms} bedroom${service.bedrooms > 1 ? "s" : ""}`,
-            service.bathrooms &&
-              `${service.bathrooms} bathroom${service.bathrooms > 1 ? "s" : ""}`,
-            service.check_in_time && `Check-in: ${service.check_in_time}`,
-            service.minimum_stay && `Min. stay: ${service.minimum_stay}`,
+            service.bedrooms
+              ? `${service.bedrooms} bedroom${service.bedrooms > 1 ? "s" : ""}`
+              : null,
+            service.bathrooms
+              ? `${service.bathrooms} bathroom${service.bathrooms > 1 ? "s" : ""}`
+              : null,
+            service.check_in_time ? `Check-in: ${service.check_in_time}` : null,
+            service.minimum_stay ? `Min. stay: ${service.minimum_stay}` : null,
           ]
             .filter(Boolean)
             .join(" • "),
           priceLabel:
             service.price_unit === "per_night" ? "per night" : "starting from",
         };
+      case "events":
+        return {
+          icon: <PartyPopper className="h-4 w-4" />,
+          details: service.event_type
+            ? `${service.event_type === "event_center" ? "Event Center" : "Event Organizer"}`
+            : "",
+          priceLabel:
+            service.price_unit === "per_event" ? "per event" : "starting from",
+        };
       case "food":
         return {
           icon: <Utensils className="h-4 w-4" />,
-          details: [
-            categoryData.cuisine_type && categoryData.cuisine_type,
-            service.operating_hours && service.operating_hours,
-            service.capacity && `${service.capacity} seats`,
-          ]
-            .filter(Boolean)
-            .join(" • "),
+          details: service.features ? service.features.split("\n")[0] : "",
           priceLabel:
             service.price_unit === "per_person"
               ? "per person"
               : "starting from",
         };
-      case "events":
-        return {
-          icon: <Calendar className="h-4 w-4" />,
-          details: [
-            service.event_type && service.event_type.replace("_", " "),
-            service.remaining_tickets &&
-              `${service.remaining_tickets} tickets left`,
-            service.duration && service.duration,
-          ]
-            .filter(Boolean)
-            .join(" • "),
-          priceLabel:
-            service.price_unit === "per_event" ? "per event" : "starting from",
-        };
       case "logistics":
-      case "car_rentals":
         return {
-          icon:
-            category === "logistics" ? (
-              <Truck className="h-4 w-4" />
-            ) : (
-              <Car className="h-4 w-4" />
-            ),
-          details: [
-            service.vehicle_type && service.vehicle_type,
-            service.service_areas && service.service_areas,
-            categoryData.weight_limit && `Max: ${categoryData.weight_limit}`,
-          ]
-            .filter(Boolean)
-            .join(" • "),
+          icon: <Truck className="h-4 w-4" />,
+          details: service.vehicle_type || "",
           priceLabel:
             service.price_unit === "per_km" ? "per km" : "starting from",
         };
       case "security":
         return {
           icon: <Shield className="h-4 w-4" />,
-          details: [
-            categoryData.security_types &&
-              categoryData.security_types.slice(0, 2).join(", "),
-            service.security_deposit &&
-              `Deposit: ₦${service.security_deposit.toLocaleString()}`,
-            categoryData.response_time &&
-              `Response: ${categoryData.response_time}`,
-          ]
-            .filter(Boolean)
-            .join(" • "),
+          details: service.features ? service.features.split("\n")[0] : "",
+          priceLabel: "starting from",
+        };
+      case "car_rentals":
+        return {
+          icon: <Car className="h-4 w-4" />,
+          details: service.vehicle_type || "",
           priceLabel:
-            service.price_unit === "per_hour" ? "per hour" : "starting from",
+            service.price_unit === "per_day" ? "per day" : "starting from",
         };
       default:
         return {
@@ -319,44 +284,24 @@ function ServicesContent() {
   };
 
   const getButtonConfig = (category) => {
-    switch (category) {
-      case "food":
-        return { text: "Order Now", icon: UtensilsCrossed };
-      case "car_rentals":
-        return { text: "Rent Now", icon: Car };
-      case "logistics":
-        return { text: "Ship Now", icon: Truck };
-      case "security":
-        return { text: "Hire Now", icon: Shield };
-      case "events":
-        return { text: "Book Event", icon: PartyPopper };
-      case "hotels":
-      case "serviced_apartments":
-        return { text: "Book Now", icon: Building };
-      default:
-        return { text: "View Details", icon: Building };
-    }
+    const configs = {
+      hotels: { icon: Building, text: "Book Now" },
+      serviced_apartments: { icon: Building, text: "Book Now" },
+      events: { icon: PartyPopper, text: "Book Event" },
+      food: { icon: Utensils, text: "Order Now" },
+      logistics: { icon: Truck, text: "Hire Now" },
+      security: { icon: Shield, text: "Hire Now" },
+      car_rentals: { icon: Car, text: "Rent Now" },
+    };
+    return configs[category] || { icon: Star, text: "View Details" }; // Fallback
   };
 
   const formatFeatures = (features) => {
-    try {
-      let parsedFeatures = features;
-      if (typeof features === "string") {
-        try {
-          parsedFeatures = JSON.parse(features);
-        } catch {
-          parsedFeatures = features.split("\n").filter(Boolean);
-        }
-      }
-      return Array.isArray(parsedFeatures)
-        ? parsedFeatures.slice(0, 3).map((f) => ({
-            label: f.charAt(0).toUpperCase() + f.slice(1),
-            key: f,
-          }))
-        : [];
-    } catch {
-      return [];
-    }
+    if (!features) return [];
+    return features.split("\n").map((feature, index) => ({
+      key: `feature-${index}`,
+      label: feature,
+    }));
   };
 
   const handleSearchChange = (e) => {
@@ -370,69 +315,39 @@ function ServicesContent() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      {/* Filter Bar */}
+      {/* Filter Bar - Inspired by Booking.com's search bar */}
       <motion.div
-        className="sticky top-0 z-20 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 py-4 mb-8 rounded-xl shadow-sm border border-gray-100"
+        className="sticky top-0 z-20 bg-white/95 backdrop-blur py-4 mb-8 rounded-2xl shadow-md border border-gray-100"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-between gap-4">
-          {/* Desktop Filters */}
-          <div className="hidden md:flex items-center gap-3 flex-1">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto flex-1">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Search services, locations, or vendors..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="pl-10 h-11 rounded-lg border-gray-200 focus:ring-2 focus:ring-brand-500"
+                className="pl-10 h-12 rounded-full border-gray-200 focus:ring-2 focus:ring-blue-500 text-base"
               />
             </div>
-            <Select
-              value={selectedCategory}
-              onValueChange={(value) => {
-                setSelectedCategory(value);
-                const params = new URLSearchParams(searchParams.toString());
-                if (value === "all") {
-                  params.delete("category");
-                } else {
-                  params.set("category", value);
-                }
-                window.history.pushState(null, "", `?${params.toString()}`);
-                setPage(1);
-                setListings([]);
-              }}
-            >
-              <SelectTrigger className="w-[200px] h-11 rounded-lg border-gray-200">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>
-                    {c.icon} {c.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select
               value={selectedLocation}
               onValueChange={(value) => {
                 setSelectedLocation(value);
                 const params = new URLSearchParams(searchParams.toString());
-                if (value === "all") {
-                  params.delete("location");
-                } else {
-                  params.set("location", value);
-                }
+                value === "all"
+                  ? params.delete("location")
+                  : params.set("location", value);
                 window.history.pushState(null, "", `?${params.toString()}`);
                 setPage(1);
                 setListings([]);
               }}
             >
-              <SelectTrigger className="w-[200px] h-11 rounded-lg border-gray-200">
-                <SelectValue placeholder="All Locations" />
+              <SelectTrigger className="h-12 rounded-full border-gray-200 w-[180px]">
+                <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Locations</SelectItem>
@@ -445,128 +360,47 @@ function ServicesContent() {
                   ))}
               </SelectContent>
             </Select>
+            <Select
+              value={selectedCategory}
+              onValueChange={(value) => {
+                setSelectedCategory(value);
+                const params = new URLSearchParams(searchParams.toString());
+                value === "all"
+                  ? params.delete("category")
+                  : params.set("category", value);
+                window.history.pushState(null, "", `?${params.toString()}`);
+                setPage(1);
+                setListings([]);
+              }}
+            >
+              <SelectTrigger className="h-12 rounded-full border-gray-200 w-[180px]">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {CATEGORIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.icon} {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Mobile Filter Drawer */}
-          <div className="md:hidden flex items-center gap-3 w-full">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="pl-10 h-11 rounded-lg border-gray-200"
-              />
-            </div>
-            <Drawer open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-              <DrawerTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-11 w-11 rounded-lg"
-                >
-                  <Filter className="h-5 w-5" />
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent className="p-4">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Category
-                    </label>
-                    <Select
-                      value={selectedCategory}
-                      onValueChange={(value) => {
-                        setSelectedCategory(value);
-                        const params = new URLSearchParams(
-                          searchParams.toString()
-                        );
-                        if (value === "all") {
-                          params.delete("category");
-                        } else {
-                          params.set("category", value);
-                        }
-                        window.history.pushState(
-                          null,
-                          "",
-                          `?${params.toString()}`
-                        );
-                        setPage(1);
-                        setListings([]);
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      <SelectTrigger className="w-full h-11 rounded-lg">
-                        <SelectValue placeholder="All Categories" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {CATEGORIES.map((c) => (
-                          <SelectItem key={c.value} value={c.value}>
-                            {c.icon} {c.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Location
-                    </label>
-                    <Select
-                      value={selectedLocation}
-                      onValueChange={(value) => {
-                        setSelectedLocation(value);
-                        const params = new URLSearchParams(
-                          searchParams.toString()
-                        );
-                        if (value === "all") {
-                          params.delete("location");
-                        } else {
-                          params.set("location", value);
-                        }
-                        window.history.pushState(
-                          null,
-                          "",
-                          `?${params.toString()}`
-                        );
-                        setPage(1);
-                        setListings([]);
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      <SelectTrigger className="w-full h-11 rounded-lg">
-                        <SelectValue placeholder="All Locations" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Locations</SelectItem>
-                        {Array.from(new Set(listings.map((l) => l.location)))
-                          .sort()
-                          .map((loc) => (
-                            <SelectItem key={loc} value={loc.toLowerCase()}>
-                              {loc}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    className="w-full bg-brand-600 hover:bg-brand-700 rounded-lg"
-                    onClick={() => setIsFilterOpen(false)}
-                  >
-                    Apply Filters
-                  </Button>
-                </div>
-              </DrawerContent>
-            </Drawer>
-          </div>
-
-          {/* View Mode Toggle */}
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="h-12 rounded-full border-gray-200 w-[160px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at_desc">Newest First</SelectItem>
+                <SelectItem value="price_asc">Price Low to High</SelectItem>
+                <SelectItem value="price_desc">Price High to Low</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               variant={viewMode === "grid" ? "default" : "outline"}
               size="icon"
-              className="h-11 w-11 rounded-lg"
+              className="h-12 w-12 rounded-full"
               onClick={() => setViewMode("grid")}
             >
               <Grid className="h-5 w-5" />
@@ -574,7 +408,7 @@ function ServicesContent() {
             <Button
               variant={viewMode === "list" ? "default" : "outline"}
               size="icon"
-              className="h-11 w-11 rounded-lg"
+              className="h-12 w-12 rounded-full"
               onClick={() => setViewMode("list")}
             >
               <List className="h-5 w-5" />
@@ -583,23 +417,20 @@ function ServicesContent() {
         </div>
       </motion.div>
 
-      {/* Listings */}
       <AnimatePresence>
         {listings.length === 0 && !loading ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
             className="text-center py-12"
           >
             <h3 className="text-2xl font-semibold text-gray-700">
               No results found
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Try adjusting your search terms or filters.
+              Try adjusting your search or filters.
             </p>
             <Button
-              className="bg-brand-600 hover:bg-brand-700 rounded-lg"
               onClick={() => {
                 setSearchQuery("");
                 setSelectedCategory("all");
@@ -616,8 +447,8 @@ function ServicesContent() {
           <motion.div
             className={
               viewMode === "grid"
-                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                : "space-y-4"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                : "space-y-6"
             }
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -643,128 +474,59 @@ function ServicesContent() {
                   transition={{ duration: 0.3 }}
                   ref={index === listings.length - 1 ? lastListingRef : null}
                 >
-                  <Link href={`/services/${service.id}`} passHref>
+                  <Link href={`/services/${service.id}`}>
                     <Card
-                      className={`group hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-brand-300 overflow-hidden rounded-xl ${
-                        viewMode === "list" ? "flex flex-row" : ""
-                      }`}
+                      className={`group hover:shadow-lg transition-shadow duration-300 border border-gray-200 rounded-2xl overflow-hidden ${viewMode === "list" ? "flex" : ""}`}
                     >
                       <div
-                        className={`relative ${
-                          viewMode === "list"
-                            ? "w-48 h-40"
-                            : "w-full h-48 sm:h-56"
-                        }`}
+                        className={`relative ${viewMode === "list" ? "w-1/3" : "h-64"}`}
                       >
                         <Image
                           src={serviceImage}
-                          alt={`${service.title} image`}
+                          alt={service.title}
                           fill
-                          className={`object-cover transition-transform duration-500 group-hover:scale-105 ${
-                            viewMode === "list"
-                              ? "rounded-l-xl"
-                              : "rounded-t-xl"
-                          }`}
-                          sizes={
-                            viewMode === "list"
-                              ? "(max-width: 768px) 192px, 192px"
-                              : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          }
-                          priority={index < 4}
-                          loading={index < 4 ? "eager" : "lazy"}
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              category.image || "/placeholder.jpg";
-                          }}
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         {isPremium && (
-                          <Badge className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-xs font-medium">
-                            ✨ Premium
+                          <Badge className="absolute top-2 left-2 bg-blue-500 text-white">
+                            Premium
                           </Badge>
                         )}
-                        <Badge
-                          variant="secondary"
-                          className="absolute bottom-3 left-3 bg-black/70 text-white text-xs flex items-center gap-1"
-                        >
-                          {category.icon} {category.label}
-                        </Badge>
-                        <div className="absolute top-3 right-3 bg-white/90 rounded-full px-2 py-1 flex items-center text-xs font-medium">
-                          <Star className="h-3 w-3 text-yellow-500 mr-1 fill-current" />
-                          4.8
+                        <div className="absolute bottom-2 left-2 bg-white/80 rounded-full px-2 py-1 text-xs flex items-center">
+                          <Star className="h-3 w-3 text-yellow-400 mr-1" /> 4.8
                         </div>
                       </div>
-
                       <div
-                        className={viewMode === "list" ? "flex-1 p-4" : "p-4"}
+                        className={viewMode === "list" ? "p-4 flex-1" : "p-4"}
                       >
-                        <CardHeader className="p-0 mb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <CardTitle className="text-lg font-semibold line-clamp-1">
-                                  {service.title}
-                                </CardTitle>
-                                {isVerified && (
-                                  <Verified className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                                )}
-                              </div>
-                              <div className="text-sm text-muted-foreground flex items-center mb-2">
-                                <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                                <span className="line-clamp-1">
-                                  {service.location}
-                                </span>
-                              </div>
-                              {categoryInfo.details && (
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                  {categoryInfo.icon}
-                                  <span className="ml-1 line-clamp-1">
-                                    {categoryInfo.details}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </CardHeader>
-
-                        <CardContent className="p-0">
-                          <CardDescription className="line-clamp-2 text-sm mb-3">
-                            {service.description}
-                          </CardDescription>
-
-                          {features.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {features.map((feature) => (
-                                <Badge
-                                  key={feature.key}
-                                  variant="secondary"
-                                  className="text-xs py-0.5 px-2 bg-brand-50 text-brand-700 border-brand-200"
-                                >
-                                  {feature.label}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <span className="text-lg font-bold text-gray-900">
-                                {formattedPrice}
-                              </span>
-                              {categoryInfo.priceLabel && (
-                                <span className="text-xs text-muted-foreground ml-1">
-                                  {categoryInfo.priceLabel}
-                                </span>
-                              )}
-                            </div>
-                            <Button
-                              size="sm"
-                              className="bg-brand-600 hover:bg-brand-700 rounded-lg text-white"
-                            >
-                              <ButtonIcon className="mr-2 h-4 w-4" />
-                              {buttonConfig.text}
-                            </Button>
-                          </div>
-                        </CardContent>
+                        <CardTitle className="text-xl font-bold mb-1">
+                          {service.title}
+                        </CardTitle>
+                        <div className="text-sm text-gray-600 mb-2 flex items-center">
+                          <MapPin className="h-4 w-4 mr-1" /> {service.location}
+                        </div>
+                        <div className="text-sm text-gray-600 mb-4">
+                          {categoryInfo.details}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {features.map((f) => (
+                            <Badge key={f.key} variant="outline">
+                              {f.label}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-bold">
+                            {formattedPrice}{" "}
+                            <span className="text-sm text-gray-500">
+                              {categoryInfo.priceLabel}
+                            </span>
+                          </span>
+                          <Button className="rounded-full">
+                            <ButtonIcon className="mr-2 h-4 w-4" />{" "}
+                            {buttonConfig.text}
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   </Link>
@@ -776,13 +538,12 @@ function ServicesContent() {
       </AnimatePresence>
 
       {isLoadingMore && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex justify-center py-8"
-        >
-          <LoadingSpinner className="h-8 w-8 text-brand-600" />
-        </motion.div>
+        <div className="flex justify-center py-8">
+          <LoadingSpinner />
+        </div>
+      )}
+      {fetchError && (
+        <p className="text-red-500 text-center">Error: {fetchError}</p>
       )}
     </div>
   );
@@ -790,16 +551,10 @@ function ServicesContent() {
 
 function ServicesLoading() {
   return (
-    <div className="container mx-auto px-4 py-12">
-      <Skeleton className="h-8 w-96 mb-8 rounded-lg" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {[...Array(8)].map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-64 bg-gray-100 animate-pulse rounded-xl"
-          />
-        ))}
-      </div>
+    <div className="container mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[...Array(9)].map((_, i) => (
+        <Skeleton key={i} className="h-96 rounded-2xl" />
+      ))}
     </div>
   );
 }

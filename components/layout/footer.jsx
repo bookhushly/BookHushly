@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FaFacebookF, FaInstagram, FaTwitter } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaTiktok, FaTwitter } from "react-icons/fa";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -48,6 +48,15 @@ export function Footer() {
                 className="w-7 h-7 md:w-8 md:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-all duration-300 transform hover:scale-110"
               >
                 <FaTwitter className="text-xs md:text-sm text-white" />
+              </Link>
+              <Link
+                href="https://www.tiktok.com/@bookhushly?_t=ZS-8zHMW0YjmEh&_r=1"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Visit Bookhushly on Tiktok"
+                className="w-7 h-7 md:w-8 md:h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-all duration-300 transform hover:scale-110"
+              >
+                <FaTiktok className="text-xs md:text-sm text-white" />
               </Link>
             </div>
           </div>

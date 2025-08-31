@@ -62,6 +62,8 @@ export default async function ServiceDetailPage({ params }) {
         cancellation_policy,
         media_urls,
         active,
+        vendor_name,
+      vendor_phone,
         created_at,
         updated_at
       `

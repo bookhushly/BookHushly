@@ -655,43 +655,6 @@ export default function CustomerDashboard() {
                   </Button>
                 </CardContent>
               </Card>
-
-              <Card className="shadow-soft rounded-3xl hover:shadow-medium transition-all duration-300 p-4 sm:p-6">
-                <CardHeader className="pb-2 sm:pb-4">
-                  <CardTitle className="text-lg sm:text-xl">
-                    Account Settings
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    Manage your preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-brand-800">
-                      Email notifications
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-brand-200 hover:bg-brand-50 min-h-[44px] text-sm"
-                    >
-                      Enable
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-brand-800">
-                      Marketing emails
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-brand-200 hover:bg-brand-50 min-h-[44px] text-sm"
-                    >
-                      Disable
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
         </Tabs>
