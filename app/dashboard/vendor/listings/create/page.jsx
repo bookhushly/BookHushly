@@ -39,7 +39,14 @@ import {
   getCategoryFormConfig,
   prepareCategoryData,
 } from "@/lib/category-forms";
-import { ArrowLeft, Upload, Image as ImageIcon, Info } from "lucide-react";
+import {
+  ArrowLeft,
+  Upload,
+  Image as ImageIcon,
+  Info,
+  Trash2,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -66,6 +73,14 @@ export default function CreateListingPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const totalSteps = 4;
   const firstInputRef = useRef(null);
+  // New for food menu
+  const [meals, setMeals] = useState([]);
+  const [tempMeal, setTempMeal] = useState({
+    name: "",
+    price: "",
+    description: "",
+  });
+  const [menuFile, setMenuFile] = useState(null);
 
   const steps = [
     { id: 1, label: "Category" },
@@ -93,6 +108,7 @@ export default function CreateListingPage() {
       setSelectedCategory(parsed.selectedCategory || "");
       setEventType(parsed.eventType || "");
       setStep(parsed.step || 1);
+      setMeals(parsed.meals || []); // New: Load saved meals
     }
   }, [user?.id]);
 
@@ -106,10 +122,11 @@ export default function CreateListingPage() {
           selectedCategory,
           eventType,
           step,
-        })
+          meals,
+        }) // New: Save meals
       );
     }
-  }, [debouncedFormData, selectedCategory, eventType, step, user?.id]);
+  }, [debouncedFormData, selectedCategory, eventType, step, meals, user?.id]);
 
   // Fetch vendor profile
   useEffect(() => {
@@ -132,6 +149,11 @@ export default function CreateListingPage() {
       initialData.availability = "available";
       setFormData((prev) => ({ ...initialData, ...prev }));
       setErrors({});
+      if (selectedCategory === "food") {
+        initialData.menu_method = "manual"; // Default to manual
+        setMeals([]); // Reset meals
+        setMenuFile(null); // Reset menu file
+      }
     } else {
       setFormData({});
     }
@@ -193,7 +215,7 @@ export default function CreateListingPage() {
     });
   };
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []).slice(0, 5);
     setImages(files);
     setErrors((prev) => ({
@@ -202,6 +224,52 @@ export default function CreateListingPage() {
     }));
     const previews = files.map((file) => URL.createObjectURL(file));
     setImagePreviews(previews);
+  };
+
+  // New: Handle menu file change
+  const handleMenuFileChange = (e) => {
+    const file = e.target.files[0];
+    if (
+      file &&
+      (file.type === "application/pdf" || file.type.startsWith("image/"))
+    ) {
+      setMenuFile(file);
+      setErrors((prev) => ({ ...prev, menu_file: undefined }));
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        menu_file: "Only PDF or image files allowed",
+      }));
+    }
+  };
+
+  // New: Handle temp meal change
+  const handleTempMealChange = (e) => {
+    const { name, value } = e.target;
+    setTempMeal((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // New: Add meal
+  const addMeal = () => {
+    if (!tempMeal.name || !tempMeal.price) {
+      setErrors((prev) => ({
+        ...prev,
+        meals: "Meal name and price are required",
+      }));
+      return;
+    }
+    if (meals.length >= 20) {
+      setErrors((prev) => ({ ...prev, meals: "Maximum 20 meals allowed" }));
+      return;
+    }
+    setMeals((prev) => [...prev, tempMeal]);
+    setTempMeal({ name: "", price: "", description: "" });
+    setErrors((prev) => ({ ...prev, meals: undefined }));
+  };
+
+  // New: Remove meal
+  const removeMeal = (index) => {
+    setMeals((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSelectChange = (name, value) => {
@@ -225,6 +293,13 @@ export default function CreateListingPage() {
           }
         }
       });
+      if (selectedCategory === "food") {
+        if (formData.menu_method === "manual" && meals.length === 0) {
+          newErrors.meals = "At least one meal is required for manual entry";
+        } else if (formData.menu_method === "upload" && !menuFile) {
+          newErrors.menu_file = "Menu file is required for upload";
+        }
+      }
       if (!formData.price || parseFloat(formData.price) <= 0) {
         newErrors.price = "Valid price required";
       }
@@ -262,6 +337,20 @@ export default function CreateListingPage() {
     return uploadedUrls;
   };
 
+  // New: Upload menu file
+  const uploadMenuFile = async () => {
+    if (!menuFile) return null;
+    const filePath = `${user.id}/menu/${Date.now()}-${menuFile.name}`;
+    const { data, error } = await supabase.storage
+      .from("listing-menus") // New bucket or use existing
+      .upload(filePath, menuFile);
+    if (error) throw error;
+    const { data: urlData } = supabase.storage
+      .from("listing-menus")
+      .getPublicUrl(filePath);
+    return urlData.publicUrl;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep(totalSteps)) return;
@@ -270,11 +359,21 @@ export default function CreateListingPage() {
 
     try {
       const uploadedImageUrls = await uploadImages();
+      let menuUrl = null;
+      if (selectedCategory === "food" && formData.menu_method === "upload") {
+        menuUrl = await uploadMenuFile();
+      }
+
       const categoryData = prepareCategoryData(
         {
           ...formData,
           media_urls: uploadedImageUrls,
           event_type: selectedCategory === "events" ? eventType : null,
+          meals:
+            selectedCategory === "food" && formData.menu_method === "manual"
+              ? meals
+              : null,
+          menu_url: menuUrl,
         },
         selectedCategory,
         eventType
@@ -487,6 +586,118 @@ export default function CreateListingPage() {
     );
   };
 
+  // New: Custom render for food menu section
+  const renderFoodMenuSection = () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          Menu Entry Method <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={formData.menu_method || "manual"}
+          onValueChange={(val) => handleSelectChange("menu_method", val)}
+        >
+          <SelectTrigger
+            className={`rounded-lg ${errors.menu_method ? "border-red-500" : ""}`}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="manual">Manual Entry</SelectItem>
+            <SelectItem value="upload">Upload Menu File (PDF/Image)</SelectItem>
+          </SelectContent>
+        </Select>
+        {errors.menu_method && (
+          <p className="text-sm text-red-500">{errors.menu_method}</p>
+        )}
+      </div>
+
+      {formData.menu_method === "manual" ? (
+        <div className="space-y-4">
+          <h4 className="text-md font-semibold">Add Meals (up to 20)</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Meal Name *</Label>
+              <Input
+                name="name"
+                value={tempMeal.name}
+                onChange={handleTempMealChange}
+                placeholder="e.g., Jollof Rice"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Price (₦) *</Label>
+              <Input
+                type="number"
+                name="price"
+                value={tempMeal.price}
+                onChange={handleTempMealChange}
+                placeholder="e.g., 2500"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input
+                name="description"
+                value={tempMeal.description}
+                onChange={handleTempMealChange}
+                placeholder="e.g., Spicy rice with chicken"
+              />
+            </div>
+          </div>
+          <Button type="button" onClick={addMeal} className="mt-2">
+            <Plus className="w-4 h-4 mr-2" /> Add Meal
+          </Button>
+          {errors.meals && (
+            <p className="text-sm text-red-500">{errors.meals}</p>
+          )}
+
+          {meals.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h5 className="text-sm font-medium">Added Meals</h5>
+              {meals.map((meal, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 border rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {meal.name} - ₦{meal.price}
+                    </p>
+                    <p className="text-sm text-gray-600">{meal.description}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeMeal(index)}
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label>Upload Menu File (PDF or Image) *</Label>
+          <Input
+            type="file"
+            accept="application/pdf,image/*"
+            onChange={handleMenuFileChange}
+            className={`rounded-lg ${errors.menu_file ? "border-red-500" : ""}`}
+          />
+          {menuFile && (
+            <p className="text-sm text-gray-500">Selected: {menuFile.name}</p>
+          )}
+          {errors.menu_file && (
+            <p className="text-sm text-red-500">{errors.menu_file}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <AuthGuard requiredRole="vendor">
       <div className="container max-w-3xl py-8">
@@ -619,6 +830,7 @@ export default function CreateListingPage() {
                         {renderField(field)}
                       </div>
                     ))}
+                    {selectedCategory === "food" && renderFoodMenuSection()}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">
                         Availability
@@ -768,6 +980,28 @@ export default function CreateListingPage() {
                             : val || "Not set"}
                         </p>
                       ))}
+                      {selectedCategory === "food" &&
+                        formData.menu_method === "manual" &&
+                        meals.length > 0 && (
+                          <div>
+                            <strong>Meals:</strong>
+                            <ul>
+                              {meals.map((meal, index) => (
+                                <li key={index}>
+                                  {meal.name} - ₦{meal.price} -{" "}
+                                  {meal.description}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      {selectedCategory === "food" &&
+                        formData.menu_method === "upload" &&
+                        menuFile && (
+                          <p>
+                            <strong>Menu File:</strong> {menuFile.name}
+                          </p>
+                        )}
                       <p>
                         <strong>Images:</strong> {images.length} uploaded
                       </p>

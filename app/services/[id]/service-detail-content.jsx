@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ZoomIn,
+  ExternalLink,
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -118,6 +119,47 @@ const HotelDetails = ({ service, categoryData }) => (
       </table>
     </div>
 
+    {/* Check-in/Check-out */}
+    {(service.check_in_time || service.check_out_time) && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+            <Clock className="w-5 h-5 mr-2 text-brand-600" />
+            Check-in & Check-out
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {service.check_in_time && (
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="font-medium">Check-in</div>
+                  <div className="text-sm text-gray-600">
+                    {service.check_in_time}
+                  </div>
+                </div>
+              </div>
+            )}
+            {service.check_out_time && (
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <div className="font-medium">Check-out</div>
+                  <div className="text-sm text-gray-600">
+                    {service.check_out_time}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+
     {/* Amenities */}
     {service.features && normalizeFeatures(service.features).length > 0 && (
       <>
@@ -141,7 +183,7 @@ const HotelDetails = ({ service, categoryData }) => (
   </div>
 );
 
-// Restaurant details
+// Restaurant details - Updated with menu display
 const RestaurantDetails = ({ service, categoryData }) => (
   <div className="space-y-8">
     <div>
@@ -226,6 +268,59 @@ const RestaurantDetails = ({ service, categoryData }) => (
             Delivery Areas
           </h3>
           <p className="text-gray-600">{service.service_areas}</p>
+        </div>
+      </>
+    )}
+
+    {/* New: Menu Display */}
+    {(categoryData.meals?.length > 0 || categoryData.menu_url) && (
+      <>
+        <hr className="border-gray-200" />
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
+            <Utensils className="w-5 h-5 mr-2 text-brand-600" />
+            Menu
+          </h3>
+          {categoryData.meals?.length > 0 && (
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr>
+                  <th className="border px-4 py-2 text-left font-medium">
+                    Name
+                  </th>
+                  <th className="border px-4 py-2 text-left font-medium">
+                    Description
+                  </th>
+                  <th className="border px-4 py-2 text-right font-medium">
+                    Price (₦)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {categoryData.meals.map((meal, index) => (
+                  <tr key={index}>
+                    <td className="border px-4 py-2">{meal.name}</td>
+                    <td className="border px-4 py-2">
+                      {meal.description || "N/A"}
+                    </td>
+                    <td className="border px-4 py-2 text-right">
+                      {Number(meal.price).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {categoryData.menu_url && (
+            <a
+              href={categoryData.menu_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-brand-600 hover:text-brand-700 text-sm font-medium mt-4"
+            >
+              View Full Menu <ExternalLink className="w-4 h-4 ml-1" />
+            </a>
+          )}
         </div>
       </>
     )}
