@@ -5,64 +5,56 @@ import { useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthGuard } from "@/components/auth/auth-guard";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useAuthStore, useListingStore } from "@/lib/store";
-import { createListing, getVendorProfile } from "@/lib/database";
+import { createListing } from "@/lib/database";
 import { CATEGORIES } from "@/lib/constants";
 import {
   getCategoryFormConfig,
   prepareCategoryData,
 } from "@/lib/category-forms";
-import {
-  ArrowLeft,
-  Upload,
-  Image as ImageIcon,
-  Info,
-  Trash2,
-  Plus,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import dynamic from "next/dynamic";
+
+// Dynamically import components to optimize bundle size
+const Stepper = dynamic(() => import("@/components/listings/create/Stepper"), {
+  ssr: false,
+});
+const CategorySelection = dynamic(
+  () => import("@/components/listings/create/CategorySelection"),
+  {
+    ssr: false,
+  }
+);
+const ServiceDetails = dynamic(
+  () => import("@/components/listings/create/ServiceDetails"),
+  {
+    ssr: false,
+  }
+);
+const MediaUpload = dynamic(
+  () => import("@/components/listings/create/MediaUpload"),
+  { ssr: false }
+);
+const ReviewListing = dynamic(
+  () => import("@/components/listings/create/ReviewListing"),
+  { ssr: false }
+);
+const NavigationButtons = dynamic(
+  () => import("@/components/listings/create/NavigationButtons"),
+  {
+    ssr: false,
+  }
+);
 
 export default function CreateListingPage() {
-  const { user } = useAuthStore();
+  const { user, vendor } = useAuthStore();
   const { addListing } = useListingStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [vendor, setVendor] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [eventType, setEventType] = useState("");
   const [formData, setFormData] = useState({});
@@ -71,16 +63,16 @@ export default function CreateListingPage() {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [step, setStep] = useState(1);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const totalSteps = 4;
-  const firstInputRef = useRef(null);
-  // New for food menu
   const [meals, setMeals] = useState([]);
   const [tempMeal, setTempMeal] = useState({
     name: "",
     price: "",
     description: "",
   });
-  const [menuFile, setMenuFile] = useState(null);
+  const [tempMealImage, setTempMealImage] = useState(null);
+  const [tempMealImagePreview, setTempMealImagePreview] = useState(null);
+  const totalSteps = 4;
+  const firstInputRef = useRef(null);
 
   const steps = [
     { id: 1, label: "Category" },
@@ -99,7 +91,6 @@ export default function CreateListingPage() {
     [selectedCategory, eventType]
   );
 
-  // Load form data from localStorage on mount
   useEffect(() => {
     const savedData = localStorage.getItem(`listing-draft-${user?.id}`);
     if (savedData) {
@@ -108,11 +99,10 @@ export default function CreateListingPage() {
       setSelectedCategory(parsed.selectedCategory || "");
       setEventType(parsed.eventType || "");
       setStep(parsed.step || 1);
-      setMeals(parsed.meals || []); // New: Load saved meals
+      setMeals(parsed.meals || []);
     }
   }, [user?.id]);
 
-  // Auto-save to localStorage
   useEffect(() => {
     if (debouncedFormData && Object.keys(debouncedFormData).length > 0) {
       localStorage.setItem(
@@ -122,24 +112,12 @@ export default function CreateListingPage() {
           selectedCategory,
           eventType,
           step,
-          meals,
-        }) // New: Save meals
+          meals: meals.map(({ image, imagePreview, ...rest }) => rest),
+        })
       );
     }
   }, [debouncedFormData, selectedCategory, eventType, step, meals, user?.id]);
 
-  // Fetch vendor profile
-  useEffect(() => {
-    const fetchVendorProfile = async () => {
-      const { data, error } = await getVendorProfile(user.id);
-      if (error) setErrors({ global: error.message });
-      else setVendor(data);
-    };
-
-    if (user?.id) fetchVendorProfile();
-  }, [user?.id]);
-
-  // Initialize form data based on category
   useEffect(() => {
     if (selectedCategory && categoryConfig) {
       const initialData = {};
@@ -150,9 +128,7 @@ export default function CreateListingPage() {
       setFormData((prev) => ({ ...initialData, ...prev }));
       setErrors({});
       if (selectedCategory === "food") {
-        initialData.menu_method = "manual"; // Default to manual
-        setMeals([]); // Reset meals
-        setMenuFile(null); // Reset menu file
+        setMeals([]);
       }
     } else {
       setFormData({});
@@ -226,35 +202,24 @@ export default function CreateListingPage() {
     setImagePreviews(previews);
   };
 
-  // New: Handle menu file change
-  const handleMenuFileChange = (e) => {
-    const file = e.target.files[0];
-    if (
-      file &&
-      (file.type === "application/pdf" || file.type.startsWith("image/"))
-    ) {
-      setMenuFile(file);
-      setErrors((prev) => ({ ...prev, menu_file: undefined }));
-    } else {
-      setErrors((prev) => ({
-        ...prev,
-        menu_file: "Only PDF or image files allowed",
-      }));
-    }
-  };
-
-  // New: Handle temp meal change
   const handleTempMealChange = (e) => {
     const { name, value } = e.target;
     setTempMeal((prev) => ({ ...prev, [name]: value }));
   };
 
-  // New: Add meal
+  const handleTempMealImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setTempMealImage(file);
+      setTempMealImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const addMeal = () => {
-    if (!tempMeal.name || !tempMeal.price) {
+    if (!tempMeal.name || !tempMeal.price || !tempMealImage) {
       setErrors((prev) => ({
         ...prev,
-        meals: "Meal name and price are required",
+        meals: "Meal name, price, and image are required",
       }));
       return;
     }
@@ -262,12 +227,16 @@ export default function CreateListingPage() {
       setErrors((prev) => ({ ...prev, meals: "Maximum 20 meals allowed" }));
       return;
     }
-    setMeals((prev) => [...prev, tempMeal]);
+    setMeals((prev) => [
+      ...prev,
+      { ...tempMeal, image: tempMealImage, imagePreview: tempMealImagePreview },
+    ]);
     setTempMeal({ name: "", price: "", description: "" });
+    setTempMealImage(null);
+    setTempMealImagePreview(null);
     setErrors((prev) => ({ ...prev, meals: undefined }));
   };
 
-  // New: Remove meal
   const removeMeal = (index) => {
     setMeals((prev) => prev.filter((_, i) => i !== index));
   };
@@ -293,12 +262,8 @@ export default function CreateListingPage() {
           }
         }
       });
-      if (selectedCategory === "food") {
-        if (formData.menu_method === "manual" && meals.length === 0) {
-          newErrors.meals = "At least one meal is required for manual entry";
-        } else if (formData.menu_method === "upload" && !menuFile) {
-          newErrors.menu_file = "Menu file is required for upload";
-        }
+      if (selectedCategory === "food" && meals.length === 0) {
+        newErrors.meals = "At least one meal is required";
       }
       if (!formData.price || parseFloat(formData.price) <= 0) {
         newErrors.price = "Valid price required";
@@ -325,11 +290,11 @@ export default function CreateListingPage() {
       const image = images[i];
       const filePath = `${user.id}/${Date.now()}-${image.name}`;
       const { data, error } = await supabase.storage
-        .from("listing-images")
+        .from("food-images")
         .upload(filePath, image);
       if (error) throw error;
       const { data: urlData } = supabase.storage
-        .from("listing-images")
+        .from("food-images")
         .getPublicUrl(filePath);
       uploadedUrls.push(urlData.publicUrl);
       setUploadProgress(((i + 1) / images.length) * 100);
@@ -337,18 +302,25 @@ export default function CreateListingPage() {
     return uploadedUrls;
   };
 
-  // New: Upload menu file
-  const uploadMenuFile = async () => {
-    if (!menuFile) return null;
-    const filePath = `${user.id}/menu/${Date.now()}-${menuFile.name}`;
-    const { data, error } = await supabase.storage
-      .from("listing-menus") // New bucket or use existing
-      .upload(filePath, menuFile);
-    if (error) throw error;
-    const { data: urlData } = supabase.storage
-      .from("listing-menus")
-      .getPublicUrl(filePath);
-    return urlData.publicUrl;
+  const uploadMealImages = async () => {
+    const urls = [];
+    for (const meal of meals) {
+      const image = meal.image;
+      if (image) {
+        const filePath = `${user.id}/${Date.now()}-${image.name}`;
+        const { data, error } = await supabase.storage
+          .from("food-images")
+          .upload(filePath, image);
+        if (error) throw error;
+        const { data: urlData } = supabase.storage
+          .from("food-images")
+          .getPublicUrl(filePath);
+        urls.push(urlData.publicUrl);
+      } else {
+        urls.push(null);
+      }
+    }
+    return urls;
   };
 
   const handleSubmit = async (e) => {
@@ -359,9 +331,15 @@ export default function CreateListingPage() {
 
     try {
       const uploadedImageUrls = await uploadImages();
-      let menuUrl = null;
-      if (selectedCategory === "food" && formData.menu_method === "upload") {
-        menuUrl = await uploadMenuFile();
+      let processedMeals = null;
+      if (selectedCategory === "food") {
+        const mealImageUrls = await uploadMealImages();
+        processedMeals = meals.map((meal, i) => ({
+          name: meal.name,
+          price: meal.price,
+          description: meal.description,
+          image_url: mealImageUrls[i],
+        }));
       }
 
       const categoryData = prepareCategoryData(
@@ -369,11 +347,7 @@ export default function CreateListingPage() {
           ...formData,
           media_urls: uploadedImageUrls,
           event_type: selectedCategory === "events" ? eventType : null,
-          meals:
-            selectedCategory === "food" && formData.menu_method === "manual"
-              ? meals
-              : null,
-          menu_url: menuUrl,
+          meals: processedMeals,
         },
         selectedCategory,
         eventType
@@ -410,306 +384,20 @@ export default function CreateListingPage() {
     }
   };
 
-  const renderCustomProgressBar = (value, isNearLimit) => (
-    <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-      <motion.div
-        className={`h-full ${isNearLimit ? "bg-red-500" : "bg-blue-500"}`}
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(value, 100)}%` }}
-        transition={{ duration: 0.3 }}
-      />
-    </div>
-  );
-
-  const renderField = (field) => {
-    const value =
-      formData[field.name] ?? (field.type === "multiselect" ? [] : "");
-    const maxLength =
-      field.name === "title"
-        ? 100
-        : field.name === "description"
-          ? 500
-          : undefined;
-    const isNearLimit = maxLength && value.length >= maxLength * 0.9;
-
-    return (
-      <div className="relative">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center">
-                <Label htmlFor={field.name} className="text-sm font-medium">
-                  {field.label}{" "}
-                  {field.required && <span className="text-red-500">*</span>}
-                </Label>
-                {field.description && (
-                  <Info className="ml-2 h-4 w-4 text-gray-400" />
-                )}
-              </div>
-            </TooltipTrigger>
-            {field.description && (
-              <TooltipContent>
-                <p>{field.description}</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
-        {field.type === "text" ||
-        field.type === "url" ||
-        field.type === "time" ||
-        field.type === "date" ||
-        field.type === "number" ? (
-          <>
-            <Input
-              id={field.name}
-              name={field.name}
-              type={field.type === "number" ? "number" : field.type}
-              placeholder={field.placeholder}
-              value={value}
-              onChange={handleChange}
-              required={field.required}
-              maxLength={maxLength}
-              className={`rounded-lg ${errors[field.name] ? "border-red-500" : ""}`}
-              ref={
-                field.name === categoryConfig?.fields[0]?.name
-                  ? firstInputRef
-                  : null
-              }
-              aria-invalid={errors[field.name] ? "true" : "false"}
-              aria-describedby={
-                errors[field.name] ? `${field.name}-error` : undefined
-              }
-            />
-            {maxLength && (
-              <div className="mt-1">
-                {renderCustomProgressBar(
-                  (value.length / maxLength) * 100,
-                  isNearLimit
-                )}
-                <p
-                  className={`text-sm ${isNearLimit ? "text-red-500" : "text-gray-500"}`}
-                >
-                  {value.length}/{maxLength}
-                </p>
-              </div>
-            )}
-          </>
-        ) : field.type === "textarea" ? (
-          <>
-            <Textarea
-              id={field.name}
-              name={field.name}
-              placeholder={field.placeholder}
-              value={value}
-              onChange={handleChange}
-              rows={5}
-              required={field.required}
-              maxLength={maxLength}
-              className={`rounded-lg ${errors[field.name] ? "border-red-500" : ""}`}
-              ref={
-                field.name === categoryConfig?.fields[0]?.name
-                  ? firstInputRef
-                  : null
-              }
-              aria-invalid={errors[field.name] ? "true" : "false"}
-              aria-describedby={
-                errors[field.name] ? `${field.name}-error` : undefined
-              }
-            />
-            {maxLength && (
-              <div className="mt-1">
-                {renderCustomProgressBar(
-                  (value.length / maxLength) * 100,
-                  isNearLimit
-                )}
-                <p
-                  className={`text-sm ${isNearLimit ? "text-red-500" : "text-gray-500"}`}
-                >
-                  {value.length}/{maxLength}
-                </p>
-              </div>
-            )}
-          </>
-        ) : field.type === "select" ? (
-          <Select
-            value={value}
-            onValueChange={(val) => handleSelectChange(field.name, val)}
-            required={field.required}
-          >
-            <SelectTrigger
-              className={`rounded-lg ${errors[field.name] ? "border-red-500" : ""}`}
-              aria-invalid={errors[field.name] ? "true" : "false"}
-              aria-describedby={
-                errors[field.name] ? `${field.name}-error` : undefined
-              }
-            >
-              <SelectValue
-                placeholder={`Select ${field.label.toLowerCase()}`}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {field.options?.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : field.type === "multiselect" ? (
-          <div className="space-y-2">
-            {field.options?.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${field.name}-${option.value}`}
-                  checked={value.includes(option.value)}
-                  onCheckedChange={(checked) =>
-                    handleMultiSelectChange(field.name, option.value, checked)
-                  }
-                  aria-describedby={
-                    errors[field.name] ? `${field.name}-error` : undefined
-                  }
-                />
-                <Label htmlFor={`${field.name}-${option.value}`}>
-                  {option.label}
-                </Label>
-              </div>
-            ))}
-            <p className="text-sm text-gray-500">Selected: {value.length}/5</p>
-          </div>
-        ) : null}
-        {errors[field.name] && (
-          <p id={`${field.name}-error`} className="text-sm text-red-500 mt-1">
-            {errors[field.name]}
-          </p>
-        )}
-      </div>
-    );
-  };
-
-  // New: Custom render for food menu section
-  const renderFoodMenuSection = () => (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          Menu Entry Method <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          value={formData.menu_method || "manual"}
-          onValueChange={(val) => handleSelectChange("menu_method", val)}
-        >
-          <SelectTrigger
-            className={`rounded-lg ${errors.menu_method ? "border-red-500" : ""}`}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="manual">Manual Entry</SelectItem>
-            <SelectItem value="upload">Upload Menu File (PDF/Image)</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.menu_method && (
-          <p className="text-sm text-red-500">{errors.menu_method}</p>
-        )}
-      </div>
-
-      {formData.menu_method === "manual" ? (
-        <div className="space-y-4">
-          <h4 className="text-md font-semibold">Add Meals (up to 20)</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Meal Name *</Label>
-              <Input
-                name="name"
-                value={tempMeal.name}
-                onChange={handleTempMealChange}
-                placeholder="e.g., Jollof Rice"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Price (₦) *</Label>
-              <Input
-                type="number"
-                name="price"
-                value={tempMeal.price}
-                onChange={handleTempMealChange}
-                placeholder="e.g., 2500"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Input
-                name="description"
-                value={tempMeal.description}
-                onChange={handleTempMealChange}
-                placeholder="e.g., Spicy rice with chicken"
-              />
-            </div>
-          </div>
-          <Button type="button" onClick={addMeal} className="mt-2">
-            <Plus className="w-4 h-4 mr-2" /> Add Meal
-          </Button>
-          {errors.meals && (
-            <p className="text-sm text-red-500">{errors.meals}</p>
-          )}
-
-          {meals.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <h5 className="text-sm font-medium">Added Meals</h5>
-              {meals.map((meal, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 border rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {meal.name} - ₦{meal.price}
-                    </p>
-                    <p className="text-sm text-gray-600">{meal.description}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeMeal(index)}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <Label>Upload Menu File (PDF or Image) *</Label>
-          <Input
-            type="file"
-            accept="application/pdf,image/*"
-            onChange={handleMenuFileChange}
-            className={`rounded-lg ${errors.menu_file ? "border-red-500" : ""}`}
-          />
-          {menuFile && (
-            <p className="text-sm text-gray-500">Selected: {menuFile.name}</p>
-          )}
-          {errors.menu_file && (
-            <p className="text-sm text-red-500">{errors.menu_file}</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <AuthGuard requiredRole="vendor">
-      <div className="container max-w-3xl py-8">
+      <div className="container max-w-4xl mx-auto py-10 bg-gradient-to-b from-gray-50 to-white min-h-screen">
         <Link
           href="/dashboard/vendor"
-          className="flex items-center text-blue-600 mb-6"
+          className="flex items-center text-blue-600 hover:text-blue-800 transition-colors mb-8"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          <ArrowLeft className="mr-2 h-5 w-5" /> Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold mb-2">Create New Listing</h1>
-        <p className="text-gray-600 mb-8">
-          Follow the steps to add your service easily.
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+          Create New Listing
+        </h1>
+        <p className="text-lg text-gray-600 mb-10">
+          Add your service in a few simple steps with our streamlined process.
         </p>
 
         <AnimatePresence>
@@ -718,321 +406,90 @@ export default function CreateListingPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              className="mb-6"
             >
-              <Alert variant="destructive" className="mb-6">
+              <Alert variant="destructive" className="rounded-xl shadow-md">
                 <AlertDescription>{errors.global}</AlertDescription>
               </Alert>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleSubmit} aria-label="Create Listing Form">
-          <div className="flex items-center justify-between mb-8">
-            {steps.map((s, index) => (
-              <div key={s.id} className="flex items-center flex-1">
-                <div className="flex flex-col items-center">
-                  <motion.div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                      step >= s.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                    animate={{ scale: step === s.id ? 1.1 : 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {s.id}
-                  </motion.div>
-                  <span className="text-sm mt-2">{s.label}</span>
-                </div>
-                {index < steps.length - 1 && (
-                  <motion.div
-                    className={`flex-1 h-1 ${step > s.id ? "bg-blue-600" : "bg-gray-200"}`}
-                    animate={{ width: step > s.id ? "100%" : "0%" }}
-                    transition={{ duration: 0.3 }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <Accordion type="single" value={`step-${step}`} className="space-y-4">
-            <AccordionItem value="step-1">
-              <AccordionTrigger className="text-lg font-semibold">
-                Step 1: Select Category
-              </AccordionTrigger>
-              <AccordionContent className="space-y-4">
-                <Select
-                  value={selectedCategory}
-                  onValueChange={handleCategoryChange}
-                >
-                  <SelectTrigger
-                    className={`rounded-lg ${errors.global ? "border-red-500" : ""}`}
-                  >
-                    <SelectValue placeholder="Choose category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.icon} {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.global && (
-                  <p className="text-sm text-red-500">{errors.global}</p>
-                )}
-                {selectedCategory === "events" && (
-                  <Select
-                    value={eventType}
-                    onValueChange={handleEventTypeChange}
-                  >
-                    <SelectTrigger
-                      className={`rounded-lg ${errors.eventType ? "border-red-500" : ""}`}
-                    >
-                      <SelectValue placeholder="Event type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="event_center">Event Center</SelectItem>
-                      <SelectItem value="event_organizer">
-                        Event Organizer
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-                {errors.eventType && (
-                  <p className="text-sm text-red-500">{errors.eventType}</p>
-                )}
-                <div className="flex justify-end mt-4">
-                  <Button
-                    type="button"
-                    className="rounded-lg"
-                    onClick={nextStep}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            {categoryConfig && (
-              <AccordionItem value="step-2">
-                <AccordionTrigger className="text-lg font-semibold">
-                  Step 2: Service Details
-                </AccordionTrigger>
-                <AccordionContent className="space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {categoryConfig.fields.map((field) => (
-                      <div key={field.name} className="space-y-2">
-                        {renderField(field)}
-                      </div>
-                    ))}
-                    {selectedCategory === "food" && renderFoodMenuSection()}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">
-                        Availability
-                      </Label>
-                      <Select
-                        value={formData.availability || "available"}
-                        onValueChange={(value) =>
-                          handleSelectChange("availability", value)
-                        }
-                      >
-                        <SelectTrigger className="rounded-lg">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="available">Available</SelectItem>
-                          <SelectItem value="busy">Busy</SelectItem>
-                          <SelectItem value="unavailable">
-                            Unavailable
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </motion.div>
-                  <div className="flex justify-between mt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-lg"
-                      onClick={prevStep}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      type="button"
-                      className="rounded-lg"
-                      onClick={nextStep}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            <AccordionItem value="step-3">
-              <AccordionTrigger className="text-lg font-semibold">
-                Step 3: Upload Media
-              </AccordionTrigger>
-              <AccordionContent className="space-y-4">
-                <Label className="text-sm font-medium">Images (up to 5)</Label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageChange}
-                  className={`rounded-lg ${errors.images ? "border-red-500" : ""}`}
-                  aria-describedby={errors.images ? "images-error" : undefined}
+        <form
+          onSubmit={handleSubmit}
+          aria-label="Create Listing Form"
+          className="space-y-8"
+        >
+          <Stepper steps={steps} currentStep={step} />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+            >
+              {step === 1 && (
+                <CategorySelection
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={handleCategoryChange}
+                  eventType={eventType}
+                  onEventTypeChange={handleEventTypeChange}
+                  errors={errors}
                 />
-                {errors.images && (
-                  <p id="images-error" className="text-sm text-red-500">
-                    {errors.images}
-                  </p>
-                )}
-                {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                    {imagePreviews.map((src, idx) => (
-                      <motion.img
-                        key={idx}
-                        src={src}
-                        alt={`Preview ${idx + 1}`}
-                        className="rounded-md object-cover h-32 w-full"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.2, delay: idx * 0.1 }}
-                      />
-                    ))}
-                  </div>
-                )}
-                {loading && uploadProgress > 0 && (
-                  <div className="mt-2">
-                    {renderCustomProgressBar(uploadProgress, false)}
-                    <p className="text-sm text-gray-500 mt-1">
-                      Upload Progress: {Math.round(uploadProgress)}%
-                    </p>
-                  </div>
-                )}
-                <div className="flex justify-between mt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-lg"
-                    onClick={prevStep}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    type="button"
-                    className="rounded-lg"
-                    onClick={nextStep}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="step-4">
-              <AccordionTrigger className="text-lg font-semibold">
-                Step 4: Review & Submit
-              </AccordionTrigger>
-              <AccordionContent className="space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Review Your Listing</CardTitle>
-                      <CardDescription>
-                        Ensure all details are correct before submitting
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p>
-                        <strong>Category:</strong>{" "}
-                        {CATEGORIES.find((c) => c.value === selectedCategory)
-                          ?.label || selectedCategory}
-                      </p>
-                      {selectedCategory === "events" && eventType && (
-                        <p>
-                          <strong>Event Type:</strong>{" "}
-                          {eventType === "event_center"
-                            ? "Event Center"
-                            : "Event Organizer"}
-                        </p>
-                      )}
-                      {Object.entries(formData).map(([key, val]) => (
-                        <p key={key}>
-                          <strong>
-                            {key.charAt(0).toUpperCase() +
-                              key.slice(1).replace(/_/g, " ")}
-                            :
-                          </strong>{" "}
-                          {Array.isArray(val)
-                            ? val.join(", ")
-                            : val || "Not set"}
-                        </p>
-                      ))}
-                      {selectedCategory === "food" &&
-                        formData.menu_method === "manual" &&
-                        meals.length > 0 && (
-                          <div>
-                            <strong>Meals:</strong>
-                            <ul>
-                              {meals.map((meal, index) => (
-                                <li key={index}>
-                                  {meal.name} - ₦{meal.price} -{" "}
-                                  {meal.description}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      {selectedCategory === "food" &&
-                        formData.menu_method === "upload" &&
-                        menuFile && (
-                          <p>
-                            <strong>Menu File:</strong> {menuFile.name}
-                          </p>
-                        )}
-                      <p>
-                        <strong>Images:</strong> {images.length} uploaded
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-                <div className="flex justify-between mt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-lg"
-                    onClick={prevStep}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="rounded-lg"
-                  >
-                    {loading ? (
-                      <LoadingSpinner className="mr-2 h-4 w-4" />
-                    ) : (
-                      <Upload className="mr-2 h-4 w-4" />
-                    )}
-                    {loading ? "Creating..." : "Create Listing"}
-                  </Button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              )}
+              {step === 2 && categoryConfig && (
+                <ServiceDetails
+                  categoryConfig={categoryConfig}
+                  formData={formData}
+                  setFormData={setFormData}
+                  errors={errors}
+                  selectedCategory={selectedCategory}
+                  meals={meals}
+                  setMeals={setMeals}
+                  tempMeal={tempMeal}
+                  setTempMeal={setTempMeal}
+                  tempMealImage={tempMealImage}
+                  setTempMealImage={setTempMealImage}
+                  tempMealImagePreview={tempMealImagePreview}
+                  setTempMealImagePreview={setTempMealImagePreview}
+                  handleTempMealChange={handleTempMealChange}
+                  handleTempMealImageChange={handleTempMealImageChange}
+                  addMeal={addMeal}
+                  removeMeal={removeMeal}
+                  handleSelectChange={handleSelectChange}
+                  handleChange={handleChange}
+                  handleMultiSelectChange={handleMultiSelectChange}
+                  firstInputRef={firstInputRef}
+                />
+              )}
+              {step === 3 && (
+                <MediaUpload
+                  handleImageChange={handleImageChange}
+                  errors={errors}
+                  imagePreviews={imagePreviews}
+                  loading={loading}
+                  uploadProgress={uploadProgress}
+                />
+              )}
+              {step === 4 && (
+                <ReviewListing
+                  formData={formData}
+                  selectedCategory={selectedCategory}
+                  eventType={eventType}
+                  images={images}
+                  meals={meals}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+          <NavigationButtons
+            step={step}
+            totalSteps={totalSteps}
+            prevStep={prevStep}
+            nextStep={nextStep}
+            loading={loading}
+          />
         </form>
       </div>
     </AuthGuard>

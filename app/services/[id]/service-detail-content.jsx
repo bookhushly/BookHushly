@@ -1070,24 +1070,6 @@ export default function ServiceDetailClient({ service }) {
                     </span>
                   )}
                 </div>
-                <div className="space-y-3">
-                  {service.vendor_phone && (
-                    <div className="flex items-center space-x-3 text-sm">
-                      <Phone className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-700">
-                        {service.vendor_phone}
-                      </span>
-                    </div>
-                  )}
-                  {service.vendor?.email && (
-                    <div className="flex items-center space-x-3 text-sm">
-                      <Mail className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-700">
-                        {service.vendor.email}
-                      </span>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           </div>
@@ -1228,36 +1210,6 @@ export default function ServiceDetailClient({ service }) {
               </div>
             </div>
           </div>
-
-          {/* Quick Contact */}
-          {(service.vendor_phone || service.vendor?.email) && (
-            <div className="card-hospitality">
-              <h3 className="font-semibold mb-4 text-gray-900 flex items-center">
-                <Phone className="w-5 h-5 mr-2 text-brand-600" />
-                Need Help?
-              </h3>
-              <div className="space-y-3">
-                {service.vendor_phone && (
-                  <a
-                    href={`tel:${service.vendor_phone}`}
-                    className="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-brand-300 transition-colors"
-                  >
-                    <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                    Call Vendor
-                  </a>
-                )}
-                {service.vendor?.email && (
-                  <a
-                    href={`mailto:${service.vendor.email}`}
-                    className="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-brand-300 transition-colors"
-                  >
-                    <Mail className="w-4 h-4 mr-2 text-gray-500" />
-                    Send Message
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

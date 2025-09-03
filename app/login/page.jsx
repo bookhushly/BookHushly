@@ -16,10 +16,9 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuthStore } from "@/lib/store";
-import { signIn } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -29,16 +28,16 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, setVendor } = useAuthStore();
   const router = useRouter();
 
-  // useEffect(() => {
-  //   if (user) {
-  //     const role = user.user_metadata?.role || "customer";
-  //     router.push(`/dashboard/${role}`);
-  //   }
-  // }, [user, router]);
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user) {
+      const role = user.user_metadata?.role || "customer";
+      router.replace(`/dashboard/${role}`);
+    }
+  }, [user, router]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -48,24 +47,37 @@ export default function LoginPage() {
     if (error) setError("");
   };
 
+  const validateForm = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoading(true);
     setError("");
 
     try {
-      console.log("🚀 Logging in with:", formData.email);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
       if (error) {
-        console.error("❌ Login error:", error.message);
         setError(error.message);
         toast.error("Login failed", {
           description: error.message,
+          duration: 5000,
         });
         return;
       }
@@ -74,23 +86,46 @@ export default function LoginPage() {
       const user = data.user;
 
       if (user && session) {
-        setUser(user);
         const role = user.user_metadata?.role || "customer";
+        if (role === "vendor") {
+          const { data: vendorData, error: vendorError } = await supabase
+            .from("vendors")
+            .select("*")
+            .eq("user_id", user.id) // Changed from 'id' to 'user_id'
+            .maybeSingle(); // Use maybeSingle to handle no results
 
+          if (vendorError) {
+            setError("Failed to fetch vendor data");
+            toast.error("Vendor data error", {
+              description: vendorError.message,
+              duration: 5000,
+            });
+            return;
+          }
+
+          setVendor(vendorData); // Store vendor data (or null if not found)
+        } else {
+          setVendor(null); // Ensure vendor is null for non-vendor users
+        }
+
+        setUser(user);
         toast.success("Welcome back!", {
           description: `Redirecting to your ${role} dashboard...`,
+          duration: 3000,
         });
-
-        router.push(`/dashboard/${role}`);
+        router.replace(`/dashboard/${role}`);
       } else {
-        console.warn("⚠️ Login returned no session");
         setError("Login failed. Please try again.");
+        toast.error("Login failed", {
+          description: "No session returned",
+          duration: 5000,
+        });
       }
     } catch (err) {
-      console.error("🚨 Unexpected error during login:", err);
       setError("An unexpected error occurred");
       toast.error("Login failed", {
         description: "An unexpected error occurred",
+        duration: 5000,
       });
     } finally {
       setLoading(false);
@@ -142,6 +177,7 @@ export default function LoginPage() {
                     onChange={handleChange}
                     className="pl-10"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -159,11 +195,15 @@ export default function LoginPage() {
                     onChange={handleChange}
                     className="pl-10 pr-10"
                     required
+                    disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />

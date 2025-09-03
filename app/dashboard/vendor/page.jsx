@@ -56,9 +56,8 @@ import {
 import { Badge as UIBadge } from "@/components/ui/badge";
 
 export default function VendorDashboard() {
-  const { user } = useAuthStore();
+  const { user, vendor } = useAuthStore();
   const { listings, setListings } = useListingStore();
-  const [vendorProfile, setVendorProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasShownApprovedToast, setHasShownApprovedToast] = useState(false);
   const [stats, setStats] = useState({
@@ -74,14 +73,14 @@ export default function VendorDashboard() {
 
   // QR Code Functions
   const generateQRCode = async () => {
-    if (!vendorProfile?.id) {
+    if (!vendor?.id) {
       toast.error("Vendor profile ID is missing");
       return;
     }
 
     try {
       setIsGeneratingQR(true);
-      const profileUrl = `${window.location.origin}/vendor-profile/${vendorProfile.id}`;
+      const profileUrl = `${window.location.origin}/vendor-profile/${vendor.id}`;
       const dataUrl = await QRCode.toDataURL(profileUrl, {
         width: 300,
         margin: 2,
@@ -89,7 +88,6 @@ export default function VendorDashboard() {
       });
       setQrCodeDataUrl(dataUrl);
     } catch (error) {
-      console.error("Error generating QR code:", error);
       toast.error("Failed to generate QR code");
     } finally {
       setIsGeneratingQR(false);
@@ -97,13 +95,13 @@ export default function VendorDashboard() {
   };
 
   const copyProfileLink = async () => {
-    if (!vendorProfile?.id) {
+    if (!vendor?.id) {
       toast.error("Vendor profile is missing");
       return;
     }
 
     try {
-      const profileUrl = `${window.location.origin}/vendor-profile/${vendorProfile.id}`;
+      const profileUrl = `${window.location.origin}/vendor-profile/${vendor.id}`;
       await navigator.clipboard.writeText(profileUrl);
       setCopied(true);
       toast.success("Profile link copied to clipboard");
@@ -114,7 +112,7 @@ export default function VendorDashboard() {
   };
 
   const downloadQRPDF = async () => {
-    if (!qrCodeDataUrl || !vendorProfile) {
+    if (!qrCodeDataUrl || !vendor) {
       toast.error("Cannot generate PDF: Missing QR code or vendor profile");
       return;
     }
@@ -134,7 +132,6 @@ export default function VendorDashboard() {
         reader.onloadend = () => resolve(reader.result);
       });
     } catch (error) {
-      console.error("Error loading logo:", error);
       toast.error("Failed to load logo for PDF");
       return;
     }
@@ -149,29 +146,19 @@ export default function VendorDashboard() {
     pdf.roundedRect(20, 70, pageWidth - 40, 70, 5, 5, "F");
     pdf.setFontSize(16);
     pdf.setTextColor(0, 0, 0);
-    pdf.text(
-      vendorProfile.business_name || "Your Business Name",
-      pageWidth / 2,
-      85,
-      { align: "center" }
-    );
+    pdf.text(vendor.business_name || "Your Business Name", pageWidth / 2, 85, {
+      align: "center",
+    });
     pdf.setFontSize(11);
     pdf.setTextColor(80, 80, 80);
-    pdf.text(
-      `Contact: ${vendorProfile.phone_number || "N/A"}`,
-      pageWidth / 2,
-      100,
-      { align: "center" }
-    );
-    pdf.text(
-      `Email: ${vendorProfile.users?.email || "N/A"}`,
-      pageWidth / 2,
-      110,
-      { align: "center" }
-    );
+    pdf.text(`Contact: ${vendor.phone_number || "N/A"}`, pageWidth / 2, 100, {
+      align: "center",
+    });
+    pdf.text(`Email: ${user?.email || "N/A"}`, pageWidth / 2, 110, {
+      align: "center",
+    });
     const description =
-      vendorProfile.business_description ||
-      "Discover our services on Bookhushly";
+      vendor.business_description || "Discover our services on Bookhushly";
     const descriptionLines = pdf.splitTextToSize(description, pageWidth - 60);
     pdf.text(descriptionLines, pageWidth / 2, 120, { align: "center" });
     pdf.setFontSize(14);
@@ -196,13 +183,13 @@ export default function VendorDashboard() {
       pageHeight - 15,
       { align: "center" }
     );
-    pdf.save(`${vendorProfile.business_name || "vendor"}-profile-qr.pdf`);
+    pdf.save(`${vendor.business_name || "vendor"}-profile-qr.pdf`);
     toast.success("QR code PDF downloaded successfully");
   };
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) {
+      if (!user || !vendor) {
         setLoading(false);
         return;
       }
@@ -216,20 +203,7 @@ export default function VendorDashboard() {
         );
         setHasShownApprovedToast(!!toastShown);
 
-        // Fetch vendor profile
-        const { data: vendor, error: vendorError } = await supabase
-          .from("vendors")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (vendorError) {
-          console.error("Vendor fetch error:", vendorError);
-          throw vendorError;
-        }
-
-        setVendorProfile(vendor);
-
+        // Use vendor from store instead of fetching
         if (vendor?.approved) {
           const { data: vendorListings, error: listingError } = await supabase
             .from("listings")
@@ -237,7 +211,6 @@ export default function VendorDashboard() {
             .eq("vendor_id", vendor.id);
 
           if (listingError) {
-            console.error("Listings fetch error:", listingError);
             throw listingError;
           }
 
@@ -265,7 +238,6 @@ export default function VendorDashboard() {
           }
         }
       } catch (error) {
-        console.error("Error loading vendor dashboard:", error.message);
         toast.error("Failed to load dashboard. Please try again later.");
       } finally {
         setLoading(false);
@@ -273,7 +245,7 @@ export default function VendorDashboard() {
     };
 
     fetchData();
-  }, [user, hasShownApprovedToast]);
+  }, [user, vendor, hasShownApprovedToast, setListings]);
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -283,7 +255,6 @@ export default function VendorDashboard() {
       const { data, error } = await getBookings(user.id, "vendor");
       if (error) {
         toast.error("Failed to load bookings");
-        console.error(error);
       } else {
         setBookings(data || []);
       }
@@ -305,23 +276,22 @@ export default function VendorDashboard() {
   }
 
   const approvalStatus = () => {
-    if (!vendorProfile)
+    if (!vendor)
       return {
         message: "Complete your vendor profile",
         icon: Clock,
         variant: "yellow",
       };
-    if (!vendorProfile.approved) {
-      if (vendorProfile.status === "reviewing")
+    if (!vendor.approved) {
+      if (vendor.status === "reviewing")
         return { message: "KYC under review", icon: Clock, variant: "yellow" };
-      if (vendorProfile.status === "denied")
+      if (vendor.status === "denied")
         return { message: "KYC denied", icon: Clock, variant: "red" };
     }
     return { message: "Vendor approved", icon: CheckCircle, variant: "green" };
   };
 
   const { message, icon: Icon, variant } = approvalStatus();
-
   return (
     <AuthGuard requiredRole="vendor">
       <div className="container py-4 sm:py-8 max-w-7xl mx-auto">
@@ -335,14 +305,14 @@ export default function VendorDashboard() {
         </div>
 
         {/* Approval Status Alert - Skip if approved and toast shown */}
-        {(!vendorProfile || !vendorProfile.approved) && (
+        {(!vendor || !vendor.approved) && (
           <Alert
             className={`mb-4 sm:mb-6 border-${variant}-200 bg-${variant}-50 animate-slide-in p-3 sm:p-4`}
           >
             <Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             <AlertDescription className="text-sm sm:text-base">
               {message}
-              {!vendorProfile && (
+              {!vendor && (
                 <span>
                   {" "}
                   —{" "}
@@ -468,7 +438,7 @@ export default function VendorDashboard() {
                   <Button
                     asChild
                     className="w-full justify-start btn-hospitality min-h-[44px] text-sm sm:text-base"
-                    disabled={!vendorProfile?.approved}
+                    disabled={!vendor?.approved}
                   >
                     <Link href="/dashboard/vendor/listings/create">
                       <Plus className="mr-2 h-4 w-4" />
@@ -492,11 +462,11 @@ export default function VendorDashboard() {
                   >
                     <Link href="/dashboard/vendor/kyc">
                       <FileText className="mr-2 h-4 w-4" />
-                      {vendorProfile?.approved ? "Update" : "Complete"} KYC
+                      {vendor?.approved ? "Update" : "Complete"} KYC
                     </Link>
                   </Button>
 
-                  {vendorProfile?.approved && (
+                  {vendor?.approved && (
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button
@@ -551,8 +521,8 @@ export default function VendorDashboard() {
                                 <input
                                   type="text"
                                   value={
-                                    vendorProfile?.id
-                                      ? `${window.location.origin}/vendor-profile/${vendorProfile.id}`
+                                    vendor?.id
+                                      ? `${window.location.origin}/vendor-profile/${vendor.id}`
                                       : ""
                                   }
                                   readOnly
@@ -622,7 +592,7 @@ export default function VendorDashboard() {
                       </p>
                     </div>
                   </div>
-                  {vendorProfile && (
+                  {vendor && (
                     <div className="flex items-center space-x-3 sm:space-x-4 animate-pulse-slow">
                       <div className="w-2 h-2 bg-warning-500 rounded-full"></div>
                       <div className="flex-1">
@@ -633,7 +603,7 @@ export default function VendorDashboard() {
                       </div>
                     </div>
                   )}
-                  {vendorProfile?.approved && (
+                  {vendor?.approved && (
                     <div className="flex items-center space-x-3 sm:space-x-4 animate-pulse-slow">
                       <div className="w-2 h-2 bg-success-500 rounded-full"></div>
                       <div className="flex-1">
@@ -661,7 +631,7 @@ export default function VendorDashboard() {
               </h2>
               <Button
                 asChild
-                disabled={!vendorProfile?.approved}
+                disabled={!vendor?.approved}
                 className="btn-hospitality bg-brand-600 hover:bg-brand-700 min-h-[44px] text-sm sm:text-base"
               >
                 <Link href="/dashboard/vendor/listings/create">
@@ -679,11 +649,11 @@ export default function VendorDashboard() {
                     No listings yet
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {vendorProfile?.approved
+                    {vendor?.approved
                       ? "Create your first listing to start accepting bookings"
                       : "Complete KYC verification to create listings"}
                   </p>
-                  {vendorProfile?.approved && (
+                  {vendor?.approved && (
                     <Button
                       asChild
                       className="bg-brand-600 hover:bg-brand-700 min-h-[44px] text-sm sm:text-base"
@@ -898,20 +868,20 @@ export default function VendorDashboard() {
                     Business Information
                   </CardTitle>
                   <CardDescription className="text-sm">
-                    {vendorProfile
+                    {vendor
                       ? "Update your business details"
                       : "Complete your vendor profile"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
-                  {vendorProfile ? (
+                  {vendor ? (
                     <div className="space-y-3 sm:space-y-4">
                       <div>
                         <label className="text-sm font-medium text-brand-800">
                           Business Name
                         </label>
                         <p className="text-sm text-muted-foreground">
-                          {vendorProfile.business_name}
+                          {vendor.business_name}
                         </p>
                       </div>
                       <div>
@@ -920,17 +890,13 @@ export default function VendorDashboard() {
                         </label>
                         <div className="flex items-center space-x-2 mt-1">
                           <UIBadge
-                            variant={
-                              vendorProfile.approved ? "default" : "secondary"
-                            }
+                            variant={vendor.approved ? "default" : "secondary"}
                           >
-                            {vendorProfile.approved
-                              ? "Approved"
-                              : "Pending Review"}
+                            {vendor.approved ? "Approved" : "Pending Review"}
                           </UIBadge>
                         </div>
                       </div>
-                      {vendorProfile.approved && (
+                      {vendor.approved && (
                         <div>
                           <label className="text-sm font-medium text-brand-800">
                             Share Profile
@@ -993,8 +959,8 @@ export default function VendorDashboard() {
                                       <input
                                         type="text"
                                         value={
-                                          vendorProfile?.id
-                                            ? `${window.location.origin}/vendor-profile/${vendorProfile.id}`
+                                          vendor?.id
+                                            ? `${window.location.origin}/vendor-profile/${vendor.id}`
                                             : ""
                                         }
                                         readOnly
