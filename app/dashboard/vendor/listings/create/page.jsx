@@ -24,7 +24,7 @@ const Stepper = dynamic(() => import("@/components/listings/create/Stepper"), {
   ssr: false,
 });
 const CategorySelection = dynamic(
-  () => import("@/components/listings/create/CategorySelection"),
+  () => import("@/components/listings/create/categorySelection"),
   {
     ssr: false,
   }
