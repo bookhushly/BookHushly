@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuthStore } from "@/lib/store";
 import { signUp } from "@/lib/auth";
 import { createUserProfile } from "@/lib/database";
+import { createClient } from "@supabase/supabase-js";
+import { Toaster, toast } from "react-hot-toast";
 import {
   Eye,
   EyeOff,
@@ -32,6 +33,12 @@ import {
   X,
 } from "lucide-react";
 
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -43,22 +50,14 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const { user } = useAuthStore();
-
-  // useEffect(() => {
-  //   if (user) {
-  //     const role = user.user_metadata?.role || "customer";
-  //   }
-  // }, [user]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
-    if (error) setError("");
   };
 
   const handleRoleChange = (value) => {
@@ -72,31 +71,74 @@ export default function RegisterPage() {
     const { name, email, password, confirmPassword, role } = formData;
 
     if (!role) {
-      setError("Please select a role");
+      toast.error("Please select a role", {
+        position: "top-center",
+        style: {
+          background: "#fee2e2",
+          color: "#b91c1c",
+          border: "1px solid #b91c1c",
+        },
+      });
       return false;
     }
     if (!name.trim()) {
-      setError("Name is required");
+      toast.error("Name is required", {
+        position: "top-center",
+        style: {
+          background: "#fee2e2",
+          color: "#b91c1c",
+          border: "1px solid #b91c1c",
+        },
+      });
       return false;
     }
     if (!email.trim()) {
-      setError("Email is required");
+      toast.error("Email is required", {
+        position: "top-center",
+        style: {
+          background: "#fee2e2",
+          color: "#b91c1c",
+          border: "1px solid #b91c1c",
+        },
+      });
       return false;
     }
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!password) {
-      setError("Password is required");
+      toast.error("Password is required", {
+        position: "top-center",
+        style: {
+          background: "#fee2e2",
+          color: "#b91c1c",
+          border: "1px solid #b91c1c",
+        },
+      });
       return false;
     }
     if (!passwordRegex.test(password)) {
-      setError(
-        "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)"
+      toast.error(
+        "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)",
+        {
+          position: "top-center",
+          style: {
+            background: "#fee2e2",
+            color: "#b91c1c",
+            border: "1px solid #b91c1c",
+          },
+        }
       );
       return false;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      toast.error("Passwords do not match", {
+        position: "top-center",
+        style: {
+          background: "#fee2e2",
+          color: "#b91c1c",
+          border: "1px solid #b91c1c",
+        },
+      });
       return false;
     }
     return true;
@@ -111,15 +153,53 @@ export default function RegisterPage() {
     hasSpecialChar: /[@$!%*?&]/.test(formData.password),
   };
 
+  // Check if email already exists in the database
+  const checkEmailExists = async (email) => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", email.trim())
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        console.error("Error checking email:", error);
+        return false;
+      }
+
+      return !!data;
+    } catch (err) {
+      console.error("Unexpected error checking email:", err);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
     setLoading(true);
-    setError("");
 
     try {
+      // Check if email already exists
+      const emailExists = await checkEmailExists(formData.email);
+      if (emailExists) {
+        toast.error(
+          "This email is already registered. Please use a different email or sign in.",
+          {
+            position: "top-center",
+            style: {
+              background: "#fee2e2",
+              color: "#b91c1c",
+              border: "1px solid #b91c1c",
+            },
+          }
+        );
+        setLoading(false);
+        return;
+      }
+
       const userData = {
         name: formData.name.trim(),
         role: formData.role,
@@ -132,7 +212,15 @@ export default function RegisterPage() {
       );
 
       if (signUpError) {
-        setError(signUpError.message);
+        toast.error(signUpError.message, {
+          position: "top-center",
+          style: {
+            background: "#fee2e2",
+            color: "#b91c1c",
+            border: "1px solid #b91c1c",
+          },
+        });
+        setLoading(false);
         return;
       }
 
@@ -155,7 +243,14 @@ export default function RegisterPage() {
         setIsSuccess(true);
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred", {
+        position: "top-center",
+        style: {
+          background: "#fee2e2",
+          color: "#b91c1c",
+          border: "1px solid #b91c1c",
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -163,6 +258,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+      <Toaster />
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link
@@ -249,7 +345,6 @@ export default function RegisterPage() {
                       confirmPassword: "",
                       role: "",
                     });
-                    setError("");
                   }}
                 >
                   Register Another Account
@@ -266,12 +361,6 @@ export default function RegisterPage() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
                 <div className="space-y-2">
                   <Label>I want to:</Label>
                   <RadioGroup
@@ -316,7 +405,6 @@ export default function RegisterPage() {
                   <Label htmlFor="name">Full Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    bur0
                     <Input
                       id="name"
                       name="name"

@@ -8,7 +8,6 @@ import { AuthGuard } from "@/components/auth/auth-guard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuthStore, useListingStore } from "@/lib/store";
 import { createListing } from "@/lib/database";
-import { CATEGORIES } from "@/lib/constants";
 import {
   getCategoryFormConfig,
   prepareCategoryData,
@@ -176,13 +175,6 @@ export default function CreateListingPage() {
   const handleMultiSelectChange = (fieldName, value, checked) => {
     setFormData((prev) => {
       const currentValues = prev[fieldName] || [];
-      if (checked && currentValues.length >= 5) {
-        setErrors((prev) => ({
-          ...prev,
-          [fieldName]: "Maximum 5 selections allowed",
-        }));
-        return prev;
-      }
       const newValues = checked
         ? [...currentValues, value]
         : currentValues.filter((v) => v !== value);
@@ -190,7 +182,6 @@ export default function CreateListingPage() {
       return { ...prev, [fieldName]: newValues };
     });
   };
-
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []).slice(0, 5);
     setImages(files);
@@ -285,16 +276,18 @@ export default function CreateListingPage() {
   const prevStep = () => setStep(step - 1);
 
   const uploadImages = async () => {
+    const bucket =
+      selectedCategory === "food" ? "food-images" : "listing-images";
     const uploadedUrls = [];
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
       const filePath = `${user.id}/${Date.now()}-${image.name}`;
       const { data, error } = await supabase.storage
-        .from("food-images")
+        .from(bucket)
         .upload(filePath, image);
       if (error) throw error;
       const { data: urlData } = supabase.storage
-        .from("food-images")
+        .from(bucket)
         .getPublicUrl(filePath);
       uploadedUrls.push(urlData.publicUrl);
       setUploadProgress(((i + 1) / images.length) * 100);
