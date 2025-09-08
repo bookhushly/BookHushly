@@ -70,6 +70,15 @@ export default function CreateListingPage() {
   });
   const [tempMealImage, setTempMealImage] = useState(null);
   const [tempMealImagePreview, setTempMealImagePreview] = useState(null);
+  // New states for ticket packages
+  const [useMultiplePackages, setUseMultiplePackages] = useState(false);
+  const [tickets, setTickets] = useState([]);
+  const [tempTicket, setTempTicket] = useState({
+    name: "",
+    price: "",
+    total: "",
+    description: "",
+  });
   const totalSteps = 4;
   const firstInputRef = useRef(null);
 
@@ -99,6 +108,8 @@ export default function CreateListingPage() {
       setEventType(parsed.eventType || "");
       setStep(parsed.step || 1);
       setMeals(parsed.meals || []);
+      setTickets(parsed.tickets || []);
+      setUseMultiplePackages(parsed.useMultiplePackages || false);
     }
   }, [user?.id]);
 
@@ -112,10 +123,21 @@ export default function CreateListingPage() {
           eventType,
           step,
           meals: meals.map(({ image, imagePreview, ...rest }) => rest),
+          tickets,
+          useMultiplePackages,
         })
       );
     }
-  }, [debouncedFormData, selectedCategory, eventType, step, meals, user?.id]);
+  }, [
+    debouncedFormData,
+    selectedCategory,
+    eventType,
+    step,
+    meals,
+    tickets,
+    useMultiplePackages,
+    user?.id,
+  ]);
 
   useEffect(() => {
     if (selectedCategory && categoryConfig) {
@@ -128,6 +150,10 @@ export default function CreateListingPage() {
       setErrors({});
       if (selectedCategory === "food") {
         setMeals([]);
+      }
+      if (selectedCategory === "events" && eventType === "event_organizer") {
+        setTickets([]);
+        setUseMultiplePackages(false);
       }
     } else {
       setFormData({});
@@ -182,6 +208,7 @@ export default function CreateListingPage() {
       return { ...prev, [fieldName]: newValues };
     });
   };
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []).slice(0, 5);
     setImages(files);
@@ -232,6 +259,38 @@ export default function CreateListingPage() {
     setMeals((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleTempTicketChange = (e) => {
+    const { name, value } = e.target;
+    setTempTicket((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const addTicket = () => {
+    if (!tempTicket.name || !tempTicket.price || !tempTicket.total) {
+      setErrors((prev) => ({
+        ...prev,
+        tickets: "Ticket name, price, and total are required",
+      }));
+      return;
+    }
+    if (tickets.length >= 10) {
+      setErrors((prev) => ({
+        ...prev,
+        tickets: "Maximum 10 packages allowed",
+      }));
+      return;
+    }
+    setTickets((prev) => [
+      ...prev,
+      { ...tempTicket, remaining: tempTicket.total },
+    ]);
+    setTempTicket({ name: "", price: "", total: "", description: "" });
+    setErrors((prev) => ({ ...prev, tickets: undefined }));
+  };
+
+  const removeTicket = (index) => {
+    setTickets((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSelectChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -247,6 +306,15 @@ export default function CreateListingPage() {
     if (currentStep === 2 && categoryConfig) {
       categoryConfig.fields.forEach((field) => {
         if (field.required) {
+          // Skip price and total_tickets if using multiple packages
+          if (
+            selectedCategory === "events" &&
+            eventType === "event_organizer" &&
+            useMultiplePackages &&
+            (field.name === "price" || field.name === "total_tickets")
+          ) {
+            return;
+          }
           const value = formData[field.name];
           if (!value || (Array.isArray(value) && value.length === 0)) {
             newErrors[field.name] = `${field.label} is required`;
@@ -256,7 +324,20 @@ export default function CreateListingPage() {
       if (selectedCategory === "food" && meals.length === 0) {
         newErrors.meals = "At least one meal is required";
       }
-      if (!formData.price || parseFloat(formData.price) <= 0) {
+      if (
+        selectedCategory === "events" &&
+        eventType === "event_organizer" &&
+        useMultiplePackages &&
+        tickets.length === 0
+      ) {
+        newErrors.tickets = "At least one ticket package is required";
+      }
+      if (
+        selectedCategory === "events" &&
+        eventType === "event_organizer" &&
+        !useMultiplePackages &&
+        (!formData.price || parseFloat(formData.price) <= 0)
+      ) {
         newErrors.price = "Valid price required";
       }
     }
@@ -329,10 +410,29 @@ export default function CreateListingPage() {
         const mealImageUrls = await uploadMealImages();
         processedMeals = meals.map((meal, i) => ({
           name: meal.name,
-          price: meal.price,
+          price: parseFloat(meal.price),
           description: meal.description,
           image_url: mealImageUrls[i],
         }));
+      }
+
+      let listingPrice = parseFloat(formData.price) || 0;
+      let totalTickets = parseInt(formData.total_tickets) || 0;
+      let processedTickets = null;
+      if (
+        selectedCategory === "events" &&
+        eventType === "event_organizer" &&
+        useMultiplePackages
+      ) {
+        processedTickets = tickets.map((ticket) => ({
+          name: ticket.name,
+          price: parseFloat(ticket.price),
+          total: parseInt(ticket.total),
+          remaining: parseInt(ticket.total),
+          description: ticket.description,
+        }));
+        listingPrice = Math.min(...processedTickets.map((t) => t.price));
+        totalTickets = processedTickets.reduce((sum, t) => sum + t.total, 0);
       }
 
       const categoryData = prepareCategoryData(
@@ -355,10 +455,12 @@ export default function CreateListingPage() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         event_type: selectedCategory === "events" ? eventType : null,
+        price: listingPrice,
         remaining_tickets:
           selectedCategory === "events" && eventType === "event_organizer"
-            ? parseInt(formData.total_tickets) || 0
+            ? totalTickets
             : 0,
+        ticket_packages: processedTickets || [],
       };
 
       const { data, error } = await createListing(listingData);
@@ -438,6 +540,7 @@ export default function CreateListingPage() {
                   setFormData={setFormData}
                   errors={errors}
                   selectedCategory={selectedCategory}
+                  eventType={eventType}
                   meals={meals}
                   setMeals={setMeals}
                   tempMeal={tempMeal}
@@ -450,6 +553,15 @@ export default function CreateListingPage() {
                   handleTempMealImageChange={handleTempMealImageChange}
                   addMeal={addMeal}
                   removeMeal={removeMeal}
+                  useMultiplePackages={useMultiplePackages}
+                  setUseMultiplePackages={setUseMultiplePackages}
+                  tickets={tickets}
+                  setTickets={setTickets}
+                  tempTicket={tempTicket}
+                  setTempTicket={setTempTicket}
+                  handleTempTicketChange={handleTempTicketChange}
+                  addTicket={addTicket}
+                  removeTicket={removeTicket}
                   handleSelectChange={handleSelectChange}
                   handleChange={handleChange}
                   handleMultiSelectChange={handleMultiSelectChange}
@@ -472,6 +584,7 @@ export default function CreateListingPage() {
                   eventType={eventType}
                   images={images}
                   meals={meals}
+                  tickets={tickets}
                 />
               )}
             </motion.div>

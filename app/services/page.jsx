@@ -10,11 +10,21 @@ import React, {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Toaster, toast } from "react-hot-toast";
 import {
   MapPin,
@@ -28,6 +38,20 @@ import {
   Car,
   Truck,
   Shield,
+  Users,
+  Bed,
+  Bath,
+  Wifi,
+  ParkingCircle,
+  AirVent,
+  ChefHat,
+  Clock,
+  Calendar,
+  Filter,
+  X,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { debounce } from "lodash";
 import {
@@ -38,6 +62,7 @@ import { getFeatureIcon } from "@/lib/featureIcons";
 import { supabase } from "@/lib/supabase";
 import { SCATEGORIES } from "@/lib/constants";
 
+// Constants
 const BUTTON_CONFIG = {
   hotels: { icon: Building, text: "Book Now" },
   serviced_apartments: { icon: Home, text: "Book Now" },
@@ -72,6 +97,267 @@ const PRICE_LABELS = {
   default: "starting from",
 };
 
+// Filter configurations for each category
+const FILTER_CONFIGS = {
+  hotels: {
+    priceRange: { min: 5000, max: 500000, step: 5000 },
+    filters: [
+      {
+        key: "bedrooms",
+        label: "Bedrooms",
+        type: "range",
+        min: 1,
+        max: 10,
+        step: 1,
+      },
+      {
+        key: "bathrooms",
+        label: "Bathrooms",
+        type: "range",
+        min: 1,
+        max: 6,
+        step: 1,
+      },
+      {
+        key: "capacity",
+        label: "Guest Capacity",
+        type: "range",
+        min: 1,
+        max: 20,
+        step: 1,
+      },
+      {
+        key: "amenities",
+        label: "Amenities",
+        type: "multiselect",
+        options: [
+          { value: "wifi", label: "Free WiFi" },
+          { value: "ac", label: "Air Conditioning" },
+          { value: "power_backup", label: "24/7 Power" },
+          { value: "swimming_pool", label: "Swimming Pool" },
+          { value: "gym", label: "Gym" },
+          { value: "restaurant", label: "Restaurant" },
+          { value: "parking", label: "Free Parking" },
+          { value: "room_service", label: "Room Service" },
+          { value: "security", label: "24/7 Security" },
+        ],
+      },
+    ],
+  },
+  serviced_apartments: {
+    priceRange: { min: 10000, max: 1000000, step: 10000 },
+    filters: [
+      {
+        key: "bedrooms",
+        label: "Bedrooms",
+        type: "range",
+        min: 1,
+        max: 10,
+        step: 1,
+      },
+      {
+        key: "bathrooms",
+        label: "Bathrooms",
+        type: "range",
+        min: 1,
+        max: 6,
+        step: 1,
+      },
+      {
+        key: "minimum_stay",
+        label: "Minimum Stay",
+        type: "select",
+        options: [
+          { value: "1_night", label: "1 night" },
+          { value: "3_nights", label: "3 nights" },
+          { value: "1_week", label: "1 week" },
+          { value: "2_weeks", label: "2 weeks" },
+          { value: "1_month", label: "1 month" },
+        ],
+      },
+      {
+        key: "apartment_types",
+        label: "Apartment Type",
+        type: "multiselect",
+        options: [
+          { value: "studio", label: "Studio" },
+          { value: "one_bedroom", label: "1 Bedroom" },
+          { value: "two_bedroom", label: "2 Bedroom" },
+          { value: "three_bedroom", label: "3 Bedroom" },
+          { value: "penthouse", label: "Penthouse" },
+        ],
+      },
+    ],
+  },
+  food: {
+    priceRange: { min: 500, max: 50000, step: 500 },
+    filters: [
+      {
+        key: "cuisine_type",
+        label: "Cuisine Type",
+        type: "select",
+        options: [
+          { value: "nigerian", label: "Nigerian" },
+          { value: "continental", label: "Continental" },
+          { value: "chinese", label: "Chinese" },
+          { value: "italian", label: "Italian" },
+          { value: "indian", label: "Indian" },
+          { value: "fast_food", label: "Fast Food" },
+          { value: "seafood", label: "Seafood" },
+          { value: "vegetarian", label: "Vegetarian" },
+        ],
+      },
+      {
+        key: "service_type",
+        label: "Service Type",
+        type: "multiselect",
+        options: [
+          { value: "dine_in", label: "Dine-in" },
+          { value: "takeaway", label: "Takeaway" },
+          { value: "delivery", label: "Delivery" },
+          { value: "catering", label: "Catering" },
+          { value: "buffet", label: "Buffet" },
+        ],
+      },
+      {
+        key: "capacity",
+        label: "Seating Capacity",
+        type: "range",
+        min: 10,
+        max: 500,
+        step: 10,
+      },
+    ],
+  },
+  events: {
+    priceRange: { min: 1000, max: 10000000, step: 10000 },
+    filters: [
+      {
+        key: "event_type",
+        label: "Event Type",
+        type: "select",
+        options: [
+          { value: "event_center", label: "Event Center" },
+          { value: "event_organizer", label: "Event Organizer" },
+        ],
+      },
+      {
+        key: "capacity",
+        label: "Capacity",
+        type: "range",
+        min: 10,
+        max: 5000,
+        step: 50,
+      },
+      {
+        key: "event_types",
+        label: "Event Category",
+        type: "multiselect",
+        options: [
+          { value: "wedding", label: "Wedding" },
+          { value: "concert", label: "Concert" },
+          { value: "conference", label: "Conference" },
+          { value: "birthday", label: "Birthday" },
+          { value: "corporate", label: "Corporate" },
+        ],
+      },
+    ],
+  },
+  logistics: {
+    priceRange: { min: 500, max: 100000, step: 500 },
+    filters: [
+      {
+        key: "service_types",
+        label: "Service Type",
+        type: "multiselect",
+        options: [
+          { value: "same_day", label: "Same Day" },
+          { value: "next_day", label: "Next Day" },
+          { value: "express", label: "Express" },
+          { value: "moving", label: "Moving" },
+          { value: "freight", label: "Freight" },
+        ],
+      },
+      {
+        key: "vehicle_types",
+        label: "Vehicle Type",
+        type: "multiselect",
+        options: [
+          { value: "motorcycle", label: "Motorcycle" },
+          { value: "car", label: "Car" },
+          { value: "van", label: "Van" },
+          { value: "truck", label: "Truck" },
+        ],
+      },
+    ],
+  },
+  security: {
+    priceRange: { min: 1000, max: 50000, step: 1000 },
+    filters: [
+      {
+        key: "security_types",
+        label: "Security Type",
+        type: "multiselect",
+        options: [
+          { value: "event", label: "Event Security" },
+          { value: "personal", label: "Personal Protection" },
+          { value: "corporate", label: "Corporate Security" },
+          { value: "residential", label: "Residential" },
+          { value: "patrol", label: "Security Patrol" },
+        ],
+      },
+      {
+        key: "duration",
+        label: "Duration",
+        type: "multiselect",
+        options: [
+          { value: "hourly", label: "Hourly" },
+          { value: "daily", label: "Daily" },
+          { value: "weekly", label: "Weekly" },
+          { value: "monthly", label: "Monthly" },
+        ],
+      },
+    ],
+  },
+  car_rentals: {
+    priceRange: { min: 5000, max: 200000, step: 5000 },
+    filters: [
+      {
+        key: "vehicle_categories",
+        label: "Vehicle Category",
+        type: "multiselect",
+        options: [
+          { value: "economy", label: "Economy" },
+          { value: "standard", label: "Standard" },
+          { value: "luxury", label: "Luxury" },
+          { value: "suv", label: "SUV" },
+          { value: "minivan", label: "Minivan" },
+        ],
+      },
+      {
+        key: "driver_service",
+        label: "Driver Service",
+        type: "select",
+        options: [
+          { value: "self_drive", label: "Self-drive" },
+          { value: "with_driver", label: "With driver" },
+          { value: "both", label: "Both options" },
+        ],
+      },
+      {
+        key: "transmission_types",
+        label: "Transmission",
+        type: "multiselect",
+        options: [
+          { value: "automatic", label: "Automatic" },
+          { value: "manual", label: "Manual" },
+        ],
+      },
+    ],
+  },
+};
+
+// Utility Functions
 const getPublicImageUrl = (path) => {
   if (!path) return "/placeholder.jpg";
   const bucket = path.includes("food-images")
@@ -95,8 +381,536 @@ const useWindowSize = () => {
   return isMobile;
 };
 
-// CategoryTabs Component
+const getCategoryKeyFeatures = (service, isMobile) => {
+  const maxFeatures = isMobile ? 2 : 3;
+  const features = [];
+
+  switch (service.category) {
+    case "hotels":
+      if (service.bedrooms)
+        features.push({
+          icon: <Bed className="h-3 w-3" />,
+          label: `${service.bedrooms} Bed`,
+        });
+      if (service.bathrooms)
+        features.push({
+          icon: <Bath className="h-3 w-3" />,
+          label: `${service.bathrooms} Bath`,
+        });
+      if (service.capacity)
+        features.push({
+          icon: <Users className="h-3 w-3" />,
+          label: `${service.capacity} Guests`,
+        });
+      break;
+
+    case "serviced_apartments":
+      if (service.bedrooms)
+        features.push({
+          icon: <Bed className="h-3 w-3" />,
+          label: `${service.bedrooms} Bed`,
+        });
+      if (service.minimum_stay)
+        features.push({
+          icon: <Calendar className="h-3 w-3" />,
+          label: `Min ${service.minimum_stay}`,
+        });
+      if (service.capacity)
+        features.push({
+          icon: <Users className="h-3 w-3" />,
+          label: `${service.capacity} Guests`,
+        });
+      break;
+
+    case "food":
+      const categoryData = extractCategoryData(service);
+      if (categoryData.cuisine_type)
+        features.push({
+          icon: <ChefHat className="h-3 w-3" />,
+          label: categoryData.cuisine_type,
+        });
+      if (
+        categoryData.service_type &&
+        categoryData.service_type.includes("delivery")
+      ) {
+        features.push({
+          icon: <Truck className="h-3 w-3" />,
+          label: "Delivery",
+        });
+      }
+      if (service.capacity)
+        features.push({
+          icon: <Users className="h-3 w-3" />,
+          label: `${service.capacity} Seats`,
+        });
+      break;
+
+    case "events":
+      if (service.capacity)
+        features.push({
+          icon: <Users className="h-3 w-3" />,
+          label: `${service.capacity} Capacity`,
+        });
+      if (service.event_type)
+        features.push({
+          icon: <PartyPopper className="h-3 w-3" />,
+          label: service.event_type,
+        });
+      break;
+
+    case "car_rentals":
+      const carData = extractCategoryData(service);
+      if (carData.vehicle_categories)
+        features.push({
+          icon: <Car className="h-3 w-3" />,
+          label: carData.vehicle_categories[0],
+        });
+      if (carData.driver_service)
+        features.push({
+          icon: <Users className="h-3 w-3" />,
+          label:
+            carData.driver_service === "both"
+              ? "Self/Driver"
+              : carData.driver_service,
+        });
+      break;
+
+    case "logistics":
+      const logisticsData = extractCategoryData(service);
+      if (logisticsData.service_types)
+        features.push({
+          icon: <Truck className="h-3 w-3" />,
+          label: logisticsData.service_types[0],
+        });
+      if (logisticsData.delivery_time)
+        features.push({
+          icon: <Clock className="h-3 w-3" />,
+          label: logisticsData.delivery_time[0],
+        });
+      break;
+
+    case "security":
+      const securityData = extractCategoryData(service);
+      if (securityData.security_types)
+        features.push({
+          icon: <Shield className="h-3 w-3" />,
+          label: securityData.security_types[0],
+        });
+      if (securityData.response_time)
+        features.push({
+          icon: <Clock className="h-3 w-3" />,
+          label: securityData.response_time[0],
+        });
+      break;
+
+    default:
+      if (service.capacity)
+        features.push({
+          icon: <Users className="h-3 w-3" />,
+          label: `${service.capacity} Cap`,
+        });
+  }
+
+  return features.slice(0, maxFeatures);
+};
+
+const getCategorySpecificInfo = (service) => {
+  const categoryData = extractCategoryData(service) || {};
+  const category = service.category || "unknown";
+
+  return {
+    icon: CATEGORY_ICONS[category] || CATEGORY_ICONS.default,
+    priceLabel:
+      typeof PRICE_LABELS[category] === "function"
+        ? PRICE_LABELS[category](service.event_type)
+        : PRICE_LABELS[category] || PRICE_LABELS.default,
+  };
+};
+
+const formatPrice = (service) => {
+  const price = Number(service.price);
+  const price_unit = service.price_unit || "fixed";
+
+  if (isNaN(price)) return "Price not available";
+  if (price_unit === "fixed" || price_unit === "per_event")
+    return `₦${price.toLocaleString()}`;
+  if (price_unit === "negotiable") return "Negotiable";
+
+  const unitLabel =
+    {
+      per_hour: "/hr",
+      per_day: "/day",
+      per_night: "/night",
+      per_person: "/person",
+      per_km: "/km",
+      per_week: "/week",
+      per_month: "/month",
+    }[price_unit] || "";
+
+  return `₦${price.toLocaleString()}${unitLabel}`;
+};
+
+const getButtonConfig = (category) =>
+  BUTTON_CONFIG[category] || BUTTON_CONFIG.default;
+
+// Filter Panel Component
+const FilterPanel = React.memo(
+  ({ category, filters, onFiltersChange, isOpen, onToggle, isMobile }) => {
+    const config = FILTER_CONFIGS[category];
+    const [priceRange, setPriceRange] = useState([
+      config?.priceRange.min || 0,
+      config?.priceRange.max || 1000000,
+    ]);
+    const [expandedSections, setExpandedSections] = useState(
+      new Set(["price"])
+    );
+
+    const toggleSection = (section) => {
+      const newExpanded = new Set(expandedSections);
+      if (newExpanded.has(section)) {
+        newExpanded.delete(section);
+      } else {
+        newExpanded.add(section);
+      }
+      setExpandedSections(newExpanded);
+    };
+
+    const handlePriceChange = useCallback(
+      debounce((values) => {
+        setPriceRange(values);
+        onFiltersChange({
+          ...filters,
+          price_min: values[0],
+          price_max: values[1],
+        });
+      }, 300),
+      [filters, onFiltersChange]
+    );
+
+    const handleFilterChange = (filterKey, value, type) => {
+      let newFilters = { ...filters };
+
+      if (type === "multiselect") {
+        const currentValues = newFilters[filterKey] || [];
+        if (currentValues.includes(value)) {
+          newFilters[filterKey] = currentValues.filter((v) => v !== value);
+        } else {
+          newFilters[filterKey] = [...currentValues, value];
+        }
+      } else if (type === "range") {
+        newFilters[filterKey] = value;
+      } else {
+        newFilters[filterKey] = value;
+      }
+
+      onFiltersChange(newFilters);
+    };
+
+    const activeFilterCount = Object.keys(filters).filter((key) => {
+      const value = filters[key];
+      return value && (Array.isArray(value) ? value.length > 0 : true);
+    }).length;
+
+    if (!config) return null;
+
+    return (
+      <>
+        {/* Mobile Filter Toggle */}
+        {isMobile && (
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4">
+            <Button
+              onClick={onToggle}
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Filter Panel */}
+        <AnimatePresence>
+          {(isOpen || !isMobile) && (
+            <motion.div
+              initial={isMobile ? { x: "-100%" } : { opacity: 0 }}
+              animate={isMobile ? { x: 0 } : { opacity: 1 }}
+              exit={isMobile ? { x: "-100%" } : { opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`
+              ${
+                isMobile
+                  ? "fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl overflow-y-auto"
+                  : "sticky top-4 h-fit"
+              }
+            `}
+            >
+              <div className="p-4 space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Filters
+                  </h3>
+                  {isMobile && (
+                    <Button onClick={onToggle} variant="ghost" size="sm">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {activeFilterCount > 0 && (
+                    <Button
+                      onClick={() => onFiltersChange({})}
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+
+                {/* Price Range */}
+                <div className="space-y-3">
+                  <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => toggleSection("price")}
+                  >
+                    <h4 className="font-medium text-gray-900">Price Range</h4>
+                    {expandedSections.has("price") ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </div>
+
+                  {expandedSections.has("price") && (
+                    <div className="space-y-3">
+                      <Slider
+                        value={priceRange}
+                        onValueChange={handlePriceChange}
+                        min={config.priceRange.min}
+                        max={config.priceRange.max}
+                        step={config.priceRange.step}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>₦{priceRange[0].toLocaleString()}</span>
+                        <span>₦{priceRange[1].toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dynamic Filters */}
+                {config.filters.map((filter) => (
+                  <div key={filter.key} className="space-y-3">
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => toggleSection(filter.key)}
+                    >
+                      <h4 className="font-medium text-gray-900">
+                        {filter.label}
+                      </h4>
+                      {expandedSections.has(filter.key) ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+
+                    {expandedSections.has(filter.key) && (
+                      <div className="space-y-2">
+                        {filter.type === "multiselect" && (
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {filter.options.map((option) => (
+                              <div
+                                key={option.value}
+                                className="flex items-center space-x-2"
+                              >
+                                <Checkbox
+                                  id={`${filter.key}-${option.value}`}
+                                  checked={(filters[filter.key] || []).includes(
+                                    option.value
+                                  )}
+                                  onCheckedChange={(checked) =>
+                                    handleFilterChange(
+                                      filter.key,
+                                      option.value,
+                                      "multiselect"
+                                    )
+                                  }
+                                />
+                                <label
+                                  htmlFor={`${filter.key}-${option.value}`}
+                                  className="text-sm text-gray-700 cursor-pointer"
+                                >
+                                  {option.label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {filter.type === "select" && (
+                          <Select
+                            value={filters[filter.key] || ""}
+                            onValueChange={(value) =>
+                              handleFilterChange(filter.key, value, "select")
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={`Select ${filter.label.toLowerCase()}`}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filter.options.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+
+                        {filter.type === "range" && (
+                          <div className="space-y-3">
+                            <Slider
+                              value={
+                                filters[filter.key]
+                                  ? [filters[filter.key]]
+                                  : [filter.min]
+                              }
+                              onValueChange={(values) =>
+                                handleFilterChange(
+                                  filter.key,
+                                  values[0],
+                                  "range"
+                                )
+                              }
+                              min={filter.min}
+                              max={filter.max}
+                              step={filter.step}
+                              className="w-full"
+                            />
+                            <div className="text-center text-sm text-gray-600">
+                              {filters[filter.key] || filter.min}{" "}
+                              {filter.label.toLowerCase()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile Overlay */}
+        {isMobile && isOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={onToggle}
+          />
+        )}
+      </>
+    );
+  }
+);
+FilterPanel.displayName = "FilterPanel";
+
+// Active Filters Display
+const ActiveFilters = React.memo(({ filters, onRemoveFilter, category }) => {
+  const config = FILTER_CONFIGS[category];
+  const activeFilters = [];
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (!value || (Array.isArray(value) && value.length === 0)) return;
+
+    if (key === "price_min" || key === "price_max") return; // Handled separately
+
+    const filterConfig = config?.filters.find((f) => f.key === key);
+    if (!filterConfig) return;
+
+    if (Array.isArray(value)) {
+      value.forEach((v) => {
+        const option = filterConfig.options?.find((opt) => opt.value === v);
+        if (option) {
+          activeFilters.push({
+            key: `${key}-${v}`,
+            label: option.label,
+            onRemove: () => onRemoveFilter(key, v),
+          });
+        }
+      });
+    } else {
+      const option = filterConfig.options?.find((opt) => opt.value === value);
+      activeFilters.push({
+        key,
+        label: option ? option.label : `${filterConfig.label}: ${value}`,
+        onRemove: () => onRemoveFilter(key, null),
+      });
+    }
+  });
+
+  // Add price filter if active
+  if (filters.price_min || filters.price_max) {
+    const min = filters.price_min || config?.priceRange.min || 0;
+    const max = filters.price_max || config?.priceRange.max || 1000000;
+    activeFilters.push({
+      key: "price",
+      label: `₦${min.toLocaleString()} - ₦${max.toLocaleString()}`,
+      onRemove: () => onRemoveFilter("price", null),
+    });
+  }
+
+  if (activeFilters.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2 mb-4">
+      {activeFilters.map((filter) => (
+        <Badge
+          key={filter.key}
+          variant="secondary"
+          className="flex items-center gap-2 px-3 py-1"
+        >
+          {filter.label}
+          <button
+            onClick={filter.onRemove}
+            className="hover:text-red-600 transition-colors"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </Badge>
+      ))}
+    </div>
+  );
+});
+ActiveFilters.displayName = "ActiveFilters";
+
+// CategoryTabs Component with URL navigation
 const CategoryTabs = React.memo(({ activeCategory, setActiveCategory }) => {
+  const router = useRouter();
+
+  const handleCategoryChange = useCallback(
+    (categoryValue) => {
+      setActiveCategory(categoryValue);
+      const url = new URL(window.location);
+      url.searchParams.set("category", categoryValue);
+      router.push(url.pathname + url.search, { scroll: false });
+    },
+    [setActiveCategory, router]
+  );
+
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
@@ -108,7 +922,7 @@ const CategoryTabs = React.memo(({ activeCategory, setActiveCategory }) => {
                 ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                 : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
             }`}
-            onClick={() => setActiveCategory(category.value)}
+            onClick={() => handleCategoryChange(category.value)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             role="tab"
@@ -134,7 +948,15 @@ const SearchBar = React.memo(
     );
 
     return (
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-900 py-12 sm:py-16">
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-900 py-12 sm:py-16 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-30">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl" />
+          <div className="absolute top-20 right-20 w-40 h-40 bg-purple-400/20 rounded-full blur-2xl" />
+          <div className="absolute bottom-10 left-1/3 w-36 h-36 bg-indigo-400/20 rounded-full blur-2xl" />
+        </div>
+
         <div className="container relative z-10 mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -142,11 +964,11 @@ const SearchBar = React.memo(
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto text-center"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-balance">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-balance bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
               Find Your Perfect {categoryLabel} Experience
             </h1>
             <motion.div
-              className="bg-white/95 backdrop-blur-md p-4 rounded-3xl shadow-lg border border-gray-100 max-w-xl mx-auto"
+              className="bg-white/95 backdrop-blur-md p-4 rounded-3xl shadow-xl border border-white/30 max-w-xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -157,7 +979,7 @@ const SearchBar = React.memo(
                   placeholder={`Search ${categoryLabel.toLowerCase()}...`}
                   defaultValue={searchQuery}
                   onChange={(e) => debouncedSetSearchQuery(e.target.value)}
-                  className="pl-10 h-12 rounded-full border-gray-200 focus:ring-2 focus:ring-blue-500 text-base w-full"
+                  className="pl-10 h-12 rounded-full border-gray-200 focus:ring-2 focus:ring-blue-500 text-base w-full bg-white/90"
                   aria-label={`Search ${categoryLabel} services`}
                 />
               </div>
@@ -170,7 +992,7 @@ const SearchBar = React.memo(
 );
 SearchBar.displayName = "SearchBar";
 
-// ServiceCard Component
+// Enhanced ServiceCard Component
 const ServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
   const category = useMemo(
     () =>
@@ -186,7 +1008,7 @@ const ServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
     () => Number(service.price) > 100000,
     [service.price]
   );
-  const isVerified = service.active;
+
   const serviceImage = useMemo(
     () =>
       service.media_urls &&
@@ -196,6 +1018,7 @@ const ServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
         : category.image,
     [service.media_urls, category.image]
   );
+
   const categoryInfo = useMemo(
     () => getCategorySpecificInfo(service),
     [service]
@@ -205,10 +1028,11 @@ const ServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
     () => getButtonConfig(service.category),
     [service.category]
   );
-  const features = useMemo(() => {
-    const result = formatFeatures(service, isMobile);
-    return result;
-  }, [service, isMobile]);
+  const keyFeatures = useMemo(
+    () => getCategoryKeyFeatures(service, isMobile),
+    [service, isMobile]
+  );
+
   const ButtonIcon = buttonConfig.icon;
 
   return (
@@ -217,92 +1041,82 @@ const ServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
       className="transform transition-opacity duration-300 opacity-0 group-[.is-visible]:opacity-100"
     >
       <Link href={`/services/${service.id}`}>
-        <Card className="group bg-white hover:shadow-xl transition-shadow duration-300 border border-gray-100 rounded-2xl overflow-hidden flex flex-col">
-          <div className="relative h-60 sm:h-72">
+        <Card className="group bg-white hover:shadow-xl transition-all duration-300 border border-gray-100 rounded-2xl overflow-hidden flex flex-col h-full">
+          <div className="relative h-52 sm:h-60">
             <Image
               src={serviceImage}
               alt={service.title || "Service"}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500 rounded-t-2xl"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               priority={service.index < 4}
               loading={service.index < 4 ? "eager" : "lazy"}
             />
-            <div className="absolute top-4 left-4 flex gap-2">
+            <div className="absolute top-3 left-3 flex gap-2">
               {isPremium && (
-                <Badge className="bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold px-3 py-1 rounded-full">
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-2 py-1 text-xs rounded-full">
                   Premium
                 </Badge>
               )}
-              {isVerified && (
-                <Badge className="bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold px-3 py-1 rounded-full flex items-center">
-                  <ShieldCheck className="h-4 w-4 mr-1" /> Verified
-                </Badge>
-              )}
+              <Badge className="bg-white/90 text-gray-700 font-medium px-2 py-1 text-xs rounded-full flex items-center">
+                <ShieldCheck className="h-3 w-3 mr-1 text-green-600" />
+                Verified
+              </Badge>
             </div>
-            <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-md rounded-full px-3 py-1 text-sm font-semibold flex items-center">
-              <Star className="h-4 w-4 text-yellow-400 mr-1" /> 4.8 (128)
+            <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-white flex items-center">
+              <Star className="h-3 w-3 text-yellow-400 mr-1" />
+              4.8 (128)
             </div>
           </div>
-          <div className="p-6 flex flex-col flex-1">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center text-sm text-gray-600">
+
+          <div className="p-4 flex flex-col flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center text-xs text-gray-500">
                 {category.icon}
-                <span className="ml-2 font-medium">{category.label}</span>
+                <span className="ml-1 font-medium">{category.label}</span>
               </div>
-              {service.availability !== "available" && (
-                <Badge
-                  variant="outline"
-                  className="text-red-600 border-red-600"
-                >
-                  {service.availability}
-                </Badge>
-              )}
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900 mb-3 line-clamp-1">
+
+            <CardTitle className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
               {service.title || "Untitled Service"}
             </CardTitle>
-            <div className="flex items-center text-sm text-gray-600 mb-4">
-              <MapPin className="h-4 w-4 mr-1" />
+
+            <div className="flex items-center text-sm text-gray-600 mb-3">
+              <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
               <span className="line-clamp-1">
                 {service.location || "Unknown Location"}
               </span>
             </div>
-            <div className="text-sm text-gray-600 mb-4 line-clamp-2">
-              {categoryInfo.details || "No details available"}
-            </div>
-            <div className="flex flex-wrap gap-2 mb-5">
-              {features.map((f) => (
-                <Badge
-                  key={f.key}
-                  variant="outline"
-                  className="flex items-center text-gray-700 bg-gray-50 hover:bg-gray-100 px-2.5 py-1"
-                  title={f.label}
-                  aria-label={f.label}
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              {keyFeatures.map((feature, index) => (
+                <div
+                  key={index}
+                  className="flex items-center text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded-full"
                 >
-                  {f.icon}
-                  <span className="text-xs">{f.label}</span>
-                </Badge>
+                  {feature.icon}
+                  <span className="ml-1">{feature.label}</span>
+                </div>
               ))}
             </div>
+
             <div className="flex justify-between items-center mt-auto">
               <div>
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-xl font-bold text-gray-900">
                   {formattedPrice}
                 </span>
-                <span className="text-sm text-gray-500 ml-1">
+                <span className="text-xs text-gray-500 ml-1 block">
                   {categoryInfo.priceLabel}
                 </span>
               </div>
-              <div className="transform transition-transform duration-300 hover:scale-105 active:scale-95">
-                <Button
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full px-5 py-2.5 font-semibold"
-                  aria-label={buttonConfig.text}
-                >
-                  <ButtonIcon className="h-4 w-4 mr-2" />
-                  {buttonConfig.text}
-                </Button>
-              </div>
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full px-4 py-2 font-medium text-sm"
+                aria-label={buttonConfig.text}
+              >
+                <ButtonIcon className="h-4 w-4 mr-1" />
+                {buttonConfig.text}
+              </Button>
             </div>
           </div>
         </Card>
@@ -312,38 +1126,35 @@ const ServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
 });
 ServiceCard.displayName = "ServiceCard";
 
-// ✨ Polished Skeleton Card (mirrors ServiceCard layout)
+// Skeleton and Loading Components
 const SkeletonCard = React.memo(() => (
   <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm animate-pulse">
-    <div className="relative h-60 sm:h-72 bg-gray-200">
-      <div className="absolute top-4 left-4 flex gap-2">
-        <div className="h-6 w-20 rounded-full bg-white/60" />
-        <div className="h-6 w-24 rounded-full bg-white/60" />
+    <div className="relative h-52 sm:h-60 bg-gray-200">
+      <div className="absolute top-3 left-3 flex gap-2">
+        <div className="h-5 w-16 rounded-full bg-white/60" />
+        <div className="h-5 w-20 rounded-full bg-white/60" />
       </div>
-      <div className="absolute bottom-4 left-4 h-6 w-24 rounded-full bg-white/70" />
+      <div className="absolute bottom-3 left-3 h-5 w-20 rounded-full bg-white/70" />
     </div>
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-3">
-        <div className="h-4 w-28 bg-gray-200 rounded" />
-        <div className="h-5 w-20 bg-gray-200 rounded" />
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="h-4 w-24 bg-gray-200 rounded" />
       </div>
-      <div className="h-6 w-3/5 bg-gray-200 rounded mb-3" />
-      <div className="h-4 w-48 bg-gray-200 rounded mb-4" />
-      <div className="space-y-2 mb-5">
-        <div className="h-6 w-24 bg-gray-200 rounded-full" />
-        <div className="h-6 w-28 bg-gray-200 rounded-full" />
+      <div className="h-5 w-3/4 bg-gray-200 rounded mb-2" />
+      <div className="h-4 w-full bg-gray-200 rounded mb-3" />
+      <div className="flex gap-2 mb-4">
+        <div className="h-6 w-16 bg-gray-200 rounded-full" />
         <div className="h-6 w-20 bg-gray-200 rounded-full" />
       </div>
       <div className="flex items-center justify-between">
-        <div className="h-5 w-32 bg-gray-200 rounded" />
-        <div className="h-10 w-28 bg-gray-200 rounded-full" />
+        <div className="h-5 w-28 bg-gray-200 rounded" />
+        <div className="h-8 w-24 bg-gray-200 rounded-full" />
       </div>
     </div>
   </div>
 ));
 SkeletonCard.displayName = "SkeletonCard";
 
-// ✨ Empty / Error States (lightweight & animated)
 const EmptyState = React.memo(({ title, subtitle, icon: Icon = Search }) => (
   <motion.div
     initial={{ opacity: 0, y: 12 }}
@@ -351,8 +1162,8 @@ const EmptyState = React.memo(({ title, subtitle, icon: Icon = Search }) => (
     transition={{ duration: 0.35 }}
     className="flex flex-col items-center justify-center py-16"
   >
-    <div className="h-20 w-20 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-100 to-purple-100 mb-6">
-      <Icon className="h-10 w-10 text-blue-500" />
+    <div className="h-20 w-20 flex items-center justify-center rounded-full bg-purple-100 mb-6">
+      <Icon className="h-10 w-10 text-purple-600" />
     </div>
     <h3 className="text-xl font-semibold text-gray-700 mb-2">{title}</h3>
     <p className="text-sm text-gray-500">{subtitle}</p>
@@ -360,7 +1171,6 @@ const EmptyState = React.memo(({ title, subtitle, icon: Icon = Search }) => (
 ));
 EmptyState.displayName = "EmptyState";
 
-// LoadingSpinner Component (for infinite scroll)
 const LoadingSpinner = React.memo(() => (
   <div className="flex justify-center py-8">
     <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -368,7 +1178,6 @@ const LoadingSpinner = React.memo(() => (
 ));
 LoadingSpinner.displayName = "LoadingSpinner";
 
-// ListingsGrid Component (no fallbacks, friendly empty/error states)
 const ListingsGrid = React.memo(
   ({
     listings,
@@ -381,7 +1190,7 @@ const ListingsGrid = React.memo(
     if (fetchError) {
       return (
         <EmptyState
-          title="We couldn’t load services"
+          title="We couldn't load services"
           subtitle="Please check your connection and try again."
           icon={Shield}
         />
@@ -392,7 +1201,7 @@ const ListingsGrid = React.memo(
       return (
         <EmptyState
           title="No services found"
-          subtitle="Try adjusting your search or choose another category."
+          subtitle="Try adjusting your filters or search criteria."
           icon={Search}
         />
       );
@@ -421,165 +1230,8 @@ const ListingsGrid = React.memo(
 );
 ListingsGrid.displayName = "ListingsGrid";
 
-const getCategorySpecificInfo = (service) => {
-  const categoryData = extractCategoryData(service) || {};
-  const category = service.category || "unknown";
-
-  const details = [];
-  if (service.availability)
-    details.push(`Availability: ${service.availability}`);
-  if (service.price_unit && service.price_unit !== "fixed")
-    details.push(`Price Unit: ${service.price_unit}`);
-  if (service.capacity) details.push(`Capacity: ${service.capacity}`);
-  if (service.bedrooms) details.push(`Bedrooms: ${service.bedrooms}`);
-  if (service.bathrooms) details.push(`Bathrooms: ${service.bathrooms}`);
-  if (service.minimum_stay)
-    details.push(`Minimum Stay: ${service.minimum_stay}`);
-  if (service.security_deposit)
-    details.push(
-      `Security Deposit: ₦${Number(service.security_deposit).toLocaleString()}`
-    );
-  if (service.remaining_tickets)
-    details.push(`Tickets Left: ${service.remaining_tickets}`);
-  if (service.event_type) details.push(`Event Type: ${service.event_type}`);
-  if (service.service_areas)
-    details.push(`Service Areas: ${service.service_areas}`);
-  if (service.vehicle_type)
-    details.push(`Vehicle Type: ${service.vehicle_type}`);
-  if (service.features) details.push(`Features: ${service.features}`);
-
-  const config = getCategoryFormConfig(category, service.event_type);
-  if (config) {
-    config.fields.forEach((field) => {
-      const value = categoryData[field.name] || service[field.name];
-      if (!value || (Array.isArray(value) && value.length === 0)) return;
-      if (
-        [
-          "title",
-          "description",
-          "price",
-          "location",
-          "capacity",
-          "bedrooms",
-          "bathrooms",
-          "minimum_stay",
-          "security_deposit",
-          "remaining_tickets",
-          "event_type",
-          "service_areas",
-          "vehicle_type",
-          "features",
-          "cancellation_policy",
-        ].includes(field.name)
-      )
-        return;
-      const label = field.label;
-      const formattedValue = Array.isArray(value)
-        ? value.join(", ")
-        : String(value);
-      details.push(`${label}: ${formattedValue}`);
-    });
-  }
-
-  return {
-    icon: CATEGORY_ICONS[category] || CATEGORY_ICONS.default,
-    details: details.slice(0, 3).join(" • ") || "No details available",
-    priceLabel:
-      typeof PRICE_LABELS[category] === "function"
-        ? PRICE_LABELS[category](service.event_type)
-        : PRICE_LABELS[category] || PRICE_LABELS.default,
-  };
-};
-
-const formatPrice = (service) => {
-  const price = Number(service.price);
-  const price_unit = service.price_unit || "fixed";
-
-  if (isNaN(price)) return "Price not available";
-  if (price_unit === "fixed" || price_unit === "per_event")
-    return `₦${price.toLocaleString()}`;
-  if (price_unit === "negotiable") return "Negotiable";
-
-  const unitLabel =
-    {
-      per_hour: "/hr",
-      per_day: "/day",
-      per_night: "/night",
-      per_person: "/person",
-      per_km: "/km",
-      per_week: "/week",
-      per_month: "/month",
-    }[price_unit] || "";
-  return `₦${price.toLocaleString()}${unitLabel}`;
-};
-
-const getButtonConfig = (category) =>
-  BUTTON_CONFIG[category] || BUTTON_CONFIG.default;
-
-const formatFeatures = (service, isMobile) => {
-  const categoryData = extractCategoryData(service) || {};
-  const config = getCategoryFormConfig(service.category, service.event_type);
-  if (!config) return [];
-
-  const prioritizedFields = [
-    "features",
-    "cancellation_policy",
-    "service_areas",
-    "vehicle_type",
-    "amenities",
-    "services_included",
-    "cuisine_type",
-    "event_types",
-    "security_types",
-    "vehicle_SCATEGORIES",
-    "service_types",
-    "apartment_types",
-    "special_diets",
-  ];
-  const preferredValues = [
-    "free_24h",
-    "free_48h",
-    "free_7d",
-    "comprehensive",
-    "yes",
-  ];
-  const featureLimit = isMobile ? 2 : 4;
-
-  const sortedFields = config.fields
-    .filter(
-      (field) =>
-        !["title", "description", "price", "location"].includes(field.name) &&
-        (categoryData[field.name] || service[field.name])
-    )
-    .sort((a, b) =>
-      prioritizedFields.includes(a.name) && !prioritizedFields.includes(b.name)
-        ? -1
-        : prioritizedFields.includes(b.name) &&
-            !prioritizedFields.includes(a.name)
-          ? 1
-          : 0
-    );
-
-  const features = [];
-  for (const field of sortedFields) {
-    const value = categoryData[field.name] || service[field.name];
-    if (!value || (Array.isArray(value) && value.length === 0)) continue;
-    const formattedValue = Array.isArray(value)
-      ? value.filter((v) => preferredValues.includes(v)).join(", ") || value[0]
-      : String(value);
-    features.push({
-      key: field.name,
-      label: formattedValue || field.label,
-      icon: getFeatureIcon(field.name, formattedValue),
-    });
-    if (features.length >= featureLimit) break;
-  }
-
-  return features;
-};
-
-// ✅ Fixed useListings hook (AbortError silenced & fallbacks removed)
-const useListings = (category, searchQuery) => {
+// Enhanced listings hook with filtering
+const useListingsWithFilters = (category, searchQuery, filters) => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
@@ -591,29 +1243,83 @@ const useListings = (category, searchQuery) => {
   const abortControllerRef = useRef(null);
   const ITEMS_PER_PAGE = 12;
 
-  // Clean up observer and inflight requests on unmount
   useEffect(() => {
     return () => {
-      if (observer.current) {
-        observer.current.disconnect();
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      if (observer.current) observer.current.disconnect();
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
 
+  const buildQuery = useCallback(
+    (pageNum, currentCategory, currentQuery, currentFilters) => {
+      let query = supabase
+        .from("listings")
+        .select("*")
+        .eq("active", true)
+        .eq("category", currentCategory)
+        .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1);
+
+      // Search query
+      if (currentQuery) {
+        query = query.or(
+          `title.ilike.%${currentQuery}%,location.ilike.%${currentQuery}%`
+        );
+      }
+
+      // Apply filters
+      Object.entries(currentFilters).forEach(([key, value]) => {
+        if (!value || (Array.isArray(value) && value.length === 0)) return;
+
+        switch (key) {
+          case "price_min":
+            query = query.gte("price", value);
+            break;
+          case "price_max":
+            query = query.lte("price", value);
+            break;
+          case "bedrooms":
+          case "bathrooms":
+          case "capacity":
+            query = query.gte(key, value);
+            break;
+          case "minimum_stay":
+          case "event_type":
+          case "cuisine_type":
+          case "driver_service":
+            query = query.eq(key, value);
+            break;
+          default:
+            // Handle JSONB fields in category_data
+            if (Array.isArray(value) && value.length > 0) {
+              const conditions = value.map(
+                (v) => `category_data->>'${key}' @> '"${v}"'`
+              );
+              query = query.or(conditions.join(","));
+            }
+            break;
+        }
+      });
+
+      return query;
+    },
+    []
+  );
+
   const fetchListings = useCallback(
-    async (pageNum, reset = false, currentCategory, currentQuery) => {
-      // Abort previous request if still pending
+    async (
+      pageNum,
+      reset = false,
+      currentCategory,
+      currentQuery,
+      currentFilters
+    ) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       abortControllerRef.current = new AbortController();
 
-      const cacheKey = `${currentCategory}:${currentQuery}:${pageNum}`;
+      const cacheKey = `${currentCategory}:${currentQuery}:${JSON.stringify(currentFilters)}:${pageNum}`;
 
-      // Check cache first
       if (cache.current.has(cacheKey)) {
         const cachedData = cache.current.get(cacheKey);
         setListings((prev) => (reset ? cachedData : [...prev, ...cachedData]));
@@ -625,28 +1331,18 @@ const useListings = (category, searchQuery) => {
       }
 
       setIsLoadingMore(true);
-      if (reset) {
-        setLoading(true);
-      }
+      if (reset) setLoading(true);
 
       try {
-        let query = supabase
-          .from("listings")
-          .select(
-            "id, title, category, price, location, media_urls, active, category_data, price_unit, availability, bedrooms, bathrooms, minimum_stay, security_deposit, remaining_tickets, event_type, features, cancellation_policy, service_areas, vehicle_type"
-          )
-          .eq("active", true)
-          .eq("category", currentCategory)
-          .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
-          .abortSignal(abortControllerRef.current.signal);
-
-        if (currentQuery) {
-          query = query.or(
-            `title.ilike.%${currentQuery}%,location.ilike.%${currentQuery}%`
-          );
-        }
-
-        const { data, error } = await query;
+        const query = buildQuery(
+          pageNum,
+          currentCategory,
+          currentQuery,
+          currentFilters
+        );
+        const { data, error } = await query.abortSignal(
+          abortControllerRef.current.signal
+        );
 
         if (error) throw error;
 
@@ -656,53 +1352,35 @@ const useListings = (category, searchQuery) => {
         setHasMore(safeData.length === ITEMS_PER_PAGE);
         setFetchError(null);
       } catch (error) {
-        // Broader Abort detection across environments
         const isAbort =
-          error?.name === "AbortError" ||
-          /aborted/i.test(error?.message || "") ||
-          error?.cause?.name === "AbortError";
+          error?.name === "AbortError" || /aborted/i.test(error?.message || "");
+        if (isAbort) return;
 
-        if (isAbort) {
-          // Silently ignore aborted requests (no console, no toast)
-          return;
-        }
-
-        // Real error
-        toast.error(`Error fetching listings: ${error.message}`, {
-          position: "top-center",
-          style: {
-            background: "#fee2e2",
-            color: "#b91c1c",
-            border: "1px solid #b91c1c",
-          },
-        });
+        toast.error(`Error fetching listings: ${error.message}`);
         setFetchError(error.message);
       } finally {
         setIsLoadingMore(false);
         setLoading(false);
       }
     },
-    []
+    [buildQuery]
   );
 
-  // Reset when category or search changes
   useEffect(() => {
     setLoading(true);
     setPage(1);
     setListings([]);
     setHasMore(true);
     setFetchError(null);
-    // Clear cache for different category/search combinations
     cache.current.clear();
-    fetchListings(1, true, category, searchQuery);
-  }, [category, searchQuery, fetchListings]);
+    fetchListings(1, true, category, searchQuery, filters);
+  }, [category, searchQuery, filters, fetchListings]);
 
-  // Load more when page changes
   useEffect(() => {
     if (page > 1) {
-      fetchListings(page, false, category, searchQuery);
+      fetchListings(page, false, category, searchQuery, filters);
     }
-  }, [page, category, searchQuery, fetchListings]);
+  }, [page, category, searchQuery, filters, fetchListings]);
 
   const lastListingRef = useCallback(
     (node) => {
@@ -733,16 +1411,35 @@ const useListings = (category, searchQuery) => {
   };
 };
 
+// Main Services Page Component
 export default function ServicesPage() {
-  const [activeCategory, setActiveCategory] = useState(SCATEGORIES[0].value);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const initialCategory = searchParams.get("category") || SCATEGORIES[0].value;
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState({});
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   const deferredQuery = useDeferredValue(searchQuery);
+  const deferredFilters = useDeferredValue(filters);
   const isMobile = useWindowSize();
+
+  useEffect(() => {
+    const urlCategory = searchParams.get("category");
+    if (urlCategory && urlCategory !== activeCategory) {
+      setActiveCategory(urlCategory);
+      setFilters({}); // Reset filters when category changes
+    }
+  }, [searchParams, activeCategory]);
+
   const categoryLabel = useMemo(
     () =>
       SCATEGORIES.find((c) => c.value === activeCategory)?.label || "Service",
     [activeCategory]
   );
+
   const {
     listings,
     loading,
@@ -750,40 +1447,114 @@ export default function ServicesPage() {
     isLoadingMore,
     hasMore,
     lastListingRef,
-  } = useListings(activeCategory, deferredQuery);
+  } = useListingsWithFilters(activeCategory, deferredQuery, deferredFilters);
+
+  const handleRemoveFilter = useCallback(
+    (filterKey, value) => {
+      const newFilters = { ...filters };
+
+      if (filterKey === "price") {
+        delete newFilters.price_min;
+        delete newFilters.price_max;
+      } else if (value !== null && Array.isArray(newFilters[filterKey])) {
+        newFilters[filterKey] = newFilters[filterKey].filter(
+          (v) => v !== value
+        );
+        if (newFilters[filterKey].length === 0) {
+          delete newFilters[filterKey];
+        }
+      } else {
+        delete newFilters[filterKey];
+      }
+
+      setFilters(newFilters);
+    },
+    [filters]
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster />
+
       <CategoryTabs
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
       />
+
       <SearchBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         categoryLabel={categoryLabel}
       />
-      <div className="container mx-auto px-4 py-12">
-        {loading ? (
-          // ✨ Sleek skeletons while fetching
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(12)].map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        ) : (
-          <AnimatePresence>
-            <ListingsGrid
-              listings={listings}
-              fetchError={fetchError}
-              isLoadingMore={isLoadingMore}
-              hasMore={hasMore}
-              lastListingRef={lastListingRef}
-              isMobile={isMobile}
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex gap-8">
+          {/* Desktop Filters Sidebar */}
+          {!isMobile && (
+            <div className="w-80 flex-shrink-0">
+              <FilterPanel
+                category={activeCategory}
+                filters={filters}
+                onFiltersChange={setFilters}
+                isOpen={true}
+                onToggle={() => {}}
+                isMobile={false}
+              />
+            </div>
+          )}
+
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Mobile Filter Toggle */}
+            {isMobile && (
+              <FilterPanel
+                category={activeCategory}
+                filters={filters}
+                onFiltersChange={setFilters}
+                isOpen={isFilterOpen}
+                onToggle={() => setIsFilterOpen(!isFilterOpen)}
+                isMobile={true}
+              />
+            )}
+
+            {/* Active Filters */}
+            <ActiveFilters
+              filters={filters}
+              onRemoveFilter={handleRemoveFilter}
+              category={activeCategory}
             />
-          </AnimatePresence>
-        )}
+
+            {/* Results Count */}
+            {!loading && (
+              <div className="mb-6">
+                <p className="text-gray-600">
+                  {listings.length}{" "}
+                  {listings.length === 1 ? "service" : "services"} found
+                </p>
+              </div>
+            )}
+
+            {/* Listings Grid */}
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(12)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : (
+              <AnimatePresence>
+                <ListingsGrid
+                  listings={listings}
+                  fetchError={fetchError}
+                  isLoadingMore={isLoadingMore}
+                  hasMore={hasMore}
+                  lastListingRef={lastListingRef}
+                  isMobile={isMobile}
+                />
+              </AnimatePresence>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
