@@ -63,9 +63,21 @@ export default async function ServiceDetailPage({ params }) {
         media_urls,
         active,
         vendor_name,
-      vendor_phone,
+        vendor_phone,
         created_at,
-        updated_at
+        updated_at,
+        amenities,
+        category_data,
+        price_unit,
+        operating_hours,
+        service_areas,
+        bedrooms,
+        bathrooms,
+        minimum_stay,
+        security_deposit,
+        remaining_tickets,
+        event_type,
+        ticket_packages
       `
       )
       .eq("id", params.id)
@@ -85,13 +97,14 @@ export default async function ServiceDetailPage({ params }) {
 
     const parsedService = {
       ...service,
-      features: service.features
-        ? service.features.split("\n").filter(Boolean)
-        : [],
+
       requirements: service.requirements
         ? service.requirements.split("\n").filter(Boolean)
         : [],
       media_urls: service.media_urls || [],
+      amenities: service.amenities || [],
+      ticket_packages: service.ticket_packages || [],
+      category_data: service.category_data || {},
     };
 
     return (

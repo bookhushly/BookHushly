@@ -143,7 +143,10 @@ export default function CreateListingPage() {
     if (selectedCategory && categoryConfig) {
       const initialData = {};
       categoryConfig.fields.forEach((field) => {
-        initialData[field.name] = field.type === "multiselect" ? [] : "";
+        initialData[field.name] =
+          field.type === "multiselect" || field.type === "amenity_multiselect"
+            ? []
+            : "";
       });
       initialData.availability = "available";
       setFormData((prev) => ({ ...initialData, ...prev }));
@@ -435,12 +438,36 @@ export default function CreateListingPage() {
         totalTickets = processedTickets.reduce((sum, t) => sum + t.total, 0);
       }
 
+      // Convert amenities array to structured format for database storage
+      const processedAmenities = Array.isArray(formData.amenities)
+        ? formData.amenities.map((amenityValue) => {
+            // Find the amenity option in the category config to get the label
+            const categoryConfig = getCategoryFormConfig(
+              selectedCategory,
+              eventType
+            );
+            const amenityField = categoryConfig?.fields.find(
+              (f) => f.name === "amenities"
+            );
+            const amenityOption = amenityField?.options?.find(
+              (opt) => opt.value === amenityValue
+            );
+
+            return {
+              value: amenityValue,
+              label: amenityOption?.label || amenityValue,
+              icon: amenityOption?.icon || amenityValue,
+            };
+          })
+        : [];
+
       const categoryData = prepareCategoryData(
         {
           ...formData,
           media_urls: uploadedImageUrls,
           event_type: selectedCategory === "events" ? eventType : null,
           meals: processedMeals,
+          amenities: processedAmenities, // Pass the structured amenities
         },
         selectedCategory,
         eventType
@@ -461,6 +488,7 @@ export default function CreateListingPage() {
             ? totalTickets
             : 0,
         ticket_packages: processedTickets || [],
+        amenities: processedAmenities, // Ensure amenities are included in the final data
       };
 
       const { data, error } = await createListing(listingData);
