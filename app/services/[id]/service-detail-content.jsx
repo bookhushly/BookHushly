@@ -31,6 +31,7 @@ import {
   Heart,
   Share,
 } from "lucide-react";
+import CancellationPolicyDisplay from "@/components/listings/details/CancellationPolicyDisplay";
 import { createClient } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -664,45 +665,9 @@ export default function ServiceDetailClient({ service }) {
 
                   {/* Cancellation Policy */}
                   {service.cancellation_policy && (
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">
-                        Cancellation Policy
-                      </h3>
-                      <div className="space-y-2">
-                        {Array.isArray(service.cancellation_policy) ? (
-                          service.cancellation_policy.map((policy, index) => (
-                            <div
-                              key={index}
-                              className="flex items-start space-x-3"
-                            >
-                              <div className="flex-shrink-0 mt-1">
-                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                              </div>
-                              <span className="text-sm text-gray-700">
-                                {policy
-                                  .replace(/_/g, " ")
-                                  .replace(/\b\w/g, (l) => l.toUpperCase())
-                                  .replace(/(\d+)h/g, "$1 hours")
-                                  .replace(/(\d+)d/g, "$1 days")}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="flex items-start space-x-3">
-                            <div className="flex-shrink-0 mt-1">
-                              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                            </div>
-                            <span className="text-sm text-gray-700">
-                              {service.cancellation_policy
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (l) => l.toUpperCase())
-                                .replace(/(\d+)h/g, "$1 hours")
-                                .replace(/(\d+)d/g, "$1 days")}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <CancellationPolicyDisplay
+                      cancellationPolicy={service.cancellation_policy}
+                    />
                   )}
                 </div>
               </div>
