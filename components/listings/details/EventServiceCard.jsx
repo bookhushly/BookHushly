@@ -1,0 +1,208 @@
+import React, { useMemo } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  MapPin,
+  Star,
+  ShieldCheck,
+  PartyPopper,
+  Users,
+  Calendar,
+  Clock,
+  Ticket,
+  Heart,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { extractCategoryData } from "@/lib/category-forms";
+
+const getPublicImageUrl = (path) => {
+  if (!path) return "/placeholder.jpg";
+  const bucket = path.includes("food-images")
+    ? "food-images"
+    : "listing-images";
+  const pathParts = path.split(`${bucket}/`);
+  const filePath = pathParts.length > 1 ? pathParts[1] : path;
+  const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+  return data?.publicUrl || "/placeholder.jpg";
+};
+
+const formatEventPrice = (service) => {
+  const price = Number(service.price);
+  const priceUnit = service.price_unit || "fixed";
+
+  if (isNaN(price)) return "Price not available";
+  if (priceUnit === "negotiable") return "Negotiable";
+
+  return `₦${price.toLocaleString()}`;
+};
+
+const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
+  const isEventCenter = service.event_type === "event_center";
+  const isPremium = useMemo(
+    () => Number(service.price) > 1000000,
+    [service.price]
+  );
+
+  const serviceImage = useMemo(
+    () =>
+      service.media_urls &&
+      Array.isArray(service.media_urls) &&
+      service.media_urls.length > 0
+        ? getPublicImageUrl(service.media_urls[0])
+        : "/placeholder-event.jpg",
+    [service.media_urls]
+  );
+
+  const formattedPrice = useMemo(() => formatEventPrice(service), [service]);
+  const categoryData = extractCategoryData(service);
+
+  // Event organizer specific data
+  const eventDate = service.event_date
+    ? new Date(service.event_date)
+    : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const buttonText = isEventCenter ? "Book Venue" : "Get Tickets";
+  const ButtonIcon = isEventCenter ? PartyPopper : Ticket;
+  const priceLabel = isEventCenter ? "per event" : "per ticket";
+
+  return (
+    <div
+      ref={lastListingRef}
+      className="transform transition-opacity duration-300 opacity-0 group-[.is-visible]:opacity-100"
+    >
+      <Link href={`/services/${service.id}`}>
+        <Card className="group bg-white transition-all duration-300 border-0 rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-xl h-[420px] w-full max-w-sm mx-auto">
+          {/* Image Container */}
+          <div className="relative h-56 overflow-hidden">
+            <Image
+              src={serviceImage}
+              alt={service.title || (isEventCenter ? "Event Venue" : "Event")}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out h-[350px]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              priority={service.index < 4}
+              loading={service.index < 4 ? "eager" : "lazy"}
+            />
+
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+            {/* Top badges */}
+            <div className="absolute top-4 left-4 flex gap-2">
+              {isPremium && (
+                <Badge className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium px-3 py-1.5 text-xs rounded-full shadow-lg">
+                  {isEventCenter ? "Premium" : "Featured"}
+                </Badge>
+              )}
+            </div>
+
+            {/* Rating badge */}
+            <div className="absolute top-4 right-4">
+              <div className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-medium text-gray-800 flex items-center shadow-sm">
+                <Star className="h-3 w-3 text-orange-400 mr-1 fill-current" />
+                4.9
+              </div>
+            </div>
+
+            {/* Heart icon for favorites */}
+            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <button className="bg-white/90 backdrop-blur-sm rounded-full p-2.5 hover:bg-white transition-colors shadow-sm">
+                <Heart className="h-4 w-4 text-gray-600 hover:text-red-500 transition-colors" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-5 flex flex-col flex-1">
+            {/* Location */}
+
+            {/* Title */}
+            <h3 className="font-bold text-gray-900 mb-3 line-clamp-2 leading-6 text-xl">
+              {service.title ||
+                (isEventCenter ? "Untitled Event Venue" : "Untitled Event")}
+            </h3>
+            <div className="flex items-center mb-3">
+              <MapPin className="h-4 w-4 text-gray-400 mr-2" />
+              <span className="text-sm text-gray-600 line-clamp-1">
+                {service.location?.split(",")[0] ||
+                  (isEventCenter ? "Location TBD" : "Venue TBD")}
+              </span>
+            </div>
+
+            {/* Key Information */}
+            <div className="space-y-2 mb-4">
+              {service.capacity && (
+                <div className="flex items-center text-sm text-gray-700">
+                  <Users className="h-4 w-4 text-gray-400 mr-3" />
+                  <span>{service.capacity.toLocaleString()} capacity</span>
+                </div>
+              )}
+
+              {!isEventCenter && (
+                <div className="flex items-center text-sm text-gray-700">
+                  <Calendar className="h-4 w-4 text-gray-400 mr-3" />
+                  <span>
+                    {eventDate.toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
+
+              {!isEventCenter && (
+                <div className="flex items-center text-sm text-gray-700">
+                  <Clock className="h-4 w-4 text-gray-400 mr-3" />
+                  <span>7:00 PM</span>
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            {service.description && (
+              <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed flex-1">
+                {service.description}
+              </p>
+            )}
+
+            {/* Pricing and CTA */}
+            <div className="mt-auto pt-4 border-t border-gray-100 space-y-3">
+              <div className="flex items-baseline justify-between">
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-gray-900">
+                    {formattedPrice}
+                  </span>
+                  <span className="text-sm text-gray-500">{priceLabel}</span>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center text-xs text-gray-500">
+                    <Star className="h-3 w-3 text-orange-400 mr-1 fill-current" />
+                    4.9
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                size="lg"
+                className={` bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-6 py-3 font-semibold text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 w-full`}
+                aria-label={buttonText}
+              >
+                <ButtonIcon className="h-4 w-4" />
+                {buttonText}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </Link>
+    </div>
+  );
+});
+
+EventServiceCard.displayName = "EventServiceCard";
+
+export default EventServiceCard;

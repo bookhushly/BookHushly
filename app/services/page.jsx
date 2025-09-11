@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Toaster, toast } from "react-hot-toast";
+import ServiceCardWrapper from "@/components/listings/details/ServiceCardWrapper";
 import {
   MapPin,
   Search,
@@ -992,140 +993,6 @@ const SearchBar = React.memo(
 );
 SearchBar.displayName = "SearchBar";
 
-// Enhanced ServiceCard Component
-const ServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
-  const category = useMemo(
-    () =>
-      SCATEGORIES.find((c) => c.value === service.category) || {
-        label: service.category || "Unknown",
-        icon: <Star className="h-4 w-4" />,
-        image: "/placeholder.jpg",
-      },
-    [service.category]
-  );
-
-  const isPremium = useMemo(
-    () => Number(service.price) > 100000,
-    [service.price]
-  );
-
-  const serviceImage = useMemo(
-    () =>
-      service.media_urls &&
-      Array.isArray(service.media_urls) &&
-      service.media_urls.length > 0
-        ? getPublicImageUrl(service.media_urls[0])
-        : category.image,
-    [service.media_urls, category.image]
-  );
-
-  const categoryInfo = useMemo(
-    () => getCategorySpecificInfo(service),
-    [service]
-  );
-  const formattedPrice = useMemo(() => formatPrice(service), [service]);
-  const buttonConfig = useMemo(
-    () => getButtonConfig(service.category),
-    [service.category]
-  );
-  const keyFeatures = useMemo(
-    () => getCategoryKeyFeatures(service, isMobile),
-    [service, isMobile]
-  );
-
-  const ButtonIcon = buttonConfig.icon;
-
-  return (
-    <div
-      ref={lastListingRef}
-      className="transform transition-opacity duration-300 opacity-0 group-[.is-visible]:opacity-100"
-    >
-      <Link href={`/services/${service.id}`}>
-        <Card className="group bg-white hover:shadow-xl transition-all duration-300 border border-gray-100 rounded-2xl overflow-hidden flex flex-col h-full">
-          <div className="relative h-52 sm:h-60">
-            <Image
-              src={serviceImage}
-              alt={service.title || "Service"}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              priority={service.index < 4}
-              loading={service.index < 4 ? "eager" : "lazy"}
-            />
-            <div className="absolute top-3 left-3 flex gap-2">
-              {isPremium && (
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold px-2 py-1 text-xs rounded-full">
-                  Premium
-                </Badge>
-              )}
-              <Badge className="bg-white/90 text-gray-700 font-medium px-2 py-1 text-xs rounded-full flex items-center">
-                <ShieldCheck className="h-3 w-3 mr-1 text-green-600" />
-                Verified
-              </Badge>
-            </div>
-            <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-white flex items-center">
-              <Star className="h-3 w-3 text-yellow-400 mr-1" />
-              4.8 (128)
-            </div>
-          </div>
-
-          <div className="p-4 flex flex-col flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center text-xs text-gray-500">
-                {category.icon}
-                <span className="ml-1 font-medium">{category.label}</span>
-              </div>
-            </div>
-
-            <CardTitle className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-              {service.title || "Untitled Service"}
-            </CardTitle>
-
-            <div className="flex items-center text-sm text-gray-600 mb-3">
-              <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-              <span className="line-clamp-1">
-                {service.location || "Unknown Location"}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-4">
-              {keyFeatures.map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-center text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded-full"
-                >
-                  {feature.icon}
-                  <span className="ml-1">{feature.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-between items-center mt-auto">
-              <div>
-                <span className="text-xl font-bold text-gray-900">
-                  {formattedPrice}
-                </span>
-                <span className="text-xs text-gray-500 ml-1 block">
-                  {categoryInfo.priceLabel}
-                </span>
-              </div>
-              <Button
-                size="sm"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full px-4 py-2 font-medium text-sm"
-                aria-label={buttonConfig.text}
-              >
-                <ButtonIcon className="h-4 w-4 mr-1" />
-                {buttonConfig.text}
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </Link>
-    </div>
-  );
-});
-ServiceCard.displayName = "ServiceCard";
-
 // Skeleton and Loading Components
 const SkeletonCard = React.memo(() => (
   <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm animate-pulse">
@@ -1216,7 +1083,7 @@ const ListingsGrid = React.memo(
               className="group is-visible"
               ref={index === listings.length - 1 ? lastListingRef : null}
             >
-              <ServiceCard
+              <ServiceCardWrapper
                 service={{ ...service, index }}
                 isMobile={isMobile}
               />
