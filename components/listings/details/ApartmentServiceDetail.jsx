@@ -12,10 +12,10 @@ import {
   Mail,
   Wifi,
   Car,
-  Kitchen,
   Tv,
   AirVent,
   Shield,
+  Utensils,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -98,7 +98,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
             <span className="text-sm text-gray-700">Free WiFi</span>
           </div>
           <div className="flex items-center space-x-3">
-            <Kitchen className="h-5 w-5 text-green-600" />
+            <Utensils className="h-5 w-5 text-green-600" />
             <span className="text-sm text-gray-700">Full Kitchen</span>
           </div>
           <div className="flex items-center space-x-3">
