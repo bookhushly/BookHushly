@@ -42,13 +42,9 @@ import {
   Users,
   Bed,
   Bath,
-  Wifi,
-  ParkingCircle,
-  AirVent,
   ChefHat,
   Clock,
   Calendar,
-  Filter,
   X,
   SlidersHorizontal,
   ChevronDown,
@@ -358,18 +354,6 @@ const FILTER_CONFIGS = {
   },
 };
 
-// Utility Functions
-const getPublicImageUrl = (path) => {
-  if (!path) return "/placeholder.jpg";
-  const bucket = path.includes("food-images")
-    ? "food-images"
-    : "listing-images";
-  const pathParts = path.split(`${bucket}/`);
-  const filePath = pathParts.length > 1 ? pathParts[1] : path;
-  const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-  return data?.publicUrl || "/placeholder.jpg";
-};
-
 const useWindowSize = () => {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" && window.innerWidth < 640
@@ -381,178 +365,6 @@ const useWindowSize = () => {
   }, []);
   return isMobile;
 };
-
-const getCategoryKeyFeatures = (service, isMobile) => {
-  const maxFeatures = isMobile ? 2 : 3;
-  const features = [];
-
-  switch (service.category) {
-    case "hotels":
-      if (service.bedrooms)
-        features.push({
-          icon: <Bed className="h-3 w-3" />,
-          label: `${service.bedrooms} Bed`,
-        });
-      if (service.bathrooms)
-        features.push({
-          icon: <Bath className="h-3 w-3" />,
-          label: `${service.bathrooms} Bath`,
-        });
-      if (service.capacity)
-        features.push({
-          icon: <Users className="h-3 w-3" />,
-          label: `${service.capacity} Guests`,
-        });
-      break;
-
-    case "serviced_apartments":
-      if (service.bedrooms)
-        features.push({
-          icon: <Bed className="h-3 w-3" />,
-          label: `${service.bedrooms} Bed`,
-        });
-      if (service.minimum_stay)
-        features.push({
-          icon: <Calendar className="h-3 w-3" />,
-          label: `Min ${service.minimum_stay}`,
-        });
-      if (service.capacity)
-        features.push({
-          icon: <Users className="h-3 w-3" />,
-          label: `${service.capacity} Guests`,
-        });
-      break;
-
-    case "food":
-      const categoryData = extractCategoryData(service);
-      if (categoryData.cuisine_type)
-        features.push({
-          icon: <ChefHat className="h-3 w-3" />,
-          label: categoryData.cuisine_type,
-        });
-      if (
-        categoryData.service_type &&
-        categoryData.service_type.includes("delivery")
-      ) {
-        features.push({
-          icon: <Truck className="h-3 w-3" />,
-          label: "Delivery",
-        });
-      }
-      if (service.capacity)
-        features.push({
-          icon: <Users className="h-3 w-3" />,
-          label: `${service.capacity} Seats`,
-        });
-      break;
-
-    case "events":
-      if (service.capacity)
-        features.push({
-          icon: <Users className="h-3 w-3" />,
-          label: `${service.capacity} Capacity`,
-        });
-      if (service.event_type)
-        features.push({
-          icon: <PartyPopper className="h-3 w-3" />,
-          label: service.event_type,
-        });
-      break;
-
-    case "car_rentals":
-      const carData = extractCategoryData(service);
-      if (carData.vehicle_categories)
-        features.push({
-          icon: <Car className="h-3 w-3" />,
-          label: carData.vehicle_categories[0],
-        });
-      if (carData.driver_service)
-        features.push({
-          icon: <Users className="h-3 w-3" />,
-          label:
-            carData.driver_service === "both"
-              ? "Self/Driver"
-              : carData.driver_service,
-        });
-      break;
-
-    case "logistics":
-      const logisticsData = extractCategoryData(service);
-      if (logisticsData.service_types)
-        features.push({
-          icon: <Truck className="h-3 w-3" />,
-          label: logisticsData.service_types[0],
-        });
-      if (logisticsData.delivery_time)
-        features.push({
-          icon: <Clock className="h-3 w-3" />,
-          label: logisticsData.delivery_time[0],
-        });
-      break;
-
-    case "security":
-      const securityData = extractCategoryData(service);
-      if (securityData.security_types)
-        features.push({
-          icon: <Shield className="h-3 w-3" />,
-          label: securityData.security_types[0],
-        });
-      if (securityData.response_time)
-        features.push({
-          icon: <Clock className="h-3 w-3" />,
-          label: securityData.response_time[0],
-        });
-      break;
-
-    default:
-      if (service.capacity)
-        features.push({
-          icon: <Users className="h-3 w-3" />,
-          label: `${service.capacity} Cap`,
-        });
-  }
-
-  return features.slice(0, maxFeatures);
-};
-
-const getCategorySpecificInfo = (service) => {
-  const categoryData = extractCategoryData(service) || {};
-  const category = service.category || "unknown";
-
-  return {
-    icon: CATEGORY_ICONS[category] || CATEGORY_ICONS.default,
-    priceLabel:
-      typeof PRICE_LABELS[category] === "function"
-        ? PRICE_LABELS[category](service.event_type)
-        : PRICE_LABELS[category] || PRICE_LABELS.default,
-  };
-};
-
-const formatPrice = (service) => {
-  const price = Number(service.price);
-  const price_unit = service.price_unit || "fixed";
-
-  if (isNaN(price)) return "Price not available";
-  if (price_unit === "fixed" || price_unit === "per_event")
-    return `₦${price.toLocaleString()}`;
-  if (price_unit === "negotiable") return "Negotiable";
-
-  const unitLabel =
-    {
-      per_hour: "/hr",
-      per_day: "/day",
-      per_night: "/night",
-      per_person: "/person",
-      per_km: "/km",
-      per_week: "/week",
-      per_month: "/month",
-    }[price_unit] || "";
-
-  return `₦${price.toLocaleString()}${unitLabel}`;
-};
-
-const getButtonConfig = (category) =>
-  BUTTON_CONFIG[category] || BUTTON_CONFIG.default;
 
 // Filter Panel Component
 const FilterPanel = React.memo(
@@ -949,13 +761,16 @@ const SearchBar = React.memo(
     );
 
     return (
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-900 py-12 sm:py-16 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-30">
-          <div className="absolute top-10 left-10 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl" />
-          <div className="absolute top-20 right-20 w-40 h-40 bg-purple-400/20 rounded-full blur-2xl" />
-          <div className="absolute bottom-10 left-1/3 w-36 h-36 bg-indigo-400/20 rounded-full blur-2xl" />
+      <section className="relative bg-gray-50 text-gray-900 py-12 sm:py-16 overflow-hidden">
+        {/* Subtle geometric background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-full h-full opacity-5">
+            <div className="grid grid-cols-8 h-full">
+              {Array.from({ length: 64 }).map((_, i) => (
+                <div key={i} className="border-r border-b border-gray-300" />
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="container relative z-10 mx-auto px-4">
@@ -965,11 +780,11 @@ const SearchBar = React.memo(
             transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto text-center"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-balance bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-gray-900">
               Find Your Perfect {categoryLabel} Experience
             </h1>
             <motion.div
-              className="bg-white/95 backdrop-blur-md p-4 rounded-3xl shadow-xl border border-white/30 max-w-xl mx-auto"
+              className="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 max-w-xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -980,7 +795,7 @@ const SearchBar = React.memo(
                   placeholder={`Search ${categoryLabel.toLowerCase()}...`}
                   defaultValue={searchQuery}
                   onChange={(e) => debouncedSetSearchQuery(e.target.value)}
-                  className="pl-10 h-12 rounded-full border-gray-200 focus:ring-2 focus:ring-blue-500 text-base w-full bg-white/90"
+                  className="pl-10 h-12 rounded-xl border-gray-200 focus:ring-2 focus:ring-purple-500 text-base w-full"
                   aria-label={`Search ${categoryLabel} services`}
                 />
               </div>
@@ -1340,7 +1155,7 @@ export default function ServicesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-purple-50">
       <Toaster />
 
       <CategoryTabs

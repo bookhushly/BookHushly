@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
       <body>
         <SessionProvider>
           <Header />
-          <main className="min-h-screen">{children}</main>
+          <main className="min-h-screen bg-purple-50">{children}</main>
           <Footer />
           <Toaster />
         </SessionProvider>

@@ -20,6 +20,8 @@ import {
   ChefHat,
   Clock,
   Calendar,
+  Heart,
+  AlignLeft,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { extractCategoryData } from "@/lib/category-forms";
@@ -96,17 +98,17 @@ const getCategoryKeyFeatures = (service, isMobile) => {
     case "hotels":
       if (service.bedrooms)
         features.push({
-          icon: <Bed className="h-3 w-3" />,
+          icon: <Bed className="h-4 w-4" />,
           label: `${service.bedrooms} Bed`,
         });
       if (service.bathrooms)
         features.push({
-          icon: <Bath className="h-3 w-3" />,
+          icon: <Bath className="h-4 w-4" />,
           label: `${service.bathrooms} Bath`,
         });
       if (service.capacity)
         features.push({
-          icon: <Users className="h-3 w-3" />,
+          icon: <Users className="h-4 w-4" />,
           label: `${service.capacity} Guests`,
         });
       break;
@@ -114,17 +116,17 @@ const getCategoryKeyFeatures = (service, isMobile) => {
     case "serviced_apartments":
       if (service.bedrooms)
         features.push({
-          icon: <Bed className="h-3 w-3" />,
+          icon: <Bed className="h-4 w-4" />,
           label: `${service.bedrooms} Bed`,
         });
       if (service.minimum_stay)
         features.push({
-          icon: <Calendar className="h-3 w-3" />,
+          icon: <Calendar className="h-4 w-4" />,
           label: `Min ${service.minimum_stay}`,
         });
       if (service.capacity)
         features.push({
-          icon: <Users className="h-3 w-3" />,
+          icon: <Users className="h-4 w-4" />,
           label: `${service.capacity} Guests`,
         });
       break;
@@ -133,7 +135,7 @@ const getCategoryKeyFeatures = (service, isMobile) => {
       const categoryData = extractCategoryData(service);
       if (categoryData.cuisine_type)
         features.push({
-          icon: <ChefHat className="h-3 w-3" />,
+          icon: <ChefHat className="h-4 w-4" />,
           label: categoryData.cuisine_type,
         });
       if (
@@ -141,13 +143,13 @@ const getCategoryKeyFeatures = (service, isMobile) => {
         categoryData.service_type.includes("delivery")
       ) {
         features.push({
-          icon: <Truck className="h-3 w-3" />,
+          icon: <Truck className="h-4 w-4" />,
           label: "Delivery",
         });
       }
       if (service.capacity)
         features.push({
-          icon: <Users className="h-3 w-3" />,
+          icon: <Users className="h-4 w-4" />,
           label: `${service.capacity} Seats`,
         });
       break;
@@ -156,12 +158,12 @@ const getCategoryKeyFeatures = (service, isMobile) => {
       const carData = extractCategoryData(service);
       if (carData.vehicle_categories)
         features.push({
-          icon: <Car className="h-3 w-3" />,
+          icon: <Car className="h-4 w-4" />,
           label: carData.vehicle_categories[0],
         });
       if (carData.driver_service)
         features.push({
-          icon: <Users className="h-3 w-3" />,
+          icon: <Users className="h-4 w-4" />,
           label:
             carData.driver_service === "both"
               ? "Self/Driver"
@@ -173,12 +175,12 @@ const getCategoryKeyFeatures = (service, isMobile) => {
       const logisticsData = extractCategoryData(service);
       if (logisticsData.service_types)
         features.push({
-          icon: <Truck className="h-3 w-3" />,
+          icon: <Truck className="h-4 w-4" />,
           label: logisticsData.service_types[0],
         });
       if (logisticsData.delivery_time)
         features.push({
-          icon: <Clock className="h-3 w-3" />,
+          icon: <Clock className="h-4 w-4" />,
           label: logisticsData.delivery_time[0],
         });
       break;
@@ -187,12 +189,12 @@ const getCategoryKeyFeatures = (service, isMobile) => {
       const securityData = extractCategoryData(service);
       if (securityData.security_types)
         features.push({
-          icon: <Shield className="h-3 w-3" />,
+          icon: <Shield className="h-4 w-4" />,
           label: securityData.security_types[0],
         });
       if (securityData.response_time)
         features.push({
-          icon: <Clock className="h-3 w-3" />,
+          icon: <Clock className="h-4 w-4" />,
           label: securityData.response_time[0],
         });
       break;
@@ -200,7 +202,7 @@ const getCategoryKeyFeatures = (service, isMobile) => {
     default:
       if (service.capacity)
         features.push({
-          icon: <Users className="h-3 w-3" />,
+          icon: <Users className="h-4 w-4" />,
           label: `${service.capacity} Cap`,
         });
   }
@@ -282,9 +284,9 @@ const GeneralServiceCard = React.memo(
         className="transform transition-opacity duration-300 opacity-0 group-[.is-visible]:opacity-100"
       >
         <Link href={`/services/${service.id}`}>
-          <Card className="group bg-white transition-all duration-300 border-0 rounded-lg overflow-hidden flex flex-col h-full shadow-sm hover:shadow-xl">
+          <Card className="group bg-white transition-all duration-300 border-0 rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-xl h-[520px] w-full max-w-sm mx-auto">
             {/* Image Container */}
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-56 overflow-hidden">
               <Image
                 src={serviceImage}
                 alt={service.title || "Service"}
@@ -299,106 +301,79 @@ const GeneralServiceCard = React.memo(
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
               {/* Top badges */}
-              <div className="absolute top-3 left-3 flex gap-2">
+              {/* <div className="absolute top-4 left-4 flex gap-2">
                 {isPremium && (
-                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium px-2.5 py-1 text-xs rounded-md shadow-sm">
+                  <Badge className="bg-gradient-to-r from-purple-500 to-red-500 text-white font-medium px-3 py-1.5 text-xs rounded-full shadow-lg">
                     Premium
                   </Badge>
                 )}
-              </div>
+              </div> */}
 
               {/* Rating badge */}
-              <div className="absolute top-3 right-3">
-                <div className="bg-white/95 backdrop-blur-sm rounded-md px-2 py-1 text-xs font-medium text-gray-800 flex items-center shadow-sm">
-                  <Star className="h-3 w-3 text-orange-400 mr-1 fill-current" />
+              {/* <div className="absolute top-4 right-4">
+                <div className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-medium text-gray-800 flex items-center shadow-sm">
+                  <Star className="h-3 w-3 text-purple-400 mr-1 fill-current" />
                   4.8
                 </div>
-              </div>
-
-              {/* Heart icon for favorites */}
-              <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button className="bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white transition-colors shadow-sm">
-                  <svg
-                    className="h-4 w-4 text-gray-600 hover:text-red-500 transition-colors"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                </button>
-              </div>
+              </div> */}
             </div>
 
             {/* Content */}
-            <div className="p-4 flex flex-col flex-1">
-              {/* Category and Location */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  {category.icon}
-                  <span className="ml-1.5">{category.label}</span>
-                </div>
-                <div className="flex items-center text-xs text-gray-400">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  <span className="line-clamp-1 max-w-20">
-                    {service.location?.split(",")[0] || "Unknown"}
-                  </span>
-                </div>
+            <div className="p-5 flex flex-col flex-1">
+              {/* Location */}
+              <div className="flex items-center mb-3">
+                <MapPin className="h-4 w-4 text-gray-400 mr-2" />
+                <span className="text-sm text-gray-600 line-clamp-1">
+                  {service.location?.split(",")[0] || "Location TBD"}
+                </span>
               </div>
 
               {/* Title */}
-              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 leading-5 text-base">
+              <h3 className="font-bold text-gray-900 mb-3 line-clamp-2 leading-6 text-xl">
                 {service.title || "Untitled Service"}
               </h3>
 
-              {/* Key Features */}
-              <div className="flex items-center gap-4 mb-3 text-xs text-gray-600">
-                {keyFeatures.slice(0, 2).map((feature, index) => (
-                  <div key={index} className="flex items-center">
+              {/* Key Information */}
+              <div className="space-y-2 mb-4">
+                {keyFeatures.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center text-sm text-gray-700"
+                  >
                     {feature.icon}
-                    <span className="ml-1">{feature.label}</span>
+                    <span className="ml-3">{feature.label}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Description (if available) */}
+              {/* Description */}
               {service.description && (
-                <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed">
-                  {service.description}
-                </p>
+                <div className="flex items-start text-sm text-gray-700 mb-4">
+                  <AlignLeft className="h-4 w-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-gray-600 line-clamp-2 leading-6 text-justify">
+                    {service.description}
+                  </p>
+                </div>
               )}
 
               {/* Pricing and CTA */}
-              <div className="flex items-center justify-between mt-auto pt-2">
-                <div className="flex flex-col">
-                  <span className="text-lg font-bold text-gray-900">
-                    {formattedPrice}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {categoryInfo.priceLabel}
-                  </span>
+              <div className=" border-t border-gray-200 space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-bold text-gray-900">
+                      {formattedPrice}
+                    </span>
+                  </div>
                 </div>
 
                 <Button
-                  size="sm"
-                  className="bg-orange-500 hover:bg-orange-600 text-white rounded-md px-4 py-2 font-medium text-sm transition-colors shadow-sm hover:shadow-md"
+                  size="lg"
+                  className="bg-purple-500 hover:bg-purple-600 text-white rounded-xl px-6 py-3 font-semibold text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 w-full"
                   aria-label={buttonConfig.text}
                 >
+                  <ButtonIcon className="h-4 w-4" />
                   {buttonConfig.text}
                 </Button>
-              </div>
-
-              {/* Verification badge */}
-              <div className="flex items-center justify-center mt-3 pt-3 border-t border-gray-100">
-                <div className="flex items-center text-xs text-green-600 font-medium">
-                  <ShieldCheck className="h-3 w-3 mr-1" />
-                  Verified Provider
-                </div>
               </div>
             </div>
           </Card>

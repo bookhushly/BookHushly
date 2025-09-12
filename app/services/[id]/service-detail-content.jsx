@@ -30,7 +30,10 @@ import {
   X,
   Heart,
   Share,
+  Maximize2,
+  Play,
 } from "lucide-react";
+
 import CancellationPolicyDisplay from "@/components/listings/details/CancellationPolicyDisplay";
 import { createClient } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
@@ -57,52 +60,105 @@ const normalizeFeatures = (features) => {
   return [];
 };
 
-// Booking.com style image gallery
-const ImageGallery = ({ images, title, onImageClick }) => {
+const ImageGallery = ({ images, title }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   if (!images || images.length === 0) return null;
 
+  const navigateImage = (direction) => {
+    if (direction === "next") {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    } else {
+      setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
+  const openFullscreen = (index) => {
+    setCurrentIndex(index);
+    setIsFullscreen(true);
+  };
+
   return (
-    <div className="grid grid-cols-4 gap-2 h-[400px] rounded-lg overflow-hidden">
-      {/* Main large image */}
+    <div className="relative w-full h-[400px] rounded-2xl overflow-hidden">
+      {/* Hero image */}
       <div
-        className="col-span-2 row-span-2 relative cursor-pointer group"
-        onClick={() => onImageClick(0)}
+        className="relative w-full h-full cursor-pointer group"
+        onClick={() => openFullscreen(0)}
       >
         <Image
           src={images[0] || "/placeholder.jpg"}
           alt={title}
           fill
-          className="object-cover group-hover:brightness-90 transition-all duration-200"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
           priority
+          sizes="100vw"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200" />
+
+        {/* Overlay button */}
+        <div className="absolute bottom-4 right-4">
+          <button
+            className="bg-white/90 text-gray-900 px-4 py-2 rounded-lg shadow-md text-sm font-medium hover:bg-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              openFullscreen(0);
+            }}
+          >
+            View all {images.length} photos
+          </button>
+        </div>
       </div>
 
-      {/* Smaller images grid */}
-      {images.slice(1, 5).map((image, index) => (
-        <div
-          key={index + 1}
-          className="relative cursor-pointer group"
-          onClick={() => onImageClick(index + 1)}
-        >
-          <Image
-            src={image || "/placeholder.jpg"}
-            alt={`${title} ${index + 2}`}
-            fill
-            className="object-cover group-hover:brightness-90 transition-all duration-200"
-          />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200" />
-          {index === 3 && images.length > 5 && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-semibold">
-              +{images.length - 5} photos
-            </div>
+      {/* Fullscreen modal */}
+      {isFullscreen && (
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          {/* Close button */}
+          <button
+            onClick={() => setIsFullscreen(false)}
+            className="absolute top-6 right-6 bg-black/60 text-white rounded-full p-2 hover:bg-black/80"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          {/* Counter */}
+          <div className="absolute top-6 left-6 text-white text-sm">
+            {currentIndex + 1} / {images.length}
+          </div>
+
+          {/* Navigation arrows */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={() => navigateImage("prev")}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-3 hover:bg-black/80"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                onClick={() => navigateImage("next")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full p-3 hover:bg-black/80"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
           )}
+
+          {/* Fullscreen image */}
+          <div className="relative w-full h-full max-w-6xl max-h-[90vh]">
+            <Image
+              src={images[currentIndex] || "/placeholder.jpg"}
+              alt={`${title} ${currentIndex + 1}`}
+              fill
+              className="object-contain"
+              sizes="100vw"
+              priority
+            />
+          </div>
         </div>
-      ))}
+      )}
     </div>
   );
 };
-
 // Booking.com style popular facilities
 const PopularFacilities = ({ amenities, features }) => {
   // Process amenities data
@@ -356,6 +412,7 @@ export default function ServiceDetailClient({ service }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [similarServices, setSimilarServices] = useState([]);
   const [isZoomed, setIsZoomed] = useState(false);
+  console.log("Service data:", service);
 
   const category = useMemo(
     () => getCategory(service.category),

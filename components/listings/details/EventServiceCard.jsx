@@ -14,6 +14,10 @@ import {
   Clock,
   Ticket,
   Heart,
+  FileText,
+  Info,
+  Building2Icon,
+  Building2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { extractCategoryData } from "@/lib/category-forms";
@@ -40,6 +44,7 @@ const formatEventPrice = (service) => {
 };
 
 const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
+  console.log(service);
   const isEventCenter = service.event_type === "event_center";
   const isPremium = useMemo(
     () => Number(service.price) > 1000000,
@@ -64,8 +69,20 @@ const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
     ? new Date(service.event_date)
     : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
+  const eventTime = useMemo(() => {
+    const timeSource = service.event_date || service.created_at;
+    if (!timeSource) return "TBD";
+
+    const date = new Date(timeSource);
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }, [service.event_date, service.created_at]);
+
   const buttonText = isEventCenter ? "Book Venue" : "Get Tickets";
-  const ButtonIcon = isEventCenter ? PartyPopper : Ticket;
+  const ButtonIcon = isEventCenter ? Building2 : Ticket;
   const priceLabel = isEventCenter ? "per event" : "per ticket";
 
   return (
@@ -74,14 +91,14 @@ const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
       className="transform transition-opacity duration-300 opacity-0 group-[.is-visible]:opacity-100"
     >
       <Link href={`/services/${service.id}`}>
-        <Card className="group bg-white transition-all duration-300 border-0 rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-xl h-[420px] w-full max-w-sm mx-auto">
+        <Card className="group bg-white transition-all duration-300 border-0 rounded-2xl overflow-hidden flex flex-col shadow-md hover:shadow-xl h-[520px] w-full max-w-sm mx-auto">
           {/* Image Container */}
           <div className="relative h-56 overflow-hidden">
             <Image
               src={serviceImage}
               alt={service.title || (isEventCenter ? "Event Venue" : "Event")}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out h-[350px]"
+              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out "
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               priority={service.index < 4}
               loading={service.index < 4 ? "eager" : "lazy"}
@@ -98,28 +115,10 @@ const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
                 </Badge>
               )}
             </div>
-
-            {/* Rating badge */}
-            <div className="absolute top-4 right-4">
-              <div className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-medium text-gray-800 flex items-center shadow-sm">
-                <Star className="h-3 w-3 text-orange-400 mr-1 fill-current" />
-                4.9
-              </div>
-            </div>
-
-            {/* Heart icon for favorites */}
-            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <button className="bg-white/90 backdrop-blur-sm rounded-full p-2.5 hover:bg-white transition-colors shadow-sm">
-                <Heart className="h-4 w-4 text-gray-600 hover:text-red-500 transition-colors" />
-              </button>
-            </div>
           </div>
 
           {/* Content */}
           <div className="p-5 flex flex-col flex-1">
-            {/* Location */}
-
-            {/* Title */}
             <h3 className="font-bold text-gray-900 mb-3 line-clamp-2 leading-6 text-xl">
               {service.title ||
                 (isEventCenter ? "Untitled Event Venue" : "Untitled Event")}
@@ -132,7 +131,6 @@ const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
               </span>
             </div>
 
-            {/* Key Information */}
             <div className="space-y-2 mb-4">
               {service.capacity && (
                 <div className="flex items-center text-sm text-gray-700">
@@ -158,32 +156,25 @@ const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
               {!isEventCenter && (
                 <div className="flex items-center text-sm text-gray-700">
                   <Clock className="h-4 w-4 text-gray-400 mr-3" />
-                  <span>7:00 PM</span>
+                  <span>{eventTime}</span>
                 </div>
               )}
             </div>
 
-            {/* Description */}
             {service.description && (
-              <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed flex-1">
-                {service.description}
-              </p>
+              <div className="flex items-start text-sm text-gray-700 mb-4">
+                <Info className="h-4 w-4 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-gray-600 ">{service.description}</p>
+              </div>
             )}
 
-            {/* Pricing and CTA */}
-            <div className="mt-auto pt-4 border-t border-gray-100 space-y-3">
+            <div className="mt-auto pt-2 border-t border-gray-100 space-y-2">
               <div className="flex items-baseline justify-between">
                 <div className="flex flex-col">
                   <span className="text-2xl font-bold text-gray-900">
                     {formattedPrice}
                   </span>
                   <span className="text-sm text-gray-500">{priceLabel}</span>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center text-xs text-gray-500">
-                    <Star className="h-3 w-3 text-orange-400 mr-1 fill-current" />
-                    4.9
-                  </div>
                 </div>
               </div>
 
