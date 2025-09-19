@@ -7,6 +7,8 @@ import { verifyPayment } from "@/lib/payments";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import { AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -245,6 +247,9 @@ const OrderSuccessful = () => {
     if (!booking || !payment) return;
 
     try {
+      // Initialize JSZip
+      const zip = new JSZip();
+
       // Image template URL
       const templateUrl = "/ticket.jpg";
 
@@ -253,13 +258,6 @@ const OrderSuccessful = () => {
         await getImageDimensions(templateUrl);
       const imgWidthMm = pixelsToMm(imgWidthPx);
       const imgHeightMm = pixelsToMm(imgHeightPx);
-
-      // Initialize jsPDF
-      const doc = new jsPDF({
-        orientation: imgWidthPx > imgHeightPx ? "landscape" : "portrait",
-        unit: "mm",
-        format: [imgWidthMm, imgHeightMm],
-      });
 
       // Load template image
       const templateDataUrl = await getBase64FromUrl(templateUrl);
@@ -292,47 +290,48 @@ const OrderSuccessful = () => {
         .map(([name, qty]) => `${name} x${qty}`)
         .join(", ");
 
-      // Generate a PDF page for each ticket
+      // Define placeholder coordinates
+      const placeholders = {
+        listingTitle: {
+          x: 72.8,
+          y: 110.5,
+          fontSize: 30,
+          color: [255, 255, 255],
+        },
+        ticketType: {
+          x: 54.1,
+          y: 130.7,
+          fontSize: 19,
+          color: [255, 255, 255],
+        },
+        date: { x: 53.5, y: 142.9, fontSize: 19, color: [255, 255, 255] },
+        time: { x: 53.7, y: 153.6, fontSize: 19, color: [255, 255, 255] },
+        vendorName: {
+          x: 333.4,
+          y: 173.1,
+          fontSize: 10,
+          color: [255, 255, 255],
+        },
+        vendorPhone: {
+          x: 342.6,
+          y: 179.7,
+          fontSize: 12,
+          color: [255, 255, 255],
+        },
+        qrCode: { x: 469, y: 15.5, size: 64.1 },
+      };
+
+      // Generate a separate PDF for each ticket and add to ZIP
       for (let i = 0; i < totalTickets; i++) {
-        if (i > 0)
-          doc.addPage(
-            [imgWidthMm, imgHeightMm],
-            imgWidthPx > imgHeightPx ? "landscape" : "portrait"
-          );
+        // Initialize a new jsPDF document for each ticket
+        const doc = new jsPDF({
+          orientation: imgWidthPx > imgHeightPx ? "landscape" : "portrait",
+          unit: "mm",
+          format: [imgWidthMm, imgHeightMm],
+        });
 
         // Add background image
         doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
-
-        // Define placeholder coordinates
-        const placeholders = {
-          listingTitle: {
-            x: 72.8,
-            y: 110.5,
-            fontSize: 30,
-            color: [255, 255, 255],
-          },
-          ticketType: {
-            x: 54.1,
-            y: 130.7,
-            fontSize: 19,
-            color: [255, 255, 255],
-          },
-          date: { x: 53.5, y: 142.9, fontSize: 19, color: [255, 255, 255] },
-          time: { x: 53.7, y: 153.6, fontSize: 19, color: [255, 255, 255] },
-          vendorName: {
-            x: 333.4,
-            y: 173.1,
-            fontSize: 10,
-            color: [255, 255, 255],
-          },
-          vendorPhone: {
-            x: 342.6,
-            y: 179.7,
-            fontSize: 12,
-            color: [255, 255, 255],
-          },
-          qrCode: { x: 469, y: 15.5, size: 64.1 },
-        };
 
         // Set font
         doc.setFont("helvetica", "bold");
@@ -391,7 +390,7 @@ const OrderSuccessful = () => {
         doc.text(
           safeText(booking.listing?.vendor_name),
           placeholders.vendorName.x,
-          placeholders.vendorName.y
+          placeholders.listingTitle.y
         );
 
         // Vendor Phone
@@ -427,14 +426,24 @@ const OrderSuccessful = () => {
         } catch (err) {
           console.error("Error generating QR code:", err);
           toast.error(`Failed to generate QR code for ticket ${ticketId}`);
+          continue; // Skip this ticket but continue with others
         }
+
+        // Convert PDF to Blob and add to ZIP
+        const pdfBlob = doc.output("blob");
+        zip.file(`Ticket-${safeText(booking.id, "0")}-${i + 1}.pdf`, pdfBlob);
       }
 
-      // Save PDF
-      doc.save(`BookHushly-Tickets-${safeText(booking.id, "0")}.pdf`);
+      // Generate and download ZIP file
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      saveAs(zipBlob, `BookHushly-Tickets-${safeText(booking.id, "0")}.zip`);
+
+      toast.success(
+        `Successfully generated ZIP file with ${totalTickets} ticket PDF${totalTickets > 1 ? "s" : ""}`
+      );
     } catch (err) {
-      console.error("Error generating PDF:", err);
-      toast.error("Failed to generate ticket PDF. Please try again.");
+      console.error("Error generating ticket ZIP:", err);
+      toast.error("Failed to generate ticket ZIP file. Please try again.");
     }
   };
 
@@ -704,11 +713,12 @@ const OrderSuccessful = () => {
           >
             <span>📥</span>
             <span>
-              Download {booking.guests} Ticket{booking.guests > 1 ? "s" : ""}
+              Download {booking.guests} Ticket{booking.guests > 1 ? "s" : ""}{" "}
+              (ZIP)
             </span>
           </Button>
           <p className="text-gray-500 text-sm mt-2">
-            Get your beautifully designed tickets ready for the event
+            Get your beautifully designed tickets in a single ZIP file
           </p>
         </div>
 
