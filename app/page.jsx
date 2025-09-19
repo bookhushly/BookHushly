@@ -281,7 +281,6 @@ export default function Home() {
       </section>
 
       {/* Trust Indicators */}
-      {/* Trust Indicators */}
 
       {/* Featured Services */}
       <section className="py-20 bg-white">

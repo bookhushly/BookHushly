@@ -1,71 +1,228 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { verifyPayment } from "@/lib/payments";
+import { toast } from "sonner";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
+import { AlertTriangle, CheckCircle, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-export default function BookingReceiptPage() {
-  const { id } = useParams();
+const OrderSuccessful = () => {
+  const params = useParams();
+  const router = useRouter();
   const supabase = createClientComponentClient();
   const [booking, setBooking] = useState(null);
+  const [payment, setPayment] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Fetch booking details with listing information
+  // Update remaining tickets in listings table
+  const updateRemainingTickets = async (
+    bookingId,
+    selectedTickets,
+    listingId
+  ) => {
+    try {
+      // Fetch current listing with FOR UPDATE to lock the row
+      const { data: listing, error: fetchError } = await supabase
+        .from("listings")
+        .select("ticket_packages, remaining_tickets")
+        .eq("id", listingId)
+        .single();
+
+      if (fetchError || !listing) {
+        throw new Error(
+          `Failed to fetch listing: ${fetchError?.message || "Unknown error"}`
+        );
+      }
+
+      // Update ticket_packages
+      const updatedTicketPackages = listing.ticket_packages.map((ticket) => ({
+        ...ticket,
+        remaining: ticket.remaining - (selectedTickets[ticket.name] || 0),
+      }));
+
+      // Calculate total tickets booked
+      const totalTicketsBooked = Object.values(selectedTickets).reduce(
+        (sum, qty) => sum + qty,
+        0
+      );
+
+      // Update remaining_tickets
+      const updatedRemainingTickets =
+        listing.remaining_tickets - totalTicketsBooked;
+
+      // Validate no negative remaining tickets
+      if (
+        updatedTicketPackages.some((ticket) => ticket.remaining < 0) ||
+        updatedRemainingTickets < 0
+      ) {
+        throw new Error("Not enough tickets available");
+      }
+
+      // Update listings table
+      const { error: updateError } = await supabase
+        .from("listings")
+        .update({
+          ticket_packages: updatedTicketPackages,
+          remaining_tickets: updatedRemainingTickets,
+        })
+        .eq("id", listingId);
+
+      if (updateError) {
+        throw new Error(
+          `Failed to update ticket quantities: ${updateError.message}`
+        );
+      }
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  // Fetch booking and verify payment
   useEffect(() => {
-    if (!id) return;
-
-    async function fetchBooking() {
-      setLoading(true);
+    const verifyOrder = async () => {
       try {
-        const { data, error } = await supabase
-          .from("bookings")
+        setLoading(true);
+        const bookingId = params.id;
+
+        if (!bookingId) {
+          setError("Invalid booking ID");
+          return;
+        }
+
+        // Fetch booking with listing details
+        const { data: bookingData, error: bookingError } = await supabase
+          .from("event_bookings")
           .select(
             `
-            *,
+            id, listing_id, ticket_details, guests, total_amount, booking_date, booking_time,
+            status, payment_status, contact_email, contact_phone,
             listing:listings (
-              title,
-              description,
-              category,
-              price,
-              location,
-              capacity,
-              duration,
-              vendor_name,
-              vendor_phone,
-              price_unit,
-              operating_hours,
-              service_areas,
-              bedrooms,
-              bathrooms,
-              check_in_time,
-              check_out_time,
-              minimum_stay,
-              maximum_capacity,
-              vehicle_type,
-              security_deposit
+              title, event_date, location, vendor_name, vendor_phone, ticket_packages
             )
           `
           )
-          .eq("id", id)
+          .eq("id", bookingId)
           .single();
 
-        if (error) {
-          console.error("Error fetching booking:", error);
-          setBooking(null);
-        } else {
-          setBooking(data);
+        if (bookingError || !bookingData) {
+          setError(
+            `Booking not found: ${bookingError?.message || "No booking data"}`
+          );
+          return;
         }
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        setBooking(null);
-      }
-      setLoading(false);
-    }
 
-    fetchBooking();
-  }, [id]);
+        // Validate ticket_details against guests
+        const ticketDetails = bookingData.ticket_details
+          ? JSON.parse(bookingData.ticket_details)
+          : {};
+        const totalTickets = Object.values(ticketDetails).reduce(
+          (sum, qty) => sum + qty,
+          0
+        );
+        if (totalTickets !== bookingData.guests) {
+          throw new Error("Ticket details do not match number of guests");
+        }
+
+        setBooking(bookingData);
+
+        // Fetch payment record
+        const { data: paymentData, error: paymentError } = await supabase
+          .from("payments")
+          .select(
+            "reference, status, provider, vendor_amount, admin_amount, vendor_currency"
+          )
+          .eq("event_booking_id", bookingId)
+          .single();
+
+        if (paymentError || !paymentData) {
+          throw new Error(
+            `Payment record not found: ${paymentError?.message || "No payment data"}`
+          );
+        }
+
+        setPayment(paymentData);
+
+        // Verify payment
+        const { data: verificationData, error: verificationError } =
+          await verifyPayment(paymentData.reference);
+
+        if (verificationError || verificationData.status !== "success") {
+          setError(
+            `Payment verification failed: ${verificationError?.message || "Invalid payment status"}`
+          );
+          await supabase.from("bookings").delete().eq("id", bookingId);
+          return;
+        }
+
+        // Update payment status
+        const { error: paymentUpdateError } = await supabase
+          .from("payments")
+          .update({
+            status: "completed",
+            verified_at: new Date().toISOString(),
+          })
+          .eq("booking_id", bookingId);
+
+        if (paymentUpdateError) {
+          throw new Error(
+            `Failed to update payment status: ${paymentUpdateError.message}`
+          );
+        }
+
+        // Update booking status
+        const { error: updateError } = await supabase
+          .from("bookings")
+          .update({ status: "confirmed", payment_status: "completed" })
+          .eq("id", bookingId);
+
+        if (updateError) {
+          throw new Error(
+            `Failed to update booking status: ${updateError.message}`
+          );
+        }
+
+        // Update remaining tickets
+        await updateRemainingTickets(
+          bookingId,
+          ticketDetails,
+          bookingData.listing_id
+        );
+
+        toast.success("Payment verified and tickets updated successfully");
+      } catch (err) {
+        setError(err.message);
+        toast.error(err.message);
+        if (booking) {
+          await supabase.from("bookings").delete().eq("id", booking.id);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyOrder();
+  }, [params.id]);
+
+  // Helper: Convert pixels to millimeters (assuming 96 DPI)
+  const pixelsToMm = (pixels) => (pixels * 25.4) / 96;
+
+  // Helper: Load image and get dimensions
+  const getImageDimensions = async (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = () => reject(new Error(`Failed to load image at ${url}`));
+    });
+  };
+
+  // Helper: Load image as base64
   const getBase64FromUrl = async (url) => {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Failed to load image at ${url}`);
@@ -85,206 +242,200 @@ export default function BookingReceiptPage() {
   };
 
   const handleDownloadPDF = async (booking) => {
-    if (!booking) return;
+    if (!booking || !payment) return;
 
-    const doc = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
-
-    // Colors
-    const purple = [124, 58, 237];
-    const lightPurple = [233, 213, 255];
-    const dark = [31, 41, 55];
-    const gray = [107, 114, 128];
-    const lightGray = [156, 163, 175];
-
-    // White background
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, 210, 297, "F");
-
-    // Header background
-    const headerTop = 10;
-    const headerHeight = 35;
-    doc.setFillColor(...lightPurple);
-    doc.rect(15, headerTop, 180, headerHeight, "F");
-
-    // Logo
     try {
-      const logoDataUrl = await getBase64FromUrl("/logo.png");
-      const logoWidth = 70;
-      const logoHeight = 70;
-      const yCentered = headerTop + (headerHeight - logoHeight) / 2;
-      const xPos = 1; // left inset
-      doc.addImage(logoDataUrl, "PNG", xPos, yCentered, logoWidth, logoHeight);
-    } catch (err) {
-      console.error("Error loading logo:", err);
-      doc.setTextColor(...purple);
-      doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
-      doc.text("BH", 25, 30);
-    }
+      // Image template URL
+      const templateUrl = "/ticket.jpg";
 
-    // QR Code (right-aligned in header)
-    try {
-      const qrCodeData = await QRCode.toDataURL(
-        `${window.location.origin}/booking-status/${safeText(booking.id, "0")}`,
-        {
-          width: 150,
-          margin: 1,
-          color: { dark: "#1F2937", light: "#FFFFFF" },
+      // Get image dimensions
+      const { width: imgWidthPx, height: imgHeightPx } =
+        await getImageDimensions(templateUrl);
+      const imgWidthMm = pixelsToMm(imgWidthPx);
+      const imgHeightMm = pixelsToMm(imgHeightPx);
+
+      // Initialize jsPDF
+      const doc = new jsPDF({
+        orientation: imgWidthPx > imgHeightPx ? "landscape" : "portrait",
+        unit: "mm",
+        format: [imgWidthMm, imgHeightMm],
+      });
+
+      // Load template image
+      const templateDataUrl = await getBase64FromUrl(templateUrl);
+
+      // Parse ticket_details to get total tickets
+      let ticketDetails = {};
+      let totalTickets = 0;
+      try {
+        ticketDetails = booking.ticket_details
+          ? JSON.parse(booking.ticket_details)
+          : {};
+        totalTickets = Object.values(ticketDetails).reduce(
+          (sum, qty) => sum + qty,
+          0
+        );
+      } catch (err) {
+        console.error("Error parsing ticket_details:", err);
+        toast.error("Failed to parse ticket details");
+        return;
+      }
+
+      if (totalTickets === 0 || totalTickets !== booking.guests) {
+        toast.error("Invalid ticket details or guest count mismatch");
+        return;
+      }
+
+      // Generate ticket type text
+      const ticketTypeText = Object.entries(ticketDetails)
+        .filter(([_, qty]) => qty > 0)
+        .map(([name, qty]) => `${name} x${qty}`)
+        .join(", ");
+
+      // Generate a PDF page for each ticket
+      for (let i = 0; i < totalTickets; i++) {
+        if (i > 0)
+          doc.addPage(
+            [imgWidthMm, imgHeightMm],
+            imgWidthPx > imgHeightPx ? "landscape" : "portrait"
+          );
+
+        // Add background image
+        doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
+
+        // Define placeholder coordinates
+        const placeholders = {
+          listingTitle: {
+            x: 72.8,
+            y: 110.5,
+            fontSize: 30,
+            color: [255, 255, 255],
+          },
+          ticketType: {
+            x: 54.1,
+            y: 130.7,
+            fontSize: 19,
+            color: [255, 255, 255],
+          },
+          date: { x: 53.5, y: 142.9, fontSize: 19, color: [255, 255, 255] },
+          time: { x: 53.7, y: 153.6, fontSize: 19, color: [255, 255, 255] },
+          vendorName: {
+            x: 333.4,
+            y: 173.1,
+            fontSize: 10,
+            color: [255, 255, 255],
+          },
+          vendorPhone: {
+            x: 342.6,
+            y: 179.7,
+            fontSize: 12,
+            color: [255, 255, 255],
+          },
+          qrCode: { x: 469, y: 15.5, size: 64.1 },
+        };
+
+        // Set font
+        doc.setFont("helvetica", "bold");
+
+        // Add text overlays
+        // Listing Title
+        doc.setFontSize(placeholders.listingTitle.fontSize);
+        doc.setTextColor(...placeholders.listingTitle.color);
+        doc.text(
+          safeText(booking.listing?.title),
+          placeholders.listingTitle.x,
+          placeholders.listingTitle.y
+        );
+
+        // Ticket Type
+        doc.setFontSize(placeholders.ticketType.fontSize);
+        doc.setTextColor(...placeholders.ticketType.color);
+        doc.text(
+          ticketTypeText,
+          placeholders.ticketType.x,
+          placeholders.ticketType.y
+        );
+
+        // Date (use event_date from listings)
+        doc.setFontSize(placeholders.date.fontSize);
+        doc.setTextColor(...placeholders.date.color);
+        doc.text(
+          safeText(
+            booking.listing?.event_date
+              ? new Date(booking.listing.event_date).toLocaleDateString(
+                  "en-US",
+                  {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  }
+                )
+              : "Date TBD"
+          ),
+          placeholders.date.x,
+          placeholders.date.y
+        );
+
+        // Time (use booking_time from bookings)
+        doc.setFontSize(placeholders.time.fontSize);
+        doc.setTextColor(...placeholders.time.color);
+        doc.text(
+          safeText(booking.booking_time),
+          placeholders.time.x,
+          placeholders.time.y
+        );
+
+        // Vendor Name
+        doc.setFontSize(placeholders.vendorName.fontSize);
+        doc.setTextColor(...placeholders.vendorName.color);
+        doc.text(
+          safeText(booking.listing?.vendor_name),
+          placeholders.vendorName.x,
+          placeholders.vendorName.y
+        );
+
+        // Vendor Phone
+        doc.setFontSize(placeholders.vendorPhone.fontSize);
+        doc.setTextColor(...placeholders.vendorPhone.color);
+        doc.text(
+          safeText(booking.listing?.vendor_phone),
+          placeholders.vendorPhone.x,
+          placeholders.vendorPhone.y
+        );
+
+        // Ticket Number
+        const ticketId = `${booking.id}-${i + 1}`;
+
+        // Add QR Code
+        try {
+          const qrCodeData = await QRCode.toDataURL(
+            `${window.location.origin}/ticket-status/${ticketId}`,
+            {
+              width: pixelsToMm(placeholders.qrCode.size) * 96,
+              margin: 1,
+              color: { dark: "#1F2937", light: "#FFFFFF" },
+            }
+          );
+          doc.addImage(
+            qrCodeData,
+            "PNG",
+            placeholders.qrCode.x,
+            placeholders.qrCode.y,
+            placeholders.qrCode.size,
+            placeholders.qrCode.size
+          );
+        } catch (err) {
+          console.error("Error generating QR code:", err);
+          toast.error(`Failed to generate QR code for ticket ${ticketId}`);
         }
-      );
-      const qrSize = 25;
-      const qrX = 160; // near right side of header
-      const qrY = headerTop + (headerHeight - qrSize) / 2;
-      doc.addImage(qrCodeData, "PNG", qrX, qrY, qrSize, qrSize);
+      }
+
+      // Save PDF
+      doc.save(`BookHushly-Tickets-${safeText(booking.id, "0")}.pdf`);
     } catch (err) {
-      console.error("Error generating QR code:", err);
+      console.error("Error generating PDF:", err);
+      toast.error("Failed to generate ticket PDF. Please try again.");
     }
-
-    // Company name + tagline (centered in header)
-    const centerX = 105; // (210 page width / 2)
-    doc.setTextColor(...purple);
-    doc.setFontSize(20);
-    doc.setFont(undefined, "bold");
-    doc.text("BookHushly", centerX, headerTop + 18, { align: "center" });
-
-    doc.setFontSize(9);
-    doc.setFont(undefined, "normal");
-    doc.setTextColor(...gray);
-    doc.text("Premium Event Ticketing", centerX, headerTop + 26, {
-      align: "center",
-    });
-
-    // Main ticket border
-    doc.setDrawColor(...purple);
-    doc.setLineWidth(1);
-    doc.rect(15, 10, 180, 230);
-
-    // Ticket ID
-    doc.setTextColor(...purple);
-    doc.setFontSize(14);
-    doc.setFont(undefined, "bold");
-    doc.text(`TICKET #${safeText(booking.id, "0")}`, 20, 60);
-
-    // Status
-    doc.setFontSize(10);
-    doc.setTextColor(34, 197, 94);
-    const status = booking?.status ? booking.status.toUpperCase() : "UNKNOWN";
-    doc.text(`Status: ${status}`, 20, 68);
-
-    // Event title
-    doc.setTextColor(...dark);
-    doc.setFontSize(16);
-    doc.setFont(undefined, "bold");
-    doc.text(safeText(booking?.listing.title, "Event Booking"), 20, 80);
-
-    // Horizontal line
-    doc.setDrawColor(...lightGray);
-    doc.setLineWidth(0.5);
-    doc.line(20, 85, 190, 85);
-
-    // Event details
-    doc.setTextColor(...gray);
-    doc.setFontSize(10);
-    doc.setFont(undefined, "bold");
-    doc.text("EVENT DETAILS", 20, 95);
-
-    let yPos = 105;
-    const addDetail = (label, value) => {
-      doc.setTextColor(...dark);
-      doc.setFont(undefined, "bold");
-      doc.text(`${label}:`, 20, yPos);
-
-      doc.setFont(undefined, "normal");
-      doc.setTextColor(...gray);
-
-      const safeValue = safeText(value);
-      const displayValue =
-        label === "Total Amount"
-          ? `NGN ${Number(booking?.total_amount || 0).toLocaleString()}`
-          : safeValue;
-
-      doc.text(displayValue, 70, yPos);
-      yPos += 8;
-    };
-
-    addDetail("Date", booking.booking_date);
-    addDetail("Time", booking.booking_time);
-    addDetail("Number of Guests", booking.guests);
-    addDetail("Duration", booking.duration);
-    addDetail("Total Amount", booking.total_amount);
-    addDetail("Payment Status", booking.payment_status);
-
-    // Important info
-    doc.setTextColor(...purple);
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.text("IMPORTANT TICKET INFORMATION", 20, yPos + 10);
-
-    doc.setTextColor(...dark);
-    doc.setFontSize(9);
-    doc.setFont(undefined, "normal");
-    doc.text(
-      "No app required - just your barcode receipt and ID (if requested).",
-      20,
-      yPos + 20
-    );
-    doc.text(
-      "Download or screenshot this ticket in advance in case of weak signal.",
-      20,
-      yPos + 27
-    );
-    doc.text(
-      "Both digital and printed tickets will be accepted.",
-      20,
-      yPos + 34
-    );
-
-    // Event day instructions
-    doc.setTextColor(...purple);
-    doc.setFontSize(10);
-    doc.setFont(undefined, "bold");
-    doc.text("ON THE DAY OF THE EVENT:", 20, yPos + 50);
-
-    doc.setTextColor(...dark);
-    doc.setFontSize(9);
-    doc.setFont(undefined, "normal");
-
-    const instructions = [
-      "• Fully charge your phone - your ticket will be scanned at the door",
-      "• Keep this ticket safe - do not share your QR code",
-      "• Take pictures and enjoy the experience - memories are meant to last!",
-    ];
-
-    let instY = yPos + 60;
-    instructions.forEach((instruction) => {
-      doc.text(instruction, 20, instY);
-      instY += 7;
-    });
-
-    // Contact section
-    doc.setTextColor(...purple);
-    doc.setFontSize(10);
-    doc.setFont(undefined, "bold");
-    doc.text("CONTACT INFORMATION", 20, 255);
-
-    doc.setTextColor(...gray);
-    doc.setFontSize(9);
-    doc.setFont(undefined, "normal");
-    doc.text(`Vendor: ${safeText(booking?.listing?.vendor_name)}`, 20, 265);
-    doc.text(`Phone: ${safeText(booking?.listing?.vendor_phone)}`, 20, 272);
-
-    // Footer
-    doc.setTextColor(...purple);
-    doc.setFontSize(8);
-    doc.setFont(undefined, "italic");
-    doc.text("No apps. No stress. Just BookHushly.", 20, 290);
-
-    // Save PDF
-    doc.save(`BookHushly-Ticket-${safeText(booking.id, "0")}.pdf`);
   };
 
   if (loading) {
@@ -292,23 +443,31 @@ export default function BookingReceiptPage() {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-purple-600 font-medium">Loading your ticket...</p>
+          <p className="text-purple-600 font-medium">Verifying payment...</p>
         </div>
       </div>
     );
   }
 
-  if (!booking) {
+  if (error || !booking || !payment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Ticket Not Found
+            Booking Not Found
           </h2>
-          <p className="text-gray-600">
-            We couldn't find your booking. Please check your booking ID.
+          <p className="text-gray-600 mb-4">
+            {error ||
+              "We couldn't find your booking. Please check your booking ID."}
           </p>
+          <Link
+            href="/services?category=events"
+            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Events
+          </Link>
         </div>
       </div>
     );
@@ -380,7 +539,17 @@ export default function BookingReceiptPage() {
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Date</p>
                     <p className="font-bold text-gray-800">
-                      {booking.booking_date}
+                      {safeText(
+                        booking.listing?.event_date
+                          ? new Date(
+                              booking.listing.event_date
+                            ).toLocaleDateString("en-US", {
+                              weekday: "long",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "Date TBD"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -392,7 +561,7 @@ export default function BookingReceiptPage() {
                   <div>
                     <p className="text-sm text-gray-500 font-medium">Time</p>
                     <p className="font-bold text-gray-800">
-                      {booking.booking_time}
+                      {safeText(booking.booking_time)}
                     </p>
                   </div>
                 </div>
@@ -418,11 +587,25 @@ export default function BookingReceiptPage() {
                       Total Amount
                     </p>
                     <p className="font-bold text-gray-800">
-                      ₦{Number(booking.total_amount).toLocaleString()}
+                      {payment.vendor_currency || "NGN"}{" "}
+                      {Number(booking.total_amount).toLocaleString()}
                     </p>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Ticket Type */}
+            <div className="mt-4">
+              <p className="text-sm text-gray-500 font-medium">Ticket Type</p>
+              <p className="font-bold text-gray-800">
+                {booking.ticket_details
+                  ? Object.entries(JSON.parse(booking.ticket_details))
+                      .filter(([_, qty]) => qty > 0)
+                      .map(([name, qty]) => `${name} x${qty}`)
+                      .join(", ") || "N/A"
+                  : "N/A"}
+              </p>
             </div>
           </div>
 
@@ -437,9 +620,9 @@ export default function BookingReceiptPage() {
                 Important Ticket Information
               </h4>
               <p className="text-purple-700 text-sm">
-                You will be delivered directly to the page to download your
-                ticket. No app required — just your barcode receipt and ID (if
-                requested).
+                Download your tickets below. Each ticket has a unique QR code
+                for entry. No app required — just your barcode receipt and ID
+                (if requested).
               </p>
             </div>
 
@@ -459,15 +642,15 @@ export default function BookingReceiptPage() {
               <div className="flex items-center space-x-2">
                 <span>💾</span>
                 <span>
-                  <strong>Download or screenshot</strong> your ticket in advance
-                  in case of weak signal
+                  <strong>Download or screenshot</strong> your tickets in
+                  advance in case of weak signal
                 </span>
               </div>
               <div className="flex items-center space-x-2">
                 <span>🖨️</span>
                 <span>
-                  <strong>Print it out if you prefer</strong> – both digital and
-                  paper tickets are accepted
+                  <strong>Print them out if you prefer</strong> – both digital
+                  and paper tickets are accepted
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -494,12 +677,20 @@ export default function BookingReceiptPage() {
           <div className="p-6 bg-gray-50 border-t border-purple-100">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
               <div>
+                <p className="font-semibold text-purple-600">Vendor Name:</p>
+                <p>{safeText(booking.listing?.vendor_name)}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-purple-600">Vendor Phone:</p>
+                <p>{safeText(booking.listing?.vendor_phone)}</p>
+              </div>
+              <div>
                 <p className="font-semibold text-purple-600">Contact Email:</p>
-                <p>{booking.listing?.vendor_name}</p>
+                <p>{safeText(booking.contact_email)}</p>
               </div>
               <div>
                 <p className="font-semibold text-purple-600">Contact Phone:</p>
-                <p>{booking.listing?.vendor_phone}</p>
+                <p>{safeText(booking.contact_phone)}</p>
               </div>
             </div>
           </div>
@@ -507,18 +698,33 @@ export default function BookingReceiptPage() {
 
         {/* Download Button */}
         <div className="mt-8 text-center">
-          <button
+          <Button
             onClick={() => handleDownloadPDF(booking)}
             className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2 mx-auto"
           >
             <span>📥</span>
-            <span>Download Ticket</span>
-          </button>
+            <span>
+              Download {booking.guests} Ticket{booking.guests > 1 ? "s" : ""}
+            </span>
+          </Button>
           <p className="text-gray-500 text-sm mt-2">
-            Get your beautifully designed ticket ready for the event
+            Get your beautifully designed tickets ready for the event
           </p>
+        </div>
+
+        {/* Back to Events */}
+        <div className="mt-4 text-center">
+          <Link
+            href="/services?category=events"
+            className="inline-flex items-center text-sm text-purple-600 hover:text-purple-800"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Browse More Events
+          </Link>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default OrderSuccessful;
