@@ -1,8 +1,7 @@
-// components/EventTicketPurchase.jsx
 "use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,24 +20,24 @@ import {
   Bitcoin,
   CheckCircle,
   AlertTriangle,
-  ArrowLeft,
 } from "lucide-react";
-import Link from "next/link";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { initializePayment, createNOWPaymentsInvoice } from "@/lib/payments";
+import { supabase } from "@/lib/supabase";
 
-const EventTicketPurchase = () => {
-  const params = useParams();
+export default function EventsTicketPurchase({
+  service,
+  user,
+  addBooking,
+  onSubmit,
+}) {
   const router = useRouter();
   const [step, setStep] = useState(1); // 1: Ticket Selection, 2: Contact Details, 3: Payment
-  const [service, setService] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedTickets, setSelectedTickets] = useState({});
   const [contactDetails, setContactDetails] = useState({
     name: "",
-    email: "",
+    email: user?.email || "",
     phone: "",
   });
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -47,73 +46,39 @@ const EventTicketPurchase = () => {
 
   const images = service?.media_urls || [];
 
-  // Fetch event data
+  // Initialize selectedTickets and contact details
   useEffect(() => {
-    const fetchService = async () => {
-      try {
-        setLoading(true);
-        if (!params.id) {
-          setError("Invalid event ID");
-          return;
-        }
+    // Normalize ticket_packages
+    const ticketPackages =
+      Array.isArray(service.ticket_packages) &&
+      service.ticket_packages.length > 0
+        ? service.ticket_packages
+        : [
+            {
+              name: "Standard Ticket",
+              price: service.price || 0,
+              remaining: service.remaining_tickets || 0,
+              description: "Standard admission to the event",
+            },
+          ];
 
-        const { data, error } = await supabase
-          .from("listings")
-          .select("*")
-          .eq("id", params.id)
-          .eq("category", "events")
-          .eq("event_type", "event_organizer")
-          .eq("active", true)
-          .single();
+    service.ticket_packages = ticketPackages;
 
-        if (error) {
-          console.error("Supabase error:", error);
-          setError(`Event not found: ${error.message}`);
-          return;
-        }
+    // Initialize selectedTickets with zero quantities
+    const initialTickets = {};
+    ticketPackages.forEach((ticket) => {
+      initialTickets[ticket.name] = 0;
+    });
+    setSelectedTickets(initialTickets);
 
-        if (!data) {
-          setError("Event not found or invalid");
-          return;
-        }
-
-        // Normalize ticket_packages
-        const ticketPackages =
-          Array.isArray(data.ticket_packages) && data.ticket_packages.length > 0
-            ? data.ticket_packages
-            : [
-                {
-                  name: "Standard Ticket",
-                  price: data.price || 0,
-                  remaining: data.remaining_tickets || 0,
-                  description: "Standard admission to the event",
-                },
-              ];
-
-        setService({ ...data, ticket_packages: ticketPackages });
-
-        // Initialize selectedTickets with zero quantities
-        const initialTickets = {};
-        ticketPackages.forEach((ticket) => {
-          initialTickets[ticket.name] = 0;
-        });
-        setSelectedTickets(initialTickets);
-
-        // Load contact details from localStorage
-        const storedDetails = localStorage.getItem("contactDetails");
-        if (storedDetails) {
-          setContactDetails(JSON.parse(storedDetails));
-        }
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setError(`Failed to load event details: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchService();
-  }, [params.id]);
+    // Load contact details from localStorage or user
+    const storedDetails = localStorage.getItem("contactDetails");
+    if (storedDetails) {
+      setContactDetails(JSON.parse(storedDetails));
+    } else if (user?.email) {
+      setContactDetails((prev) => ({ ...prev, email: user.email }));
+    }
+  }, [service, user]);
 
   // Calculate total price
   const calculateTotal = () => {
@@ -183,18 +148,24 @@ const EventTicketPurchase = () => {
     setError("");
 
     try {
-      // Generate temporary user ID if not exists
-      let tempUserId = localStorage.getItem("tempUserId");
-      if (!tempUserId) {
-        tempUserId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Use user.id if available, else generate tempUserId
+      let customerId = user?.id;
+      let tempUserId = null;
+      if (!customerId) {
+        tempUserId =
+          localStorage.getItem("tempUserId") ||
+          `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         localStorage.setItem("tempUserId", tempUserId);
       }
 
       // Create booking
       const bookingData = {
         listing_id: service.id,
+        customer_id: customerId || null,
         temp_user_id: tempUserId,
-        booking_date: service.event_date || new Date().toISOString(),
+        booking_date: service.event_date
+          ? new Date(service.event_date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
         booking_time: service.created_at
           ? new Date(service.created_at).toLocaleTimeString("en-US", {
               hour: "2-digit",
@@ -213,13 +184,9 @@ const EventTicketPurchase = () => {
         ticket_details: JSON.stringify(selectedTickets),
       };
 
-      const { data: booking, error: bookingError } = await supabase
-        .from("event_bookings")
-        .insert(bookingData)
-        .select()
-        .single();
-
-      if (bookingError || !booking?.id) {
+      const { data: booking, error: bookingError } =
+        await onSubmit(bookingData);
+      if (bookingError) {
         console.error("Booking creation failed:", bookingError);
         setError(
           `Failed to create booking: ${bookingError?.message || "Unknown error"}`
@@ -228,26 +195,20 @@ const EventTicketPurchase = () => {
         return;
       }
 
-      // Log booking for debugging
-      console.log("Booking created:", booking);
-
-      // Construct paymentData with validated metadata
+      // Construct paymentData
       const paymentData = {
         email: contactDetails.email,
-        amount: booking.total_amount, // Already in kobo (handled in calculateTotal)
+        amount: booking.total_amount,
         currency: "NGN",
         reference: `TIX_${booking.id}_${Date.now()}`,
         callback_url: `${window.location.origin}/order-successful/${booking.id}`,
         metadata: {
-          event_booking_id: booking.id.toString(), // Ensure string for consistency
-          customer_id: tempUserId, // Use tempUserId as customer_id
+          event_booking_id: booking.id.toString(),
+          customer_id: customerId || tempUserId,
           service_title: service.title,
           customer_name: contactDetails.name,
         },
       };
-
-      // Log paymentData for debugging
-      console.log("Payment data:", paymentData);
 
       let paymentUrl;
       if (method === "paystack") {
@@ -259,7 +220,7 @@ const EventTicketPurchase = () => {
           console.error("Paystack payment error:", error);
           setError(`Payment initialization failed: ${error.message}`);
           toast.error("Payment initialization failed");
-          await supabase.from("bookings").delete().eq("id", booking.id);
+          await supabase.from("event_bookings").delete().eq("id", booking.id);
           return;
         }
         paymentUrl = data.authorization_url;
@@ -272,13 +233,12 @@ const EventTicketPurchase = () => {
           console.error("Crypto payment error:", error);
           setError(`Crypto payment initialization failed: ${error.message}`);
           toast.error("Crypto payment initialization failed");
-          await supabase.from("bookings").delete().eq("id", booking.id);
+          await supabase.from("event_bookings").delete().eq("id", booking.id);
           return;
         }
         paymentUrl = data.invoice_url;
       }
 
-      // Redirect to payment provider
       if (paymentUrl) {
         window.location.href = paymentUrl;
       } else {
@@ -298,40 +258,10 @@ const EventTicketPurchase = () => {
     setIsFullscreen(true);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading event details...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !service) {
-    return (
-      <div className="container max-w-4xl py-8">
-        <Link
-          href="/services?category=events"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Events
-        </Link>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-          <AlertTriangle className="h-6 w-6 text-red-600 mx-auto mb-2" />
-          <p className="text-red-600">{error || "Event not found"}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Rest of the component remains unchanged
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-b from-gray-900 to-gray-800">
+      <div className="relative bg-gray-900">
         {images && images.length > 0 ? (
           <div className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] overflow-hidden">
             <Image
@@ -538,7 +468,7 @@ const EventTicketPurchase = () => {
                                 : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {ticket.remaining > 0 ? `Available ` : "Sold Out"}
+                            {ticket.remaining > 0 ? `Available` : "Sold Out"}
                           </Badge>
                           {ticket.remaining > 0 && (
                             <div className="flex items-center gap-2">
@@ -882,13 +812,10 @@ const EventTicketPurchase = () => {
               fill
               className="object-contain"
               sizes="100vw"
-              priority
             />
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default EventTicketPurchase;
+}

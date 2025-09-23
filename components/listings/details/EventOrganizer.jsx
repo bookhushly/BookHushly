@@ -317,7 +317,7 @@ const EventOrganizerDetail = ({ service, categoryData }) => {
               >
                 {service.availability === "available" ? (
                   <Link
-                    href={`/events/${service.id}`}
+                    href={`/book/${service.id}`}
                     className="flex items-center justify-center gap-2"
                   >
                     <Ticket className="w-5 h-5" />
