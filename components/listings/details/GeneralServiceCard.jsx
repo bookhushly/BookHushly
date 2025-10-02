@@ -281,10 +281,10 @@ const GeneralServiceCard = React.memo(
     return (
       <div
         ref={lastListingRef}
-        className="transform transition-opacity duration-300 opacity-0 group-[.is-visible]:opacity-100"
+        className="transform transition-opacity duration-300"
       >
         <Link href={`/services/${service.id}`}>
-          <Card className="group bg-white transition-all duration-300 border-0 rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-xl h-[520px] w-full max-w-sm mx-auto">
+          <Card className="group bg-white transition-all duration-300 border-0 rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-xl max-h-max w-full max-w-sm mx-auto">
             {/* Image Container */}
             <div className="relative h-56 overflow-hidden">
               <Image

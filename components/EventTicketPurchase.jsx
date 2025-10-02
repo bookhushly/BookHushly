@@ -270,123 +270,92 @@ export default function EventsTicketPurchase({
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Hero Section */}
       <div className="relative bg-gray-900">
-        {images && images.length > 0 ? (
-          <div className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] overflow-hidden">
-            <Image
-              src={images[0]}
-              alt={service?.title || "Event"}
-              fill
-              className="object-cover opacity-80"
-              priority
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
-            {/* Floating Action Buttons */}
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button
-                onClick={() => openFullscreen(0)}
-                size="sm"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white text-gray-900 flex items-center gap-2 rounded-full"
-              >
-                <Camera className="w-4 h-4" />
-                <span className="hidden sm:inline">View Photo</span>
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
-              >
-                <Heart className="w-4 h-4" />
-              </Button>
-            </div>
-            {/* Event Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 py-6 sm:py-8">
-              <div className="max-w-7xl mx-auto">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
-                  {service?.title || "Event"}
-                </h1>
-                <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {service?.event_date
-                      ? new Date(service.event_date).toLocaleDateString(
-                          "en-US",
-                          {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )
-                      : "Date TBD"}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {service?.created_at
-                      ? new Date(service.created_at).toLocaleTimeString(
-                          "en-US",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )
-                      : "Time TBD"}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {service?.location || "Location TBD"}
-                  </div>
-                </div>
-                <p className="text-sm sm:text-base text-white/80 max-w-2xl">
-                  {service?.description ||
-                    "Join us for an unforgettable event experience"}
-                </p>
-              </div>
-            </div>
-            {/* Badges */}
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Badge className="bg-purple-600 text-white border-purple-600 rounded-full text-xs sm:text-sm">
-                Live Event
-              </Badge>
-              {service?.active && (
-                <Badge className="bg-green-600 text-white border-green-600 rounded-full text-xs sm:text-sm">
-                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  Verified
-                </Badge>
-              )}
-            </div>
+        <div className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] overflow-hidden">
+          <Image
+            src={images[0] || "/service-images/events/1.jpg"}
+            alt={service?.title || "Event"}
+            fill
+            className="object-cover opacity-80"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
+          {/* Floating Action Buttons */}
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Button
+              onClick={() => openFullscreen(0)}
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-gray-900 flex items-center gap-2 rounded-full"
+            >
+              <Camera className="w-4 h-4" />
+              <span className="hidden sm:inline">View Photo</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
+            >
+              <Heart className="w-4 h-4" />
+            </Button>
           </div>
-        ) : (
-          <div className="bg-purple-600 text-white py-20 sm:py-24 md:py-32">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-              <div className="flex justify-center gap-3 mb-6">
-                <Badge className="bg-white/20 text-white border-white/30 rounded-full text-xs sm:text-sm">
-                  Live Event
-                </Badge>
-                {service?.active && (
-                  <Badge className="bg-green-600 text-white border-green-600 rounded-full text-xs sm:text-sm">
-                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    Verified
-                  </Badge>
-                )}
-              </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+          {/* Event Info Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 py-6 sm:py-8">
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
                 {service?.title || "Event"}
               </h1>
-              <p className="text-sm sm:text-base md:text-lg text-white/90 max-w-3xl mx-auto">
+              <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+                  {service?.event_date
+                    ? new Date(service.event_date).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "Date TBD"}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+                  {service?.created_at
+                    ? new Date(service.created_at).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Time TBD"}
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                  {service?.location || "Location TBD"}
+                </div>
+              </div>
+              <p className="text-sm sm:text-base text-white/80 max-w-2xl">
                 {service?.description ||
                   "Join us for an unforgettable event experience"}
               </p>
             </div>
           </div>
-        )}
+          {/* Badges */}
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Badge className="bg-purple-600 text-white border-purple-600 rounded-full text-xs sm:text-sm">
+              Live Event
+            </Badge>
+            {service?.active && (
+              <Badge className="bg-green-600 text-white border-green-600 rounded-full text-xs sm:text-sm">
+                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                Verified
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
       {/* Progress Bar */}
       <div className="bg-white border-b shadow-sm">
@@ -666,34 +635,37 @@ export default function EventsTicketPurchase({
                       </Button>
                     </div>
                   </div>
-                  <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Bitcoin className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                  {service?.price > 50000 && (
+                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Bitcoin className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-sm sm:text-base">
+                              Pay with Crypto
+                            </h3>
+                            <p className="text-gray-600 text-xs sm:text-sm">
+                              Bitcoin, Ethereum, USDT & more
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-sm sm:text-base">
-                            Pay with Crypto
-                          </h3>
-                          <p className="text-gray-600 text-xs sm:text-sm">
-                            Bitcoin, Ethereum, USDT & more
-                          </p>
-                        </div>
+                        <Button
+                          onClick={() => handlePayment("crypto")}
+                          disabled={paymentLoading}
+                          className="w-full sm:w-auto rounded-full text-sm sm:text-base px-3 sm:px-4 py-1 sm:py-2"
+                        >
+                          {paymentLoading ? (
+                            <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-t-2 border-b-2 border-white"></div>
+                          ) : (
+                            "Pay with Crypto"
+                          )}
+                        </Button>
                       </div>
-                      <Button
-                        onClick={() => handlePayment("crypto")}
-                        disabled={paymentLoading}
-                        className="w-full sm:w-auto rounded-full text-sm sm:text-base px-3 sm:px-4 py-1 sm:py-2"
-                      >
-                        {paymentLoading ? (
-                          <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-t-2 border-b-2 border-white"></div>
-                        ) : (
-                          "Pay with Crypto"
-                        )}
-                      </Button>
                     </div>
-                  </div>
+                  )}
+
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
                     <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                     <span className="text-green-600 text-xs sm:text-sm">

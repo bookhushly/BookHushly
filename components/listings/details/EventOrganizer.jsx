@@ -38,126 +38,95 @@ const EventOrganizerDetail = ({ service, categoryData }) => {
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-b from-gray-900 to-gray-800">
-        {images && images.length > 0 ? (
-          <div className="relative h-[60vh] md:h-[80vh] overflow-hidden">
-            <Image
-              src={images[0]}
-              alt={service.title}
-              fill
-              className="object-cover opacity-80"
-              priority
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
+        <div className="relative h-[60vh] md:h-[80vh] overflow-hidden">
+          <Image
+            src={images[0] || "/service-images/events/1.jpg"}
+            alt={service.title}
+            fill
+            className="object-cover opacity-80"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
 
-            {/* Floating Action Buttons */}
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button
-                onClick={() => openFullscreen(0)}
-                size="sm"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white text-gray-900 flex items-center gap-2 rounded-full"
-              >
-                <Camera className="w-4 h-4" />
-                <span className="hidden sm:inline">View Photo</span>
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
-              >
-                <Heart className="w-4 h-4" />
-              </Button>
-            </div>
-
-            {/* Event Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 py-6 sm:py-8">
-              <div className="max-w-7xl mx-auto">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
-                  {service.title}
-                </h1>
-                <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-white/90 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {service.event_date
-                      ? new Date(service.event_date).toLocaleDateString(
-                          "en-US",
-                          {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )
-                      : "Date TBD"}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {service.created_at
-                      ? new Date(service.created_at).toLocaleTimeString(
-                          "en-US",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )
-                      : "Time TBD"}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    {service.location}
-                  </div>
-                </div>
-                <p className="text-sm md:text-base text-white/80 max-w-2xl">
-                  {service.description ||
-                    "Join us for an unforgettable event experience"}
-                </p>
-              </div>
-            </div>
-
-            {/* Badges */}
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Badge className="bg-purple-600 text-white border-purple-600 rounded-full">
-                Live Event
-              </Badge>
-              {service.active && (
-                <Badge className="bg-green-600 text-white border-green-600 rounded-full">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Verified
-                </Badge>
-              )}
-            </div>
+          {/* Floating Action Buttons */}
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Button
+              onClick={() => openFullscreen(0)}
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-gray-900 flex items-center gap-2 rounded-full"
+            >
+              <Camera className="w-4 h-4" />
+              <span className="hidden sm:inline">View Photo</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
+            >
+              <Heart className="w-4 h-4" />
+            </Button>
           </div>
-        ) : (
-          <div className="bg-purple-600 text-white py-24 md:py-32">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-              <div className="flex justify-center gap-3 mb-6">
-                <Badge className="bg-white/20 text-white border-white/30 rounded-full">
-                  Live Event
-                </Badge>
-                {service.active && (
-                  <Badge className="bg-green-600 text-white border-green-600 rounded-full">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Verified
-                  </Badge>
-                )}
-              </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+
+          {/* Event Info Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 py-6 sm:py-8">
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
                 {service.title}
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+              <div className="flex flex-wrap gap-4 sm:gap-6 text-sm text-white/90 mb-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {service.event_date
+                    ? new Date(service.event_date).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "Date TBD"}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  {service.created_at
+                    ? new Date(service.created_at).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Time TBD"}
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {service.location}
+                </div>
+              </div>
+              <p className="text-sm md:text-base text-white/80 max-w-2xl">
                 {service.description ||
                   "Join us for an unforgettable event experience"}
               </p>
             </div>
           </div>
-        )}
+
+          {/* Badges */}
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Badge className="bg-purple-600 text-white border-purple-600 rounded-full">
+              Live Event
+            </Badge>
+            {service.active && (
+              <Badge className="bg-green-600 text-white border-green-600 rounded-full">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Verified
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Main Content Section */}

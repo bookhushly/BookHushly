@@ -5,6 +5,7 @@ import GeneralServiceCard from "./GeneralServiceCard";
 const ServiceCardWrapper = React.memo(
   ({ service, lastListingRef, isMobile }) => {
     // Check if the service is an event
+    console.log("Rendering ServiceCardWrapper for service:", service);
     if (service.category === "events") {
       return (
         <EventServiceCard

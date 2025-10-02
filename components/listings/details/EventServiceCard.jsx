@@ -57,7 +57,7 @@ const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
       Array.isArray(service.media_urls) &&
       service.media_urls.length > 0
         ? getPublicImageUrl(service.media_urls[0])
-        : "/placeholder-event.jpg",
+        : "/service-images/events/1.jpg",
     [service.media_urls]
   );
 
@@ -88,14 +88,14 @@ const EventServiceCard = React.memo(({ service, lastListingRef, isMobile }) => {
   return (
     <div
       ref={lastListingRef}
-      className="transform transition-opacity duration-300 opacity-0 group-[.is-visible]:opacity-100"
+      className="transform transition-opacity duration-300 "
     >
       <Link href={`/services/${service.id}`}>
         <Card className="group bg-white transition-all duration-300 border-0 rounded-2xl overflow-hidden flex flex-col shadow-md hover:shadow-xl h-[520px] w-full max-w-sm mx-auto">
           {/* Image Container */}
           <div className="relative h-56 overflow-hidden">
             <Image
-              src={serviceImage}
+              src={serviceImage || "/service-images/events/1.jpg"}
               alt={service.title || (isEventCenter ? "Event Venue" : "Event")}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out "
