@@ -20,7 +20,7 @@ const ServiceDetailWrapper = ({ service }) => {
         // Further differentiate between event centers and organizers
         if (service.event_type === "event_center") {
           return (
-            <EventCenterDetail service={service} categoryData={categoryData} />
+            <EventCenterDetail listing={service} categoryData={categoryData} />
           );
         } else {
           return (

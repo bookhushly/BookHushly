@@ -32,9 +32,10 @@ export default function EventsTicketPurchase({
   onSubmit,
 }) {
   const router = useRouter();
-  const [step, setStep] = useState(1); // 1: Ticket Selection, 2: Contact Details, 3: Payment
+  const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [selectedTickets, setSelectedTickets] = useState({});
+  const [ticketPackages, setTicketPackages] = useState([]); // New state for ticket packages
   const [contactDetails, setContactDetails] = useState({
     name: "",
     email: user?.email || "",
@@ -46,10 +47,17 @@ export default function EventsTicketPurchase({
 
   const images = service?.media_urls || [];
 
-  // Initialize selectedTickets and contact details
+  // Initialize ticket packages and contact details
   useEffect(() => {
+    // Ensure service is defined
+    if (!service) {
+      setError("Service data is not available");
+      setTicketPackages([]);
+      return;
+    }
+
     // Normalize ticket_packages
-    const ticketPackages =
+    const normalizedTicketPackages =
       Array.isArray(service.ticket_packages) &&
       service.ticket_packages.length > 0
         ? service.ticket_packages
@@ -62,11 +70,11 @@ export default function EventsTicketPurchase({
             },
           ];
 
-    service.ticket_packages = ticketPackages;
+    setTicketPackages(normalizedTicketPackages);
 
     // Initialize selectedTickets with zero quantities
     const initialTickets = {};
-    ticketPackages.forEach((ticket) => {
+    normalizedTicketPackages.forEach((ticket) => {
       initialTickets[ticket.name] = 0;
     });
     setSelectedTickets(initialTickets);
@@ -82,9 +90,9 @@ export default function EventsTicketPurchase({
 
   // Calculate total price
   const calculateTotal = () => {
-    if (!service) return 0;
+    if (!ticketPackages.length) return 0;
     let total = 0;
-    service.ticket_packages.forEach((ticket) => {
+    ticketPackages.forEach((ticket) => {
       total += (selectedTickets[ticket.name] || 0) * ticket.price;
     });
     return total;
@@ -92,8 +100,8 @@ export default function EventsTicketPurchase({
 
   // Handle ticket quantity change
   const handleTicketChange = (ticketName, quantity) => {
-    const ticket = service.ticket_packages.find((t) => t.name === ticketName);
-    if (quantity < 0 || quantity > ticket.remaining) return;
+    const ticket = ticketPackages.find((t) => t.name === ticketName);
+    if (!ticket || quantity < 0 || quantity > ticket.remaining) return;
     setSelectedTickets((prev) => ({
       ...prev,
       [ticketName]: quantity,
@@ -266,7 +274,7 @@ export default function EventsTicketPurchase({
           <div className="relative h-[60vh] sm:h-[70vh] md:h-[80vh] overflow-hidden">
             <Image
               src={images[0]}
-              alt={service.title}
+              alt={service?.title || "Event"}
               fill
               className="object-cover opacity-80"
               priority
@@ -303,12 +311,12 @@ export default function EventsTicketPurchase({
             <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 py-6 sm:py-8">
               <div className="max-w-7xl mx-auto">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
-                  {service.title}
+                  {service?.title || "Event"}
                 </h1>
                 <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {service.event_date
+                    {service?.event_date
                       ? new Date(service.event_date).toLocaleDateString(
                           "en-US",
                           {
@@ -321,7 +329,7 @@ export default function EventsTicketPurchase({
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {service.created_at
+                    {service?.created_at
                       ? new Date(service.created_at).toLocaleTimeString(
                           "en-US",
                           {
@@ -333,11 +341,11 @@ export default function EventsTicketPurchase({
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {service.location}
+                    {service?.location || "Location TBD"}
                   </div>
                 </div>
                 <p className="text-sm sm:text-base text-white/80 max-w-2xl">
-                  {service.description ||
+                  {service?.description ||
                     "Join us for an unforgettable event experience"}
                 </p>
               </div>
@@ -347,7 +355,7 @@ export default function EventsTicketPurchase({
               <Badge className="bg-purple-600 text-white border-purple-600 rounded-full text-xs sm:text-sm">
                 Live Event
               </Badge>
-              {service.active && (
+              {service?.active && (
                 <Badge className="bg-green-600 text-white border-green-600 rounded-full text-xs sm:text-sm">
                   <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   Verified
@@ -362,7 +370,7 @@ export default function EventsTicketPurchase({
                 <Badge className="bg-white/20 text-white border-white/30 rounded-full text-xs sm:text-sm">
                   Live Event
                 </Badge>
-                {service.active && (
+                {service?.active && (
                   <Badge className="bg-green-600 text-white border-green-600 rounded-full text-xs sm:text-sm">
                     <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     Verified
@@ -370,10 +378,10 @@ export default function EventsTicketPurchase({
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
-                {service.title}
+                {service?.title || "Event"}
               </h1>
               <p className="text-sm sm:text-base md:text-lg text-white/90 max-w-3xl mx-auto">
-                {service.description ||
+                {service?.description ||
                   "Join us for an unforgettable event experience"}
               </p>
             </div>
@@ -422,7 +430,7 @@ export default function EventsTicketPurchase({
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
-          <div className="col-span-1 sm:col-span-2 lg:col-span-8 space-y-6 sm:space-y-8">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-7 space-y-6 sm:space-y-8">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
                 <AlertTriangle className="h-5 w-5 text-red-600 mr-2 flex-shrink-0" />
@@ -437,93 +445,99 @@ export default function EventsTicketPurchase({
                 <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4">
                   Select Tickets
                 </h2>
-                <div className="space-y-4">
-                  {service.ticket_packages.map((ticket, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-200 rounded-xl p-4 sm:p-6 hover:border-purple-300 hover:shadow-lg transition-all duration-200"
-                    >
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 truncate">
-                            {ticket.name}
-                          </h3>
-                          <p className="text-gray-600 text-sm sm:text-base mb-2">
-                            ₦{ticket.price.toLocaleString()} per ticket
-                          </p>
-                          {ticket.description && (
-                            <p className="text-gray-600 text-sm sm:text-base truncate">
-                              {ticket.description}
+                {ticketPackages.length > 0 ? (
+                  <div className="space-y-4">
+                    {ticketPackages.map((ticket, index) => (
+                      <div
+                        key={index}
+                        className="border border-gray-200 rounded-xl p-4 sm:p-6 hover:border-purple-300 hover:shadow-lg transition-all duration-200"
+                      >
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 truncate">
+                              {ticket.name}
+                            </h3>
+                            <p className="text-gray-600 text-sm sm:text-base mb-2">
+                              ₦{ticket.price.toLocaleString()} per ticket
                             </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                          <Badge
-                            variant={
-                              ticket.remaining > 0 ? "default" : "secondary"
-                            }
-                            className={`text-xs sm:text-sm px-2 py-1 rounded-full ${
-                              ticket.remaining > 0
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {ticket.remaining > 0 ? `Available` : "Sold Out"}
-                          </Badge>
-                          {ticket.remaining > 0 && (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleTicketChange(
-                                    ticket.name,
-                                    (selectedTickets[ticket.name] || 0) - 1
-                                  )
-                                }
-                                disabled={selectedTickets[ticket.name] === 0}
-                                className="px-3 py-1 sm:px-4 sm:py-2"
-                              >
-                                -
-                              </Button>
-                              <Input
-                                type="number"
-                                value={selectedTickets[ticket.name] || 0}
-                                onChange={(e) =>
-                                  handleTicketChange(
-                                    ticket.name,
-                                    parseInt(e.target.value) || 0
-                                  )
-                                }
-                                className="w-14 sm:w-16 text-center text-sm sm:text-base"
-                                min="0"
-                                max={ticket.remaining}
-                                aria-label={`Quantity for ${ticket.name}`}
-                              />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleTicketChange(
-                                    ticket.name,
-                                    (selectedTickets[ticket.name] || 0) + 1
-                                  )
-                                }
-                                disabled={
-                                  selectedTickets[ticket.name] >=
-                                  ticket.remaining
-                                }
-                                className="px-3 py-1 sm:px-4 sm:py-2"
-                              >
-                                +
-                              </Button>
-                            </div>
-                          )}
+                            {ticket.description && (
+                              <p className="text-gray-600 text-sm sm:text-base truncate">
+                                {ticket.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                            <Badge
+                              variant={
+                                ticket.remaining > 0 ? "default" : "secondary"
+                              }
+                              className={`text-xs sm:text-sm px-2 py-1 rounded-full ${
+                                ticket.remaining > 0
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {ticket.remaining > 0 ? `Available` : "Sold Out"}
+                            </Badge>
+                            {ticket.remaining > 0 && (
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleTicketChange(
+                                      ticket.name,
+                                      (selectedTickets[ticket.name] || 0) - 1
+                                    )
+                                  }
+                                  disabled={selectedTickets[ticket.name] === 0}
+                                  className="px-3 py-1 sm:px-4 sm:py-2"
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  value={selectedTickets[ticket.name] || 0}
+                                  onChange={(e) =>
+                                    handleTicketChange(
+                                      ticket.name,
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  className="w-14 sm:w-16 text-center text-sm sm:text-base"
+                                  min="0"
+                                  max={ticket.remaining}
+                                  aria-label={`Quantity for ${ticket.name}`}
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleTicketChange(
+                                      ticket.name,
+                                      (selectedTickets[ticket.name] || 0) + 1
+                                    )
+                                  }
+                                  disabled={
+                                    selectedTickets[ticket.name] >=
+                                    ticket.remaining
+                                  }
+                                  className="px-3 py-1 sm:px-4 sm:py-2"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-600">
+                    No ticket packages available.
+                  </div>
+                )}
                 <Button
                   className="w-full mt-4 sm:mt-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-sm sm:text-base py-2 sm:py-3"
                   onClick={() => {
@@ -532,6 +546,7 @@ export default function EventsTicketPurchase({
                       setError("");
                     }
                   }}
+                  disabled={ticketPackages.length === 0}
                 >
                   Continue to Contact Details
                 </Button>
@@ -697,7 +712,7 @@ export default function EventsTicketPurchase({
             )}
           </div>
           {/* Sidebar: Event Summary */}
-          <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-5">
             <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 md:p-8 lg:sticky lg:top-6">
               <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Event Summary
@@ -705,17 +720,17 @@ export default function EventsTicketPurchase({
               <div className="space-y-4 sm:space-y-6 mb-4 sm:mb-6">
                 <div>
                   <h4 className="font-semibold text-base sm:text-lg">
-                    {service.title}
+                    {service?.title || "Event"}
                   </h4>
                   <p className="text-sm sm:text-base text-gray-600">
-                    {service.location}
+                    {service?.location || "Location TBD"}
                   </p>
                 </div>
                 <div className="space-y-2 text-sm sm:text-base">
                   <div className="flex justify-between">
                     <span>Date</span>
                     <span>
-                      {service.event_date
+                      {service?.event_date
                         ? new Date(service.event_date).toLocaleDateString(
                             "en-US",
                             {
@@ -730,7 +745,7 @@ export default function EventsTicketPurchase({
                   <div className="flex justify-between">
                     <span>Time</span>
                     <span>
-                      {service.created_at
+                      {service?.created_at
                         ? new Date(service.created_at).toLocaleTimeString(
                             "en-US",
                             {
@@ -761,9 +776,8 @@ export default function EventsTicketPurchase({
                             ₦
                             {(
                               quantity *
-                              service.ticket_packages.find(
-                                (t) => t.name === name
-                              ).price
+                              (ticketPackages.find((t) => t.name === name)
+                                ?.price || 0)
                             ).toLocaleString()}
                           </span>
                         </div>
@@ -778,13 +792,14 @@ export default function EventsTicketPurchase({
               </div>
               {step === 1 && (
                 <Button
-                  className="w-full h-10 sm:h-12 text-sm sm:text-base font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-full"
+                  className="w-full max-w-md h-10 xs:h-11 sm:h-12 px-4 py-2 text-sm xs:text-base sm:text-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                   onClick={() => {
                     if (validateTickets()) {
                       setStep(2);
                       setError("");
                     }
                   }}
+                  disabled={ticketPackages.length === 0}
                 >
                   Continue to Contact Details
                 </Button>
@@ -803,12 +818,12 @@ export default function EventsTicketPurchase({
             <X className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
           <div className="absolute top-4 left-4 sm:top-6 sm:left-6 text-white text-sm sm:text-base font-medium truncate max-w-[80%]">
-            {service.title}
+            {service?.title || "Event"}
           </div>
           <div className="relative w-full h-full max-w-5xl max-h-[85vh] mx-4 sm:mx-6">
             <Image
               src={images[currentImageIndex]}
-              alt={service.title}
+              alt={service?.title || "Event"}
               fill
               className="object-contain"
               sizes="100vw"

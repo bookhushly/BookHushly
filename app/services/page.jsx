@@ -7,17 +7,22 @@ import React, {
   useRef,
   useMemo,
   useDeferredValue,
+  memo,
+  lazy,
+  Suspense,
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -26,75 +31,117 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Toaster, toast } from "react-hot-toast";
-import ServiceCardWrapper from "@/components/listings/details/ServiceCardWrapper";
 import {
   MapPin,
   Search,
   Star,
   ShieldCheck,
-  Building,
-  Home,
-  Utensils,
-  PartyPopper,
-  Car,
-  Truck,
-  Shield,
-  Users,
-  Bed,
-  Bath,
-  ChefHat,
-  Clock,
-  Calendar,
   X,
   SlidersHorizontal,
   ChevronDown,
   ChevronUp,
+  Shield,
 } from "lucide-react";
 import { debounce } from "lodash";
-import {
-  extractCategoryData,
-  getCategoryFormConfig,
-} from "@/lib/category-forms";
-import { getFeatureIcon } from "@/lib/featureIcons";
 import { supabase } from "@/lib/supabase";
 import { SCATEGORIES } from "@/lib/constants";
 
-// Constants
-const BUTTON_CONFIG = {
-  hotels: { icon: Building, text: "Book Now" },
-  serviced_apartments: { icon: Home, text: "Book Now" },
-  events: { icon: PartyPopper, text: "Book Event" },
-  food: { icon: Utensils, text: "Order Now" },
-  logistics: { icon: Truck, text: "Hire Now" },
-  security: { icon: Shield, text: "Hire Now" },
-  car_rentals: { icon: Car, text: "Rent Now" },
-  default: { icon: Star, text: "View Details" },
+// Lazy load heavy components
+const ServiceCardWrapper = dynamic(
+  () => import("@/components/listings/details/ServiceCardWrapper"),
+  {
+    loading: () => <SkeletonCard />,
+    ssr: false,
+  }
+);
+
+// Image preload utility
+const preloadImages = (urls) => {
+  if (typeof window === "undefined") return;
+  urls.forEach((url) => {
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = url;
+    document.head.appendChild(link);
+  });
 };
 
-const CATEGORY_ICONS = {
-  hotels: <Building className="h-4 w-4" />,
-  serviced_apartments: <Home className="h-4 w-4" />,
-  events: <PartyPopper className="h-4 w-4" />,
-  food: <Utensils className="h-4 w-4" />,
-  logistics: <Truck className="h-4 w-4" />,
-  security: <Shield className="h-4 w-4" />,
-  car_rentals: <Car className="h-4 w-4" />,
-  default: <Star className="h-4 w-4" />,
+// Constants with optimized image paths
+const CATEGORY_IMAGES = {
+  events: [
+    "/service-images/events/1.jpg",
+    "/service-images/events/2.jpg",
+    "/service-images/events/3.jpg",
+    "/service-images/events/4.jpg",
+  ],
+  serviced_apartments: [
+    "/service-images/serviced_apartments/1.jpg",
+    "/service-images/serviced_apartments/2.jpg",
+    "/service-images/serviced_apartments/3.jpg",
+    "/service-images/serviced_apartments/4.jpg",
+  ],
+  car_rentals: [
+    "/service-images/car_rentals/1.jpg",
+    "/service-images/car_rentals/2.jpg",
+    "/service-images/car_rentals/3.jpg",
+    "/service-images/car_rentals/4.jpg",
+  ],
+  "food & restaurants": [
+    "/service-images/food/1.jpg",
+    "/service-images/food/2.jpg",
+    "/service-images/food/3.jpg",
+    "/service-images/food/4.jpg",
+  ],
+  services: [
+    "/service-images/services/1.jpg",
+    "/service-images/services/2.jpg",
+    "/service-images/services/3.jpg",
+    "/service-images/services/4.jpg",
+  ],
+  security: [
+    "/service-images/security/1.jpg",
+    "/service-images/security/2.jpg",
+    "/service-images/security/3.jpg",
+    "/service-images/security/4.jpg",
+  ],
+  logistics: [
+    "/service-images/logistics/1.jpg",
+    "/service-images/logistics/2.jpg",
+    "/service-images/logistics/3.jpg",
+    "/service-images/logistics/4.jpg",
+  ],
+  hotels: [
+    "/service-images/hotels/1.jpg",
+    "/service-images/hotels/2.jpg",
+    "/service-images/hotels/3.jpg",
+    "/service-images/hotels/4.jpg",
+  ],
 };
 
-const PRICE_LABELS = {
-  hotels: "per night",
-  serviced_apartments: "per night",
-  events: (event_type) =>
-    event_type === "event_center" ? "per event" : "per ticket",
-  food: "per person",
-  logistics: "per km",
-  security: "per hour",
-  car_rentals: "per day",
-  default: "starting from",
+const CATEGORY_KEY_MAP = {
+  events: "events",
+  "serviced apartments": "serviced_apartments",
+  serviced_apartments: "serviced_apartments",
+  "car rentals": "car_rentals",
+  car_rentals: "car_rentals",
+  "food & restaurants": "food & restaurants",
+  services: "services",
+  security: "security",
+  logistics: "logistics",
+  hotels: "hotels",
 };
 
-// Filter configurations for each category
+const normalizeCategoryKey = (label) => {
+  const normalized = label
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
+  return CATEGORY_KEY_MAP[normalized] || "services";
+};
+
+// Filter configurations
 const FILTER_CONFIGS = {
   hotels: {
     priceRange: { min: 5000, max: 500000, step: 5000 },
@@ -354,20 +401,288 @@ const FILTER_CONFIGS = {
   },
 };
 
+// Optimized hook for window size
 const useWindowSize = () => {
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" && window.innerWidth < 640
-  );
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+
+    const debouncedResize = debounce(checkMobile, 150);
+    window.addEventListener("resize", debouncedResize);
+    return () => {
+      debouncedResize.cancel();
+      window.removeEventListener("resize", debouncedResize);
+    };
   }, []);
+
   return isMobile;
 };
 
-// Filter Panel Component
-const FilterPanel = React.memo(
+// Memoized Skeleton Component
+const SkeletonCard = memo(() => (
+  <div className="rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm animate-pulse">
+    <div className="relative h-48 bg-gray-200" />
+    <div className="p-4 space-y-3">
+      <div className="h-4 w-3/4 bg-gray-200 rounded" />
+      <div className="h-4 w-full bg-gray-200 rounded" />
+      <div className="h-6 w-24 bg-gray-200 rounded" />
+    </div>
+  </div>
+));
+SkeletonCard.displayName = "SkeletonCard";
+
+// Memoized Empty State
+const EmptyState = memo(({ title, subtitle, icon: Icon = Search }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.35 }}
+    className="flex flex-col items-center justify-center py-16"
+  >
+    <div className="h-16 w-16 flex items-center justify-center rounded-full bg-purple-100 mb-4">
+      <Icon className="h-8 w-8 text-purple-600" />
+    </div>
+    <h3 className="text-lg font-semibold text-gray-700 mb-2">{title}</h3>
+    <p className="text-sm text-gray-500">{subtitle}</p>
+  </motion.div>
+));
+EmptyState.displayName = "EmptyState";
+
+// Optimized Search Bar with image preloading
+const SearchBar = memo(({ searchQuery, setSearchQuery, categoryLabel }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [direction, setDirection] = useState(1);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  const categoryKey = useMemo(
+    () => normalizeCategoryKey(categoryLabel),
+    [categoryLabel]
+  );
+
+  const images = useMemo(
+    () => CATEGORY_IMAGES[categoryKey] || CATEGORY_IMAGES.services,
+    [categoryKey]
+  );
+
+  // Preload images on mount
+  useEffect(() => {
+    preloadImages(images);
+    setImagesLoaded(true);
+  }, [images]);
+
+  const debouncedSetSearchQuery = useMemo(
+    () => debounce((value) => setSearchQuery(value), 300),
+    [setSearchQuery]
+  );
+
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    const interval = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, images.length]);
+
+  const goToSlide = useCallback(
+    (index) => {
+      setDirection(index > currentIndex ? 1 : -1);
+      setCurrentIndex(index);
+      setIsAutoPlaying(false);
+      setTimeout(() => setIsAutoPlaying(true), 10000);
+    },
+    [currentIndex]
+  );
+
+  const goToPrevious = useCallback(() => {
+    setDirection(-1);
+    const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+    setCurrentIndex(newIndex);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  }, [currentIndex, images.length]);
+
+  const goToNext = useCallback(() => {
+    setDirection(1);
+    const newIndex = (currentIndex + 1) % images.length;
+    setCurrentIndex(newIndex);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  }, [currentIndex, images.length]);
+
+  const slideVariants = useMemo(
+    () => ({
+      enter: (direction) => ({
+        x: direction > 0 ? "100%" : "-100%",
+        opacity: 0,
+      }),
+      center: {
+        x: 0,
+        opacity: 1,
+      },
+      exit: (direction) => ({
+        x: direction > 0 ? "-100%" : "100%",
+        opacity: 0,
+      }),
+    }),
+    []
+  );
+
+  return (
+    <section className="relative bg-white text-gray-900 h-[500px] overflow-hidden">
+      <div className="absolute inset-0">
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.div
+            key={currentIndex}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute inset-0"
+          >
+            {imagesLoaded && (
+              <Image
+                src={images[currentIndex]}
+                alt={`${categoryLabel} ${currentIndex + 1}`}
+                fill
+                className="object-cover"
+                priority={currentIndex === 0}
+                quality={85}
+                sizes="100vw"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          </motion.div>
+        </AnimatePresence>
+
+        <button
+          onClick={goToPrevious}
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10"
+          aria-label="Previous image"
+        >
+          <ChevronLeft className="w-5 h-5 text-white" />
+        </button>
+        <button
+          onClick={goToNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-10"
+          aria-label="Next image"
+        >
+          <ChevronRight className="w-5 h-5 text-white" />
+        </button>
+
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`h-2 rounded-full transition-all ${
+                index === currentIndex
+                  ? "w-8 bg-white"
+                  : "w-2 bg-white/50 hover:bg-white/70"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="container relative z-10 mx-auto px-4 h-full flex items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-3xl mx-auto text-center w-full"
+        >
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-white drop-shadow-lg">
+            Find Your Perfect {categoryLabel}
+          </h1>
+          <motion.div
+            className="bg-white p-3 rounded-2xl shadow-2xl max-w-xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="relative flex items-center">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                placeholder={`Search ${categoryLabel.toLowerCase()}...`}
+                defaultValue={searchQuery}
+                onChange={(e) => debouncedSetSearchQuery(e.target.value)}
+                className="pl-10 h-12 rounded-xl border-0 focus:ring-2 focus:ring-purple-500 text-base w-full"
+                aria-label={`Search ${categoryLabel} services`}
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+});
+SearchBar.displayName = "SearchBar";
+
+// Optimized Category Tabs
+const CategoryTabs = memo(({ activeCategory, setActiveCategory }) => {
+  const router = useRouter();
+
+  const handleCategoryChange = useCallback(
+    (categoryValue) => {
+      setActiveCategory(categoryValue);
+      const url = new URL(window.location);
+      url.searchParams.set("category", categoryValue);
+      router.push(url.pathname + url.search, { scroll: false });
+    },
+    [setActiveCategory, router]
+  );
+
+  return (
+    <div className="bg-white border-b border-gray-100">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-center overflow-x-auto scrollbar-hide py-4 gap-2">
+          {SCATEGORIES.map((category) => {
+            const isActive = activeCategory === category.value;
+            return (
+              <motion.button
+                key={category.value}
+                onClick={() => handleCategoryChange(category.value)}
+                className={`relative flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                  isActive
+                    ? "text-purple-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+                whileTap={{ scale: 0.97 }}
+                role="tab"
+                aria-selected={isActive}
+              >
+                <span
+                  className={`text-lg ${isActive ? "text-purple-600" : "text-gray-400"}`}
+                >
+                  {category.icon}
+                </span>
+                <span>{category.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+});
+CategoryTabs.displayName = "CategoryTabs";
+
+// Filter Panel Component (optimized)
+const FilterPanel = memo(
   ({ category, filters, onFiltersChange, isOpen, onToggle, isMobile }) => {
     const config = FILTER_CONFIGS[category];
     const [priceRange, setPriceRange] = useState([
@@ -378,57 +693,64 @@ const FilterPanel = React.memo(
       new Set(["price"])
     );
 
-    const toggleSection = (section) => {
-      const newExpanded = new Set(expandedSections);
-      if (newExpanded.has(section)) {
-        newExpanded.delete(section);
-      } else {
-        newExpanded.add(section);
-      }
-      setExpandedSections(newExpanded);
-    };
+    const toggleSection = useCallback((section) => {
+      setExpandedSections((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(section)) {
+          newSet.delete(section);
+        } else {
+          newSet.add(section);
+        }
+        return newSet;
+      });
+    }, []);
 
-    const handlePriceChange = useCallback(
-      debounce((values) => {
-        setPriceRange(values);
-        onFiltersChange({
-          ...filters,
-          price_min: values[0],
-          price_max: values[1],
-        });
-      }, 300),
+    const handlePriceChange = useMemo(
+      () =>
+        debounce((values) => {
+          setPriceRange(values);
+          onFiltersChange({
+            ...filters,
+            price_min: values[0],
+            price_max: values[1],
+          });
+        }, 300),
       [filters, onFiltersChange]
     );
 
-    const handleFilterChange = (filterKey, value, type) => {
-      let newFilters = { ...filters };
+    const handleFilterChange = useCallback(
+      (filterKey, value, type) => {
+        const newFilters = { ...filters };
 
-      if (type === "multiselect") {
-        const currentValues = newFilters[filterKey] || [];
-        if (currentValues.includes(value)) {
-          newFilters[filterKey] = currentValues.filter((v) => v !== value);
+        if (type === "multiselect") {
+          const currentValues = newFilters[filterKey] || [];
+          newFilters[filterKey] = currentValues.includes(value)
+            ? currentValues.filter((v) => v !== value)
+            : [...currentValues, value];
+        } else if (type === "range") {
+          newFilters[filterKey] = value;
         } else {
-          newFilters[filterKey] = [...currentValues, value];
+          newFilters[filterKey] = value;
         }
-      } else if (type === "range") {
-        newFilters[filterKey] = value;
-      } else {
-        newFilters[filterKey] = value;
-      }
 
-      onFiltersChange(newFilters);
-    };
+        onFiltersChange(newFilters);
+      },
+      [filters, onFiltersChange]
+    );
 
-    const activeFilterCount = Object.keys(filters).filter((key) => {
-      const value = filters[key];
-      return value && (Array.isArray(value) ? value.length > 0 : true);
-    }).length;
+    const activeFilterCount = useMemo(
+      () =>
+        Object.keys(filters).filter((key) => {
+          const value = filters[key];
+          return value && (Array.isArray(value) ? value.length > 0 : true);
+        }).length,
+      [filters]
+    );
 
     if (!config) return null;
 
     return (
       <>
-        {/* Mobile Filter Toggle */}
         {isMobile && (
           <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4">
             <Button
@@ -447,7 +769,6 @@ const FilterPanel = React.memo(
           </div>
         )}
 
-        {/* Filter Panel */}
         <AnimatePresence>
           {(isOpen || !isMobile) && (
             <motion.div
@@ -456,15 +777,14 @@ const FilterPanel = React.memo(
               exit={isMobile ? { x: "-100%" } : { opacity: 0 }}
               transition={{ duration: 0.3 }}
               className={`
-              ${
-                isMobile
-                  ? "fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl overflow-y-auto"
-                  : "sticky top-4 h-fit"
-              }
-            `}
+                ${
+                  isMobile
+                    ? "fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl overflow-y-auto"
+                    : "sticky top-4 h-fit"
+                }
+              `}
             >
               <div className="p-4 space-y-6">
-                {/* Header */}
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">
                     Filters
@@ -479,9 +799,9 @@ const FilterPanel = React.memo(
                       onClick={() => onFiltersChange({})}
                       variant="ghost"
                       size="sm"
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600"
                     >
-                      Clear All
+                      Clear
                     </Button>
                   )}
                 </div>
@@ -549,7 +869,7 @@ const FilterPanel = React.memo(
                                   checked={(filters[filter.key] || []).includes(
                                     option.value
                                   )}
-                                  onCheckedChange={(checked) =>
+                                  onCheckedChange={() =>
                                     handleFilterChange(
                                       filter.key,
                                       option.value,
@@ -628,7 +948,6 @@ const FilterPanel = React.memo(
           )}
         </AnimatePresence>
 
-        {/* Mobile Overlay */}
         {isMobile && isOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -642,49 +961,52 @@ const FilterPanel = React.memo(
 FilterPanel.displayName = "FilterPanel";
 
 // Active Filters Display
-const ActiveFilters = React.memo(({ filters, onRemoveFilter, category }) => {
+const ActiveFilters = memo(({ filters, onRemoveFilter, category }) => {
   const config = FILTER_CONFIGS[category];
-  const activeFilters = [];
 
-  Object.entries(filters).forEach(([key, value]) => {
-    if (!value || (Array.isArray(value) && value.length === 0)) return;
+  const activeFilters = useMemo(() => {
+    const items = [];
 
-    if (key === "price_min" || key === "price_max") return; // Handled separately
+    Object.entries(filters).forEach(([key, value]) => {
+      if (!value || (Array.isArray(value) && value.length === 0)) return;
+      if (key === "price_min" || key === "price_max") return;
 
-    const filterConfig = config?.filters.find((f) => f.key === key);
-    if (!filterConfig) return;
+      const filterConfig = config?.filters.find((f) => f.key === key);
+      if (!filterConfig) return;
 
-    if (Array.isArray(value)) {
-      value.forEach((v) => {
-        const option = filterConfig.options?.find((opt) => opt.value === v);
-        if (option) {
-          activeFilters.push({
-            key: `${key}-${v}`,
-            label: option.label,
-            onRemove: () => onRemoveFilter(key, v),
-          });
-        }
-      });
-    } else {
-      const option = filterConfig.options?.find((opt) => opt.value === value);
-      activeFilters.push({
-        key,
-        label: option ? option.label : `${filterConfig.label}: ${value}`,
-        onRemove: () => onRemoveFilter(key, null),
+      if (Array.isArray(value)) {
+        value.forEach((v) => {
+          const option = filterConfig.options?.find((opt) => opt.value === v);
+          if (option) {
+            items.push({
+              key: `${key}-${v}`,
+              label: option.label,
+              onRemove: () => onRemoveFilter(key, v),
+            });
+          }
+        });
+      } else {
+        const option = filterConfig.options?.find((opt) => opt.value === value);
+        items.push({
+          key,
+          label: option ? option.label : `${filterConfig.label}: ${value}`,
+          onRemove: () => onRemoveFilter(key, null),
+        });
+      }
+    });
+
+    if (filters.price_min || filters.price_max) {
+      const min = filters.price_min || config?.priceRange.min || 0;
+      const max = filters.price_max || config?.priceRange.max || 1000000;
+      items.push({
+        key: "price",
+        label: `₦${min.toLocaleString()} - ₦${max.toLocaleString()}`,
+        onRemove: () => onRemoveFilter("price", null),
       });
     }
-  });
 
-  // Add price filter if active
-  if (filters.price_min || filters.price_max) {
-    const min = filters.price_min || config?.priceRange.min || 0;
-    const max = filters.price_max || config?.priceRange.max || 1000000;
-    activeFilters.push({
-      key: "price",
-      label: `₦${min.toLocaleString()} - ₦${max.toLocaleString()}`,
-      onRemove: () => onRemoveFilter("price", null),
-    });
-  }
+    return items;
+  }, [filters, config, onRemoveFilter]);
 
   if (activeFilters.length === 0) return null;
 
@@ -710,169 +1032,13 @@ const ActiveFilters = React.memo(({ filters, onRemoveFilter, category }) => {
 });
 ActiveFilters.displayName = "ActiveFilters";
 
-// CategoryTabs Component with URL navigation
-const CategoryTabs = React.memo(({ activeCategory, setActiveCategory }) => {
-  const router = useRouter();
-
-  const handleCategoryChange = useCallback(
-    (categoryValue) => {
-      setActiveCategory(categoryValue);
-      const url = new URL(window.location);
-      url.searchParams.set("category", categoryValue);
-      router.push(url.pathname + url.search, { scroll: false });
-    },
-    [setActiveCategory, router]
-  );
-
-  return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-        {SCATEGORIES.map((category) => (
-          <motion.div
-            key={category.value}
-            className={`flex items-center px-4 py-2 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 will-change-transform cursor-pointer ${
-              activeCategory === category.value
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
-            }`}
-            onClick={() => handleCategoryChange(category.value)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            role="tab"
-            aria-selected={activeCategory === category.value}
-            aria-label={`Filter by ${category.label}`}
-          >
-            {category.icon}
-            <span className="ml-2">{category.label}</span>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-});
-CategoryTabs.displayName = "CategoryTabs";
-
-// SearchBar Component
-const SearchBar = React.memo(
-  ({ searchQuery, setSearchQuery, categoryLabel }) => {
-    const debouncedSetSearchQuery = useCallback(
-      debounce((value) => setSearchQuery(value), 200),
-      [setSearchQuery]
-    );
-
-    return (
-      <section className="relative bg-gray-50 text-gray-900 py-12 sm:py-16 overflow-hidden">
-        {/* Subtle geometric background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-full h-full opacity-5">
-            <div className="grid grid-cols-8 h-full">
-              {Array.from({ length: 64 }).map((_, i) => (
-                <div key={i} className="border-r border-b border-gray-300" />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="container relative z-10 mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-              Find Your Perfect {categoryLabel} Experience
-            </h1>
-            <motion.div
-              className="bg-white p-4 rounded-2xl shadow-lg border border-gray-200 max-w-xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <div className="relative flex items-center">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  placeholder={`Search ${categoryLabel.toLowerCase()}...`}
-                  defaultValue={searchQuery}
-                  onChange={(e) => debouncedSetSearchQuery(e.target.value)}
-                  className="pl-10 h-12 rounded-xl border-gray-200 focus:ring-2 focus:ring-purple-500 text-base w-full"
-                  aria-label={`Search ${categoryLabel} services`}
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-    );
-  }
-);
-SearchBar.displayName = "SearchBar";
-
-// Skeleton and Loading Components
-const SkeletonCard = React.memo(() => (
-  <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm animate-pulse">
-    <div className="relative h-52 sm:h-60 bg-gray-200">
-      <div className="absolute top-3 left-3 flex gap-2">
-        <div className="h-5 w-16 rounded-full bg-white/60" />
-        <div className="h-5 w-20 rounded-full bg-white/60" />
-      </div>
-      <div className="absolute bottom-3 left-3 h-5 w-20 rounded-full bg-white/70" />
-    </div>
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="h-4 w-24 bg-gray-200 rounded" />
-      </div>
-      <div className="h-5 w-3/4 bg-gray-200 rounded mb-2" />
-      <div className="h-4 w-full bg-gray-200 rounded mb-3" />
-      <div className="flex gap-2 mb-4">
-        <div className="h-6 w-16 bg-gray-200 rounded-full" />
-        <div className="h-6 w-20 bg-gray-200 rounded-full" />
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="h-5 w-28 bg-gray-200 rounded" />
-        <div className="h-8 w-24 bg-gray-200 rounded-full" />
-      </div>
-    </div>
-  </div>
-));
-SkeletonCard.displayName = "SkeletonCard";
-
-const EmptyState = React.memo(({ title, subtitle, icon: Icon = Search }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 12 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.35 }}
-    className="flex flex-col items-center justify-center py-16"
-  >
-    <div className="h-20 w-20 flex items-center justify-center rounded-full bg-purple-100 mb-6">
-      <Icon className="h-10 w-10 text-purple-600" />
-    </div>
-    <h3 className="text-xl font-semibold text-gray-700 mb-2">{title}</h3>
-    <p className="text-sm text-gray-500">{subtitle}</p>
-  </motion.div>
-));
-EmptyState.displayName = "EmptyState";
-
-const LoadingSpinner = React.memo(() => (
-  <div className="flex justify-center py-8">
-    <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-  </div>
-));
-LoadingSpinner.displayName = "LoadingSpinner";
-
-const ListingsGrid = React.memo(
-  ({
-    listings,
-    fetchError,
-    isLoadingMore,
-    hasMore,
-    lastListingRef,
-    isMobile,
-  }) => {
+// Optimized Listings Grid
+const ListingsGrid = memo(
+  ({ listings, fetchError, isLoadingMore, lastListingRef, isMobile }) => {
     if (fetchError) {
       return (
         <EmptyState
-          title="We couldn't load services"
+          title="Failed to load services"
           subtitle="Please check your connection and try again."
           icon={Shield}
         />
@@ -895,24 +1061,26 @@ const ListingsGrid = React.memo(
           {listings.map((service, index) => (
             <div
               key={service.id}
-              className="group is-visible"
               ref={index === listings.length - 1 ? lastListingRef : null}
             >
-              <ServiceCardWrapper
-                service={{ ...service, index }}
-                isMobile={isMobile}
-              />
+              <Suspense fallback={<SkeletonCard />}>
+                <ServiceCardWrapper service={service} isMobile={isMobile} />
+              </Suspense>
             </div>
           ))}
         </div>
-        {isLoadingMore && <LoadingSpinner />}
+        {isLoadingMore && (
+          <div className="flex justify-center py-8">
+            <div className="h-8 w-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
       </>
     );
   }
 );
 ListingsGrid.displayName = "ListingsGrid";
 
-// Enhanced listings hook with filtering
+// Optimized listings hook with better query building
 const useListingsWithFilters = (category, searchQuery, filters) => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -920,35 +1088,28 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   const cache = useRef(new Map());
   const observer = useRef(null);
   const abortControllerRef = useRef(null);
   const ITEMS_PER_PAGE = 12;
 
-  useEffect(() => {
-    return () => {
-      if (observer.current) observer.current.disconnect();
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-    };
-  }, []);
-
   const buildQuery = useCallback(
     (pageNum, currentCategory, currentQuery, currentFilters) => {
       let query = supabase
         .from("listings")
-        .select("*")
+        .select("*", { count: "exact" })
         .eq("active", true)
         .eq("category", currentCategory)
-        .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1);
+        .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
+        .order("created_at", { ascending: false });
 
-      // Search query
       if (currentQuery) {
         query = query.or(
-          `title.ilike.%${currentQuery}%,location.ilike.%${currentQuery}%`
+          `title.ilike.%${currentQuery}%,location.ilike.%${currentQuery}%,description.ilike.%${currentQuery}%`
         );
       }
 
-      // Apply filters
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (!value || (Array.isArray(value) && value.length === 0)) return;
 
@@ -971,7 +1132,6 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
             query = query.eq(key, value);
             break;
           default:
-            // Handle JSONB fields in category_data
             if (Array.isArray(value) && value.length > 0) {
               const conditions = value.map(
                 (v) => `category_data->>'${key}' @> '"${v}"'`
@@ -988,13 +1148,7 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
   );
 
   const fetchListings = useCallback(
-    async (
-      pageNum,
-      reset = false,
-      currentCategory,
-      currentQuery,
-      currentFilters
-    ) => {
+    async (pageNum, reset, currentCategory, currentQuery, currentFilters) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -1030,6 +1184,12 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
 
         const safeData = Array.isArray(data) ? data : [];
         cache.current.set(cacheKey, safeData);
+
+        if (cache.current.size > 50) {
+          const firstKey = cache.current.keys().next().value;
+          cache.current.delete(firstKey);
+        }
+
         setListings((prev) => (reset ? safeData : [...prev, ...safeData]));
         setHasMore(safeData.length === ITEMS_PER_PAGE);
         setFetchError(null);
@@ -1038,8 +1198,8 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
           error?.name === "AbortError" || /aborted/i.test(error?.message || "");
         if (isAbort) return;
 
-        toast.error(`Error fetching listings: ${error.message}`);
         setFetchError(error.message);
+        toast.error("Failed to load services");
       } finally {
         setIsLoadingMore(false);
         setLoading(false);
@@ -1054,7 +1214,6 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
     setListings([]);
     setHasMore(true);
     setFetchError(null);
-    cache.current.clear();
     fetchListings(1, true, category, searchQuery, filters);
   }, [category, searchQuery, filters, fetchListings]);
 
@@ -1083,6 +1242,13 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
     [isLoadingMore, hasMore]
   );
 
+  useEffect(() => {
+    return () => {
+      if (observer.current) observer.current.disconnect();
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
+
   return {
     listings,
     loading,
@@ -1093,7 +1259,7 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
   };
 };
 
-// Main Services Page Component
+// Main Component
 export default function ServicesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1112,7 +1278,7 @@ export default function ServicesPage() {
     const urlCategory = searchParams.get("category");
     if (urlCategory && urlCategory !== activeCategory) {
       setActiveCategory(urlCategory);
-      setFilters({}); // Reset filters when category changes
+      setFilters({});
     }
   }, [searchParams, activeCategory]);
 
@@ -1155,8 +1321,8 @@ export default function ServicesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-purple-50">
-      <Toaster />
+    <div className="min-h-screen bg-gray-50">
+      <Toaster position="top-center" />
 
       <CategoryTabs
         activeCategory={activeCategory}
@@ -1171,7 +1337,6 @@ export default function ServicesPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
-          {/* Desktop Filters Sidebar */}
           {!isMobile && (
             <div className="w-80 flex-shrink-0">
               <FilterPanel
@@ -1185,9 +1350,7 @@ export default function ServicesPage() {
             </div>
           )}
 
-          {/* Main Content */}
           <div className="flex-1">
-            {/* Mobile Filter Toggle */}
             {isMobile && (
               <FilterPanel
                 category={activeCategory}
@@ -1199,24 +1362,21 @@ export default function ServicesPage() {
               />
             )}
 
-            {/* Active Filters */}
             <ActiveFilters
               filters={filters}
               onRemoveFilter={handleRemoveFilter}
               category={activeCategory}
             />
 
-            {/* Results Count */}
             {!loading && (
               <div className="mb-6">
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   {listings.length}{" "}
                   {listings.length === 1 ? "service" : "services"} found
                 </p>
               </div>
             )}
 
-            {/* Listings Grid */}
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {[...Array(12)].map((_, i) => (
@@ -1224,16 +1384,13 @@ export default function ServicesPage() {
                 ))}
               </div>
             ) : (
-              <AnimatePresence>
-                <ListingsGrid
-                  listings={listings}
-                  fetchError={fetchError}
-                  isLoadingMore={isLoadingMore}
-                  hasMore={hasMore}
-                  lastListingRef={lastListingRef}
-                  isMobile={isMobile}
-                />
-              </AnimatePresence>
+              <ListingsGrid
+                listings={listings}
+                fetchError={fetchError}
+                isLoadingMore={isLoadingMore}
+                lastListingRef={lastListingRef}
+                isMobile={isMobile}
+              />
             )}
           </div>
         </div>

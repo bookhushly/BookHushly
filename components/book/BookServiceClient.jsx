@@ -201,7 +201,7 @@ export default function BookServiceClient() {
 
   return (
     <AuthGuard allowUnauthenticated={true}>
-      <div className="container max-w-4xl py-8">
+      <div className="container max-w-6xl py-8">
         <div className="mb-6">
           <Link
             href={`/services/${params.id}`}

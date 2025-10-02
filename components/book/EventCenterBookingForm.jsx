@@ -31,6 +31,51 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
+// Helper function to parse cancellation policy
+export const parseCancellationPolicy = (policy) => {
+  if (!policy || policy.trim() === "") {
+    return ["Free cancellation up to 24 hours before service"];
+  }
+
+  // Define human-readable mappings for known policy codes
+  const policyMappings = {
+    free_48h: "Free cancellation within 48 hours",
+    non_refundable: "Non-refundable",
+    free_24h: "Free cancellation within 24 hours",
+    partial_50_72h: "50% refund if canceled within 72 hours",
+    contact_vendor: "Contact vendor for cancellation details",
+  };
+
+  try {
+    // Attempt to parse as JSON
+    const parsedPolicy = JSON.parse(policy);
+    if (Array.isArray(parsedPolicy)) {
+      // Map JSON array elements to human-readable text
+      const policies = parsedPolicy
+        .map((item) => policyMappings[item] || item) // Use mapping or fallback to item
+        .filter((item) => item && item.trim() !== "");
+      return policies.length > 0
+        ? policies
+        : ["Free cancellation up to 24 hours before service"];
+    }
+  } catch (err) {
+    // If JSON parsing fails, treat as plain text
+    console.warn("Failed to parse cancellation_policy as JSON:", err);
+  }
+
+  // Fallback to plain text parsing
+  const delimiters = /[.;\n]|\d+\.\s*/;
+  const policies = policy
+    .split(delimiters)
+    .map((item) => item.trim())
+    .filter((item) => item !== "" && !/^\d+\.$/.test(item)) // Remove empty strings and standalone numbers
+    .map((item) => item.replace(/^\d+\.\s*/, "")); // Remove leading numbers (e.g., "1. ")
+
+  return policies.length > 0
+    ? policies
+    : ["Free cancellation up to 24 hours before service"];
+};
+
 export default function EventCentersBookingForm({
   service,
   user,
@@ -397,14 +442,11 @@ export default function EventCentersBookingForm({
               <span>Service fee</span>
               <span>₦{service.price?.toLocaleString() || "0"}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span>Platform fee (5%)</span>
-              <span>₦{(service.price * 0.05).toLocaleString()}</span>
-            </div>
+
             <div className="border-t pt-3">
               <div className="flex justify-between font-semibold text-base">
                 <span>Total</span>
-                <span>₦{calculateTotal().toLocaleString()}</span>
+                <span>₦{service.price?.toLocaleString()}</span>
               </div>
             </div>
             <div className="text-xs text-gray-600">
@@ -422,10 +464,12 @@ export default function EventCentersBookingForm({
           <CardContent className="space-y-2 text-sm text-gray-600">
             <p>• Booking requests are subject to vendor approval</p>
             <p>• Payment is processed only after confirmation</p>
-            {service.cancellation_policy ? (
-              <p>• {service.cancellation_policy}</p>
-            ) : (
-              <p>• Free cancellation up to 24 hours before service</p>
+            {parseCancellationPolicy(service.cancellation_policy).map(
+              (policy, index) => (
+                <p key={index} className="break-words">
+                  • {policy}
+                </p>
+              )
             )}
             <p>• Refund policy applies as per vendor terms</p>
           </CardContent>
