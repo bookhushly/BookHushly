@@ -7,7 +7,9 @@ import { verifyPayment } from "@/lib/payments";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
-import Image from "next/image";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import NextImage from "next/image"; // Renamed to avoid conflict
 import {
   ArrowLeft,
   CheckCircle,
@@ -168,15 +170,14 @@ const OrderSuccessful = () => {
           );
         }
         console.log("Payment verification data:", verificationData);
-        // Check if payment status is completed. If so, skip the RPC.
+
         if (verificationData.status === "success") {
           if (!isCancelled) {
             toast.success("Order confirmed! Your tickets are ready.");
           }
-          return; // Skip the RPC call if payment is verified as completed
+          return;
         }
 
-        // Only run RPC if payment is not "completed"
         const { data, error } = await supabase.rpc(
           "verify_and_update_booking",
           {
@@ -213,20 +214,32 @@ const OrderSuccessful = () => {
     };
   }, [params.id]);
 
+  const pixelsToMm = (pixels) => (pixels * 25.4) / 96;
+
+  const getImageDimensions = async (url) => {
+    return new Promise((resolve, reject) => {
+      // Use native browser Image constructor
+      const img = typeof window !== "undefined" ? new window.Image() : null;
+      if (!img) {
+        reject(new Error("Image constructor not available"));
+        return;
+      }
+      img.src = url;
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = () => reject(new Error(`Failed to load image at ${url}`));
+    });
+  };
+
   const getBase64FromUrl = async (url) => {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Failed to load image at ${url}`);
-      const blob = await res.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-      });
-    } catch (err) {
-      return null;
-    }
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to load image at ${url}`);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
   };
 
   const safeText = (value, fallback = "N/A") => {
@@ -235,54 +248,182 @@ const OrderSuccessful = () => {
   };
 
   const handleDownloadPDF = async (booking) => {
-    if (!booking) return;
+    if (!booking || !payment) return;
 
     try {
-      const imageUrl =
-        booking.listing?.media_urls?.[0] || "/ticket-placeholder.jpg";
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.src = imageUrl;
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = () =>
-          reject(new Error(`Failed to load image at ${imageUrl}`));
-      });
+      const zip = new JSZip();
+      const templateUrl = "/ticket.jpg";
 
-      const imgWidthPx = img.width;
-      const imgHeightPx = img.height;
-      const imgWidthMm = (imgWidthPx * 25.4) / 96;
-      const imgHeightMm = (imgHeightPx * 25.4) / 96;
+      const { width: imgWidthPx, height: imgHeightPx } =
+        await getImageDimensions(templateUrl);
+      const imgWidthMm = pixelsToMm(imgWidthPx);
+      const imgHeightMm = pixelsToMm(imgHeightPx);
 
-      const doc = new jsPDF({
-        orientation: imgWidthPx > imgHeightPx ? "landscape" : "portrait",
-        unit: "mm",
-        format: [imgWidthMm, imgHeightMm],
-      });
+      const templateDataUrl = await getBase64FromUrl(templateUrl);
 
-      const templateDataUrl = await getBase64FromUrl(imageUrl);
-      if (!templateDataUrl) {
-        throw new Error("Failed to load ticket image for PDF");
-      }
-      doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
-
+      let ticketDetails = {};
+      let totalTickets = 0;
       try {
-        const qrCodeData = await QRCode.toDataURL(
-          `${window.location.origin}/booking-status/${safeText(booking.id, "0")}`,
-          {
-            width: 100,
-            margin: 1,
-            color: { dark: "#1F2937", light: "#FFFFFF" },
-          }
+        ticketDetails = booking.ticket_details
+          ? JSON.parse(booking.ticket_details)
+          : {};
+        totalTickets = Object.values(ticketDetails).reduce(
+          (sum, qty) => sum + qty,
+          0
         );
-        doc.addImage(qrCodeData, "PNG", imgWidthMm - 30, 10, 20, 20);
       } catch (err) {
-        console.error("Error generating QR code:", err);
+        console.error("Error parsing ticket_details:", err);
+        toast.error("Failed to parse ticket details");
+        return;
       }
 
-      doc.save(`BookHushly-Ticket-${safeText(booking.id, "0")}.pdf`);
+      if (totalTickets === 0 || totalTickets !== booking.guests) {
+        toast.error("Invalid ticket details or guest count mismatch");
+        return;
+      }
+
+      const ticketTypeText = Object.entries(ticketDetails)
+        .filter(([_, qty]) => qty > 0)
+        .map(([name, qty]) => `${name} x${qty}`)
+        .join(", ");
+
+      const placeholders = {
+        listingTitle: {
+          x: 72.8,
+          y: 110.5,
+          fontSize: 30,
+          color: [255, 255, 255],
+        },
+        ticketType: {
+          x: 54.1,
+          y: 130.7,
+          fontSize: 19,
+          color: [255, 255, 255],
+        },
+        date: { x: 53.5, y: 142.9, fontSize: 19, color: [255, 255, 255] },
+        time: { x: 53.7, y: 153.6, fontSize: 19, color: [255, 255, 255] },
+        vendorName: {
+          x: 333.4,
+          y: 173.1,
+          fontSize: 10,
+          color: [255, 255, 255],
+        },
+        vendorPhone: {
+          x: 342.6,
+          y: 179.7,
+          fontSize: 12,
+          color: [255, 255, 255],
+        },
+        qrCode: { x: 469, y: 15.5, size: 64.1 },
+      };
+
+      for (let i = 0; i < totalTickets; i++) {
+        const doc = new jsPDF({
+          orientation: imgWidthPx > imgHeightPx ? "landscape" : "portrait",
+          unit: "mm",
+          format: [imgWidthMm, imgHeightMm],
+        });
+
+        doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
+        doc.setFont("helvetica", "bold");
+
+        doc.setFontSize(placeholders.listingTitle.fontSize);
+        doc.setTextColor(...placeholders.listingTitle.color);
+        doc.text(
+          safeText(booking.listing?.title),
+          placeholders.listingTitle.x,
+          placeholders.listingTitle.y
+        );
+
+        doc.setFontSize(placeholders.ticketType.fontSize);
+        doc.setTextColor(...placeholders.ticketType.color);
+        doc.text(
+          ticketTypeText,
+          placeholders.ticketType.x,
+          placeholders.ticketType.y
+        );
+
+        doc.setFontSize(placeholders.date.fontSize);
+        doc.setTextColor(...placeholders.date.color);
+        doc.text(
+          safeText(
+            booking.listing?.event_date
+              ? new Date(booking.listing.event_date).toLocaleDateString(
+                  "en-US",
+                  {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  }
+                )
+              : "Date TBD"
+          ),
+          placeholders.date.x,
+          placeholders.date.y
+        );
+
+        doc.setFontSize(placeholders.time.fontSize);
+        doc.setTextColor(...placeholders.time.color);
+        doc.text(
+          safeText(booking.booking_time),
+          placeholders.time.x,
+          placeholders.time.y
+        );
+
+        doc.setFontSize(placeholders.vendorName.fontSize);
+        doc.setTextColor(...placeholders.vendorName.color);
+        doc.text(
+          safeText(booking.listing?.vendor_name),
+          placeholders.vendorName.x,
+          placeholders.listingTitle.y
+        );
+
+        doc.setFontSize(placeholders.vendorPhone.fontSize);
+        doc.setTextColor(...placeholders.vendorPhone.color);
+        doc.text(
+          safeText(booking.listing?.vendor_phone),
+          placeholders.vendorPhone.x,
+          placeholders.vendorPhone.y
+        );
+
+        const ticketId = `${booking.id}-${i + 1}`;
+
+        try {
+          const qrCodeData = await QRCode.toDataURL(
+            `${window.location.origin}/ticket-status/${ticketId}`,
+            {
+              width: pixelsToMm(placeholders.qrCode.size) * 96,
+              margin: 1,
+              color: { dark: "#1F2937", light: "#FFFFFF" },
+            }
+          );
+          doc.addImage(
+            qrCodeData,
+            "PNG",
+            placeholders.qrCode.x,
+            placeholders.qrCode.y,
+            placeholders.qrCode.size,
+            placeholders.qrCode.size
+          );
+        } catch (err) {
+          console.error("Error generating QR code:", err);
+          toast.error(`Failed to generate QR code for ticket ${ticketId}`);
+          continue;
+        }
+
+        const pdfBlob = doc.output("blob");
+        zip.file(`Ticket-${safeText(booking.id, "0")}-${i + 1}.pdf`, pdfBlob);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      saveAs(zipBlob, `BookHushly-Tickets-${safeText(booking.id, "0")}.zip`);
+
+      toast.success(
+        `Successfully generated ZIP file with ${totalTickets} ticket PDF${totalTickets > 1 ? "s" : ""}`
+      );
     } catch (err) {
-      toast.error("Failed to generate ticket. Please try again.");
+      console.error("Error generating ticket ZIP:", err);
+      toast.error("Failed to generate ticket ZIP file. Please try again.");
     }
   };
 
@@ -363,7 +504,6 @@ const OrderSuccessful = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* Success Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-600 rounded-full mb-3">
             <CheckCircle className="w-6 h-6 text-white" />
@@ -376,11 +516,9 @@ const OrderSuccessful = () => {
           </p>
         </div>
 
-        {/* Main Ticket Card */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-5">
-          {/* Event Image */}
           <div className="relative">
-            <Image
+            <NextImage
               src={ticketImage}
               alt="Event"
               width={800}
@@ -390,7 +528,6 @@ const OrderSuccessful = () => {
             />
           </div>
 
-          {/* Event Details */}
           <div className="p-5">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               {booking.listing?.title || "Event"}
@@ -427,7 +564,6 @@ const OrderSuccessful = () => {
               support team.
             </p>
 
-            {/* Payment Summary */}
             <div className="pt-4 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Total Paid</span>
@@ -438,7 +574,6 @@ const OrderSuccessful = () => {
               </div>
             </div>
 
-            {/* Download Button */}
             <button
               onClick={() => handleDownloadPDF(booking)}
               className="w-full mt-4 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
@@ -449,7 +584,6 @@ const OrderSuccessful = () => {
           </div>
         </div>
 
-        {/* Contact Cards */}
         <div className="grid sm:grid-cols-2 gap-4 mb-5">
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <h3 className="font-semibold text-gray-900 text-sm mb-3">
@@ -493,7 +627,6 @@ const OrderSuccessful = () => {
           </div>
         </div>
 
-        {/* Important Info */}
         <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-5">
           <h3 className="font-semibold text-gray-900 text-sm mb-3">
             Before You Go
@@ -518,7 +651,6 @@ const OrderSuccessful = () => {
           </ul>
         </div>
 
-        {/* Footer */}
         <div className="text-center pt-5 border-t border-gray-100">
           <a
             href="/services?category=events"
