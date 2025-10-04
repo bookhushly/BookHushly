@@ -9,7 +9,7 @@ import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import NextImage from "next/image"; // Renamed to avoid conflict
+import NextImage from "next/image";
 import {
   ArrowLeft,
   CheckCircle,
@@ -218,7 +218,6 @@ const OrderSuccessful = () => {
 
   const getImageDimensions = async (url) => {
     return new Promise((resolve, reject) => {
-      // Use native browser Image constructor
       const img = typeof window !== "undefined" ? new window.Image() : null;
       if (!img) {
         reject(new Error("Image constructor not available"));
@@ -287,31 +286,27 @@ const OrderSuccessful = () => {
         .map(([name, qty]) => `${name} x${qty}`)
         .join(", ");
 
+      // Updated placeholders - removed vendorName
       const placeholders = {
         listingTitle: {
-          x: 72.8,
-          y: 110.5,
-          fontSize: 30,
+          x: 155.1,
+          y: 104.6,
+          fontSize: 140,
           color: [255, 255, 255],
+          font: "BebasNeue", // Custom font
         },
         ticketType: {
-          x: 54.1,
-          y: 130.7,
-          fontSize: 19,
+          x: 174.8,
+          y: 144.2,
+          fontSize: 25,
           color: [255, 255, 255],
         },
-        date: { x: 53.5, y: 142.9, fontSize: 19, color: [255, 255, 255] },
-        time: { x: 53.7, y: 153.6, fontSize: 19, color: [255, 255, 255] },
-        vendorName: {
-          x: 333.4,
-          y: 173.1,
-          fontSize: 10,
-          color: [255, 255, 255],
-        },
+        date: { x: 289.1, y: 144.1, fontSize: 30, color: [255, 255, 255] },
+        time: { x: 400.5, y: 144.2, fontSize: 30, color: [255, 255, 255] },
         vendorPhone: {
-          x: 342.6,
-          y: 179.7,
-          fontSize: 12,
+          x: 392.6,
+          y: 172.5,
+          fontSize: 14,
           color: [255, 255, 255],
         },
         qrCode: { x: 469, y: 15.5, size: 64.1 },
@@ -324,9 +319,15 @@ const OrderSuccessful = () => {
           format: [imgWidthMm, imgHeightMm],
         });
 
-        doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
-        doc.setFont("helvetica", "bold");
+        // Load Bebas Neue font
+        // NOTE: You need to add BebasNeue-Regular.ttf to your public folder
+        // and convert it using https://rawgit.com/MrRio/jsPDF/master/fontconverter/fontconverter.html
+        // For now, using helvetica as fallback until font is properly embedded
 
+        doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
+
+        // Event Title with Bebas Neue (or helvetica as fallback)
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(placeholders.listingTitle.fontSize);
         doc.setTextColor(...placeholders.listingTitle.color);
         doc.text(
@@ -335,6 +336,7 @@ const OrderSuccessful = () => {
           placeholders.listingTitle.y
         );
 
+        // Ticket Type
         doc.setFontSize(placeholders.ticketType.fontSize);
         doc.setTextColor(...placeholders.ticketType.color);
         doc.text(
@@ -343,6 +345,7 @@ const OrderSuccessful = () => {
           placeholders.ticketType.y
         );
 
+        // Date
         doc.setFontSize(placeholders.date.fontSize);
         doc.setTextColor(...placeholders.date.color);
         doc.text(
@@ -362,6 +365,7 @@ const OrderSuccessful = () => {
           placeholders.date.y
         );
 
+        // Time
         doc.setFontSize(placeholders.time.fontSize);
         doc.setTextColor(...placeholders.time.color);
         doc.text(
@@ -370,14 +374,7 @@ const OrderSuccessful = () => {
           placeholders.time.y
         );
 
-        doc.setFontSize(placeholders.vendorName.fontSize);
-        doc.setTextColor(...placeholders.vendorName.color);
-        doc.text(
-          safeText(booking.listing?.vendor_name),
-          placeholders.vendorName.x,
-          placeholders.listingTitle.y
-        );
-
+        // Vendor Phone (removed vendor name)
         doc.setFontSize(placeholders.vendorPhone.fontSize);
         doc.setTextColor(...placeholders.vendorPhone.color);
         doc.text(
@@ -386,6 +383,7 @@ const OrderSuccessful = () => {
           placeholders.vendorPhone.y
         );
 
+        // QR Code
         const ticketId = `${booking.id}-${i + 1}`;
 
         try {
