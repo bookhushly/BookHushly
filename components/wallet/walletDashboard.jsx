@@ -168,7 +168,6 @@ const TransactionItem = ({ transaction }) => {
 const QuickActions = () => {
   const actions = [
     { icon: Plus, label: "Add Money" },
-    { icon: Send, label: "Send" },
     { icon: Download, label: "Withdraw" },
     { icon: Calendar, label: "Schedule" },
   ];
@@ -204,7 +203,6 @@ export default function WalletSection() {
   // Mock wallet data - Replace with real API data
   const walletData = {
     naira: { balance: 2450000, change: 12.5 },
-    crypto: { balance: 0.0456, change: -3.2 },
   };
 
   const transactions = [
