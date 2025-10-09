@@ -1,9 +1,9 @@
-import { createServerClients } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
 
 export async function POST(req) {
-  const supabase = createServerClients();
+  const supabase = createClient();
 
   const {
     data: { session },
