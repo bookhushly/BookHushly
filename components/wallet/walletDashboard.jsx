@@ -78,13 +78,6 @@ const WalletBalanceCard = ({
         <Plus className="h-5 w-5" />
         Fund Wallet
       </button>
-      <button
-        onClick={onWithdraw}
-        className="flex items-center justify-center gap-2 border-2 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700 py-4 px-6 rounded-xl font-semibold transition-all duration-300"
-      >
-        <Send className="h-5 w-5" />
-        Withdraw
-      </button>
     </div>
   </div>
 );
