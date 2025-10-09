@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "../../../lib/supabase/client";
 import { CheckCircle2, XCircle, Clock } from "lucide-react";
 
 export default function BookingStatusPage() {
   const { bookingId } = useParams();
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remainingTickets, setRemainingTickets] = useState(null);
