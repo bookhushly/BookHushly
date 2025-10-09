@@ -16,7 +16,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuthStore } from "@/lib/store";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -68,6 +68,7 @@ export default function LoginPage() {
     setError("");
 
     try {
+      const supabase = await createClient();
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
