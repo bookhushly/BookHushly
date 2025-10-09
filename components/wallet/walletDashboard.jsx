@@ -70,7 +70,7 @@ const WalletBalanceCard = ({
       </div>
     </div>
 
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 gap-3">
       <button
         onClick={onFund}
         className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg"
@@ -135,66 +135,77 @@ const TransactionItem = ({ transaction }) => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
+    const isMobile = window.innerWidth < 640;
+
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      year: "numeric",
+      year: isMobile ? "2-digit" : "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
   };
 
   return (
-    <div className="flex items-center justify-between p-5 hover:bg-purple-50 rounded-2xl transition-all duration-300 border border-transparent hover:border-purple-100 cursor-pointer group">
-      <div className="flex items-center gap-4 flex-1 min-w-0">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-5 hover:bg-purple-50 rounded-xl sm:rounded-2xl transition-all duration-300 border border-transparent hover:border-purple-100 cursor-pointer group gap-3 sm:gap-4">
+      {/* Left Section: Icon + Transaction Details */}
+      <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
+        {/* Icon */}
         <div
-          className={`p-3 rounded-xl ${
+          className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0 ${
             isCredit
               ? "bg-green-50 group-hover:bg-green-100"
               : "bg-purple-50 group-hover:bg-purple-100"
           } transition-colors`}
         >
           {isCredit ? (
-            <ArrowDownLeft className="h-5 w-5 text-green-600" />
+            <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
           ) : (
-            <ArrowUpRight className="h-5 w-5 text-purple-600" />
+            <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
           )}
         </div>
+
+        {/* Transaction Info */}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 truncate">
+          <p className="font-semibold text-sm sm:text-base text-gray-900 truncate pr-2">
             {transaction.description}
           </p>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-sm text-gray-500">
+
+          {/* Date and Status - Responsive Layout */}
+          <div className="flex flex-col xs:flex-row xs:items-center gap-1.5 xs:gap-2 mt-1.5 sm:mt-1">
+            <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
               {formatDate(transaction.created_at)}
             </p>
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border ${status.bg} ${status.text} ${status.border}`}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border ${status.bg} ${status.text} ${status.border} w-fit`}
             >
-              <StatusIcon className="h-3 w-3" />
-              {transaction.status}
+              <StatusIcon className="h-3 w-3 flex-shrink-0" />
+              <span className="capitalize">{transaction.status}</span>
             </span>
           </div>
         </div>
       </div>
-      <div className="text-right ml-4">
-        <p
-          className={`text-lg font-bold ${
-            isCredit ? "text-green-600" : "text-gray-900"
-          }`}
-        >
-          {isCredit ? "+" : "-"}₦{transaction.amount.toLocaleString()}
-        </p>
-        {transaction.payment_provider && (
-          <p className="text-xs text-gray-500 mt-1 capitalize">
-            {transaction.payment_provider}
+
+      {/* Right Section: Amount and Payment Provider */}
+      <div className="flex items-center justify-between sm:block sm:text-right sm:ml-4 flex-shrink-0 pl-11 sm:pl-0">
+        <div>
+          <p
+            className={`text-base sm:text-lg font-bold ${
+              isCredit ? "text-green-600" : "text-gray-900"
+            }`}
+          >
+            {isCredit ? "+" : "-"}₦{transaction.amount.toLocaleString()}
           </p>
-        )}
+          {transaction.payment_provider && (
+            <p className="text-xs text-gray-500 mt-0.5 sm:mt-1 capitalize">
+              {transaction.payment_provider}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
 };
-
 const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("paystack");
@@ -569,26 +580,29 @@ export default function WalletDashboard() {
           </div>
 
           {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mb-6">
+            {/* Search Input */}
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search transactions..."
-                className="w-full pl-12 pr-4 py-3 border-2 border-purple-100 rounded-xl focus:outline-none focus:border-purple-300 transition-all"
+                className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-purple-100 rounded-xl focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all placeholder:text-gray-400"
               />
             </div>
-            <div className="flex gap-2 bg-purple-50 rounded-xl p-1">
+
+            {/* Filter Buttons */}
+            <div className="flex gap-1.5 sm:gap-2 bg-purple-50 rounded-xl p-1 overflow-x-auto scrollbar-hide">
               {["All", "Deposit", "Payment", "Withdrawal"].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setFilterType(filter.toLowerCase())}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0 min-h-[44px] sm:min-h-0 ${
                     filterType === filter.toLowerCase()
                       ? "bg-white text-purple-700 shadow-sm"
-                      : "text-gray-600 hover:text-purple-600"
+                      : "text-gray-600 hover:text-purple-600 active:bg-white/50"
                   }`}
                 >
                   {filter}
