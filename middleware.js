@@ -7,7 +7,6 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    "/app/:path*",
     "/dashboard/:path*",
     "/api/wallet/:path*", // Include wallet API routes
     "/api/webhooks/:path*", // Include webhook routes
