@@ -6,43 +6,82 @@ import { createServerClient } from "@supabase/ssr";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error("Missing Supabase environment variables:", {
-    url: SUPABASE_URL,
-    key: SUPABASE_KEY,
-  });
-  throw new Error("Supabase configuration is incomplete");
+// Define routes that REQUIRE authentication
+const PROTECTED_ROUTES = [
+  "/dashboard",
+  "/api/wallet",
+  "/api/webhooks",
+  "/profile",
+  "/settings",
+];
+
+// Define public routes (explicitly allowed without auth)
+const PUBLIC_ROUTES = [
+  "/",
+  "/login",
+  "/auth",
+  "/error",
+  "/signup",
+  "/about",
+  "/contact",
+];
+
+// Helper function to check if a path requires authentication
+function isProtectedRoute(pathname) {
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+// Helper function to check if a path is explicitly public
+function isPublicRoute(pathname) {
+  return PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
 }
 
 export async function middleware(request) {
+  const pathname = request.nextUrl.pathname;
+
   try {
+    // If Supabase is not configured, allow all requests to proceed
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      console.warn("Supabase not configured - allowing all requests");
+      return NextResponse.next({ request });
+    }
+
     const supabaseResponse = await updateSession(request);
     return supabaseResponse;
   } catch (error) {
     console.error("Middleware error:", {
       message: error.message,
-      path: request.nextUrl.pathname,
+      path: pathname,
       method: request.method,
     });
-    const url = request.nextUrl.clone();
-    url.pathname = "/error";
-    url.searchParams.set("message", "An unexpected error occurred");
-    return NextResponse.redirect(url);
+
+    // Only redirect to error page for protected routes
+    // Public routes should still work even if auth fails
+    if (isProtectedRoute(pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirectedFrom", pathname);
+      url.searchParams.set("error", "authentication_required");
+      return NextResponse.redirect(url);
+    }
+
+    // For public routes, allow access even if auth fails
+    return NextResponse.next({ request });
   }
 }
 
 async function updateSession(request) {
+  const pathname = request.nextUrl.pathname;
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
     cookies: {
       getAll() {
-        const cookies = request.cookies.getAll();
-        console.log("Cookies retrieved:", cookies);
-        return cookies;
+        return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        console.log("Cookies to set:", cookiesToSet);
         cookiesToSet.forEach(({ name, value, options }) => {
           request.cookies.set(name, value);
           supabaseResponse.cookies.set(name, value, {
@@ -57,31 +96,33 @@ async function updateSession(request) {
     },
   });
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  // Try to get user, but don't fail if there's no session
+  let user = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
 
-  if (error) {
-    console.error("Supabase auth error:", {
-      message: error.message,
-      path: request.nextUrl.pathname,
-    });
-    throw new Error("Failed to fetch user session");
+    if (error) {
+      console.warn("Supabase auth warning:", {
+        message: error.message,
+        path: pathname,
+      });
+    } else {
+      user = data?.user;
+    }
+  } catch (error) {
+    console.warn("Failed to fetch user session:", error.message);
   }
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/error")
-  ) {
+  // Only enforce authentication on protected routes
+  if (!user && isProtectedRoute(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("redirectedFrom", request.nextUrl.pathname);
+    url.searchParams.set("redirectedFrom", pathname);
+    url.searchParams.set("error", "authentication_required");
     return NextResponse.redirect(url);
   }
 
+  // Allow access to all other routes (including public routes)
   return supabaseResponse;
 }
 
