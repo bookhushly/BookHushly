@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { initializePayment, createNOWPaymentsInvoice } from "@/lib/payments";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 export default function EventsTicketPurchase({
   service,
@@ -31,7 +31,9 @@ export default function EventsTicketPurchase({
   addBooking,
   onSubmit,
 }) {
+  const supabase = createClient();
   const router = useRouter();
+  console.log(user);
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [selectedTickets, setSelectedTickets] = useState({});

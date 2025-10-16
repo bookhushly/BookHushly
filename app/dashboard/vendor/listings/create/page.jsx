@@ -76,7 +76,7 @@ export default function CreateListingPage() {
   const [tempTicket, setTempTicket] = useState({
     name: "",
     price: "",
-    total: "",
+    quantity: "",
     description: "",
   });
   const totalSteps = 4;
@@ -268,10 +268,10 @@ export default function CreateListingPage() {
   };
 
   const addTicket = () => {
-    if (!tempTicket.name || !tempTicket.price || !tempTicket.total) {
+    if (!tempTicket.name || !tempTicket.price || !tempTicket.quantity) {
       setErrors((prev) => ({
         ...prev,
-        tickets: "Ticket name, price, and total are required",
+        tickets: "Ticket name, price, and quantity are required",
       }));
       return;
     }
@@ -284,9 +284,9 @@ export default function CreateListingPage() {
     }
     setTickets((prev) => [
       ...prev,
-      { ...tempTicket, remaining: tempTicket.total },
+      { ...tempTicket, remaining: tempTicket.quantity }, // Update total to quantity
     ]);
-    setTempTicket({ name: "", price: "", total: "", description: "" });
+    setTempTicket({ name: "", price: "", quantity: "", description: "" }); // Update here
     setErrors((prev) => ({ ...prev, tickets: undefined }));
   };
 
@@ -430,8 +430,8 @@ export default function CreateListingPage() {
         processedTickets = tickets.map((ticket) => ({
           name: ticket.name,
           price: parseFloat(ticket.price),
-          total: parseInt(ticket.total),
-          remaining: parseInt(ticket.total),
+          total: parseInt(ticket.quantity), // Update total to quantity
+          remaining: parseInt(ticket.quantity), // Update here
           description: ticket.description,
         }));
         listingPrice = Math.min(...processedTickets.map((t) => t.price));

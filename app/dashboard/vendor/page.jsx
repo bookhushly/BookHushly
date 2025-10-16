@@ -264,6 +264,7 @@ export default function VendorDashboard() {
 
     loadBookings();
   }, [user]);
+  console.log(listings);
 
   if (loading) {
     return (
@@ -686,6 +687,15 @@ export default function VendorDashboard() {
                               Edit
                             </Link>
                           </Button>
+                          {listing.event_type === "event_organizer" && (
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link
+                                href={`/dashboard/vendor/event-management/${listing.id}`}
+                              >
+                                Manage Event
+                              </Link>
+                            </Button>
+                          )}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           Category: {listing.category}
@@ -743,6 +753,15 @@ export default function VendorDashboard() {
                                 Edit
                               </Link>
                             </Button>
+                            {listing.event_type === "event_organizer" && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link
+                                  href={`/dashboard/vendor/event-management/${listing.id}`}
+                                >
+                                  Manage Event
+                                </Link>
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}

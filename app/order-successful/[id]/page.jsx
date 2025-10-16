@@ -35,61 +35,6 @@ const OrderSuccessful = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const updateRemainingTickets = async (
-    bookingId,
-    selectedTickets,
-    listingId
-  ) => {
-    try {
-      const { data: listing, error: fetchError } = await supabase
-        .from("listings")
-        .select("ticket_packages, remaining_tickets")
-        .eq("id", listingId)
-        .single();
-
-      if (fetchError || !listing) {
-        throw new Error(
-          `Failed to fetch listing: ${fetchError?.message || "Unknown error"}`
-        );
-      }
-
-      const updatedTicketPackages = listing.ticket_packages.map((ticket) => ({
-        ...ticket,
-        remaining: ticket.remaining - (selectedTickets[ticket.name] || 0),
-      }));
-
-      const totalTicketsBooked = Object.values(selectedTickets).reduce(
-        (sum, qty) => sum + qty,
-        0
-      );
-      const updatedRemainingTickets =
-        listing.remaining_tickets - totalTicketsBooked;
-
-      if (
-        updatedTicketPackages.some((ticket) => ticket.remaining < 0) ||
-        updatedRemainingTickets < 0
-      ) {
-        throw new Error("Not enough tickets available");
-      }
-
-      const { error: updateError } = await supabase
-        .from("listings")
-        .update({
-          ticket_packages: updatedTicketPackages,
-          remaining_tickets: updatedRemainingTickets,
-        })
-        .eq("id", listingId);
-
-      if (updateError) {
-        throw new Error(
-          `Failed to update ticket quantities: ${updateError.message}`
-        );
-      }
-    } catch (err) {
-      throw err;
-    }
-  };
-
   useEffect(() => {
     let isCancelled = false;
 
@@ -388,7 +333,7 @@ const OrderSuccessful = () => {
 
         try {
           const qrCodeData = await QRCode.toDataURL(
-            `${window.location.origin}/ticket-status/${ticketId}`,
+            `${window.location.origin}/booking-status/${booking.id}`,
             {
               width: pixelsToMm(placeholders.qrCode.size) * 96,
               margin: 1,

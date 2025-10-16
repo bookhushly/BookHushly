@@ -6,7 +6,7 @@ import { createClient } from "../../../lib/supabase/client";
 import { CheckCircle2, XCircle, Clock } from "lucide-react";
 
 export default function BookingStatusPage() {
-  const { bookingId } = useParams();
+  const { ticketId } = useParams();
   const supabase = createClient();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,12 +15,12 @@ export default function BookingStatusPage() {
   const [scanAttempted, setScanAttempted] = useState(false);
 
   useEffect(() => {
-    if (!bookingId) return;
+    if (!ticketId) return;
 
     async function fetchBooking() {
       setLoading(true);
       const { data, error } = await supabase
-        .from("bookings")
+        .from("event_bookings")
         .select(
           `
           *,
@@ -31,8 +31,9 @@ export default function BookingStatusPage() {
           )
         `
         )
-        .eq("id", bookingId)
+        .eq("id", ticketId)
         .single();
+      console.log(data);
       if (error) {
         console.error("Error fetching booking:", error);
       } else {
@@ -45,7 +46,7 @@ export default function BookingStatusPage() {
     }
 
     fetchBooking();
-  }, [bookingId]);
+  }, [ticketId]);
 
   useEffect(() => {
     if (
@@ -64,7 +65,7 @@ export default function BookingStatusPage() {
         const { data, error } = await supabase
           .from("ticket_usage")
           .select("id")
-          .eq("booking_id", bookingId)
+          .eq("booking_id", ticketId)
           .single();
         if (error) {
           if (error.code === "PGRST116" && error.details.includes("0 rows")) {
@@ -89,7 +90,7 @@ export default function BookingStatusPage() {
       }
 
       const listingId = booking.listing?.id;
-      const bookingIdParam = booking.id;
+      const ticketIdParam = booking.id;
       if (!listingId) {
         console.error("Listing ID is undefined, cannot proceed with scan");
         setScanAttempted(true);
@@ -100,7 +101,7 @@ export default function BookingStatusPage() {
         setRemainingTickets((prev) => prev - 1);
         const params = {
           listing_id_param: listingId,
-          booking_id_param: bookingIdParam,
+          booking_id_param: ticketIdParam,
         };
         console.log("RPC Parameters:", params);
         const { data, error } = await supabase.rpc(
@@ -130,7 +131,7 @@ export default function BookingStatusPage() {
     remainingTickets,
     scanProcessed,
     scanAttempted,
-    bookingId,
+    ticketId,
   ]);
 
   if (loading) {
