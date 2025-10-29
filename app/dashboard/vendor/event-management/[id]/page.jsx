@@ -363,6 +363,28 @@ const EventManagementDashboard = () => {
               </div>
             </div>
           </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-purple-200 transition-colors">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium mb-2">
+                  Total Scanned Tickets
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  ₦{totalRevenue.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {
+                    bookings.filter((b) => b.payment_status === "completed")
+                      .length
+                  }{" "}
+                  paid bookings
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Bookings Section */}

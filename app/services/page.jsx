@@ -601,7 +601,9 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
   const cache = useRef(new Map());
   const observer = useRef(null);
   const abortControllerRef = useRef(null);
-  const ITEMS_PER_PAGE = 16; // Increased for fewer requests
+  const ITEMS_PER_PAGE = 16;
+  const MAX_RETRIES = 3; // Add retry mechanism for transient errors
+  const RETRY_DELAY = 1000; // Delay between retries in ms
 
   const buildQuery = useCallback(
     (pageNum, currentCategory, currentQuery, currentFilters) => {
@@ -609,7 +611,7 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
         .from("listings")
         .select("id,title,location,price,media_urls,category,vendor_name", {
           count: "exact",
-        }) // Only essential fields
+        })
         .eq("active", true)
         .eq("category", currentCategory)
         .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
@@ -632,7 +634,14 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
   );
 
   const fetchListings = useCallback(
-    async (pageNum, reset, currentCategory, currentQuery, currentFilters) => {
+    async (
+      pageNum,
+      reset,
+      currentCategory,
+      currentQuery,
+      currentFilters,
+      retryCount = 0
+    ) => {
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
 
@@ -647,7 +656,7 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
         return;
       }
 
-      setIsLoadingMore(true);
+      setIsLoadingMore(!reset && pageNum > 1);
       if (reset) setLoading(true);
 
       try {
@@ -657,7 +666,7 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
           currentQuery,
           currentFilters
         );
-        const { data, error } = await query.abortSignal(
+        const { data, error, count } = await query.abortSignal(
           abortControllerRef.current.signal
         );
 
@@ -672,13 +681,29 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
         }
 
         setListings((prev) => (reset ? safeData : [...prev, ...safeData]));
-        setHasMore(safeData.length === ITEMS_PER_PAGE);
+        setHasMore(
+          safeData.length === ITEMS_PER_PAGE && count > pageNum * ITEMS_PER_PAGE
+        );
         setFetchError(null);
       } catch (error) {
-        if (error?.name !== "AbortError") {
-          setFetchError(error.message);
-          toast.error("Failed to load");
+        if (error?.name === "AbortError") return;
+
+        // Retry logic for transient errors
+        if (retryCount < MAX_RETRIES) {
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+          return fetchListings(
+            pageNum,
+            reset,
+            currentCategory,
+            currentQuery,
+            currentFilters,
+            retryCount + 1
+          );
         }
+
+        // Only show error toast after retries fail
+        setFetchError(error.message);
+        toast.error("Failed to load services. Please try again later.");
       } finally {
         setIsLoadingMore(false);
         setLoading(false);
@@ -687,17 +712,30 @@ const useListingsWithFilters = (category, searchQuery, filters) => {
     [buildQuery]
   );
 
+  // Debounce fetch to prevent rapid refetching
+  const debouncedFetchListings = useMemo(
+    () =>
+      debounce(
+        (pageNum, reset, cat, query, filts) =>
+          fetchListings(pageNum, reset, cat, query, filts),
+        300
+      ),
+    [fetchListings]
+  );
+
   useEffect(() => {
     setLoading(true);
     setPage(1);
     setListings([]);
     setHasMore(true);
-    fetchListings(1, true, category, searchQuery, filters);
-  }, [category, searchQuery, filters, fetchListings]);
+    debouncedFetchListings(1, true, category, searchQuery, filters);
+    return () => debouncedFetchListings.cancel();
+  }, [category, searchQuery, filters, debouncedFetchListings]);
 
   useEffect(() => {
-    if (page > 1) fetchListings(page, false, category, searchQuery, filters);
-  }, [page, category, searchQuery, filters, fetchListings]);
+    if (page > 1)
+      debouncedFetchListings(page, false, category, searchQuery, filters);
+  }, [page, category, searchQuery, filters, debouncedFetchListings]);
 
   const lastListingRef = useCallback(
     (node) => {
@@ -785,7 +823,6 @@ export default function ServicesPage() {
       return newFilters;
     });
   }, []);
-  console.log(listings);
 
   return (
     <div className="min-h-screen bg-gray-50">

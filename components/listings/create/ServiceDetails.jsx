@@ -678,6 +678,12 @@ const ServiceDetails = ({
     if (selectedCategory !== "events" || eventType !== "event_organizer")
       return null;
 
+    // Calculate total tickets for display
+    const calculatedTotalTickets = tickets.reduce(
+      (sum, t) => sum + parseInt(t.quantity || 0),
+      0
+    );
+
     return (
       <Card className="border border-gray-200">
         <CardHeader>
@@ -696,7 +702,7 @@ const ServiceDetails = ({
               onCheckedChange={setUseMultiplePackages}
             />
             <Label htmlFor="multiple-packages" className="text-sm">
-              Offer multiple ticket packages
+              Ticket Packages
             </Label>
           </div>
 
@@ -743,7 +749,6 @@ const ServiceDetails = ({
                 <h4 className="font-medium text-gray-900">
                   Add Ticket Package:
                 </h4>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label
@@ -760,7 +765,6 @@ const ServiceDetails = ({
                       placeholder="e.g., VIP, Regular"
                     />
                   </div>
-
                   <div>
                     <Label
                       htmlFor="ticket-price"
@@ -779,7 +783,6 @@ const ServiceDetails = ({
                       min="0"
                     />
                   </div>
-
                   <div>
                     <Label
                       htmlFor="ticket-quantity"
@@ -798,7 +801,6 @@ const ServiceDetails = ({
                     />
                   </div>
                 </div>
-
                 <div>
                   <Label
                     htmlFor="ticket-description"
@@ -815,7 +817,6 @@ const ServiceDetails = ({
                     rows={2}
                   />
                 </div>
-
                 <Button
                   type="button"
                   onClick={addTicket}
@@ -832,6 +833,21 @@ const ServiceDetails = ({
               </div>
             </>
           )}
+
+          {/* Display total tickets */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-gray-900">
+              Total Tickets
+            </Label>
+            <Input
+              value={calculatedTotalTickets}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed"
+            />
+            <p className="text-sm text-gray-500">
+              Total number of tickets available
+            </p>
+          </div>
         </CardContent>
       </Card>
     );

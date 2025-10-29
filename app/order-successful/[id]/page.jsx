@@ -36,22 +36,33 @@ const OrderSuccessful = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!params?.id) {
+      console.log("❌ No booking ID found in params");
+      return;
+    }
+
     let isCancelled = false;
 
     const verifyOrder = async () => {
+      console.log("🔄 Starting order verification...");
       try {
         setLoading(true);
-        const bookingId = params.id?.trim().toLowerCase();
 
-        if (
-          !bookingId ||
-          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-            bookingId
-          )
-        ) {
+        const bookingId = String(params.id).trim().toLowerCase();
+        console.log("📦 Booking ID:", bookingId);
+
+        // Validate UUID format
+        const uuidRegex =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(bookingId)) {
+          console.log("❌ Invalid booking ID format");
           throw new Error("Invalid booking ID format");
         }
 
+        console.log("✅ Booking ID format verified");
+
+        // Fetch booking record
+        console.log("📡 Fetching booking from Supabase...");
         const { data: bookingData, error: bookingError } = await supabase
           .from("event_bookings")
           .select(
@@ -67,30 +78,46 @@ const OrderSuccessful = () => {
           .single();
 
         if (bookingError || !bookingData) {
+          console.log("❌ Booking not found or error:", bookingError);
           throw new Error(
             `Booking not found: ${bookingError?.message || "No booking data"}`
           );
         }
 
-        let ticketDetails;
+        console.log("✅ Booking data fetched successfully:", bookingData);
+
+        // Parse ticket details
+        console.log("🧾 Parsing ticket details...");
+        let ticketDetails = {};
         try {
           ticketDetails = bookingData.ticket_details
             ? JSON.parse(bookingData.ticket_details)
             : {};
-        } catch (err) {
+          console.log("✅ Ticket details parsed:", ticketDetails);
+        } catch (parseErr) {
+          console.log("❌ Failed to parse ticket details:", parseErr);
           throw new Error("Invalid ticket details format");
         }
 
         const totalTickets = Object.values(ticketDetails).reduce(
-          (sum, qty) => sum + Number(qty),
+          (sum, qty) => sum + Number(qty || 0),
           0
         );
+        console.log("🎟️ Total tickets:", totalTickets);
+        console.log("👥 Guests in booking:", bookingData.guests);
+
         if (totalTickets !== bookingData.guests) {
+          console.log("❌ Ticket details mismatch with guests");
           throw new Error("Ticket details do not match number of guests");
         }
 
-        setBooking(bookingData);
+        if (!isCancelled) {
+          console.log("📥 Setting booking state...");
+          setBooking(bookingData);
+        }
 
+        // Fetch payment record
+        console.log("📡 Fetching payment record...");
         const { data: paymentData, error: paymentError } = await supabase
           .from("payments")
           .select(
@@ -100,29 +127,61 @@ const OrderSuccessful = () => {
           .single();
 
         if (paymentError || !paymentData) {
+          console.log("❌ Payment record not found or error:", paymentError);
           throw new Error(
             `Payment record not found: ${paymentError?.message || "No payment data"}`
           );
         }
 
-        setPayment(paymentData);
+        console.log("✅ Payment data fetched:", paymentData);
 
+        if (!isCancelled) {
+          console.log("📥 Setting payment state...");
+          setPayment(paymentData);
+        }
+
+        // Verify payment externally
+        console.log("🔍 Verifying payment with provider...");
         const { data: verificationData, error: verificationError } =
           await verifyPayment(paymentData.reference);
+
         if (verificationError || !verificationData) {
+          console.log("❌ Payment verification failed:", verificationError);
           throw new Error(
-            `Payment verification failed: ${verificationError?.message || "Invalid payment status"}`
+            `Payment verification failed: ${
+              verificationError?.message || "Invalid payment status"
+            }`
           );
         }
-        console.log("Payment verification data:", verificationData);
+
+        console.log("✅ Payment verification response:", verificationData);
 
         if (verificationData.status === "success") {
+          console.log("💰 Payment verified successfully, updating booking...");
+          const { error: updateError } = await supabase
+            .from("event_bookings")
+            .update({ status: "confirmed", payment_status: "completed" })
+            .eq("id", bookingId);
+
+          if (updateError) {
+            console.log(
+              "⚠️ Payment status update failed:",
+              updateError.message
+            );
+          } else {
+            console.log("✅ Payment status updated to 'completed'");
+          }
+
           if (!isCancelled) {
+            console.log("🎉 Order confirmed! Showing success toast...");
             toast.success("Order confirmed! Your tickets are ready.");
           }
           return;
         }
 
+        console.log(
+          "⚙️ Payment not successful, running RPC for further verification..."
+        );
         const { data, error } = await supabase.rpc(
           "verify_and_update_booking",
           {
@@ -133,31 +192,40 @@ const OrderSuccessful = () => {
         );
 
         if (error || data !== "Success") {
+          console.log("❌ RPC failed:", error || data);
           throw new Error(`RPC failed: ${error?.message || data}`);
         }
 
+        console.log("✅ RPC completed successfully, order verified");
         if (!isCancelled) {
           toast.success("Order confirmed! Your tickets are ready.");
         }
       } catch (err) {
+        console.log("❌ Error during verification:", err);
         if (!isCancelled) {
-          const message = err.message || "An unexpected error occurred";
+          const message =
+            err instanceof Error ? err.message : "An unexpected error occurred";
           setError(message);
           toast.error(message);
         }
       } finally {
         if (!isCancelled) {
+          console.log("🧹 Cleaning up... setting loading = false");
           setLoading(false);
+        } else {
+          console.log("⚠️ Cleanup skipped, component unmounted");
         }
+        console.log("🏁 Verification flow complete.");
       }
     };
 
     verifyOrder();
 
     return () => {
+      console.log("🧹 useEffect cleanup triggered — cancelling async ops");
       isCancelled = true;
     };
-  }, [params.id]);
+  }, [params?.id]);
 
   const pixelsToMm = (pixels) => (pixels * 25.4) / 96;
 

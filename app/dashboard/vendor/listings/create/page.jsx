@@ -57,6 +57,7 @@ export default function CreateListingPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [eventType, setEventType] = useState("");
   const [formData, setFormData] = useState({});
+  const [ticketPackage, setTicketPacakge] = useState(false);
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -420,28 +421,21 @@ export default function CreateListingPage() {
       }
 
       let listingPrice = parseFloat(formData.price) || 0;
-      let totalTickets = parseInt(formData.total_tickets) || 0;
       let processedTickets = null;
-      if (
-        selectedCategory === "events" &&
-        eventType === "event_organizer" &&
-        useMultiplePackages
-      ) {
-        processedTickets = tickets.map((ticket) => ({
-          name: ticket.name,
-          price: parseFloat(ticket.price),
-          total: parseInt(ticket.quantity), // Update total to quantity
-          remaining: parseInt(ticket.quantity), // Update here
-          description: ticket.description,
-        }));
-        listingPrice = Math.min(...processedTickets.map((t) => t.price));
-        totalTickets = processedTickets.reduce((sum, t) => sum + t.total, 0);
-      }
+      let totalTickets = 0;
 
-      // Convert amenities array to structured format for database storage
+      processedTickets = tickets.map((ticket) => ({
+        name: ticket.name,
+        price: parseFloat(ticket.price),
+        total: parseInt(ticket.quantity),
+        remaining: parseInt(ticket.quantity),
+        description: ticket.description,
+      }));
+      totalTickets = processedTickets.reduce((sum, t) => sum + t.total, 0); // Ensure this is the source of truth
+      listingPrice = Math.min(...processedTickets.map((t) => t.price));
+
       const processedAmenities = Array.isArray(formData.amenities)
         ? formData.amenities.map((amenityValue) => {
-            // Find the amenity option in the category config to get the label
             const categoryConfig = getCategoryFormConfig(
               selectedCategory,
               eventType
@@ -452,7 +446,6 @@ export default function CreateListingPage() {
             const amenityOption = amenityField?.options?.find(
               (opt) => opt.value === amenityValue
             );
-
             return {
               value: amenityValue,
               label: amenityOption?.label || amenityValue,
@@ -467,7 +460,7 @@ export default function CreateListingPage() {
           media_urls: uploadedImageUrls,
           event_type: selectedCategory === "events" ? eventType : null,
           meals: processedMeals,
-          amenities: processedAmenities, // Pass the structured amenities
+          amenities: processedAmenities,
         },
         selectedCategory,
         eventType
@@ -483,15 +476,15 @@ export default function CreateListingPage() {
         updated_at: new Date().toISOString(),
         event_type: selectedCategory === "events" ? eventType : null,
         price: listingPrice,
-        remaining_tickets:
-          selectedCategory === "events" && eventType === "event_organizer"
-            ? totalTickets
-            : 0,
+        total_tickets: totalTickets, // Set to calculated value
+        remaining_tickets: totalTickets, // Match total_tickets
         ticket_packages: processedTickets || [],
-        amenities: processedAmenities, // Ensure amenities are included in the final data
+        amenities: processedAmenities,
       };
 
+      console.log("Listing data before creation:", listingData); // Debug to confirm values
       const { data, error } = await createListing(listingData);
+      console.log("Added listing", data);
       if (error) throw error;
 
       addListing(data);

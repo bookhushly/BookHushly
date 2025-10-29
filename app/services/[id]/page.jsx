@@ -43,6 +43,9 @@ export async function generateStaticParams() {
 
 export default async function ServiceDetailPage({ params }) {
   try {
+    // Await the params to resolve the Promise
+    const { id } = await params;
+
     const { data: service, error } = await supabase
       .from("listings")
       .select(
@@ -80,7 +83,7 @@ export default async function ServiceDetailPage({ params }) {
         ticket_packages
       `
       )
-      .eq("id", params.id)
+      .eq("id", id) // Use the resolved id
       .maybeSingle();
 
     if (error) {
@@ -91,13 +94,12 @@ export default async function ServiceDetailPage({ params }) {
     }
 
     if (!service) {
-      console.log("No service found for ID:", params.id);
+      console.log("No service found for ID:", id);
       return <div className="container py-8">Service not found</div>;
     }
 
     const parsedService = {
       ...service,
-
       requirements: service.requirements
         ? service.requirements.split("\n").filter(Boolean)
         : [],
