@@ -102,7 +102,7 @@ export default function VendorOnboardingSection() {
                 Vendor Dashboard
               </h3>
               <Image
-                src="https://images.unsplash.com/photo-1591696331119-b43d3a087e7e?w=800&auto=format&fit=crop&q=60"
+                src="/vendor.png"
                 alt="Vendor dashboard mockup"
                 width={500}
                 height={350}
