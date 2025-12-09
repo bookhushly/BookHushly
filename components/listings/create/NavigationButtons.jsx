@@ -15,7 +15,7 @@ export default function NavigationButtons({
         <Button
           type="button"
           variant="outline"
-          className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors px-6 py-3"
+          className="rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors px-6 py-3"
           onClick={prevStep}
         >
           Previous
@@ -24,7 +24,7 @@ export default function NavigationButtons({
       {step < totalSteps ? (
         <Button
           type="button"
-          className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 shadow-md"
+          className="rounded-lg bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 shadow-md"
           onClick={nextStep}
         >
           Next
@@ -33,7 +33,7 @@ export default function NavigationButtons({
         <Button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 shadow-md disabled:opacity-50"
+          className="rounded-lg bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 shadow-md disabled:opacity-50"
         >
           {loading ? (
             <LoadingSpinner className="mr-2 h-5 w-5" />

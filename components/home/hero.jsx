@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   Zap,
   Shield,
+  Calendar,
+  Ticket,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 
@@ -79,7 +81,7 @@ const Hero = () => {
 
   const features = [
     { icon: CheckCircle2, text: "Verified & Trusted Vendors" },
-    { icon: Zap, text: "Instant Booking Confirmation" },
+    { icon: Calendar, text: "Instant Booking Confirmation" },
     { icon: Shield, text: "Secure Payment Processing" },
   ];
 
@@ -112,7 +114,7 @@ const Hero = () => {
         {/* Left Section */}
         <div className="lg:col-span-2 space-y-8">
           <Badge>
-            <Sparkles className="w-4 h-4 mr-2" />
+            <Calendar className="w-4 h-4 mr-2" />
             Your Journey, Seamlessly Booked
           </Badge>
 

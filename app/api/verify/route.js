@@ -10,7 +10,6 @@ const CLIENT_SECRET = process.env.QOREID_CLIENT_SECRET;
 async function getAccessToken() {
   console.log("QOREID_CLIENT_ID:", CLIENT_ID || "undefined");
   console.log("QOREID_CLIENT_SECRET:", CLIENT_SECRET ? "****" : "undefined");
-  console.log("QOREID_CLIENT_SECRET type:", typeof CLIENT_SECRET);
   console.log("QOREID_API_URL:", QOREID_API_URL);
 
   if (!CLIENT_ID || !CLIENT_SECRET) {
@@ -27,7 +26,7 @@ async function getAccessToken() {
     const requestBody = {
       clientId: CLIENT_ID,
       clientSecret: CLIENT_SECRET,
-      secret: CLIENT_SECRET, // Fallback for potential API variation
+      secret: CLIENT_SECRET,
     };
     console.log("Token request body:", {
       clientId: CLIENT_ID,
@@ -36,7 +35,7 @@ async function getAccessToken() {
     });
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const response = await fetch("https://api.qoreid.com/token", {
       method: "POST",
       headers: {
@@ -75,7 +74,7 @@ export async function POST(req) {
     const { type, value, firstname, lastname } = await req.json();
     console.log("Verification request:", {
       type,
-      value: type === "nin" ? "****" : value, // Mask NIN for logging
+      value: type === "nin" ? "****" : value,
       firstname: firstname ? "****" : undefined,
       lastname: lastname ? "****" : undefined,
     });
@@ -136,7 +135,7 @@ export async function POST(req) {
         body = {
           firstname: firstname.toUpperCase(),
           lastname: lastname.toUpperCase(),
-        }; // Normalize to uppercase
+        };
         break;
       case "drivers_license":
         endpoint = `${QOREID_API_URL}/ng/identities/drivers-license/${value}`;
@@ -159,7 +158,7 @@ export async function POST(req) {
     });
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // ✅ Increased to 15s
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -171,17 +170,15 @@ export async function POST(req) {
     });
     clearTimeout(timeoutId);
 
-    const data = await response.json();
-    console.log("QoreID verification response:", {
-      id: data.id,
-      status: data.status,
-      applicant: data.applicant
-        ? { paymentMethodCode: data.applicant.paymentMethodCode }
-        : undefined,
-    });
+    const qoreidData = await response.json();
+    console.log(
+      "QoreID full verification response:",
+      JSON.stringify(qoreidData, null, 2)
+    );
 
-    // Validate response structure
-    if (!data?.status || !data?.status?.status) {
+    // ✅ Validate response structure
+    if (!qoreidData?.status || !qoreidData?.status?.status) {
+      console.error("❌ Invalid response structure:", qoreidData);
       return NextResponse.json(
         {
           valid: false,
@@ -192,14 +189,18 @@ export async function POST(req) {
       );
     }
 
-    // Check for verification failure
-    if (!response.ok || data.status.status !== "verified") {
+    // ✅ Check for verification failure
+    if (!response.ok || qoreidData.status.status !== "verified") {
+      console.error("❌ Verification failed:", {
+        status: qoreidData.status,
+        message: qoreidData.status.message || qoreidData.error,
+      });
       return NextResponse.json(
         {
           valid: false,
           error:
-            data.status.message ||
-            data.error ||
+            qoreidData.status.message ||
+            qoreidData.error ||
             "Verification failed: Invalid data or mismatch",
           data: null,
         },
@@ -207,14 +208,37 @@ export async function POST(req) {
       );
     }
 
-    // Success case
+    // ✅ Success case - Extract the correct data based on type
+    let extractedData;
+    switch (type) {
+      case "nin":
+        extractedData = qoreidData.nin || qoreidData.summary || qoreidData;
+        break;
+      case "cac":
+        extractedData = qoreidData.cac || qoreidData.summary || qoreidData;
+        break;
+      case "drivers_license":
+        extractedData =
+          qoreidData.driversLicense || qoreidData.summary || qoreidData;
+        break;
+      default:
+        extractedData = qoreidData;
+    }
+
+    console.log("✅ Verification successful, extracted data:", {
+      type,
+      hasData: !!extractedData,
+      dataKeys: extractedData ? Object.keys(extractedData) : [],
+    });
+
     return NextResponse.json({
       valid: true,
-      data: type === "nin" ? data.nin : data?.data || data, // Use data.nin for NIN, fallback for others
+      data: extractedData,
       error: null,
     });
   } catch (error) {
-    console.error("QoreID verification error:", error.message);
+    console.error("❌ QoreID verification error:", error.message);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
       {
         valid: false,

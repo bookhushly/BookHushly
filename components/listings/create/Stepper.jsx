@@ -9,7 +9,7 @@ export default function Stepper({ steps, currentStep }) {
             <motion.div
               className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold shadow-md ${
                 currentStep >= step.id
-                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                  ? "bg-gradient-to-r from-purple-700 to-purple-800 text-white"
                   : "bg-gray-100 text-gray-500"
               }`}
               animate={{ scale: currentStep === step.id ? 1.15 : 1 }}
@@ -24,7 +24,7 @@ export default function Stepper({ steps, currentStep }) {
           {index < steps.length - 1 && (
             <motion.div
               className={`flex-1 h-1 mx-4 ${
-                currentStep > step.id ? "bg-blue-500" : "bg-gray-200"
+                currentStep > step.id ? "bg-purple-700" : "bg-gray-200"
               } rounded-full`}
               animate={{ width: currentStep > step.id ? "100%" : "0%" }}
               transition={{ duration: 0.3 }}

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Calendar,
   Clock,
@@ -33,11 +32,11 @@ export default function EventsTicketPurchase({
 }) {
   const supabase = createClient();
   const router = useRouter();
-  console.log(user);
+
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [selectedTickets, setSelectedTickets] = useState({});
-  const [ticketPackages, setTicketPackages] = useState([]); // New state for ticket packages
+  const [ticketPackages, setTicketPackages] = useState([]);
   const [contactDetails, setContactDetails] = useState({
     name: "",
     email: user?.email || "",
@@ -49,29 +48,83 @@ export default function EventsTicketPurchase({
 
   const images = service?.media_urls || [];
 
+  // Helper function to format event date (timestamp without timezone)
+  const formatEventDate = (dateString, format = "long") => {
+    if (!dateString) return "Date TBD";
+
+    try {
+      const date = new Date(dateString);
+
+      if (format === "short") {
+        return date.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Date TBD";
+    }
+  };
+
+  // Helper function to format event time (timestamp with timezone)
+  const formatEventTime = (timeString) => {
+    if (!timeString) return "Time TBD";
+
+    try {
+      const date = new Date(timeString);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch (error) {
+      console.error("Error formatting time:", error);
+      return "Time TBD";
+    }
+  };
+
   // Initialize ticket packages and contact details
   useEffect(() => {
-    // Ensure service is defined
     if (!service) {
       setError("Service data is not available");
       setTicketPackages([]);
       return;
     }
 
+    console.log("Service data:", service); // Debug log
+    console.log("Ticket packages from service:", service.ticket_packages); // Debug log
+
     // Normalize ticket_packages
     const normalizedTicketPackages =
       Array.isArray(service.ticket_packages) &&
       service.ticket_packages.length > 0
-        ? service.ticket_packages
+        ? service.ticket_packages.map((pkg) => ({
+            name: pkg.name || "Ticket",
+            price: parseFloat(pkg.price) || 0,
+            remaining: parseInt(pkg.remaining) || 0,
+            total: parseInt(pkg.total) || 0,
+            description: pkg.description || "",
+          }))
         : [
             {
               name: "Standard Ticket",
-              price: service.price || 0,
-              remaining: service.remaining_tickets || 0,
+              price: parseFloat(service.price) || 0,
+              remaining: parseInt(service.remaining_tickets) || 0,
+              total: parseInt(service.total_tickets) || 0,
               description: "Standard admission to the event",
             },
           ];
 
+    console.log("Normalized ticket packages:", normalizedTicketPackages); // Debug log
     setTicketPackages(normalizedTicketPackages);
 
     // Initialize selectedTickets with zero quantities
@@ -81,7 +134,7 @@ export default function EventsTicketPurchase({
     });
     setSelectedTickets(initialTickets);
 
-    // Load contact details from localStorage or user
+    // Load contact details
     const storedDetails = localStorage.getItem("contactDetails");
     if (storedDetails) {
       setContactDetails(JSON.parse(storedDetails));
@@ -102,12 +155,25 @@ export default function EventsTicketPurchase({
 
   // Handle ticket quantity change
   const handleTicketChange = (ticketName, quantity) => {
+    console.log("Changing ticket:", ticketName, "to quantity:", quantity); // Debug log
+
     const ticket = ticketPackages.find((t) => t.name === ticketName);
-    if (!ticket || quantity < 0 || quantity > ticket.remaining) return;
+    if (!ticket) {
+      console.error("Ticket not found:", ticketName);
+      return;
+    }
+
+    if (quantity < 0 || quantity > ticket.remaining) {
+      console.log("Invalid quantity:", quantity, "Max:", ticket.remaining);
+      return;
+    }
+
     setSelectedTickets((prev) => ({
       ...prev,
       [ticketName]: quantity,
     }));
+
+    setError(""); // Clear any previous errors
   };
 
   // Validate ticket selection
@@ -158,7 +224,6 @@ export default function EventsTicketPurchase({
     setError("");
 
     try {
-      // Use user.id if available, else generate tempUserId
       let customerId = user?.id;
       let tempUserId = null;
       if (!customerId) {
@@ -168,7 +233,6 @@ export default function EventsTicketPurchase({
         localStorage.setItem("tempUserId", tempUserId);
       }
 
-      // Create booking
       const bookingData = {
         listing_id: service.id,
         customer_id: customerId || null,
@@ -176,11 +240,8 @@ export default function EventsTicketPurchase({
         booking_date: service.event_date
           ? new Date(service.event_date).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0],
-        booking_time: service.created_at
-          ? new Date(service.created_at).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
+        booking_time: service.event_time
+          ? formatEventTime(service.event_time)
           : "Time TBD",
         guests: Object.values(selectedTickets).reduce(
           (sum, qty) => sum + qty,
@@ -196,6 +257,7 @@ export default function EventsTicketPurchase({
 
       const { data: booking, error: bookingError } =
         await onSubmit(bookingData);
+
       if (bookingError) {
         console.error("Booking creation failed:", bookingError);
         setError(
@@ -205,7 +267,6 @@ export default function EventsTicketPurchase({
         return;
       }
 
-      // Construct paymentData
       const paymentData = {
         email: contactDetails.email,
         amount: booking.total_amount,
@@ -282,6 +343,7 @@ export default function EventsTicketPurchase({
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
+
           {/* Floating Action Buttons */}
           <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button
@@ -308,6 +370,7 @@ export default function EventsTicketPurchase({
               <Heart className="w-4 h-4" />
             </Button>
           </div>
+
           {/* Event Info Overlay */}
           <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 py-6 sm:py-8">
             <div className="max-w-7xl mx-auto">
@@ -317,22 +380,14 @@ export default function EventsTicketPurchase({
               <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {service?.event_date
-                    ? new Date(service.event_date).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "Date TBD"}
+                  {formatEventDate(service?.event_date, "short")}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {service?.created_at
-                    ? new Date(service.created_at).toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "Time TBD"}
+                  <Clock
+                    className="w-4 h-4 sm
+                  :w-5 sm:h-5"
+                  />
+                  {formatEventTime(service?.event_time)}
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -345,6 +400,7 @@ export default function EventsTicketPurchase({
               </p>
             </div>
           </div>
+
           {/* Badges */}
           <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Badge className="bg-purple-600 text-white border-purple-600 rounded-full text-xs sm:text-sm">
@@ -359,6 +415,7 @@ export default function EventsTicketPurchase({
           </div>
         </div>
       </div>
+
       {/* Progress Bar */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
@@ -398,6 +455,7 @@ export default function EventsTicketPurchase({
           </div>
         </div>
       </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
@@ -410,6 +468,7 @@ export default function EventsTicketPurchase({
                 </span>
               </div>
             )}
+
             {/* Step 1: Ticket Selection */}
             {step === 1 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 md:p-8">
@@ -432,7 +491,7 @@ export default function EventsTicketPurchase({
                               ₦{ticket.price.toLocaleString()} per ticket
                             </p>
                             {ticket.description && (
-                              <p className="text-gray-600 text-sm sm:text-base truncate">
+                              <p className="text-gray-600 text-sm sm:text-base">
                                 {ticket.description}
                               </p>
                             )}
@@ -523,6 +582,7 @@ export default function EventsTicketPurchase({
                 </Button>
               </div>
             )}
+
             {/* Step 2: Contact Details */}
             {step === 2 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 md:p-8">
@@ -602,6 +662,7 @@ export default function EventsTicketPurchase({
                 </div>
               </div>
             )}
+
             {/* Step 3: Payment */}
             {step === 3 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 md:p-8">
@@ -627,7 +688,7 @@ export default function EventsTicketPurchase({
                       <Button
                         onClick={() => handlePayment("paystack")}
                         disabled={paymentLoading}
-                        className="w-full sm:w-auto rounded-full text-sm sm:text-base px-3 sm:px-4 py-1 sm:py-2"
+                        className="w-full sm:w-auto rounded-full bg-purple-600 text-white text-sm sm:text-base px-3 sm:px-4 py-1 sm:py-2"
                       >
                         {paymentLoading ? (
                           <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-t-2 border-b-2 border-white"></div>
@@ -685,6 +746,7 @@ export default function EventsTicketPurchase({
               </div>
             )}
           </div>
+
           {/* Sidebar: Event Summary */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-5">
             <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 md:p-8 lg:sticky lg:top-6">
@@ -703,33 +765,11 @@ export default function EventsTicketPurchase({
                 <div className="space-y-2 text-sm sm:text-base">
                   <div className="flex justify-between">
                     <span>Date</span>
-                    <span>
-                      {service?.event_date
-                        ? new Date(service.event_date).toLocaleDateString(
-                            "en-US",
-                            {
-                              weekday: "long",
-                              month: "long",
-                              day: "numeric",
-                            }
-                          )
-                        : "Date TBD"}
-                    </span>
+                    <span>{formatEventDate(service?.event_date)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Time</span>
-                    <span>
-                      {service?.created_at
-                        ? new Date(service.created_at).toLocaleTimeString(
-                            "en-US",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            }
-                          )
-                        : "Time TBD"}
-                    </span>
+                    <span>{formatEventTime(service?.event_time)}</span>
                   </div>
                 </div>
                 {step >= 1 && (
@@ -741,7 +781,7 @@ export default function EventsTicketPurchase({
                       quantity > 0 ? (
                         <div
                           key={name}
-                          className="flex justify-between text-sm sm:text-base"
+                          className="flex justify-between text-sm sm:text-base mb-1"
                         >
                           <span className="truncate">
                             {name} x {quantity}
@@ -757,7 +797,7 @@ export default function EventsTicketPurchase({
                         </div>
                       ) : null
                     )}
-                    <div className="flex justify-between font-semibold text-base sm:text-lg mt-2">
+                    <div className="flex justify-between font-semibold text-base sm:text-lg mt-2 pt-2 border-t">
                       <span>Total</span>
                       <span>₦{calculateTotal().toLocaleString()}</span>
                     </div>
@@ -766,7 +806,7 @@ export default function EventsTicketPurchase({
               </div>
               {step === 1 && (
                 <Button
-                  className="w-full max-w-md h-10 xs:h-11 sm:h-12 px-4 py-2 text-sm xs:text-base sm:text-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                  className="w-full h-10 xs:h-11 sm:h-12 px-4 py-2 text-sm xs:text-base sm:text-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                   onClick={() => {
                     if (validateTickets()) {
                       setStep(2);
@@ -782,6 +822,7 @@ export default function EventsTicketPurchase({
           </div>
         </div>
       </div>
+
       {/* Fullscreen Modal */}
       {isFullscreen && images && images.length > 0 && (
         <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">

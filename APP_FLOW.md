@@ -40,7 +40,7 @@ Guest User
     ├── Email/Password Authentication
     ├── Role-based Redirect:
     │   ├── Customer → /dashboard/customer
-    │   ├── Vendor → /dashboard/vendor
+    │   ├── Vendor → /vendor/dashboard
     │   └── Admin → /dashboard/admin
     │
     └── Forgot Password (/forgot-password)
@@ -79,7 +79,7 @@ Guest User
 ### Phase 1: Registration & Verification
 
 1. **Register as Vendor (/register)** - Choose vendor role
-2. **KYC Verification (/dashboard/vendor/kyc)**
+2. **KYC Verification (/vendor/dashboard/kyc)**
    - Business Information
    - Contact Details
    - Legal Information
@@ -88,21 +88,21 @@ Guest User
 
 ### Phase 2: Service Management
 
-1. **Vendor Dashboard (/dashboard/vendor)**
+1. **Vendor Dashboard (/vendor/dashboard)**
    - Overview with stats
    - Quick actions
    - Recent activity
-2. **Create Listings (/dashboard/vendor/listings/create)**
+2. **Create Listings (/vendor/dashboard/listings/create)**
    - Service details
    - Pricing
    - Availability
-3. **Manage Listings (/dashboard/vendor/listings/[id])**
+3. **Manage Listings (/vendor/dashboard/listings/[id])**
    - Edit service information
    - Update pricing and availability
 
 ### Phase 3: Booking Management
 
-1. **Booking Requests (/dashboard/vendor/bookings)**
+1. **Booking Requests (/vendor/dashboard/bookings)**
    - View pending requests
    - Confirm or decline bookings
    - Mark bookings as completed
@@ -154,7 +154,7 @@ Guest User
 - **Auth Required**: All /dashboard/\* routes
 - **Role-based Access**:
   - `/dashboard/customer` - Customer role only
-  - `/dashboard/vendor` - Vendor role only
+  - `/vendor/dashboard` - Vendor role only
   - `/dashboard/admin` - Admin role only
 - **Unauthorized Access**: Redirects to `/unauthorized`
 

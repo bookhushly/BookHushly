@@ -825,7 +825,7 @@ const ServiceDetails = ({
                     !tempTicket.price ||
                     !tempTicket.quantity
                   }
-                  className="w-full"
+                  className="w-full bg-purple-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Ticket Package

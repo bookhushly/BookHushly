@@ -1,10 +1,5 @@
-// middleware.js
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-
-// Validate environment variables
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 // Define routes that REQUIRE authentication
 const PROTECTED_ROUTES = [
@@ -13,17 +8,23 @@ const PROTECTED_ROUTES = [
   "/api/webhooks",
   "/profile",
   "/settings",
+  "/vendor/dashboard",
 ];
 
 // Define public routes (explicitly allowed without auth)
 const PUBLIC_ROUTES = [
   "/",
   "/login",
+  "/register",
   "/auth",
   "/error",
   "/signup",
   "/about",
   "/contact",
+  "/forgot-password",
+  "/reset-password",
+  "/terms",
+  "/privacy",
 ];
 
 // Helper function to check if a path requires authentication
@@ -41,96 +42,100 @@ function isPublicRoute(pathname) {
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
-  try {
-    // If Supabase is not configured, allow all requests to proceed
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      console.warn("Supabase not configured - allowing all requests");
-      return NextResponse.next({ request });
-    }
+  // Skip static/api
+  if (pathname.startsWith("/_next") || pathname.includes(".")) {
+    return NextResponse.next();
+  }
 
-    const supabaseResponse = await updateSession(request);
-    return supabaseResponse;
-  } catch (error) {
-    console.error("Middleware error:", {
-      message: error.message,
-      path: pathname,
-      method: request.method,
+  try {
+    let supabaseResponse = NextResponse.next({
+      request,
     });
 
-    // Only redirect to error page for protected routes
-    // Public routes should still work even if auth fails
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              request.cookies.set(name, value);
+              supabaseResponse.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+
+    // ✅ FIX: Use getSession() for better reliability
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const user = session?.user;
+
+    // 1. Protect routes that require authentication
+    if (isProtectedRoute(pathname) && !user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirectedFrom", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // 2. Role-based protection
+    if (user) {
+      const role = user.user_metadata?.role || "customer";
+
+      // Vendor routes protection
+      if (pathname.startsWith("/vendor/dashboard") && role !== "vendor") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard/customer";
+        return NextResponse.redirect(url);
+      }
+
+      // Admin routes protection
+      if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard/customer";
+        return NextResponse.redirect(url);
+      }
+
+      // Customer routes protection (prevent vendors from accessing customer dashboard)
+      if (pathname.startsWith("/dashboard/customer") && role === "vendor") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/vendor/dashboard";
+        return NextResponse.redirect(url);
+      }
+    }
+
+    // 3. Redirect authenticated users away from auth pages
+    if ((pathname === "/login" || pathname === "/register") && user) {
+      const role = user.user_metadata?.role || "customer";
+      const url = request.nextUrl.clone();
+      url.pathname =
+        role === "vendor" ? "/vendor/dashboard" : `/dashboard/${role}`;
+      return NextResponse.redirect(url);
+    }
+
+    return supabaseResponse;
+  } catch (error) {
+    console.error("Middleware error:", error);
+
+    // ✅ FIX: On error, redirect protected routes to login
     if (isProtectedRoute(pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("redirectedFrom", pathname);
-      url.searchParams.set("error", "authentication_required");
       return NextResponse.redirect(url);
     }
 
-    // For public routes, allow access even if auth fails
-    return NextResponse.next({ request });
+    return NextResponse.next();
   }
-}
-
-async function updateSession(request) {
-  const pathname = request.nextUrl.pathname;
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          request.cookies.set(name, value);
-          supabaseResponse.cookies.set(name, value, {
-            ...options,
-            secure: process.env.NODE_ENV === "production",
-            httpOnly: true,
-            sameSite: "lax",
-            path: "/",
-          });
-        });
-      },
-    },
-  });
-
-  // Try to get user, but don't fail if there's no session
-  let user = null;
-  try {
-    const { data, error } = await supabase.auth.getUser();
-
-    if (error) {
-      console.warn("Supabase auth warning:", {
-        message: error.message,
-        path: pathname,
-      });
-    } else {
-      user = data?.user;
-    }
-  } catch (error) {
-    console.warn("Failed to fetch user session:", error.message);
-  }
-
-  // Only enforce authentication on protected routes
-  if (!user && isProtectedRoute(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("redirectedFrom", pathname);
-    url.searchParams.set("error", "authentication_required");
-    return NextResponse.redirect(url);
-  }
-
-  // Allow access to all other routes (including public routes)
-  return supabaseResponse;
 }
 
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/api/wallet/:path*",
-    "/api/webhooks/:path*",
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/dashboard/:path*", "/vendor/dashboard/:path*"],
 };

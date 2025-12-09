@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 import { signOut } from "@/lib/auth";
-import { CATEGORIES } from "@/lib/constants"; // import your categories here
+import { CATEGORIES } from "@/lib/constants";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,24 +18,26 @@ export function Header() {
   const { user, logout } = useAuthStore();
   const menuRef = useRef(null);
 
+  // Detect scroll
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close on outside click
+  // Close menu on outside click
   useEffect(() => {
+    if (!isMenuOpen) return;
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsMenuOpen(false);
       }
     };
-    if (isMenuOpen) document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
-  // Prevent body scroll
+  // Prevent body scroll when menu open
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "unset";
   }, [isMenuOpen]);
@@ -61,21 +63,22 @@ export function Header() {
     <>
       {/* Header */}
       <header
-        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-6xl transition-all duration-300 rounded-2xl backdrop-blur-lg border border-white/20 ${
+        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-6xl transition-all duration-300 rounded-2xl border border-white/20 backdrop-blur-lg ${
           scrolled
-            ? "bg-white/70 shadow-xl scale-[0.98]"
+            ? "bg-white/80 shadow-xl scale-[0.985]"
             : "bg-white/60 shadow-md"
         }`}
       >
         <div className="flex items-center justify-between h-16 px-4 md:px-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center group" aria-label="Home">
             <div className="relative w-40 h-40">
               <Image
                 src="/logo.png"
                 alt="Bookhushly Logo"
                 fill
                 className="object-contain"
+                priority
               />
             </div>
           </Link>
@@ -86,36 +89,26 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="relative text-sm font-medium text-gray-600 hover:text-purple-700 transition-all duration-200"
+                className="relative text-sm font-medium text-gray-600 hover:text-purple-700 transition-colors duration-200"
               >
                 {item.name}
-                <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-purple-700 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+                <span className="absolute left-0 bottom-[-2px] w-0 h-[2px] bg-purple-700 transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
           </nav>
 
-          {/* Desktop Auth */}
+          {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative p-2 hover:bg-purple-100 text-gray-700"
-                >
-                  <Bell className="h-4 w-4" />
-                  <Badge className="absolute -top-1 -right-1 bg-red-500 text-white h-4 w-4 text-[10px] p-0 flex items-center justify-center">
-                    3
-                  </Badge>
-                </Button>
-                <Button
+                <button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-700 hover:text-purple-700"
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md hover:text-primary"
                 >
                   <User className="h-4 w-4 mr-2" />
                   {user.user_metadata?.name || "Account"}
-                </Button>
+                </button>
                 <Button
                   onClick={handleLogout}
                   size="sm"
@@ -142,12 +135,13 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle */}
           <Button
             variant="ghost"
             size="icon"
             className="md:hidden text-gray-700"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-label="Toggle Menu"
           >
             {isMenuOpen ? (
               <X className="h-6 w-6" />
@@ -162,11 +156,11 @@ export function Header() {
       <div
         className={`fixed inset-0 z-40 md:hidden transition-all duration-500 ${
           isMenuOpen
-            ? "opacity-100 pointer-events-auto backdrop-blur-sm bg-black/30"
+            ? "opacity-100 pointer-events-auto backdrop-blur-sm bg-black/40"
             : "opacity-0 pointer-events-none"
         }`}
       >
-        <div
+        <aside
           ref={menuRef}
           className={`absolute top-0 right-0 h-full w-[80%] sm:w-[70%] bg-white/95 backdrop-blur-xl rounded-l-2xl shadow-2xl transform transition-transform duration-500 ease-out ${
             isMenuOpen ? "translate-x-0" : "translate-x-full"
@@ -181,7 +175,7 @@ export function Header() {
                     <p className="font-medium text-gray-800">
                       Hi, {user.user_metadata?.name || "Guest"}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 truncate">
                       {user.user_metadata?.email}
                     </p>
                   </div>
@@ -190,6 +184,7 @@ export function Header() {
                     size="icon"
                     className="text-gray-600 hover:text-red-600"
                     onClick={handleLogout}
+                    aria-label="Logout"
                   >
                     <LogOut className="h-5 w-5" />
                   </Button>
@@ -214,7 +209,7 @@ export function Header() {
               )}
 
               {/* Navigation Links */}
-              <nav className="space-y-3">
+              <nav className="space-y-2">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -227,7 +222,7 @@ export function Header() {
                 ))}
               </nav>
 
-              {/* Categories Showcase */}
+              {/* Category Showcase */}
               <div className="mt-8">
                 <h3 className="text-sm font-semibold text-gray-500 mb-3">
                   Explore Services
@@ -237,8 +232,8 @@ export function Header() {
                     <Link
                       key={cat.value}
                       href={`/services/${cat.value}`}
-                      className="group relative overflow-hidden rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all"
                       onClick={() => setIsMenuOpen(false)}
+                      className="group relative overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-all"
                     >
                       <div className="relative h-24 w-full">
                         <Image
@@ -262,9 +257,10 @@ export function Header() {
               © {new Date().getFullYear()} Bookhushly. All rights reserved.
             </p>
           </div>
-        </div>
+        </aside>
       </div>
 
+      {/* Spacer to prevent content jump */}
       <div className="h-24" />
     </>
   );

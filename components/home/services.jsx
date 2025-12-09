@@ -155,7 +155,7 @@ export default function Services() {
               {/* Content */}
               <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 text-white">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl md:text-2xl">{cat.icon}</span>
+                  {/* <span className="text-xl md:text-2xl">{cat.icon}</span> */}
                   <h3 className="text-lg md:text-xl font-semibold drop-shadow-md">
                     {cat.label}
                   </h3>
