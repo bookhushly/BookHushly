@@ -1,13 +1,13 @@
 import "../globals.css";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/components/common/home/header";
 import {
   Footer,
   FooterBentoGrid,
   FooterCardStack,
   FooterSidebar,
   FooterSplitScreen,
-} from "@/components/layout/footer";
-import { SessionProvider } from "@/components/auth/session-provider";
+} from "@/components/common/home/footer";
+import { SessionProvider } from "@/components/shared/auth/session-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata = {

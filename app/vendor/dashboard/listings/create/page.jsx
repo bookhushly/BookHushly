@@ -17,13 +17,13 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
 // Static imports for critical path components
-import Stepper from "@/components/listings/create/Stepper";
-import CategorySelection from "@/components/listings/create/categorySelection";
-import ServiceDetails from "@/components/listings/create/ServiceDetails";
-import MediaUpload from "@/components/listings/create/MediaUpload";
-import ReviewListing from "@/components/listings/create/ReviewListing";
-import NavigationButtons from "@/components/listings/create/NavigationButtons";
-import HotelRegistration from "../../../../../components/dashboard/vendor/hotels/create/create";
+import Stepper from "@/components/common/listings/create/Stepper";
+import CategorySelection from "@/components/common/listings/create/categorySelection";
+import ServiceDetails from "@/components/common/listings/create/ServiceDetails";
+import MediaUpload from "@/components/common/listings/create/MediaUpload";
+import ReviewListing from "@/components/common/listings/create/ReviewListing";
+import NavigationButtons from "@/components/common/listings/create/NavigationButtons";
+import HotelRegistration from "../../../../../components/shared/dashboard/vendor/hotels/create/create";
 
 const STEPS = [
   { id: 1, label: "Category" },
