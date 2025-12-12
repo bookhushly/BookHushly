@@ -10,10 +10,6 @@ async function getVendorDashboardData() {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    redirect("/login");
-  }
-
   // Fetch vendor profile
   const { data: vendor } = await supabase
     .from("vendors")

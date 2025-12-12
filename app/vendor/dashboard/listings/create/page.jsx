@@ -23,6 +23,7 @@ import ServiceDetails from "@/components/listings/create/ServiceDetails";
 import MediaUpload from "@/components/listings/create/MediaUpload";
 import ReviewListing from "@/components/listings/create/ReviewListing";
 import NavigationButtons from "@/components/listings/create/NavigationButtons";
+import HotelRegistration from "../../../../../components/dashboard/vendor/hotels/create/create";
 
 const STEPS = [
   { id: 1, label: "Category" },
@@ -46,7 +47,7 @@ export default function CreateListingPage() {
   // Track if form has been initialized to prevent re-initialization
   const isInitialized = useRef(false);
   const currentCategory = useRef("");
-
+  console.log("Vendor data:", vendor);
   // Core state - grouped logically
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -593,141 +594,150 @@ export default function CreateListingPage() {
       setUploadProgress(0);
     }
   };
-
+  const onComplete = () => {
+    router.push("/vendor/dashboard");
+  };
   return (
     <AuthGuard>
-      <div className="container max-w-4xl mx-auto py-10 min-h-screen">
+      <div className="max-w-4xl mx-auto py-10 min-h-screen">
         <Link
           href="/vendor/dashboard"
           className="inline-flex items-center text-purple-600 hover:text-purple-700 transition-colors mb-8 font-medium"
         >
           <ArrowLeft className="mr-2 h-5 w-5" /> Back to Dashboard
         </Link>
-        {vendor.business_category === "hotels" && <Hotel>}
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            Create New Listing
-          </h1>
-          <p className="text-lg text-gray-600">
-            Add your service in a few simple steps
-          </p>
-        </div>
+        {vendor?.business_category === "hotels" ? (
+          <HotelRegistration onComplete={onComplete} />
+        ) : (
+          <>
+            <div className="mb-10">
+              <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                Create New Listing
+              </h1>
+              <p className="text-lg text-gray-600">
+                Add your service in a few simple steps
+              </p>
+            </div>
 
-        {errors.global && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <Alert variant="destructive">
-              <AlertDescription>{errors.global}</AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-
-        {loading && uploadProgress > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            <Alert className="border-purple-200 bg-purple-50">
-              <AlertDescription>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-purple-900">
-                    Uploading images... {uploadProgress}%
-                  </p>
-                  <div className="w-full bg-purple-200 rounded-full h-2">
-                    <div
-                      className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <Stepper steps={STEPS} currentStep={step} />
-          <div className={isPending ? "opacity-50 pointer-events-none" : ""}>
-            {step === 1 && (
-              <CategorySelection
-                selectedCategory={selectedCategory}
-                onCategoryChange={handleCategoryChange}
-                eventType={eventType}
-                onEventTypeChange={handleEventTypeChange}
-                errors={errors}
-                vendorCategory={vendor?.business_category}
-              />
+            {errors.global && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <Alert variant="destructive">
+                  <AlertDescription>{errors.global}</AlertDescription>
+                </Alert>
+              </motion.div>
             )}
 
-            {step === 2 && categoryConfig && (
-              <ServiceDetails
-                categoryConfig={categoryConfig}
-                formData={formData}
-                setFormData={setFormData}
-                errors={errors}
-                selectedCategory={selectedCategory}
-                eventType={eventType}
-                meals={meals}
-                setMeals={setMeals}
-                tempMeal={tempMeal}
-                setTempMeal={setTempMeal}
-                tempMealImage={tempMealImage}
-                setTempMealImage={setTempMealImage}
-                tempMealImagePreview={tempMealImagePreview}
-                setTempMealImagePreview={setTempMealImagePreview}
-                handleTempMealChange={handleTempMealChange}
-                handleTempMealImageChange={handleTempMealImageChange}
-                addMeal={addMeal}
-                removeMeal={removeMeal}
-                useMultiplePackages={useMultiplePackages}
-                setUseMultiplePackages={setUseMultiplePackages}
-                tickets={tickets}
-                setTickets={setTickets}
-                tempTicket={tempTicket}
-                setTempTicket={setTempTicket}
-                handleTempTicketChange={handleTempTicketChange}
-                addTicket={addTicket}
-                removeTicket={removeTicket}
-                handleSelectChange={handleSelectChange}
-                handleChange={handleChange}
-                handleMultiSelectChange={handleMultiSelectChange}
-              />
+            {loading && uploadProgress > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <Alert className="border-purple-200 bg-purple-50">
+                  <AlertDescription>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-purple-900">
+                        Uploading images... {uploadProgress}%
+                      </p>
+                      <div className="w-full bg-purple-200 rounded-full h-2">
+                        <div
+                          className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
             )}
 
-            {step === 3 && (
-              <MediaUpload
-                handleImageChange={handleImageChange}
-                errors={errors}
-                imagePreviews={imagePreviews}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <Stepper steps={STEPS} currentStep={step} />
+              <div
+                className={isPending ? "opacity-50 pointer-events-none" : ""}
+              >
+                {step === 1 && (
+                  <CategorySelection
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={handleCategoryChange}
+                    eventType={eventType}
+                    onEventTypeChange={handleEventTypeChange}
+                    errors={errors}
+                    vendorCategory={vendor?.business_category}
+                  />
+                )}
+
+                {step === 2 && categoryConfig && (
+                  <ServiceDetails
+                    categoryConfig={categoryConfig}
+                    formData={formData}
+                    setFormData={setFormData}
+                    errors={errors}
+                    selectedCategory={selectedCategory}
+                    eventType={eventType}
+                    meals={meals}
+                    setMeals={setMeals}
+                    tempMeal={tempMeal}
+                    setTempMeal={setTempMeal}
+                    tempMealImage={tempMealImage}
+                    setTempMealImage={setTempMealImage}
+                    tempMealImagePreview={tempMealImagePreview}
+                    setTempMealImagePreview={setTempMealImagePreview}
+                    handleTempMealChange={handleTempMealChange}
+                    handleTempMealImageChange={handleTempMealImageChange}
+                    addMeal={addMeal}
+                    removeMeal={removeMeal}
+                    useMultiplePackages={useMultiplePackages}
+                    setUseMultiplePackages={setUseMultiplePackages}
+                    tickets={tickets}
+                    setTickets={setTickets}
+                    tempTicket={tempTicket}
+                    setTempTicket={setTempTicket}
+                    handleTempTicketChange={handleTempTicketChange}
+                    addTicket={addTicket}
+                    removeTicket={removeTicket}
+                    handleSelectChange={handleSelectChange}
+                    handleChange={handleChange}
+                    handleMultiSelectChange={handleMultiSelectChange}
+                  />
+                )}
+
+                {step === 3 && (
+                  <MediaUpload
+                    handleImageChange={handleImageChange}
+                    errors={errors}
+                    imagePreviews={imagePreviews}
+                    loading={loading}
+                    uploadProgress={uploadProgress}
+                  />
+                )}
+
+                {step === 4 && (
+                  <ReviewListing
+                    formData={formData}
+                    selectedCategory={selectedCategory}
+                    eventType={eventType}
+                    images={images}
+                    meals={meals}
+                    tickets={tickets}
+                  />
+                )}
+              </div>
+              .
+              <NavigationButtons
+                step={step}
+                totalSteps={TOTAL_STEPS}
+                prevStep={prevStep}
+                nextStep={nextStep}
                 loading={loading}
-                uploadProgress={uploadProgress}
               />
-            )}
-
-            {step === 4 && (
-              <ReviewListing
-                formData={formData}
-                selectedCategory={selectedCategory}
-                eventType={eventType}
-                images={images}
-                meals={meals}
-                tickets={tickets}
-              />
-            )}
-          </div>
-          .
-          <NavigationButtons
-            step={step}
-            totalSteps={TOTAL_STEPS}
-            prevStep={prevStep}
-            nextStep={nextStep}
-            loading={loading}
-          />
-        </form>
+            </form>
+          </>
+        )}
       </div>
     </AuthGuard>
   );

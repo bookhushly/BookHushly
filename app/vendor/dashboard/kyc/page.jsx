@@ -138,15 +138,6 @@ export default function KYCPage() {
   };
 
   useEffect(() => {
-    if (user) {
-      console.log("✅ User is logged in:", user);
-    } else {
-      console.log("🚫 User is NOT logged in.");
-      router.push("/login");
-    }
-  }, [user, router]);
-
-  useEffect(() => {
     const loadExistingProfile = async () => {
       if (!user) return;
 
@@ -297,7 +288,6 @@ export default function KYCPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
     setError("");
   };
-  console.log(`Existing profile:`, existingProfile);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -427,19 +417,14 @@ export default function KYCPage() {
         category_data: verificationResults,
         approved: false,
         status: "reviewing",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
-      console.log("📝 Profile data prepared:", {
-        user_id: profileData.user_id,
-        business_name: profileData.business_name,
-        has_verifications: Object.keys(verificationResults).length > 0,
-      });
+      console.log("📝 Profile data prepared:", profileData);
 
       let result;
       try {
         console.log("🔌 Supabase client created");
+
         if (existingProfile) {
           console.log("📝 Updating existing profile:", existingProfile.id);
           const { data, error } = await supabase
@@ -452,14 +437,12 @@ export default function KYCPage() {
           result = { data, error };
         } else {
           console.log("🆕 Creating new profile");
-
           const { data, error } = await supabase
             .from("vendors")
             .insert([profileData])
             .select();
 
-          console.log(`data is`, data);
-          console.log(`error is`, error);
+          result = { data, error };
         }
 
         console.log("💾 Database operation result:", result);
@@ -562,7 +545,7 @@ export default function KYCPage() {
   const requiresDL = ["car_rentals", "logistics"].includes(
     formData.business_category
   );
-  console.log("🔍 Supabase client status:", supabase ? "exists" : "null");
+
   return (
     <AuthGuard requiredRole="vendor">
       <TooltipProvider>

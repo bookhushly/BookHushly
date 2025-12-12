@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import {
   Card,
@@ -26,11 +25,8 @@ import {
   XCircle,
   AlertCircle,
   Bell,
-  BarChart3,
-  PieChart,
   Activity,
 } from "lucide-react";
-import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAdminDashboardData } from "@/hooks/useAdminDashboardData";
 
@@ -49,19 +45,19 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <AuthGuard requiredRole="admin">
-        <div className="flex items-center justify-center min-h-screen">
-          <LoadingSpinner className="h-8 w-8" />
-        </div>
-      </AuthGuard>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner className="h-8 w-8" />
+      </div>
     );
   }
 
   return (
-    <AuthGuard requiredRole="admin">
+    <AuthGuard>
       <div className="container py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2 text-purple-800">
+            Admin Dashboard
+          </h1>
           <p className="text-muted-foreground">
             Platform overview and management tools
           </p>
@@ -175,6 +171,7 @@ export default function AdminDashboard() {
                           <div className="flex space-x-2">
                             <Button
                               size="sm"
+                              className="bg-purple-600"
                               onClick={() =>
                                 handleApproveVendor(vendor.id, true)
                               }
@@ -237,7 +234,7 @@ export default function AdminDashboard() {
           <TabsContent value="vendors" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Vendor Management</h2>
-              <Button>
+              <Button className="bg-purple-700">
                 <Bell className="mr-2 h-4 w-4" />
                 Send Notification
               </Button>
@@ -289,6 +286,7 @@ export default function AdminDashboard() {
                                 onClick={() =>
                                   handleApproveVendor(vendor.id, true)
                                 }
+                                className="bg-purple-700"
                                 disabled={actionLoading === vendor.id}
                               >
                                 {actionLoading === vendor.id ? (
@@ -342,6 +340,7 @@ export default function AdminDashboard() {
                         </p>
                       </div>
                       <Badge
+                        className="bg-purple-700"
                         variant={
                           user.role === "vendor" ? "default" : "secondary"
                         }

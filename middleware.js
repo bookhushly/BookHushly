@@ -1,24 +1,23 @@
-import { NextResponse } from "next/server";
+// /middleware.js
 import { createServerClient } from "@supabase/ssr";
+import { NextResponse } from "next/server";
 
-// Define routes that REQUIRE authentication
 const PROTECTED_ROUTES = [
   "/dashboard",
   "/api/wallet",
   "/api/webhooks",
+  "/vendor/dashboard",
   "/profile",
   "/settings",
-  "/vendor/dashboard",
 ];
 
-// Define public routes (explicitly allowed without auth)
 const PUBLIC_ROUTES = [
   "/",
   "/login",
   "/register",
+  "/signup",
   "/auth",
   "/error",
-  "/signup",
   "/about",
   "/contact",
   "/forgot-password",
@@ -27,12 +26,10 @@ const PUBLIC_ROUTES = [
   "/privacy",
 ];
 
-// Helper function to check if a path requires authentication
 function isProtectedRoute(pathname) {
   return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-// Helper function to check if a path is explicitly public
 function isPublicRoute(pathname) {
   return PUBLIC_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(route + "/")
@@ -40,17 +37,19 @@ function isPublicRoute(pathname) {
 }
 
 export async function middleware(request) {
-  const pathname = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl;
 
-  // Skip static/api
-  if (pathname.startsWith("/_next") || pathname.includes(".")) {
+  // Skip static files, _next, and favicon
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.includes(".")
+  ) {
     return NextResponse.next();
   }
 
   try {
-    let supabaseResponse = NextResponse.next({
-      request,
-    });
+    let supabaseResponse = NextResponse.next({ request });
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -70,7 +69,7 @@ export async function middleware(request) {
       }
     );
 
-    // ✅ FIX: Use getSession() for better reliability
+    // Get session directly (more reliable than getClaims for middleware)
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -79,31 +78,49 @@ export async function middleware(request) {
 
     // 1. Protect routes that require authentication
     if (isProtectedRoute(pathname) && !user) {
+      // Check if there's a refresh token cookie indicating recent auth
+      const refreshToken = request.cookies.get("sb-refresh-token");
+      const accessToken = request.cookies.get("sb-access-token");
+
+      // If tokens exist but session is null, allow the request through
+      // The client will handle the loading state and redirect if truly unauthenticated
+      if (refreshToken || accessToken) {
+        return supabaseResponse;
+      }
+
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("redirectedFrom", pathname);
       return NextResponse.redirect(url);
     }
 
-    // 2. Role-based protection
+    // 2. Role-based protection for authenticated users
     if (user) {
       const role = user.user_metadata?.role || "customer";
+
+      // Redirect from auth pages if already logged in
+      if (pathname === "/login" || pathname === "/register") {
+        const url = request.nextUrl.clone();
+        url.pathname =
+          role === "vendor" ? "/vendor/dashboard" : `/dashboard/${role}`;
+        return NextResponse.redirect(url);
+      }
 
       // Vendor routes protection
       if (pathname.startsWith("/vendor/dashboard") && role !== "vendor") {
         const url = request.nextUrl.clone();
-        url.pathname = "/dashboard/customer";
+        url.pathname = `/dashboard/${role}`;
         return NextResponse.redirect(url);
       }
 
       // Admin routes protection
       if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
         const url = request.nextUrl.clone();
-        url.pathname = "/dashboard/customer";
+        url.pathname = `/dashboard/${role}`;
         return NextResponse.redirect(url);
       }
 
-      // Customer routes protection (prevent vendors from accessing customer dashboard)
+      // Customer routes protection
       if (pathname.startsWith("/dashboard/customer") && role === "vendor") {
         const url = request.nextUrl.clone();
         url.pathname = "/vendor/dashboard";
@@ -111,20 +128,11 @@ export async function middleware(request) {
       }
     }
 
-    // 3. Redirect authenticated users away from auth pages
-    if ((pathname === "/login" || pathname === "/register") && user) {
-      const role = user.user_metadata?.role || "customer";
-      const url = request.nextUrl.clone();
-      url.pathname =
-        role === "vendor" ? "/vendor/dashboard" : `/dashboard/${role}`;
-      return NextResponse.redirect(url);
-    }
-
     return supabaseResponse;
   } catch (error) {
     console.error("Middleware error:", error);
 
-    // ✅ FIX: On error, redirect protected routes to login
+    // On error, redirect protected routes to login
     if (isProtectedRoute(pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";

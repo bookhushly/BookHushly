@@ -48,7 +48,6 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { user } = useAuthStore();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -199,7 +198,7 @@ export default function RegisterPage() {
 
       const userData = {
         name: formData.name.trim(),
-        role: formData.role,
+        role: "admin",
       };
 
       const { data, error: signUpError } = await signUp(

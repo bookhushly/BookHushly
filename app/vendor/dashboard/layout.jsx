@@ -12,9 +12,10 @@ export const metadata = {
 
 export default function VendorLayout({ children }) {
   return (
-    <SessionProvider>
+    <>
+      {" "}
       <VendorLayoutClient>{children}</VendorLayoutClient>
       <Toaster />
-    </SessionProvider>
+    </>
   );
 }

@@ -51,6 +51,7 @@ export function Header() {
 
   const handleLogout = async () => {
     try {
+      console.log("Logging out...");
       await signOut();
       logout();
       router.push("/");
