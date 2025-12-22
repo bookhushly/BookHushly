@@ -1,6 +1,6 @@
 // app/events/[id]/page.jsx
 import { supabase } from "@/lib/supabase";
-import EventTicketPurchase from "@/components/shared/EventTicketPurchase";
+import EventTicketPurchase from "@/components/common/EventTicketPurchase";
 
 export async function generateStaticParams() {
   try {
