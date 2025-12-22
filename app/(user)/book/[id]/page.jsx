@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import BookServiceClient from "../../../../components/book/BookServiceClient";
+import BookServiceClient from "../../../../components/shared/book/BookServiceClient";
 
 export async function generateStaticParams() {
   try {

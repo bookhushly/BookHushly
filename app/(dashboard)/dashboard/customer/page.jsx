@@ -24,7 +24,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { getBookings } from "@/lib/database";
-import { BookingDetailsModal } from "@/components/BookingDetailsModal";
+import { BookingDetailsModal } from "@/components/common/BookingDetailsModal";
 
 // Stats Card Component
 const StatsCard = ({
