@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import { useAuthStore, useBookingStore } from "@/lib/store";
 import { createBooking, getListing } from "@/lib/database";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
