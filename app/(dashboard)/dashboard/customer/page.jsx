@@ -25,7 +25,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { getBookings } from "@/lib/database";
 import { BookingDetailsModal } from "@/components/BookingDetailsModal";
-import WalletSection from "@/components/wallet/walletDashboard";
 
 // Stats Card Component
 const StatsCard = ({
@@ -278,21 +277,19 @@ export default function CustomerDashboard() {
 
           {/* Navigation Tabs */}
           <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-gray-200">
-            {["Overview", "Wallet", "Bookings", "Favorites", "Profile"].map(
-              (tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab.toLowerCase())}
-                  className={`px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
-                    activeTab === tab.toLowerCase()
-                      ? "bg-purple-600 text-white"
-                      : "text-gray-600 hover:bg-purple-50 hover:text-purple-600"
-                  }`}
-                >
-                  {tab}
-                </button>
-              )
-            )}
+            {["Overview", "Bookings", "Favorites", "Profile"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab.toLowerCase())}
+                className={`px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
+                  activeTab === tab.toLowerCase()
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-600 hover:bg-purple-50 hover:text-purple-600"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
 
           {/* Content Based on Active Tab */}
@@ -408,12 +405,6 @@ export default function CustomerDashboard() {
                         {stats.completedBookings}
                       </span>
                     </div>
-                    <Button
-                      className="w-full bg-purple-600 hover:bg-purple-700"
-                      onClick={() => setActiveTab("wallet")}
-                    >
-                      View Wallet
-                    </Button>
                   </div>
                 </div>
 
@@ -441,8 +432,6 @@ export default function CustomerDashboard() {
               </div>
             </div>
           )}
-
-          {activeTab === "wallet" && <WalletSection />}
 
           {activeTab === "bookings" && (
             <div className="space-y-6">
