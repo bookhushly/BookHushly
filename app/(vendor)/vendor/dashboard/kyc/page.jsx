@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import {
   Card,
   CardContent,
