@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { VendorSidebar } from "../../../components/shared/admin/sidebar";
-import { VendorHeader } from "../../../components/shared/admin/header";
-import { SessionProvider } from "@/components/auth/session-provider";
+import { VendorSidebar } from "../../../../components/shared/admin/sidebar";
+import { VendorHeader } from "../../../../components/shared/admin/header";
+import { SessionProvider } from "@/components/shared/auth/session-provider";
 
 export function VendorLayoutClient({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

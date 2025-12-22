@@ -103,23 +103,51 @@ export default function VendorDashboardClient({
       if (!vendor?.approved) return;
 
       const isEventVendor = vendor.business_category === "events";
+      const isHotelVendor = vendor.business_category === "hotels";
 
-      // Fetch listings if store is empty - CORRECTED FIELDS
+      // Fetch listings if store is empty
       if (listings.length === 0) {
-        const { data: listingsData } = await supabase
-          .from("listings")
-          .select(
-            "id, title, price, created_at, active, media_urls, category, description, location"
-          )
-          .eq("vendor_id", vendor.id)
-          .order("created_at", { ascending: false });
+        if (isHotelVendor) {
+          const { data: hotelsData } = await supabase
+            .from("hotels")
+            .select(
+              "id, name, description, address, city, state, image_urls, amenities, created_at"
+            )
+            .eq("vendor_id", user?.id)
+            .order("created_at", { ascending: false });
 
-        if (listingsData) {
-          setListings(listingsData);
+          if (hotelsData) {
+            // Transform hotels data to match listings structure
+            const transformedHotels = hotelsData.map((hotel) => ({
+              id: hotel.id,
+              title: hotel.name,
+              city: hotel.city,
+              price: null, // Hotels don't have a single price
+              created_at: hotel.created_at,
+              active: true, // Adjust based on your hotel status logic
+              media_urls: hotel.image_urls,
+              category: "hotels",
+              description: hotel.description,
+              location: `${hotel.city}, ${hotel.state}`,
+            }));
+            setListings(transformedHotels);
+          }
+        } else {
+          const { data: listingsData } = await supabase
+            .from("listings")
+            .select(
+              "id, title, price, created_at, active, media_urls, category, description, location"
+            )
+            .eq("vendor_id", vendor.id)
+            .order("created_at", { ascending: false });
+
+          if (listingsData) {
+            setListings(listingsData);
+          }
         }
       }
 
-      // Fetch bookings if store is empty - CORRECTED FIELDS
+      // Fetch bookings if store is empty
       if (bookings.length === 0 && (listings.length > 0 || vendor)) {
         const listingIds = listings.length > 0 ? listings.map((l) => l.id) : [];
 
@@ -129,14 +157,14 @@ export default function VendorDashboardClient({
               .from("event_bookings")
               .select(
                 `
-                id, 
-                total_amount, 
-                booking_date, 
-                status, 
-                created_at, 
-                listing_id,
-                listings(title, media_urls)
-              `
+              id, 
+              total_amount, 
+              booking_date, 
+              status, 
+              created_at, 
+              listing_id,
+              listings(title, media_urls)
+            `
               )
               .in("listing_id", listingIds)
               .order("created_at", { ascending: false });
@@ -149,14 +177,14 @@ export default function VendorDashboardClient({
               .from("bookings")
               .select(
                 `
-                id, 
-                total_amount, 
-                booking_date, 
-                status, 
-                created_at, 
-                listing_id,
-                listings(title, media_urls)
-              `
+              id, 
+              total_amount, 
+              booking_date, 
+              status, 
+              created_at, 
+              listing_id,
+              listings(title, media_urls)
+            `
               )
               .in("listing_id", listingIds)
               .order("created_at", { ascending: false });
@@ -744,8 +772,11 @@ export default function VendorDashboardClient({
                       <p className="text-[14px] font-medium text-gray-900 truncate group-hover:text-purple-600 transition-colors">
                         {listing.title}
                       </p>
-                      <p className="text-[13px] text-gray-500 mt-0.5">
-                        ₦{listing.price?.toLocaleString()}
+                      <p className="text-[13px] text-black mt-0.5">
+                        {vendor?.business_category === "hotels"
+                          ? listing.city
+                          : `₦${listing.price?.toLocaleString()}
+                          `}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">

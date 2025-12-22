@@ -13,7 +13,6 @@ import { Toaster } from "react-hot-toast";
 import { SCATEGORIES } from "@/lib/constants";
 import { useListingsData } from "@/hooks/useListingsData";
 import { useWindowSize } from "@/hooks/useWindowSize";
-import SearchBar from "@/components/shared/services/search";
 import CategoryTabs from "@/components/shared/services/category-tab";
 import FilterPanel from "@/components/shared/services/filter";
 import ActiveFilters from "@/components/shared/services/active-filters";
@@ -29,6 +28,8 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState(null);
+  const [activeSearchFilters, setActiveSearchFilters] = useState(null);
 
   const deferredQuery = useDeferredValue(searchQuery);
   const deferredFilters = useDeferredValue(filters);
@@ -40,6 +41,8 @@ export default function ServicesPage() {
       startTransition(() => {
         setActiveCategory(urlCategory);
         setFilters({});
+        setSearchResults(null);
+        setActiveSearchFilters(null);
       });
     }
   }, [searchParams, activeCategory]);
@@ -59,6 +62,9 @@ export default function ServicesPage() {
     lastListingRef,
   } = useListingsData(activeCategory, deferredQuery, deferredFilters);
 
+  // Use search results if available, otherwise use regular listings
+  const displayListings = searchResults || listings;
+
   const handleRemoveFilter = useCallback((filterKey) => {
     setFilters((prev) => {
       const newFilters = { ...prev };
@@ -72,17 +78,24 @@ export default function ServicesPage() {
     });
   }, []);
 
+  const handleSearchResults = useCallback((results, searchFilters) => {
+    setSearchResults(results);
+    setActiveSearchFilters(searchFilters);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchResults(null);
+    setActiveSearchFilters(null);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-center" />
       <CategoryTabs
         activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-      />
-      <SearchBar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
         categoryLabel={categoryLabel}
+        setActiveCategory={setActiveCategory}
+        onSearchResults={handleSearchResults}
       />
 
       <div className="container mx-auto px-4 py-8">
@@ -117,7 +130,23 @@ export default function ServicesPage() {
               onRemoveFilter={handleRemoveFilter}
             />
 
-            {!loading && (
+            {/* Show search status if search is active */}
+            {searchResults && (
+              <div className="mb-6 flex items-center justify-between">
+                <p className="text-gray-600 text-sm">
+                  Search results: {searchResults.length}{" "}
+                  {searchResults.length === 1 ? "service" : "services"} found
+                </p>
+                <button
+                  onClick={handleClearSearch}
+                  className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  Clear search
+                </button>
+              </div>
+            )}
+
+            {!loading && !searchResults && (
               <div className="mb-6">
                 <p className="text-gray-600 text-sm">
                   {listings.length}{" "}
@@ -126,7 +155,7 @@ export default function ServicesPage() {
               </div>
             )}
 
-            {loading ? (
+            {loading && !searchResults ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {[...Array(16)].map((_, i) => (
                   <SkeletonCard key={i} />
@@ -134,10 +163,10 @@ export default function ServicesPage() {
               </div>
             ) : (
               <ListingsGrid
-                listings={listings}
+                listings={displayListings}
                 fetchError={fetchError}
-                isLoadingMore={isLoadingMore}
-                lastListingRef={lastListingRef}
+                isLoadingMore={searchResults ? false : isLoadingMore}
+                lastListingRef={searchResults ? null : lastListingRef}
               />
             )}
           </div>

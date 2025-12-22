@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuthStore, useListingStore } from "@/lib/store";
 import { createListing } from "@/lib/database";
@@ -17,13 +17,13 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
 // Static imports for critical path components
-import Stepper from "@/components/common/listings/create/Stepper";
-import CategorySelection from "@/components/common/listings/create/categorySelection";
-import ServiceDetails from "@/components/common/listings/create/ServiceDetails";
-import MediaUpload from "@/components/common/listings/create/MediaUpload";
-import ReviewListing from "@/components/common/listings/create/ReviewListing";
-import NavigationButtons from "@/components/common/listings/create/NavigationButtons";
-import HotelRegistration from "../../../../../components/shared/dashboard/vendor/hotels/create/create";
+import Stepper from "@/components/shared/listings/create/Stepper";
+import CategorySelection from "@/components/shared/listings/create/categorySelection";
+import ServiceDetails from "@/components/shared/listings/create/ServiceDetails";
+import MediaUpload from "@/components/shared/listings/create/MediaUpload";
+import ReviewListing from "@/components/shared/listings/create/ReviewListing";
+import NavigationButtons from "@/components/shared/listings/create/NavigationButtons";
+import HotelRegistration from "../../../../../../components/shared/dashboard/vendor/hotels/create/create";
 
 const STEPS = [
   { id: 1, label: "Category" },

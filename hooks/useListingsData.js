@@ -7,40 +7,30 @@ const ITEMS_PER_PAGE = 16;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
-const normalizeHotelRoomData = (room) => ({
-  id: room.id,
-  title: `${room.hotels?.name} - ${room.hotel_room_types?.name}`,
+const normalizeHotelData = (hotel) => ({
+  id: hotel.id,
+  title: hotel.name,
   location:
-    `${room.hotels?.city || ""}${room.hotels?.city && room.hotels?.state ? ", " : ""}${room.hotels?.state || ""}`.trim() ||
-    room.hotels?.address ||
+    `${hotel.city || ""}${hotel.city && hotel.state ? ", " : ""}${hotel.state || ""}`.trim() ||
+    hotel.address ||
     "Location not specified",
-  price: parseFloat(room.price_per_night),
-  media_urls:
-    room.image_urls ||
-    room.hotel_room_types?.image_urls ||
-    room.hotels?.image_urls ||
-    [],
+  price: hotel.min_price || 0, // Minimum room price from aggregation
+  media_urls: hotel.image_urls || [],
   category: "hotels",
-  vendor_name: room.hotels?.name || "Hotel",
-  description: room.hotel_room_types?.description || room.hotels?.description,
-  amenities:
-    room.amenities ||
-    room.hotel_room_types?.amenities ||
-    room.hotels?.amenities,
+  vendor_name: hotel.name,
+  description: hotel.description,
+  amenities: hotel.amenities,
   // Hotel-specific data
-  hotel_id: room.hotel_id,
-  room_number: room.room_number,
-  floor: room.floor,
-  beds: room.beds,
-  status: room.status,
-  max_occupancy: room.hotel_room_types?.max_occupancy,
-  size_sqm: room.hotel_room_types?.size_sqm,
-  room_type_name: room.hotel_room_types?.name,
-  hotel_name: room.hotels?.name,
-  hotel_address: room.hotels?.address,
-  hotel_city: room.hotels?.city,
-  hotel_state: room.hotels?.state,
-  checkout_policy: room.hotels?.checkout_policy,
+  hotel_id: hotel.id,
+  city: hotel.city,
+  state: hotel.state,
+  address: hotel.address,
+  checkout_policy: hotel.checkout_policy,
+  policies: hotel.policies,
+  total_rooms: hotel.total_rooms || 0,
+  available_rooms: hotel.available_rooms || 0,
+  room_types_count: hotel.room_types_count || 0,
+  max_price: hotel.max_price || 0,
 });
 
 export const useListingsData = (category, searchQuery, filters) => {
@@ -65,77 +55,47 @@ export const useListingsData = (category, searchQuery, filters) => {
         currentFilters,
       });
 
-      // For hotels, fetch from hotel_rooms with joins
+      // For hotels, fetch from hotels table with room aggregations
       if (currentCategory === "hotels") {
         const fields = `
           id,
-          hotel_id,
-          room_number,
-          floor,
-          beds,
-          status,
-          price_per_night,
-          amenities,
+          name,
+          description,
+          address,
+          city,
+          state,
           image_urls,
-          hotels!inner(
-            id,
-            name,
-            description,
-            address,
-            city,
-            state,
-            image_urls,
-            amenities,
-            checkout_policy
-          ),
-          hotel_room_types(
-            name,
-            description,
-            max_occupancy,
-            base_price,
-            size_sqm,
-            amenities,
-            image_urls
-          )
+          amenities,
+          checkout_policy,
+          policies
         `;
 
         let query = supabase
-          .from("hotel_rooms")
+          .from("hotels")
           .select(fields, { count: "exact" })
-          .eq("status", "available")
           .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
           .order("created_at", { ascending: false });
 
-        console.log("🏨 Querying hotel_rooms table");
+        console.log("🏨 Querying hotels table");
 
         if (currentQuery) {
-          // Search in hotel name and city
           query = query.or(
-            `hotels.name.ilike.%${currentQuery}%,hotels.city.ilike.%${currentQuery}%,hotels.state.ilike.%${currentQuery}%`
+            `name.ilike.%${currentQuery}%,city.ilike.%${currentQuery}%,state.ilike.%${currentQuery}%,address.ilike.%${currentQuery}%`
           );
           console.log("🔍 Added search filter:", currentQuery);
         }
 
-        if (currentFilters.price_min) {
-          query = query.gte("price_per_night", currentFilters.price_min);
-          console.log("💰 Added min price filter:", currentFilters.price_min);
-        }
-        if (currentFilters.price_max) {
-          query = query.lte("price_per_night", currentFilters.price_max);
-          console.log("💰 Added max price filter:", currentFilters.price_max);
-        }
-
         if (currentFilters.city) {
-          query = query.eq("hotels.city", currentFilters.city);
+          query = query.eq("city", currentFilters.city);
           console.log("📍 Added city filter:", currentFilters.city);
         }
 
-        if (currentFilters.floor) {
-          query = query.eq("floor", currentFilters.floor);
-          console.log("🏢 Added floor filter:", currentFilters.floor);
+        if (currentFilters.state) {
+          query = query.eq("state", currentFilters.state);
+          console.log("📍 Added state filter:", currentFilters.state);
         }
 
-        console.log("✅ Hotel rooms query fully built");
+        console.log("✅ Hotels query fully built");
         return query;
       }
 
@@ -184,6 +144,85 @@ export const useListingsData = (category, searchQuery, filters) => {
       return query;
     },
     []
+  );
+
+  // Fetch room data for hotels to get pricing and availability
+  const enrichHotelsWithRoomData = useCallback(
+    async (hotels) => {
+      if (!hotels.length) return hotels;
+
+      const hotelIds = hotels.map((h) => h.id);
+
+      // Get room pricing and availability aggregates
+      const { data: roomData } = await supabase
+        .from("hotel_rooms")
+        .select("hotel_id,price_per_night,status")
+        .in("hotel_id", hotelIds);
+
+      // Get room types count
+      const { data: roomTypesData } = await supabase
+        .from("hotel_room_types")
+        .select("hotel_id,id")
+        .in("hotel_id", hotelIds);
+
+      // Aggregate data per hotel
+      const hotelDataMap = new Map();
+
+      hotelIds.forEach((id) => {
+        hotelDataMap.set(id, {
+          total_rooms: 0,
+          available_rooms: 0,
+          room_types_count: 0,
+          min_price: null,
+          max_price: null,
+          prices: [],
+        });
+      });
+
+      // Process room data
+      roomData?.forEach((room) => {
+        const hotelData = hotelDataMap.get(room.hotel_id);
+        if (hotelData) {
+          hotelData.total_rooms++;
+          if (room.status === "available") {
+            hotelData.available_rooms++;
+          }
+          if (room.price_per_night) {
+            hotelData.prices.push(parseFloat(room.price_per_night));
+          }
+        }
+      });
+
+      // Process room types data
+      roomTypesData?.forEach((roomType) => {
+        const hotelData = hotelDataMap.get(roomType.hotel_id);
+        if (hotelData) {
+          hotelData.room_types_count++;
+        }
+      });
+
+      // Calculate min/max prices
+      hotelDataMap.forEach((data) => {
+        if (data.prices.length > 0) {
+          data.min_price = Math.min(...data.prices);
+          data.max_price = Math.max(...data.prices);
+        }
+      });
+
+      // Enrich hotels with aggregated data
+      return hotels.map((hotel) => {
+        const data = hotelDataMap.get(hotel.id) || {};
+        return {
+          ...hotel,
+          total_rooms: data.total_rooms || 0,
+          available_rooms: data.available_rooms || 0,
+          room_types_count: data.room_types_count || 0,
+          min_price: data.min_price || 0,
+          max_price: data.max_price || 0,
+        };
+      });
+    },
+    [supabase]
   );
 
   const fetchListings = useCallback(
@@ -248,10 +287,27 @@ export const useListingsData = (category, searchQuery, filters) => {
         let safeData = Array.isArray(data) ? data : [];
         console.log("✅ Safe data length:", safeData.length);
 
-        // Normalize hotel room data to match listing structure
+        // Enrich hotel data with room information
         if (currentCategory === "hotels") {
-          console.log("🏨 Normalizing hotel room data");
-          safeData = safeData.map(normalizeHotelRoomData);
+          console.log("🏨 Enriching hotel data with room information");
+          safeData = await enrichHotelsWithRoomData(safeData);
+          safeData = safeData
+            .map(normalizeHotelData)
+            .filter((hotel) => hotel.available_rooms > 0); // Only show hotels with available rooms
+        }
+
+        // Apply price filters for hotels after enrichment
+        if (currentCategory === "hotels") {
+          if (currentFilters.price_min) {
+            safeData = safeData.filter(
+              (hotel) => hotel.price >= currentFilters.price_min
+            );
+          }
+          if (currentFilters.price_max) {
+            safeData = safeData.filter(
+              (hotel) => hotel.price <= currentFilters.price_max
+            );
+          }
         }
 
         cache.current.set(cacheKey, safeData);
@@ -296,7 +352,7 @@ export const useListingsData = (category, searchQuery, filters) => {
         setLoading(false);
       }
     },
-    [buildQuery]
+    [buildQuery, enrichHotelsWithRoomData]
   );
 
   const debouncedFetchListings = useMemo(

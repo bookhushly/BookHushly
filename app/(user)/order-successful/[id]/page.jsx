@@ -1,35 +1,46 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { createClient } from "../../../../lib/supabase/client";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { verifyPayment } from "@/lib/payments";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import NextImage from "next/image";
 import {
   ArrowLeft,
   CheckCircle,
   Download,
-  MapPin,
-  Clock,
   Mail,
   Phone,
-  Ticket,
   AlertCircle,
-  Calendar,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import {
+  detectBookingType,
+  fetchBooking,
+  fetchPayment,
+  updateBookingStatus,
+  supportsTickets,
+  getBookingTypeName,
+  validateBookingData,
+  BOOKING_TYPES,
+} from "@/services/booking";
+import {
+  EventBookingDisplay,
+  HotelBookingDisplay,
+  ApartmentBookingDisplay,
+} from "@/components/shared/book/display";
 
 const OrderSuccessful = () => {
   const params = useParams();
   const router = useRouter();
-  const supabase = createClient();
+  const searchParams = useSearchParams();
+
+  const [bookingType, setBookingType] = useState(null);
   const [booking, setBooking] = useState(null);
   const [payment, setPayment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,82 +73,30 @@ const OrderSuccessful = () => {
 
         console.log("✅ Booking ID format verified");
 
-        // Fetch booking record
-        console.log("📡 Fetching booking from Supabase...");
-        const { data: bookingData, error: bookingError } = await supabase
-          .from("event_bookings")
-          .select(
-            `
-          id, listing_id, ticket_details, guests, total_amount, booking_date, booking_time,
-          status, payment_status, contact_email, contact_phone,
-          listing:listings (
-            title, event_date, location, vendor_name, vendor_phone, ticket_packages, media_urls
-          )
-        `
-          )
-          .eq("id", bookingId)
-          .single();
+        // Detect booking type
+        const type = detectBookingType(searchParams);
+        console.log("📋 Booking type:", type);
+        setBookingType(type);
 
-        if (bookingError || !bookingData) {
-          console.log("❌ Booking not found or error:", bookingError);
-          throw new Error(
-            `Booking not found: ${bookingError?.message || "No booking data"}`
-          );
-        }
-
+        // Fetch booking data
+        console.log("📡 Fetching booking from database...");
+        const bookingData = await fetchBooking(bookingId, type);
         console.log("✅ Booking data fetched successfully:", bookingData);
 
-        // Parse ticket details
-        console.log("🧾 Parsing ticket details...");
-        let ticketDetails = {};
-        try {
-          ticketDetails = bookingData.ticket_details
-            ? JSON.parse(bookingData.ticket_details)
-            : {};
-          console.log("✅ Ticket details parsed:", ticketDetails);
-        } catch (parseErr) {
-          console.log("❌ Failed to parse ticket details:", parseErr);
-          throw new Error("Invalid ticket details format");
-        }
-
-        const totalTickets = Object.values(ticketDetails).reduce(
-          (sum, qty) => sum + Number(qty || 0),
-          0
-        );
-        console.log("🎟️ Total tickets:", totalTickets);
-        console.log("👥 Guests in booking:", bookingData.guests);
-
-        if (totalTickets !== bookingData.guests) {
-          console.log("❌ Ticket details mismatch with guests");
-          throw new Error("Ticket details do not match number of guests");
-        }
+        // Validate booking data
+        validateBookingData(bookingData, type);
+        console.log("✅ Booking data validated");
 
         if (!isCancelled) {
-          console.log("📥 Setting booking state...");
           setBooking(bookingData);
         }
 
         // Fetch payment record
         console.log("📡 Fetching payment record...");
-        const { data: paymentData, error: paymentError } = await supabase
-          .from("payments")
-          .select(
-            "reference, status, provider, vendor_amount, admin_amount, vendor_currency"
-          )
-          .eq("event_booking_id", bookingId)
-          .single();
-
-        if (paymentError || !paymentData) {
-          console.log("❌ Payment record not found or error:", paymentError);
-          throw new Error(
-            `Payment record not found: ${paymentError?.message || "No payment data"}`
-          );
-        }
-
+        const paymentData = await fetchPayment(bookingId, type);
         console.log("✅ Payment data fetched:", paymentData);
 
         if (!isCancelled) {
-          console.log("📥 Setting payment state...");
           setPayment(paymentData);
         }
 
@@ -159,73 +118,48 @@ const OrderSuccessful = () => {
 
         if (verificationData.status === "success") {
           console.log("💰 Payment verified successfully, updating booking...");
-          const { error: updateError } = await supabase
-            .from("event_bookings")
-            .update({ status: "confirmed", payment_status: "completed" })
-            .eq("id", bookingId);
-
-          if (updateError) {
-            console.log(
-              "⚠️ Payment status update failed:",
-              updateError.message
-            );
-          } else {
-            console.log("✅ Payment status updated to 'completed'");
-          }
+          await updateBookingStatus(
+            bookingId,
+            type,
+            bookingType !== "hotel" ? undefined : "confirmed"
+          );
+          console.log("✅ Booking status updated to 'confirmed'");
 
           if (!isCancelled) {
             console.log("🎉 Order confirmed! Showing success toast...");
-            toast.success("Order confirmed! Your tickets are ready.");
+            toast.success("Order confirmed! Your booking is ready.");
           }
 
-          // Send tickets via email
+          // Send confirmation email
           try {
-            console.log("📧 Sending tickets via email...");
-            const emailResponse = await fetch("/api/send-tickets", {
+            console.log("📧 Sending confirmation email...");
+            const emailResponse = await fetch("/api/send-confirmation", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 bookingId: bookingId,
+                bookingType: type,
               }),
             });
 
             const emailResult = await emailResponse.json();
 
             if (emailResponse.ok && emailResult.success) {
-              console.log("✅ Ticket email sent successfully!");
+              console.log("✅ Confirmation email sent successfully!");
               setEmailSent(true);
-              toast.success("Tickets sent to your email!");
+              toast.success("Confirmation sent to your email!");
             } else {
               console.error("❌ Email failed:", emailResult);
               toast.warning(
-                "Order confirmed, but email delivery failed. You can still download tickets."
+                "Order confirmed, but email delivery failed. You can still download your confirmation."
               );
             }
           } catch (emailErr) {
-            console.error("❌ Failed to send tickets email:", emailErr);
+            console.error("❌ Failed to send confirmation email:", emailErr);
             toast.info(
-              "Order confirmed! Download your tickets below (email will arrive shortly)."
+              "Order confirmed! Download your confirmation below (email will arrive shortly)."
             );
           }
-        }
-
-        const { data, error } = await supabase.rpc(
-          "verify_and_update_booking",
-          {
-            p_booking_id: bookingId,
-            p_payment_reference: paymentData.reference,
-            p_verification_status: verificationData.status,
-          }
-        );
-
-        if (error || data !== "Success") {
-          console.log("❌ RPC failed:", error || data);
-          throw new Error(`RPC failed: ${error?.message || data}`);
-        }
-
-        console.log("✅ RPC completed successfully, order verified");
-        if (!isCancelled) {
-          toast.success("Order confirmed! Your tickets are ready.");
         }
       } catch (err) {
         console.log("❌ Error during verification:", err);
@@ -250,7 +184,7 @@ const OrderSuccessful = () => {
     return () => {
       isCancelled = true;
     };
-  }, [params?.id]);
+  }, [params?.id, searchParams]);
 
   const pixelsToMm = (pixels) => (pixels * 25.4) / 96;
 
@@ -284,7 +218,7 @@ const OrderSuccessful = () => {
     return String(value);
   };
 
-  const handleDownloadPDF = async (booking) => {
+  const handleDownloadEventTickets = async (booking) => {
     if (!booking || !payment) return;
 
     try {
@@ -314,17 +248,11 @@ const OrderSuccessful = () => {
         return;
       }
 
-      if (totalTickets === 0 || totalTickets !== booking.guests) {
-        toast.error("Invalid ticket details or guest count mismatch");
-        return;
-      }
-
       const ticketTypeText = Object.entries(ticketDetails)
         .filter(([_, qty]) => qty > 0)
         .map(([name, qty]) => `${name} x${qty}`)
         .join(", ");
 
-      // Exact positioning specifications
       const placeholders = {
         listingTitle: {
           x: 155.1,
@@ -359,7 +287,6 @@ const OrderSuccessful = () => {
 
         doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
 
-        // Event Title
         doc.setFont("helvetica", "bold");
         doc.setFontSize(placeholders.listingTitle.fontSize);
         doc.setTextColor(...placeholders.listingTitle.color);
@@ -369,7 +296,6 @@ const OrderSuccessful = () => {
           placeholders.listingTitle.y
         );
 
-        // Ticket Type
         doc.setFontSize(placeholders.ticketType.fontSize);
         doc.setTextColor(...placeholders.ticketType.color);
         doc.text(
@@ -378,7 +304,6 @@ const OrderSuccessful = () => {
           placeholders.ticketType.y
         );
 
-        // Date
         doc.setFontSize(placeholders.date.fontSize);
         doc.setTextColor(...placeholders.date.color);
         doc.text(
@@ -398,7 +323,6 @@ const OrderSuccessful = () => {
           placeholders.date.y
         );
 
-        // Time
         doc.setFontSize(placeholders.time.fontSize);
         doc.setTextColor(...placeholders.time.color);
         doc.text(
@@ -407,7 +331,6 @@ const OrderSuccessful = () => {
           placeholders.time.y
         );
 
-        // Vendor Phone
         doc.setFontSize(placeholders.vendorPhone.fontSize);
         doc.setTextColor(...placeholders.vendorPhone.color);
         doc.text(
@@ -416,7 +339,6 @@ const OrderSuccessful = () => {
           placeholders.vendorPhone.y
         );
 
-        // QR Code
         const ticketId = `${booking.id}-${i + 1}`;
 
         try {
@@ -458,24 +380,86 @@ const OrderSuccessful = () => {
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Date TBD";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
+  const handleDownloadConfirmation = async () => {
+    if (!booking || !payment) return;
+
+    try {
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFontSize(24);
+      doc.setTextColor(124, 58, 237); // Purple
+      doc.text("BookHushly", 20, 20);
+
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${getBookingTypeName(bookingType)} Confirmation`, 20, 35);
+
+      // Booking details
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+
+      let yPos = 50;
+      const lineHeight = 8;
+
+      doc.text(`Booking ID: ${booking.id}`, 20, yPos);
+      yPos += lineHeight;
+
+      if (bookingType === BOOKING_TYPES.EVENT) {
+        doc.text(`Event: ${booking.listing?.title || "N/A"}`, 20, yPos);
+        yPos += lineHeight;
+        doc.text(`Date: ${booking.listing?.event_date || "N/A"}`, 20, yPos);
+        yPos += lineHeight;
+        doc.text(`Time: ${booking.booking_time || "N/A"}`, 20, yPos);
+      } else if (bookingType === BOOKING_TYPES.HOTEL) {
+        doc.text(`Hotel: ${booking.hotel?.name || "N/A"}`, 20, yPos);
+        yPos += lineHeight;
+        doc.text(`Check-in: ${booking.check_in_date || "N/A"}`, 20, yPos);
+        yPos += lineHeight;
+        doc.text(`Check-out: ${booking.check_out_date || "N/A"}`, 20, yPos);
+      }
+
+      yPos += lineHeight * 2;
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(
+        `Total: ${payment.vendor_currency || "NGN"} ${Number(booking.total_amount || booking.total_price).toLocaleString()}`,
+        20,
+        yPos
+      );
+
+      doc.save(`BookHushly-Confirmation-${booking.id}.pdf`);
+      toast.success("Confirmation downloaded successfully");
+    } catch (err) {
+      console.error("Error generating confirmation:", err);
+      toast.error("Failed to generate confirmation PDF");
+    }
   };
 
-  const formatTime = (timeString) => {
-    if (!timeString) return "Time TBD";
-    const [hours, minutes] = timeString.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+  const getContactEmail = () => {
+    if (bookingType === BOOKING_TYPES.EVENT) {
+      return booking?.contact_email;
+    } else if (bookingType === BOOKING_TYPES.HOTEL) {
+      return booking?.guest_email;
+    } else if (bookingType === BOOKING_TYPES.APARTMENT) {
+      return booking?.guest_email;
+    }
+    return "N/A";
+  };
+
+  const getContactPhone = () => {
+    if (bookingType === BOOKING_TYPES.EVENT) {
+      return booking?.contact_phone;
+    } else if (bookingType === BOOKING_TYPES.HOTEL) {
+      return booking?.guest_phone;
+    } else if (bookingType === BOOKING_TYPES.APARTMENT) {
+      return booking?.guest_phone;
+    }
+    return "N/A";
+  };
+
+  const getTotalAmount = () => {
+    return booking?.total_amount || booking?.total_price || 0;
   };
 
   if (loading) {
@@ -502,35 +486,16 @@ const OrderSuccessful = () => {
           <p className="text-gray-600 mb-5 text-sm">
             {error || "We couldn't find your order. Please try again."}
           </p>
-          <Link href="/services?category=events">
+          <Link href="/services">
             <Button className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-5 rounded-lg flex items-center mx-auto text-sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Browse Events
+              Browse Services
             </Button>
           </Link>
         </div>
       </div>
     );
   }
-
-  const ticketImage =
-    booking.listing?.media_urls?.[0] || "/event_placeholder.jpg";
-
-  const ticketItems = booking.ticket_details
-    ? Object.entries(JSON.parse(booking.ticket_details))
-        .filter(([_, qty]) => qty > 0)
-        .map(([name, qty]) => ({ name, qty }))
-    : [];
-
-  const ticketSummary =
-    ticketItems.length > 0
-      ? ticketItems
-          .map((item, idx) => {
-            const plural = item.qty > 1 ? "s" : "";
-            return `${item.qty} ${item.name} `;
-          })
-          .join(", ")
-      : "N/A";
 
   return (
     <div className="min-h-screen bg-white">
@@ -543,78 +508,55 @@ const OrderSuccessful = () => {
             Order Confirmed
           </h1>
           <p className="text-sm text-gray-600">
-            Your tickets have been sent to {booking.contact_email}
+            Your confirmation has been sent to {getContactEmail()}
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mb-5">
-          <div className="relative">
-            <NextImage
-              src={ticketImage}
-              alt="Event"
-              width={800}
-              height={400}
-              className="w-full h-64 object-cover"
-              priority={true}
-            />
-          </div>
+        {/* Render appropriate booking display */}
+        <div className="mb-5">
+          {bookingType === BOOKING_TYPES.EVENT && (
+            <EventBookingDisplay booking={booking} />
+          )}
+          {bookingType === BOOKING_TYPES.HOTEL && (
+            <HotelBookingDisplay booking={booking} />
+          )}
+          {bookingType === BOOKING_TYPES.APARTMENT && (
+            <ApartmentBookingDisplay booking={booking} />
+          )}
+        </div>
 
-          <div className="p-5">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              {booking.listing?.title || "Event"}
-            </h2>
-
-            <p className="text-sm text-gray-700 leading-relaxed mb-4">
-              You have{" "}
-              <span className="font-semibold text-gray-900">
-                {" "}
-                {ticketSummary}
-              </span>{" "}
-              for{" "}
-              <span className="font-semibold text-gray-900">
-                {booking.listing?.title || "this event"}
-              </span>{" "}
-              on{" "}
-              <span className="font-semibold text-gray-900">
-                {formatDate(booking.listing?.event_date)}
-              </span>{" "}
-              at{" "}
-              <span className="font-semibold text-gray-900">
-                {formatTime(booking.booking_time)}
-              </span>
-              , taking place at{" "}
-              <span className="font-semibold text-gray-900">
-                {booking.listing?.location || "Venue TBD"}
-              </span>
-              .
-            </p>
-
-            <p className="text-sm text-gray-700 leading-relaxed mb-2">
-              You can download them directly from this page, or check your email
-              for a copy. If you have any issues, feel free to reach out to our
-              support team.
-            </p>
-
-            <div className="pt-4 border-t border-gray-100">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total Paid</span>
-                <span className="text-xl font-bold text-gray-900">
-                  {payment.vendor_currency || "NGN"}{" "}
-                  {Number(booking.total_amount).toLocaleString()}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleDownloadPDF(booking)}
-              className="w-full mt-4 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
-            >
-              <Download className="w-4 h-4" />
-              Download Ticket{booking.guests > 1 ? "s" : ""}
-            </button>
+        {/* Total amount */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">Total Paid</span>
+            <span className="text-xl font-bold text-gray-900">
+              {payment.vendor_currency || "NGN"}{" "}
+              {Number(getTotalAmount()).toLocaleString()}
+            </span>
           </div>
         </div>
 
+        {/* Download button */}
+        <button
+          onClick={() => {
+            if (
+              bookingType === BOOKING_TYPES.EVENT &&
+              supportsTickets(bookingType)
+            ) {
+              handleDownloadEventTickets(booking);
+            } else {
+              handleDownloadConfirmation();
+            }
+          }}
+          className="w-full mb-5 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
+        >
+          <Download className="w-4 h-4" />
+          {bookingType === BOOKING_TYPES.EVENT
+            ? "Download Tickets"
+            : "Download Confirmation"}
+        </button>
+
+        {/* Contact details */}
         <div className="grid sm:grid-cols-2 gap-4 mb-5">
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <h3 className="font-semibold text-gray-900 text-sm mb-3">
@@ -624,12 +566,12 @@ const OrderSuccessful = () => {
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-900 break-all">
-                  {booking.contact_email}
+                  {getContactEmail()}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-900">{booking.contact_phone}</span>
+                <span className="text-gray-900">{getContactPhone()}</span>
               </div>
             </div>
           </div>
@@ -639,12 +581,6 @@ const OrderSuccessful = () => {
               Need Help?
             </h3>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm">
-                <Phone className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-900">
-                  {booking.listing?.vendor_phone || "N/A"}
-                </span>
-              </div>
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-gray-400" />
                 <a
@@ -658,36 +594,66 @@ const OrderSuccessful = () => {
           </div>
         </div>
 
-        <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-5">
-          <h3 className="font-semibold text-gray-900 text-sm mb-3">
-            Before You Go
-          </h3>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
-              <span>Bring your ticket (digital or printed)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
-              <span>Arrive 30 minutes early</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
-              <span>Valid ID required for entry</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 font-bold">•</span>
-              <span>Check your email for updates</span>
-            </li>
-          </ul>
-        </div>
+        {/* Important notes */}
+        {bookingType === BOOKING_TYPES.EVENT && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-gray-900 text-sm mb-3">
+              Before You Go
+            </h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Bring your ticket (digital or printed)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Arrive 30 minutes early</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Valid ID required for entry</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Check your email for updates</span>
+              </li>
+            </ul>
+          </div>
+        )}
+
+        {(bookingType === BOOKING_TYPES.HOTEL ||
+          bookingType === BOOKING_TYPES.APARTMENT) && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-5">
+            <h3 className="font-semibold text-gray-900 text-sm mb-3">
+              Important Information
+            </h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Check-in time is typically 2:00 PM</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Check-out time is typically 12:00 PM</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Valid ID required at check-in</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 font-bold">•</span>
+                <span>Contact property for early check-in/late check-out</span>
+              </li>
+            </ul>
+          </div>
+        )}
 
         <div className="text-center pt-5 border-t border-gray-100">
           <a
-            href="/services?category=events"
+            href="/services"
             className="inline-block text-sm text-purple-600 hover:text-purple-700 font-medium"
           >
-            Explore More Events →
+            Explore More Services →
           </a>
           <p className="text-xs text-gray-400 mt-3">Powered by BookHushly</p>
         </div>

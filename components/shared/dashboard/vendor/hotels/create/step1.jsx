@@ -1,6 +1,7 @@
 import { Building2, Upload } from "lucide-react";
 import { ImagePreview, AmenityButton, InfoBanner } from "./shared";
 import { AMENITY_ICONS } from "@/lib/hotel";
+import RichTextEditor from "@/components/common/rich-text-editor";
 
 export default function Step1HotelDetails({
   hotelData,
@@ -39,15 +40,19 @@ export default function Step1HotelDetails({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
-          <textarea
-            value={hotelData.description}
-            onChange={(e) =>
-              setHotelData((prev) => ({ ...prev, description: e.target.value }))
+          <RichTextEditor
+            content={hotelData.description}
+            onChange={(html) =>
+              setHotelData((prev) => ({ ...prev, description: html }))
             }
-            rows={3}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-            placeholder="Describe your hotel..."
+            placeholder="Describe your hotel, its unique features, nearby attractions, and what makes it special..."
+            minHeight="300px"
+            showWordCount={true}
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Use the toolbar to format your description. Add headings, lists,
+            links, and images to make it engaging.
+          </p>
         </div>
 
         <div className="md:col-span-2">
@@ -234,17 +239,21 @@ export default function Step1HotelDetails({
 
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Policies
+            Policies & House Rules
           </label>
-          <textarea
-            value={hotelData.policies}
-            onChange={(e) =>
-              setHotelData((prev) => ({ ...prev, policies: e.target.value }))
+          <RichTextEditor
+            content={hotelData.policies}
+            onChange={(html) =>
+              setHotelData((prev) => ({ ...prev, policies: html }))
             }
-            rows={3}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-            placeholder="Cancellation policy, pet policy, smoking policy, etc."
+            placeholder="Add your cancellation policy, pet policy, smoking rules, age restrictions, payment terms, etc..."
+            minHeight="250px"
+            showWordCount={true}
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Include important information like cancellation deadlines, deposit
+            requirements, and house rules.
+          </p>
         </div>
       </div>
     </div>

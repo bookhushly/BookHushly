@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import {
   Card,
   CardContent,
@@ -37,12 +37,14 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 export default function EditListingPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, vendor } = useAuthStore();
+  const supabase = createClient();
   const { updateListing: updateListingInStore } = useListingStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -64,31 +66,60 @@ export default function EditListingPage() {
 
   useEffect(() => {
     const loadListing = async () => {
-      if (!params.id) return;
-
       try {
         setLoading(true);
-        const { data, error } = await getListing(params.id);
+        if (vendor.business_category === "hotels") {
+          const { data: hotelData, error: hotelError } = await supabase
+            .from("hotels")
+            .select("*")
+            .eq("id", params.id)
+            .single();
 
-        if (error) {
-          setError("Failed to load listing");
-          return;
+          if (hotelError) {
+            setError("Failed to load hotel");
+            return;
+          }
+
+          setListing(hotelData);
+          setFormData({
+            title: hotelData.name || "",
+            description: hotelData.description || "",
+            category: "hotels",
+            price: "",
+            location:
+              `${hotelData.address || ""}, ${hotelData.city || ""}, ${hotelData.state || ""}`.trim(),
+            capacity: "",
+            duration: "",
+            availability: "available",
+            features: hotelData.amenities
+              ? JSON.stringify(hotelData.amenities)
+              : "",
+            requirements: "",
+            cancellation_policy: hotelData.checkout_policy || "",
+          });
+        } else {
+          const { data, error } = await getListing(params.id);
+
+          if (error) {
+            setError("Failed to load listing");
+            return;
+          }
+
+          setListing(data);
+          setFormData({
+            title: data.title || "",
+            description: data.description || "",
+            category: data.category || "",
+            price: data.price?.toString() || "",
+            location: data.location || "",
+            capacity: data.capacity?.toString() || "",
+            duration: data.duration || "",
+            availability: data.availability || "available",
+            features: data.features || "",
+            requirements: data.requirements || "",
+            cancellation_policy: data.cancellation_policy || "",
+          });
         }
-
-        setListing(data);
-        setFormData({
-          title: data.title || "",
-          description: data.description || "",
-          category: data.category || "",
-          price: data.price?.toString() || "",
-          location: data.location || "",
-          capacity: data.capacity?.toString() || "",
-          duration: data.duration || "",
-          availability: data.availability || "available",
-          features: data.features || "",
-          requirements: data.requirements || "",
-          cancellation_policy: data.cancellation_policy || "",
-        });
       } catch (err) {
         setError("An unexpected error occurred");
       } finally {
@@ -97,7 +128,7 @@ export default function EditListingPage() {
     };
 
     loadListing();
-  }, [params.id]);
+  }, [vendor, params.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

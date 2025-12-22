@@ -38,7 +38,7 @@ import {
   useRoomConfiguration,
   useStepNavigation,
 } from "./hooks";
-import { useFormPersistence } from "@/utils/useFormPersistence";
+import { useFormPersistence } from "@/hooks/useFormPersistence";
 
 const STEPS = [
   { id: 1, title: "Hotel Details", icon: Building2 },

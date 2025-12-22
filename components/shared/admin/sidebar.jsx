@@ -74,7 +74,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                     "group flex items-center gap-3.5 px-4 py-3 rounded-lg text-[15px] font-medium transition-all duration-200",
                     isActive
                       ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      : "text-white hover:bg-gray-50 hover:text-gray-900"
                   )}
                 >
                   <Icon
@@ -82,7 +82,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                       "h-5 w-5 transition-colors",
                       isActive
                         ? "text-white"
-                        : "text-gray-400 group-hover:text-gray-600"
+                        : "text-white group-hover:text-gray-600"
                     )}
                     strokeWidth={2}
                   />
@@ -99,7 +99,7 @@ export function VendorSidebar({ isOpen, onClose }) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-100 fixed left-0 top-0 h-full z-40">
+      <aside className="hidden lg:flex flex-col w-56 bg-purple-900 border-r border-gray-100 fixed left-0 top-0 h-full z-40">
         <SidebarContent />
       </aside>
 

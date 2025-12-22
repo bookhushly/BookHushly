@@ -14,7 +14,7 @@ async function getVendorDashboardData() {
   const { data: vendor } = await supabase
     .from("vendors")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", user?.id)
     .single();
 
   let stats = {

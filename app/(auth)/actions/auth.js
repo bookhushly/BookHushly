@@ -27,14 +27,16 @@ export async function login(formData) {
     const { data: vendor } = await supabase
       .from("vendors")
       .select("*")
-      .eq("user_id", data.user.id)
+      .eq("user_id", data.user?.id)
       .maybeSingle();
 
     vendorData = vendor;
   }
 
   revalidatePath("/", "layout");
-  redirect(`${role === "vendor" ? "/vendor/dashboard" : `/dashboard/${role}`}`);
+  redirect(
+    `${role === "vendor" ? "/vendor/dashboard" : `/${role}/dashboard/`}`
+  );
 }
 
 export async function logout() {

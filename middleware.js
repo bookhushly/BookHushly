@@ -102,7 +102,7 @@ export async function middleware(request) {
       if (pathname === "/login" || pathname === "/register") {
         const url = request.nextUrl.clone();
         url.pathname =
-          role === "vendor" ? "/vendor/dashboard" : `/dashboard/${role}`;
+          role === "vendor" ? "/vendor/dashboard" : `/${role}/dashboard`;
         return NextResponse.redirect(url);
       }
 
@@ -126,6 +126,14 @@ export async function middleware(request) {
         url.pathname = "/vendor/dashboard";
         return NextResponse.redirect(url);
       }
+      if (
+        pathname.startsWith("/receptionist/dashboard") &&
+        role !== "receptionist"
+      ) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+      }
     }
 
     return supabaseResponse;
@@ -145,5 +153,9 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/vendor/dashboard/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/vendor/dashboard/:path*",
+    "/receptionist/dashboard/:path*",
+  ],
 };

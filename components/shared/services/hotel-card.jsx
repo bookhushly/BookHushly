@@ -8,17 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   MapPin,
-  Users,
-  Bed,
-  Maximize,
+  Building,
+  DoorOpen,
   Star,
-  Wifi,
-  Coffee,
-  Tv,
-  Wind,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
 const HotelCard = ({ service }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -38,14 +34,6 @@ const HotelCard = ({ service }) => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
-  // Parse beds data
-  const totalBeds = service.beds
-    ? Object.values(service.beds).reduce(
-        (sum, count) => sum + (parseInt(count) || 0),
-        0
-      )
-    : 0;
-
   // Parse amenities
   const amenitiesList = Array.isArray(service.amenities)
     ? service.amenities
@@ -53,18 +41,11 @@ const HotelCard = ({ service }) => {
       ? Object.keys(service.amenities)
       : [];
 
-  const iconMap = {
-    wifi: Wifi,
-    coffee: Coffee,
-    tv: Tv,
-    "air conditioning": Wind,
-  };
-
   const displayAmenities = amenitiesList.slice(0, 4);
 
   return (
-    <Link href={`/listings/hotels/${service.id}`}>
-      <Card className="group overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 bg-white">
+    <Link href={`/services/hotels/${service.id}`}>
+      <Card className="group overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 bg-white w-max">
         {/* Image Section */}
         <div className="relative h-56 overflow-hidden">
           <Image
@@ -108,31 +89,15 @@ const HotelCard = ({ service }) => {
               </div>
             </>
           )}
-
-          {/* Status Badge */}
-          <div className="absolute top-3 right-3">
-            <Badge className="bg-green-500 hover:bg-green-600 text-white border-none shadow-md">
-              Available
-            </Badge>
-          </div>
-
-          {/* Genius Badge (optional - can be based on ratings/reviews) */}
-          <div className="absolute top-3 left-3 bg-purple-600 text-white px-2 py-1 rounded text-xs font-semibold flex items-center gap-1">
-            <Star className="w-3 h-3 fill-current" />
-            <span>Featured</span>
-          </div>
         </div>
 
         {/* Content Section */}
         <div className="p-4 space-y-3">
-          {/* Hotel Name & Room Type */}
+          {/* Hotel Name */}
           <div>
             <h3 className="font-semibold text-lg text-gray-900 line-clamp-1 group-hover:text-purple-600 transition-colors">
-              {service.hotel_name}
+              {service.title}
             </h3>
-            <p className="text-sm text-gray-600 line-clamp-1">
-              {service.room_type_name}
-            </p>
           </div>
 
           {/* Location */}
@@ -141,35 +106,14 @@ const HotelCard = ({ service }) => {
             <span className="line-clamp-1">{service.location}</span>
           </div>
 
-          {/* Room Details */}
-          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-700">
-            {service.max_occupancy && (
-              <div className="flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-gray-500" />
-                <span>{service.max_occupancy} guests</span>
-              </div>
-            )}
-            {totalBeds > 0 && (
-              <div className="flex items-center gap-1.5">
-                <Bed className="w-4 h-4 text-gray-500" />
-                <span>
-                  {totalBeds} {totalBeds === 1 ? "bed" : "beds"}
-                </span>
-              </div>
-            )}
-            {service.size_sqm && (
-              <div className="flex items-center gap-1.5">
-                <Maximize className="w-4 h-4 text-gray-500" />
-                <span>{service.size_sqm} m²</span>
-              </div>
-            )}
-          </div>
+          {/* Hotel Stats */}
 
           {/* Amenities */}
           {displayAmenities.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {displayAmenities.map((amenity, index) => {
-                const Icon = iconMap[amenity.toLowerCase()] || Wifi;
+                const iconName = amenity.replace(/\s+/g, "");
+                const Icon = LucideIcons[iconName] || LucideIcons.Check;
                 return (
                   <div
                     key={index}
@@ -188,29 +132,27 @@ const HotelCard = ({ service }) => {
             </div>
           )}
 
-          {/* Floor Info */}
-          {service.floor && (
-            <p className="text-xs text-gray-500">
-              Floor {service.floor} • Room {service.room_number}
-            </p>
-          )}
-
           {/* Price Section */}
-          <div className="pt-3 border-t border-gray-100 flex items-end justify-between">
+          <div className="pt-3 border-t border-gray-700 flex items-end gap-3 justify-between">
             <div>
-              <p className="text-xs text-gray-500 mb-1">Price per night</p>
+              <p className="text-xs text-gray-500 mb-1">Starting from</p>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold text-gray-900">
                   ₦{service.price?.toLocaleString()}
                 </span>
+                <span className="text-sm text-gray-600">/night</span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">+ taxes & fees</p>
+              {service.max_price > service.price && (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Up to ₦{service.max_price?.toLocaleString()}/night
+                </p>
+              )}
             </div>
             <Button
               size="sm"
               className="bg-purple-600 hover:bg-purple-700 text-white"
             >
-              View Details
+              See Availability
             </Button>
           </div>
 
