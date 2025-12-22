@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TermsAndConditionsModal } from "@/components/kyc/Terms&ConditionModal";
+import { TermsAndConditionsModal } from "@/components/shared/kyc/Terms&ConditionModal";
 import { useAuthStore } from "@/lib/store";
 import {
   getVendorProfile,
