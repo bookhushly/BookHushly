@@ -1,17 +1,18 @@
 import React from "react";
-import EventCenterDetail from "@/components/listings/details/EventCenterDetaill";
-import EventOrganizerDetail from "@/components/listings/details/EventOrganizer";
-import HotelServiceDetail from "@/components/listings/details/HotelServiceDetail";
-import ApartmentServiceDetail from "@/components/listings/details/ApartmentServiceDetail";
-import CarRentalServiceDetail from "@/components/listings/details/CarRentalServiceDetail";
-import FoodServiceDetail from "@/components/listings/details/FoodServiceDetail";
-import SecurityServiceDetail from "@/components/listings/details/SecurityServiceDetail";
-import LogisticsServiceDetail from "@/components/listings/details/LogisiticsServiceDetail";
+import EventCenterDetail from "@/components/shared/listings/details/EventCenterDetaill";
+import EventOrganizerDetail from "@/components/shared/listings/details/EventOrganizer";
+import HotelServiceDetail from "@/components/shared/listings/details/HotelServiceDetail";
+import ApartmentServiceDetail from "@/components/shared/listings/details/ApartmentServiceDetail";
+import CarRentalServiceDetail from "@/components/shared/listings/details/CarRentalServiceDetail";
+import FoodServiceDetail from "@/components/shared/listings/details/FoodServiceDetail";
+import SecurityServiceDetail from "@/components/shared/listings/details/SecurityServiceDetail";
+import LogisticsServiceDetail from "@/components/shared/listings/details/LogisiticsServiceDetail";
 
 import { extractCategoryData } from "@/lib/category-forms";
 
 const ServiceDetailWrapper = ({ service }) => {
   const categoryData = extractCategoryData(service);
+  s;
 
   // Select the appropriate detail component based on category
   const renderCategorySpecificDetail = () => {
