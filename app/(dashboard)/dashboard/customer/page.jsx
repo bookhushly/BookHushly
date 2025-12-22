@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore, useBookingStore } from "@/lib/store";
