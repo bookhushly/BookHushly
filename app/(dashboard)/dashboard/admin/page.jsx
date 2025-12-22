@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import {
   Card,
   CardContent,
@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { AdminAnalytics } from "@/components/analytics/admin-analytics";
+import { AdminAnalytics } from "@/components/shared/analytics/admin-analytics";
 import { useAuthStore } from "@/lib/store";
 import {
   Users,
