@@ -13,9 +13,12 @@ import { Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 
 // Lazy-load service-specific components
-const EventsTicketPurchase = dynamic(() => import("../EventTicketPurchase"), {
-  ssr: false,
-});
+const EventsTicketPurchase = dynamic(
+  () => import("../../common/EventTicketPurchase"),
+  {
+    ssr: false,
+  }
+);
 const EventCentersBookingForm = dynamic(
   () => import("./EventCenterBookingForm"),
   { ssr: false }
