@@ -12,7 +12,6 @@ import { extractCategoryData } from "@/lib/category-forms";
 
 const ServiceDetailWrapper = ({ service }) => {
   const categoryData = extractCategoryData(service);
-  s;
 
   // Select the appropriate detail component based on category
   const renderCategorySpecificDetail = () => {

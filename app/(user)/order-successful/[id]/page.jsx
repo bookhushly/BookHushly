@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { verifyPayment } from "@/lib/payments";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
-import QRCode from "qrcode";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
+import {
+  generateEventTicketsZip,
+  generateBookingConfirmationPDF,
+} from "@/services/tickets";
 import {
   ArrowLeft,
   CheckCircle,
@@ -40,12 +40,17 @@ const OrderSuccessful = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [bookingType, setBookingType] = useState(null);
+  // Memoize booking type to prevent unnecessary re-renders
+  const bookingType = useMemo(() => {
+    return detectBookingType(searchParams);
+  }, [searchParams?.get("type")]);
+
   const [booking, setBooking] = useState(null);
   const [payment, setPayment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [emailSent, setEmailSent] = useState(false);
+  const [emailAttempted, setEmailAttempted] = useState(false);
 
   useEffect(() => {
     if (!params?.id) {
@@ -72,19 +77,15 @@ const OrderSuccessful = () => {
         }
 
         console.log("✅ Booking ID format verified");
-
-        // Detect booking type
-        const type = detectBookingType(searchParams);
-        console.log("📋 Booking type:", type);
-        setBookingType(type);
+        console.log("📋 Booking type:", bookingType);
 
         // Fetch booking data
         console.log("📡 Fetching booking from database...");
-        const bookingData = await fetchBooking(bookingId, type);
+        const bookingData = await fetchBooking(bookingId, bookingType);
         console.log("✅ Booking data fetched successfully:", bookingData);
 
         // Validate booking data
-        validateBookingData(bookingData, type);
+        validateBookingData(bookingData, bookingType);
         console.log("✅ Booking data validated");
 
         if (!isCancelled) {
@@ -93,7 +94,7 @@ const OrderSuccessful = () => {
 
         // Fetch payment record
         console.log("📡 Fetching payment record...");
-        const paymentData = await fetchPayment(bookingId, type);
+        const paymentData = await fetchPayment(bookingId, bookingType);
         console.log("✅ Payment data fetched:", paymentData);
 
         if (!isCancelled) {
@@ -120,7 +121,7 @@ const OrderSuccessful = () => {
           console.log("💰 Payment verified successfully, updating booking...");
           await updateBookingStatus(
             bookingId,
-            type,
+            bookingType,
             bookingType !== "hotel" ? undefined : "confirmed"
           );
           console.log("✅ Booking status updated to 'confirmed'");
@@ -130,35 +131,45 @@ const OrderSuccessful = () => {
             toast.success("Order confirmed! Your booking is ready.");
           }
 
-          // Send confirmation email
-          try {
-            console.log("📧 Sending confirmation email...");
-            const emailResponse = await fetch("/api/send-confirmation", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                bookingId: bookingId,
-                bookingType: type,
-              }),
-            });
+          // Send confirmation email (only once)
+          if (!emailAttempted && !isCancelled) {
+            setEmailAttempted(true); // Set immediately to prevent double-sending
 
-            const emailResult = await emailResponse.json();
+            try {
+              console.log("📧 Sending confirmation email...");
+              const emailResponse = await fetch("/api/send-payment-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  bookingId: bookingId,
+                  bookingType: bookingType,
+                }),
+              });
 
-            if (emailResponse.ok && emailResult.success) {
-              console.log("✅ Confirmation email sent successfully!");
-              setEmailSent(true);
-              toast.success("Confirmation sent to your email!");
-            } else {
-              console.error("❌ Email failed:", emailResult);
-              toast.warning(
-                "Order confirmed, but email delivery failed. You can still download your confirmation."
-              );
+              const emailResult = await emailResponse.json();
+
+              if (emailResponse.ok && emailResult.success) {
+                console.log("✅ Confirmation email sent successfully!");
+                if (!isCancelled) {
+                  setEmailSent(true);
+                  toast.success("Confirmation sent to your email!");
+                }
+              } else {
+                console.error("❌ Email failed:", emailResult);
+                if (!isCancelled) {
+                  toast.warning(
+                    "Order confirmed, but email delivery failed. You can still download your confirmation."
+                  );
+                }
+              }
+            } catch (emailErr) {
+              console.error("❌ Failed to send confirmation email:", emailErr);
+              if (!isCancelled) {
+                toast.info(
+                  "Order confirmed! Download your confirmation below (email will arrive shortly)."
+                );
+              }
             }
-          } catch (emailErr) {
-            console.error("❌ Failed to send confirmation email:", emailErr);
-            toast.info(
-              "Order confirmed! Download your confirmation below (email will arrive shortly)."
-            );
           }
         }
       } catch (err) {
@@ -184,199 +195,19 @@ const OrderSuccessful = () => {
     return () => {
       isCancelled = true;
     };
-  }, [params?.id, searchParams]);
+  }, [params?.id, bookingType, emailAttempted]); // Stable dependencies
 
-  const pixelsToMm = (pixels) => (pixels * 25.4) / 96;
-
-  const getImageDimensions = async (url) => {
-    return new Promise((resolve, reject) => {
-      const img = typeof window !== "undefined" ? new window.Image() : null;
-      if (!img) {
-        reject(new Error("Image constructor not available"));
-        return;
-      }
-      img.src = url;
-      img.onload = () => resolve({ width: img.width, height: img.height });
-      img.onerror = () => reject(new Error(`Failed to load image at ${url}`));
-    });
-  };
-
-  const getBase64FromUrl = async (url) => {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to load image at ${url}`);
-    const blob = await res.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
-  };
-
-  const safeText = (value, fallback = "N/A") => {
-    if (value === undefined || value === null || value === "") return fallback;
-    return String(value);
-  };
-
-  const handleDownloadEventTickets = async (booking) => {
-    if (!booking || !payment) return;
+  const handleDownloadEventTickets = async () => {
+    if (!booking) return;
 
     try {
-      const zip = new JSZip();
-      const templateUrl = "/ticket.jpg";
-
-      const { width: imgWidthPx, height: imgHeightPx } =
-        await getImageDimensions(templateUrl);
-      const imgWidthMm = pixelsToMm(imgWidthPx);
-      const imgHeightMm = pixelsToMm(imgHeightPx);
-
-      const templateDataUrl = await getBase64FromUrl(templateUrl);
-
-      let ticketDetails = {};
-      let totalTickets = 0;
-      try {
-        ticketDetails = booking.ticket_details
-          ? JSON.parse(booking.ticket_details)
-          : {};
-        totalTickets = Object.values(ticketDetails).reduce(
-          (sum, qty) => sum + qty,
-          0
-        );
-      } catch (err) {
-        console.error("Error parsing ticket_details:", err);
-        toast.error("Failed to parse ticket details");
-        return;
-      }
-
-      const ticketTypeText = Object.entries(ticketDetails)
-        .filter(([_, qty]) => qty > 0)
-        .map(([name, qty]) => `${name} x${qty}`)
-        .join(", ");
-
-      const placeholders = {
-        listingTitle: {
-          x: 155.1,
-          y: 104.6,
-          fontSize: 140,
-          color: [255, 255, 255],
-          font: "BebasNeue",
-        },
-        ticketType: {
-          x: 174.8,
-          y: 144.2,
-          fontSize: 25,
-          color: [255, 255, 255],
-        },
-        date: { x: 289.1, y: 144.1, fontSize: 30, color: [255, 255, 255] },
-        time: { x: 400.5, y: 144.2, fontSize: 30, color: [255, 255, 255] },
-        vendorPhone: {
-          x: 392.6,
-          y: 172.5,
-          fontSize: 14,
-          color: [255, 255, 255],
-        },
-        qrCode: { x: 469, y: 15.5, size: 64.1 },
-      };
-
-      for (let i = 0; i < totalTickets; i++) {
-        const doc = new jsPDF({
-          orientation: imgWidthPx > imgHeightPx ? "landscape" : "portrait",
-          unit: "mm",
-          format: [imgWidthMm, imgHeightMm],
-        });
-
-        doc.addImage(templateDataUrl, "PNG", 0, 0, imgWidthMm, imgHeightMm);
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(placeholders.listingTitle.fontSize);
-        doc.setTextColor(...placeholders.listingTitle.color);
-        doc.text(
-          safeText(booking.listing?.title),
-          placeholders.listingTitle.x,
-          placeholders.listingTitle.y
-        );
-
-        doc.setFontSize(placeholders.ticketType.fontSize);
-        doc.setTextColor(...placeholders.ticketType.color);
-        doc.text(
-          ticketTypeText,
-          placeholders.ticketType.x,
-          placeholders.ticketType.y
-        );
-
-        doc.setFontSize(placeholders.date.fontSize);
-        doc.setTextColor(...placeholders.date.color);
-        doc.text(
-          safeText(
-            booking.listing?.event_date
-              ? new Date(booking.listing.event_date).toLocaleDateString(
-                  "en-US",
-                  {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  }
-                )
-              : "Date TBD"
-          ),
-          placeholders.date.x,
-          placeholders.date.y
-        );
-
-        doc.setFontSize(placeholders.time.fontSize);
-        doc.setTextColor(...placeholders.time.color);
-        doc.text(
-          safeText(booking.booking_time),
-          placeholders.time.x,
-          placeholders.time.y
-        );
-
-        doc.setFontSize(placeholders.vendorPhone.fontSize);
-        doc.setTextColor(...placeholders.vendorPhone.color);
-        doc.text(
-          safeText(booking.listing?.vendor_phone),
-          placeholders.vendorPhone.x,
-          placeholders.vendorPhone.y
-        );
-
-        const ticketId = `${booking.id}-${i + 1}`;
-
-        try {
-          const qrCodeData = await QRCode.toDataURL(
-            `${window.location.origin}/booking-status/${booking.id}`,
-            {
-              width: pixelsToMm(placeholders.qrCode.size) * 96,
-              margin: 1,
-              color: { dark: "#1F2937", light: "#FFFFFF" },
-            }
-          );
-          doc.addImage(
-            qrCodeData,
-            "PNG",
-            placeholders.qrCode.x,
-            placeholders.qrCode.y,
-            placeholders.qrCode.size,
-            placeholders.qrCode.size
-          );
-        } catch (err) {
-          console.error("Error generating QR code:", err);
-          toast.error(`Failed to generate QR code for ticket ${ticketId}`);
-          continue;
-        }
-
-        const pdfBlob = doc.output("blob");
-        zip.file(`Ticket-${safeText(booking.id, "0")}-${i + 1}.pdf`, pdfBlob);
-      }
-
-      const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(zipBlob, `BookHushly-Tickets-${safeText(booking.id, "0")}.zip`);
-
+      const totalTickets = await generateEventTicketsZip(booking);
       toast.success(
-        `Successfully generated ZIP file with ${totalTickets} ticket PDF${totalTickets > 1 ? "s" : ""}`
+        `Successfully generated ${totalTickets} ticket${totalTickets > 1 ? "s" : ""}`
       );
     } catch (err) {
-      console.error("Error generating ticket ZIP:", err);
-      toast.error("Failed to generate ticket ZIP file. Please try again.");
+      console.error("Error generating tickets:", err);
+      toast.error(err.message || "Failed to generate tickets");
     }
   };
 
@@ -384,55 +215,11 @@ const OrderSuccessful = () => {
     if (!booking || !payment) return;
 
     try {
-      const doc = new jsPDF();
-
-      // Header
-      doc.setFontSize(24);
-      doc.setTextColor(124, 58, 237); // Purple
-      doc.text("BookHushly", 20, 20);
-
-      doc.setFontSize(16);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`${getBookingTypeName(bookingType)} Confirmation`, 20, 35);
-
-      // Booking details
-      doc.setFontSize(12);
-      doc.setTextColor(100, 100, 100);
-
-      let yPos = 50;
-      const lineHeight = 8;
-
-      doc.text(`Booking ID: ${booking.id}`, 20, yPos);
-      yPos += lineHeight;
-
-      if (bookingType === BOOKING_TYPES.EVENT) {
-        doc.text(`Event: ${booking.listing?.title || "N/A"}`, 20, yPos);
-        yPos += lineHeight;
-        doc.text(`Date: ${booking.listing?.event_date || "N/A"}`, 20, yPos);
-        yPos += lineHeight;
-        doc.text(`Time: ${booking.booking_time || "N/A"}`, 20, yPos);
-      } else if (bookingType === BOOKING_TYPES.HOTEL) {
-        doc.text(`Hotel: ${booking.hotel?.name || "N/A"}`, 20, yPos);
-        yPos += lineHeight;
-        doc.text(`Check-in: ${booking.check_in_date || "N/A"}`, 20, yPos);
-        yPos += lineHeight;
-        doc.text(`Check-out: ${booking.check_out_date || "N/A"}`, 20, yPos);
-      }
-
-      yPos += lineHeight * 2;
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.text(
-        `Total: ${payment.vendor_currency || "NGN"} ${Number(booking.total_amount || booking.total_price).toLocaleString()}`,
-        20,
-        yPos
-      );
-
-      doc.save(`BookHushly-Confirmation-${booking.id}.pdf`);
+      await generateBookingConfirmationPDF(booking, payment, bookingType);
       toast.success("Confirmation downloaded successfully");
     } catch (err) {
       console.error("Error generating confirmation:", err);
-      toast.error("Failed to generate confirmation PDF");
+      toast.error(err.message || "Failed to generate confirmation");
     }
   };
 
@@ -543,7 +330,7 @@ const OrderSuccessful = () => {
               bookingType === BOOKING_TYPES.EVENT &&
               supportsTickets(bookingType)
             ) {
-              handleDownloadEventTickets(booking);
+              handleDownloadEventTickets();
             } else {
               handleDownloadConfirmation();
             }
