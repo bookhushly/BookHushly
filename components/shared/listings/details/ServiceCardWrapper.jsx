@@ -2,6 +2,7 @@ import React from "react";
 import EventServiceCard from "./EventServiceCard";
 import GeneralServiceCard from "./GeneralServiceCard";
 import HotelCard from "@/components/shared/services/hotel-card";
+import ApartmentCard from "./ApartmentServiceCard";
 
 const ServiceCardWrapper = React.memo(
   ({ service, lastListingRef, isMobile }) => {
@@ -11,6 +12,17 @@ const ServiceCardWrapper = React.memo(
     if (service.category === "hotels") {
       return (
         <HotelCard
+          service={service}
+          lastListingRef={lastListingRef}
+          isMobile={isMobile}
+        />
+      );
+    }
+
+    // Check if the service is a serviced apartment
+    if (service.category === "serviced_apartments") {
+      return (
+        <ApartmentCard
           service={service}
           lastListingRef={lastListingRef}
           isMobile={isMobile}

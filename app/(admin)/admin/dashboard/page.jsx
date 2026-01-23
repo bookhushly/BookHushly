@@ -29,9 +29,10 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAdminDashboardData } from "@/hooks/useAdminDashboardData";
+import { useCurrentUser } from "@/hooks/use-auth";
 
 export default function AdminDashboard() {
-  const { user } = useAuthStore();
+  const { data: user, error, isLoading: userLoading } = useCurrentUser();
 
   const {
     loading,
@@ -43,7 +44,7 @@ export default function AdminDashboard() {
     handleApproveVendor,
   } = useAdminDashboardData(user);
 
-  if (loading) {
+  if (loading || userLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner className="h-8 w-8" />

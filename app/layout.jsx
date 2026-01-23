@@ -1,4 +1,5 @@
 import "./globals.css";
+import QueryProvider from "@/components/common/QueryProvider";
 
 export const metadata = {
   title: "Bookhushly - African Hospitality & Service Platform",
@@ -9,7 +10,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

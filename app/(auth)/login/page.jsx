@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { useAuthStore } from "@/lib/store";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { login } from "../actions/auth";
+import { login } from "./actions";
+import { useAuthActions } from "@/hooks/use-auth";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -26,35 +26,62 @@ export default function LoginPage() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const { user } = useAuthStore();
-  const router = useRouter();
+  const { invalidateAuth } = useAuthActions();
 
-  // Redirect authenticated users
-  useEffect(() => {
-    if (user) {
-      const role = user.user_metadata?.role || "customer";
-      router.replace(`/dashboard/${role}`);
-    }
-  }, [user, router]);
+  const loginMutation = useMutation({
+    mutationFn: async (credentials) => {
+      const formDataObj = new FormData();
+      formDataObj.append("email", credentials.email);
+      formDataObj.append("password", credentials.password);
+
+      const result = await login(formDataObj);
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      return result;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch auth data
+      invalidateAuth();
+
+      toast.success("Welcome back!", {
+        description: "Logging you in...",
+        duration: 3000,
+      });
+    },
+    onError: (error) => {
+      toast.error("Login failed", {
+        description: error.message,
+        duration: 5000,
+      });
+    },
+  });
 
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
-    if (error) setError("");
+
+    if (loginMutation.error) {
+      loginMutation.reset();
+    }
   };
 
   const validateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError("Please enter a valid email address");
+      toast.error("Invalid email", {
+        description: "Please enter a valid email address",
+      });
       return false;
     }
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      toast.error("Invalid password", {
+        description: "Password must be at least 6 characters long",
+      });
       return false;
     }
     return true;
@@ -62,78 +89,52 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateForm()) return;
 
-    setLoading(true);
-    setError("");
-
-    try {
-      const formDataObj = new FormData();
-      formDataObj.append("email", formData.email);
-      formDataObj.append("password", formData.password);
-
-      const result = await login(formDataObj);
-
-      if (result?.error) {
-        setError(result.error);
-        toast.error("Login failed", {
-          description: result.error,
-          duration: 5000,
-        });
-      } else {
-        toast.success("Welcome back!", {
-          description: "Logging you in...",
-          duration: 3000,
-        });
-        // Server action will handle redirect
-      }
-    } catch (err) {
-      // setError("An unexpected error occurred");
-      // toast.error("Login failed", {
-      //   description: "An unexpected error occurred",
-      //   duration: 5000,
-      // });
-    } finally {
-      setLoading(false);
-    }
+    loginMutation.mutate(formData);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
-          <h1 className="text-3xl font-bold text-primary mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">
-            Sign in to your Bookhushly account
-          </p>
+          <h1 className="text-3xl font-bold text-purple-700 mb-2">
+            Welcome Back
+          </h1>
+          <p className="text-gray-600">Sign in to your Bookhushly account</p>
         </div>
 
-        <Card className="shadow-lg">
+        <Card className="shadow-lg border-gray-200">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+            <CardTitle className="text-2xl text-center text-gray-900">
+              Sign In
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
+              {loginMutation.error && (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>
+                    {loginMutation.error.message}
+                  </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
                     name="email"
@@ -141,9 +142,9 @@ export default function LoginPage() {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-10"
+                    className="pl-10 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     required
-                    disabled={loading}
+                    disabled={loginMutation.isPending}
                   />
                 </div>
               </div>
@@ -151,7 +152,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     name="password"
@@ -159,14 +160,14 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                     required
-                    disabled={loading}
+                    disabled={loginMutation.isPending}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -183,7 +184,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-purple-600 hover:text-purple-700 hover:underline transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -191,10 +192,10 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-purple-700 hover:bg-purple-600"
-                disabled={loading}
+                className="w-full bg-purple-700 hover:bg-purple-600 text-white transition-colors"
+                disabled={loginMutation.isPending}
               >
-                {loading ? (
+                {loginMutation.isPending ? (
                   <>
                     <LoadingSpinner className="mr-2 h-4 w-4" />
                     Signing In...
@@ -206,11 +207,11 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-600">
                 Don&apos;t have an account?{" "}
                 <Link
                   href="/register"
-                  className="text-primary hover:underline font-medium"
+                  className="text-purple-600 hover:text-purple-700 hover:underline font-medium transition-colors"
                 >
                   Sign up here
                 </Link>
@@ -220,13 +221,19 @@ export default function LoginPage() {
         </Card>
 
         <div className="mt-6 text-center">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-gray-500">
             By signing in, you agree to our{" "}
-            <Link href="/terms" className="text-primary hover:underline">
+            <Link
+              href="/terms"
+              className="text-purple-600 hover:text-purple-700 hover:underline"
+            >
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="text-primary hover:underline">
+            <Link
+              href="/privacy"
+              className="text-purple-600 hover:text-purple-700 hover:underline"
+            >
               Privacy Policy
             </Link>
           </p>

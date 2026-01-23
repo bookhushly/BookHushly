@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,6 @@ import {
 } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useAuthStore } from "@/lib/store";
-import { signUp } from "@/lib/auth";
-import { createUserProfile } from "@/lib/database";
-import { createClient } from "@/lib/supabase/client";
 import { Toaster, toast } from "react-hot-toast";
 import {
   Eye,
@@ -32,9 +28,7 @@ import {
   Check,
   X,
 } from "lucide-react";
-
-// Initialize Supabase client
-const supabase = createClient();
+import { signup } from "./actions";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -44,10 +38,11 @@ export default function RegisterPage() {
     confirmPassword: "",
     role: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -99,8 +94,10 @@ export default function RegisterPage() {
       });
       return false;
     }
+
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
     if (!password) {
       toast.error("Password is required", {
         position: "top-center",
@@ -140,7 +137,6 @@ export default function RegisterPage() {
     return true;
   };
 
-  // Password requirements validation
   const passwordRequirements = {
     minLength: formData.password.length >= 8,
     hasUppercase: /[A-Z]/.test(formData.password),
@@ -149,125 +145,61 @@ export default function RegisterPage() {
     hasSpecialChar: /[@$!%*?&]/.test(formData.password),
   };
 
-  // Check if email already exists in the database
-  const checkEmailExists = async (email) => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("email")
-        .eq("email", email.trim())
-        .single();
-
-      if (error && error.code !== "PGRST116") {
-        console.error("Error checking email:", error);
-        return false;
-      }
-
-      return !!data;
-    } catch (err) {
-      console.error("Unexpected error checking email:", err);
-      return false;
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
-    setLoading(true);
+    startTransition(async () => {
+      const result = await signup({ formData });
 
-    try {
-      // Check if email already exists
-      const emailExists = await checkEmailExists(formData.email);
-      if (emailExists) {
-        toast.error(
-          "This email is already registered. Please use a different email or sign in.",
-          {
-            position: "top-center",
-            style: {
-              background: "#fee2e2",
-              color: "#b91c1c",
-              border: "1px solid #b91c1c",
-            },
-          }
-        );
-        setLoading(false);
-        return;
-      }
-
-      const userData = {
-        name: formData.name.trim(),
-        role: "admin",
-      };
-
-      const { data, error: signUpError } = await signUp(
-        formData.email,
-        formData.password,
-        userData
-      );
-
-      if (signUpError) {
-        toast.error(signUpError.message, {
-          position: "top-center",
-          style: {
-            background: "#fee2e2",
-            color: "#b91c1c",
-            border: "1px solid #b91c1c",
-          },
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (data.user) {
-        const profileData = {
-          id: data.user.id,
-          email: data.user.email,
-          name: formData.name.trim(),
-          role: formData.role,
-          created_at: new Date().toISOString(),
-        };
-
-        const { error: profileError } = await createUserProfile(profileData);
-
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          // Proceed despite profile error
-        }
-
+      if (result.ok) {
         setIsSuccess(true);
+      } else if (result.code) {
+        switch (result.code) {
+          case "EMAIL_ALREADY_EXISTS":
+            toast.error(
+              "This email is already registered. Please use a different email or sign in.",
+              {
+                position: "top-center",
+                style: {
+                  background: "#fee2e2",
+                  color: "#b91c1c",
+                  border: "1px solid #b91c1c",
+                },
+              }
+            );
+            break;
+          default:
+            toast.error("Something went wrong. Please try again.", {
+              position: "top-center",
+              style: {
+                background: "#fee2e2",
+                color: "#b91c1c",
+                border: "1px solid #b91c1c",
+              },
+            });
+        }
       }
-    } catch (err) {
-      toast.error("An unexpected error occurred", {
-        position: "top-center",
-        style: {
-          background: "#fee2e2",
-          color: "#b91c1c",
-          border: "1px solid #b91c1c",
-        },
-      });
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 flex items-center justify-center p-4">
       <Toaster />
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
-          <h1 className="text-3xl font-bold text-primary mb-2">
+          <h1 className="text-3xl font-bold text-purple-600 mb-2">
             Join Bookhushly
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-gray-600">
             Create your account and start connecting
           </p>
         </div>
@@ -291,38 +223,29 @@ export default function RegisterPage() {
                   <h3 className="text-xl font-semibold text-gray-900">
                     Welcome, {formData.name}!
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-sm text-gray-600 mb-4">
                     A verification email has been sent to {formData.email}.
                     Please check your inbox to verify your account.
                   </p>
                   <div className="grid grid-cols-1 gap-4 w-full">
-                    <div className="flex items-center gap-2 bg-muted p-3 rounded-lg">
-                      <User className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg">
+                      <User className="h-5 w-5 text-gray-600" />
                       <span className="text-sm font-medium">
                         Name: {formData.name}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 bg-muted p-3 rounded-lg">
-                      <Mail className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg">
+                      <Mail className="h-5 w-5 text-gray-600" />
                       <span className="text-sm font-medium">
                         Email: {formData.email}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 bg-muted p-3 rounded-lg">
-                      <Building
-                        className="h-5 w-5 text-muted-foreground"
-                        style={
-                          formData.role === "customer"
-                            ? { display: "none" }
-                            : {}
-                        }
-                      />
-                      <ShoppingBag
-                        className="h-5 w-5 text-muted-foreground"
-                        style={
-                          formData.role === "vendor" ? { display: "none" } : {}
-                        }
-                      />
+                    <div className="flex items-center gap-2 bg-gray-100 p-3 rounded-lg">
+                      {formData.role === "customer" ? (
+                        <ShoppingBag className="h-5 w-5 text-gray-600" />
+                      ) : (
+                        <Building className="h-5 w-5 text-gray-600" />
+                      )}
                       <span className="text-sm font-medium">
                         Role:{" "}
                         {formData.role === "customer" ? "Customer" : "Vendor"}
@@ -331,7 +254,7 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <Button
-                  className="w-full bg-primary hover:bg-primary/90"
+                  className="w-full bg-purple-600 hover:bg-purple-700"
                   onClick={() => {
                     setIsSuccess(false);
                     setFormData({
@@ -345,11 +268,11 @@ export default function RegisterPage() {
                 >
                   Register Another Account
                 </Button>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600 text-center">
                   Already have an account?{" "}
                   <Link
                     href="/login"
-                    className="text-primary hover:underline font-medium"
+                    className="text-purple-600 hover:underline font-medium"
                   >
                     Sign in here
                   </Link>
@@ -363,36 +286,32 @@ export default function RegisterPage() {
                     value={formData.role}
                     onValueChange={handleRoleChange}
                   >
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <RadioGroupItem
-                        value="customer"
-                        id="customer"
-                        className=""
-                      />
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <RadioGroupItem value="customer" id="customer" />
                       <Label
                         htmlFor="customer"
                         className="flex items-center cursor-pointer flex-1"
                       >
-                        <ShoppingBag className="h-4 w-4 mr-2 text-primary" />
+                        <ShoppingBag className="h-4 w-4 mr-2 text-purple-600" />
                         <div>
                           <div className="font-medium">Book Services</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-gray-600">
                             Find and book hospitality, logistics & security
                             services
                           </div>
                         </div>
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
                       <RadioGroupItem value="vendor" id="vendor" />
                       <Label
                         htmlFor="vendor"
                         className="flex items-center cursor-pointer flex-1"
                       >
-                        <Building className="h-4 w-4 mr-2 text-primary" />
+                        <Building className="h-4 w-4 mr-2 text-purple-600" />
                         <div>
                           <div className="font-medium">Provide Services</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-gray-600">
                             List your business and accept bookings
                           </div>
                         </div>
@@ -404,7 +323,7 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="name"
                       name="name"
@@ -421,7 +340,7 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="email"
                       name="email"
@@ -438,7 +357,7 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="password"
                       name="password"
@@ -452,7 +371,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-3 text-gray-600 hover:text-gray-900"
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -461,7 +380,8 @@ export default function RegisterPage() {
                       )}
                     </button>
                   </div>
-                  <div className="text-sm text-muted-foreground space-y-1">
+
+                  <div className="text-sm text-gray-600 space-y-1">
                     <div className="flex items-center">
                       {passwordRequirements.minLength ? (
                         <Check className="h-4 w-4 text-green-500 mr-2" />
@@ -508,7 +428,7 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-600" />
                     <Input
                       id="confirmPassword"
                       name="confirmPassword"
@@ -524,7 +444,7 @@ export default function RegisterPage() {
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
-                      className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-3 text-gray-600 hover:text-gray-900"
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -538,9 +458,9 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   className="w-full bg-purple-600 hover:bg-purple-700"
-                  disabled={loading}
+                  disabled={isPending}
                 >
-                  {loading ? (
+                  {isPending ? (
                     <>
                       <LoadingSpinner className="mr-2 h-4 w-4" />
                       Creating Account...
@@ -554,11 +474,11 @@ export default function RegisterPage() {
 
             {!isSuccess && (
               <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600">
                   Already have an account?{" "}
                   <Link
                     href="/login"
-                    className="text-primary hover:underline font-medium"
+                    className="text-purple-600 hover:underline font-medium"
                   >
                     Sign in here
                   </Link>
@@ -567,13 +487,16 @@ export default function RegisterPage() {
             )}
 
             <div className="mt-6 text-center">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-600">
                 By creating an account, you agree to our{" "}
-                <Link href="/terms" className="text-primary hover:underline">
+                <Link href="/terms" className="text-purple-600 hover:underline">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <Link
+                  href="/privacy"
+                  className="text-purple-600 hover:underline"
+                >
                   Privacy Policy
                 </Link>
               </p>

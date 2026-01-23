@@ -104,6 +104,8 @@ export default function VendorDashboardClient({
 
       const isEventVendor = vendor.business_category === "events";
       const isHotelVendor = vendor.business_category === "hotels";
+      const isApartmentVendor =
+        vendor.business_category === "serviced_apartments";
 
       // Fetch listings if store is empty
       if (listings.length === 0) {
@@ -131,6 +133,34 @@ export default function VendorDashboardClient({
               location: `${hotel.city}, ${hotel.state}`,
             }));
             setListings(transformedHotels);
+          }
+        } else if (isApartmentVendor) {
+          const { data: apartmentsData } = await supabase
+            .from("serviced_apartments")
+            .select(
+              "id, name, city, state, area, bedrooms, bathrooms, max_guests, price_per_night, price_per_month, image_urls, status, created_at"
+            )
+            .eq("vendor_id", user?.id)
+            .order("created_at", { ascending: false });
+
+          if (apartmentsData) {
+            const transformedApartments = apartmentsData.map((apt) => ({
+              id: apt.id,
+              title: apt.name,
+              city: apt.city,
+              area: apt.area,
+              price: apt.price_per_night,
+              price_monthly: apt.price_per_month,
+              bedrooms: apt.bedrooms,
+              bathrooms: apt.bathrooms,
+              max_guests: apt.max_guests,
+              created_at: apt.created_at,
+              active: apt.status === "active",
+              media_urls: apt.image_urls,
+              category: "serviced_apartments",
+              location: `${apt.area ? apt.area + ", " : ""}${apt.city}, ${apt.state}`,
+            }));
+            setListings(transformedApartments);
           }
         } else {
           const { data: listingsData } = await supabase
@@ -171,6 +201,41 @@ export default function VendorDashboardClient({
 
             if (eventBookingsData) {
               setBookings(eventBookingsData);
+            }
+          } else if (isApartmentVendor) {
+            const { data: apartmentBookingsData } = await supabase
+              .from("apartment_bookings")
+              .select(
+                `
+          id,
+          total_amount,
+          check_in_date as booking_date,
+          booking_status as status,
+          created_at,
+          apartment_id,
+          serviced_apartments(name, image_urls)
+        `
+              )
+              .in("apartment_id", listingIds)
+              .order("created_at", { ascending: false });
+
+            if (apartmentBookingsData) {
+              // Transform to match bookings structure
+              const transformedBookings = apartmentBookingsData.map(
+                (booking) => ({
+                  id: booking.id,
+                  total_amount: booking.total_amount,
+                  booking_date: booking.booking_date,
+                  status: booking.status,
+                  created_at: booking.created_at,
+                  listing_id: booking.apartment_id,
+                  listings: {
+                    title: booking.serviced_apartments?.name,
+                    media_urls: booking.serviced_apartments?.image_urls,
+                  },
+                })
+              );
+              setBookings(transformedBookings);
             }
           } else {
             const { data: regularBookingsData } = await supabase
@@ -581,11 +646,19 @@ export default function VendorDashboardClient({
             <div className="flex flex-wrap gap-3">
               <Button
                 asChild
-                className="bg-white  h-10 text-[14px] hover:bg-pruple-200 text-purple-700 font-medium shadow-sm"
+                className="bg-white h-10 text-[14px] hover:bg-purple-200 text-purple-700 font-medium shadow-sm"
               >
-                <Link href="/vendor/dashboard/listings/create">
+                <Link
+                  href={
+                    vendor?.business_category === "serviced_apartments"
+                      ? "/vendor/dashboard/serviced-apartments/new"
+                      : "/vendor/dashboard/listings/create"
+                  }
+                >
                   <Plus className="h-4 w-4" strokeWidth={3} />
-                  New Listing
+                  {vendor?.business_category === "serviced_apartments"
+                    ? "New Apartment"
+                    : "New Listing"}
                 </Link>
               </Button>
               <Button
@@ -594,13 +667,6 @@ export default function VendorDashboardClient({
                 className="h-10 text-[14px] font-medium border-gray-200/60 hover:bg-gray-50"
               >
                 <Link href="/vendor/dashboard/bookings">View Bookings</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-10 text-[14px] font-medium border-gray-200/60 hover:bg-gray-50"
-              >
-                <Link href="/vendor/dashboard//wallet">Wallet</Link>
               </Button>
 
               {/* QR Code Dialog */}
@@ -775,8 +841,9 @@ export default function VendorDashboardClient({
                       <p className="text-[13px] text-black mt-0.5">
                         {vendor?.business_category === "hotels"
                           ? listing.city
-                          : `₦${listing.price?.toLocaleString()}
-                          `}
+                          : vendor?.business_category === "serviced_apartments"
+                            ? `${listing.bedrooms} bed · ${listing.area}, ${listing.city}`
+                            : `₦${listing.price?.toLocaleString()}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -797,7 +864,13 @@ export default function VendorDashboardClient({
                         className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                         asChild
                       >
-                        <Link href={`/vendor/dashboard/listings/${listing.id}`}>
+                        <Link
+                          href={
+                            vendor.business_category !== "serviced_apartments"
+                              ? `/vendor/dashboard/listings/${listing.id}`
+                              : `/vendor/dashboard/serviced-apartments/${listing.id}`
+                          }
+                        >
                           <Eye className="h-4 w-4" />
                         </Link>
                       </Button>

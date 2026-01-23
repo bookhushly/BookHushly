@@ -380,9 +380,6 @@ export function VendorListingsGrid() {
                           <span className="line-clamp-1">{location}</span>
                         </div>
                       )}
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {listing.description || "No description available"}
-                      </p>
                     </>
                   ) : (
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">

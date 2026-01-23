@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { VendorSidebar } from "../../../../components/shared/admin/sidebar";
-import { VendorHeader } from "../../../../components/shared/admin/header";
+import { VendorSidebar } from "../../../../components/shared/vendor/sidebar";
+import { VendorHeader } from "../../../../components/shared/vendor/header";
 import { SessionProvider } from "@/components/shared/auth/session-provider";
 
 export function VendorLayoutClient({ children }) {

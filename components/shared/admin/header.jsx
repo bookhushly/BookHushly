@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export function VendorHeader({ onMenuClick }) {
+export function AdminHeader({ onMenuClick }) {
   const router = useRouter();
   const supabase = createClient();
 

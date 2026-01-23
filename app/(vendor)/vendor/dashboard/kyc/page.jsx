@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/shared/auth/auth-guard";
+import { submitKYC } from "@/app/actions/kyc";
 import {
   Card,
   CardContent,
@@ -19,11 +20,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TermsAndConditionsModal } from "@/components/shared/kyc/Terms&ConditionModal";
 import { useAuthStore } from "@/lib/store";
-import {
-  getVendorProfile,
-  createVendorProfile,
-  updateVendorProfile,
-} from "@/lib/database";
+import { getVendorProfile } from "@/lib/database";
 import {
   Upload,
   FileText,
@@ -49,14 +46,57 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+
+const CustomProgressBar = ({ currentStep, totalSteps }) => {
+  const progressPercentage = (currentStep / totalSteps) * 100;
+  const steps = [
+    "Business Information",
+    "Contact Information",
+    "Legal Information",
+    "Banking Information",
+    "Review & Consent",
+  ];
+
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        {steps.map((step, index) => (
+          <div key={index} className="flex-1 text-center">
+            <div
+              className={cn(
+                "w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
+                currentStep >= index + 1
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-200 text-gray-500"
+              )}
+            >
+              {index + 1}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">{step}</p>
+          </div>
+        ))}
+      </div>
+      <div className="relative h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="absolute h-full bg-purple-600 rounded-full transition-all duration-500 ease-in-out"
+          style={{ width: `${progressPercentage}%` }}
+          role="progressbar"
+          aria-valuenow={progressPercentage}
+          aria-valuemin="0"
+          aria-valuemax="100"
+        />
+      </div>
+      <p className="text-sm text-gray-500 mt-2 text-center">
+        Step {currentStep} of {totalSteps}
+      </p>
+    </div>
+  );
+};
 
 export default function KYCPage() {
   const { user } = useAuthStore();
   const router = useRouter();
-  const supabase = createClient();
-  const [loading, setLoading] = useState(false);
-
+  const [isPending, startTransition] = useTransition();
   const [existingProfile, setExistingProfile] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [verificationConsent, setVerificationConsent] = useState(false);
@@ -80,62 +120,12 @@ export default function KYCPage() {
   });
   const [error, setError] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
+
   const businessCategories = [
     { value: "hotels", label: "Hotels" },
-    // { value: "food_restaurants", label: "Food & Restaurants" },
     { value: "serviced_apartments", label: "Serviced Apartments" },
     { value: "events", label: "Events" },
-    // { value: "car_rentals", label: "Car Rentals" },
-    // { value: "logistics", label: "Logistics" },
-    // { value: "security", label: "Security" },
   ];
-
-  // Custom Progress Bar Component
-  const CustomProgressBar = ({ currentStep, totalSteps }) => {
-    const progressPercentage = (currentStep / totalSteps) * 100;
-    const steps = [
-      "Business Information",
-      "Contact Information",
-      "Legal Information",
-      "Banking Information",
-      "Review & Consent",
-    ];
-
-    return (
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          {steps.map((step, index) => (
-            <div key={index} className="flex-1 text-center">
-              <div
-                className={cn(
-                  "w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
-                  currentStep >= index + 1
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-200 text-gray-500"
-                )}
-              >
-                {index + 1}
-              </div>
-              <p className="text-xs text-gray-500 mt-2">{step}</p>
-            </div>
-          ))}
-        </div>
-        <div className="relative h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-          <div
-            className="absolute h-full bg-purple-600 rounded-full transition-all duration-500 ease-in-out"
-            style={{ width: `${progressPercentage}%` }}
-            role="progressbar"
-            aria-valuenow={progressPercentage}
-            aria-valuemin="0"
-            aria-valuemax="100"
-          />
-        </div>
-        <p className="text-sm text-gray-500 mt-2 text-center">
-          Step {currentStep} of {totalSteps}
-        </p>
-      </div>
-    );
-  };
 
   useEffect(() => {
     const loadExistingProfile = async () => {
@@ -178,7 +168,6 @@ export default function KYCPage() {
       } catch (error) {
         console.error("Load profile error:", error);
         toast.error("Failed to load profile", { description: error.message });
-      } finally {
       }
     };
 
@@ -187,10 +176,7 @@ export default function KYCPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError("");
   };
 
@@ -225,9 +211,6 @@ export default function KYCPage() {
         "events",
         "security",
       ].includes(formData.business_category);
-      const requiresDL = ["car_rentals", "logistics"].includes(
-        formData.business_category
-      );
 
       if (
         requiresCAC &&
@@ -248,11 +231,6 @@ export default function KYCPage() {
 
       if (formData.nin && !/^\d{11}$/.test(formData.nin)) {
         setError("NIN must be an 11-digit number");
-        return false;
-      }
-
-      if (requiresDL && !formData.drivers_license) {
-        setError("Driver's License is required for Car Rentals and Logistics");
         return false;
       }
     }
@@ -294,247 +272,25 @@ export default function KYCPage() {
 
     if (!validateStep()) return;
 
-    setLoading(true);
     setError("");
 
-    try {
-      let verificationResults = {};
-      const requiresDL = ["car_rentals", "logistics"].includes(
-        formData.business_category
-      );
+    startTransition(async () => {
+      const result = await submitKYC(formData, existingProfile?.id);
 
-      // ✅ CAC Verification
-      if (formData.business_registration_number) {
-        console.log("🔍 Verifying CAC...");
-        try {
-          const response = await fetch("/api/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "cac",
-              value: formData.business_registration_number,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-
-          const result = await response.json();
-          console.log("CAC verification result:", result);
-
-          if (!result.valid) {
-            const errorMsg = result.error || "CAC verification failed";
-            setError(errorMsg);
-            toast.error("CAC verification failed", { description: errorMsg });
-            setLoading(false);
-            return;
-          }
-
-          verificationResults.cac_verified = true;
-          verificationResults.cac_data = result.data;
-          console.log("✅ CAC verified successfully");
-        } catch (error) {
-          console.error("CAC verification error:", error);
-          setError(`CAC verification failed: ${error.message}`);
-          toast.error("CAC verification failed", {
-            description: error.message,
-          });
-          setLoading(false);
-          return;
-        }
-      }
-
-      // ✅ NIN Verification
-      if (formData.nin) {
-        console.log("🔍 Verifying NIN...");
-        try {
-          const response = await fetch("/api/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "nin",
-              value: formData.nin,
-              firstname: formData.nin_first_name,
-              lastname: formData.nin_last_name,
-            }),
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-          }
-
-          const result = await response.json();
-          console.log("NIN verification result:", result);
-
-          if (!result.valid) {
-            const errorMsg = result.error || "NIN verification failed";
-            setError(errorMsg);
-            toast.error("NIN verification failed", { description: errorMsg });
-            setLoading(false);
-            return;
-          }
-
-          verificationResults.nin_verified = true;
-          verificationResults.nin_data = result.data;
-          console.log("✅ NIN verified successfully");
-        } catch (error) {
-          console.error("NIN verification error:", error);
-          setError(`NIN verification failed: ${error.message}`);
-          toast.error("NIN verification failed", {
-            description: error.message,
-          });
-          setLoading(false);
-          return;
-        }
-      }
-
-      console.log("✅ All verifications complete:", verificationResults);
-
-      // ✅ INLINE: Create/Update Profile directly with Supabase
-      console.log("💾 Starting profile save...");
-
-      const profileData = {
-        user_id: user.id,
-        business_name: formData.business_name,
-        business_description: formData.business_description,
-        business_address: formData.business_address,
-        phone_number: formData.phone_number,
-        business_registration_number:
-          formData.business_registration_number || null,
-        nin: formData.nin || null,
-        nin_first_name: formData.nin_first_name || null,
-        nin_last_name: formData.nin_last_name || null,
-        drivers_license: formData.drivers_license || null,
-        tax_identification_number: formData.tax_identification_number || null,
-        bank_account_name: formData.bank_account_name || null,
-        bank_account_number: formData.bank_account_number || null,
-        bank_name: formData.bank_name || null,
-        business_category: formData.business_category,
-        years_in_operation: formData.years_in_operation || null,
-        website_url: formData.website_url || null,
-        category_data: verificationResults,
-        approved: false,
-        status: "reviewing",
-      };
-
-      console.log("📝 Profile data prepared:", profileData);
-
-      let result;
-      try {
-        console.log("🔌 Supabase client created");
-
-        if (existingProfile) {
-          console.log("📝 Updating existing profile:", existingProfile.id);
-          const { data, error } = await supabase
-            .from("vendors")
-            .update(profileData)
-            .eq("id", existingProfile.id)
-            .select()
-            .single();
-
-          result = { data, error };
-        } else {
-          console.log("🆕 Creating new profile");
-          const { data, error } = await supabase
-            .from("vendors")
-            .insert([profileData])
-            .select();
-
-          result = { data, error };
-        }
-
-        console.log("💾 Database operation result:", result);
-      } catch (dbError) {
-        console.error("💥 Database operation failed:", dbError);
-        setError(dbError.message || "Failed to save profile");
-        toast.error("KYC submission failed", {
-          description: dbError.message || "Failed to save profile",
-        });
-        setLoading(false);
+      if (!result.success) {
+        setError(result.error);
+        toast.error("KYC submission failed", { description: result.error });
         return;
       }
 
-      // Check result
-      if (result?.error) {
-        console.error("❌ Profile save error:", result.error);
-        setError(result.error.message || "Failed to save profile");
-        toast.error("KYC submission failed", {
-          description: result.error.message || "Failed to save profile",
-        });
-        setLoading(false);
-        return;
-      }
+      toast.success("Success!", { description: result.message });
 
-      if (!result?.data) {
-        console.error("❌ No data returned from profile save");
-        setError("Profile save returned no data");
-        toast.error("KYC submission failed", {
-          description: "Profile save returned no data",
-        });
-        setLoading(false);
-        return;
-      }
-
-      console.log("✅ Profile saved successfully:", result.data);
-
-      // ✅ Send Email Notifications (non-blocking)
-      setTimeout(async () => {
-        try {
-          console.log("📧 Sending email notifications...");
-          const emailResponse = await fetch("/api/send-email", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: "aboderindaniel482@gmail.com",
-              templateName: "kycSubmissionNotice",
-              data: {
-                vendorName: formData.business_name || "New Vendor",
-                businessName: formData.business_name || "Not provided",
-                businessCategory: formData.business_category,
-                email: user.email || "Not provided",
-                phone: formData.phone_number || "Not provided",
-                dashboardUrl: `${window.location.origin}/admin/`,
-                cacVerified: verificationResults.cac_verified ? "Yes" : "No",
-                ninVerified: verificationResults.nin_verified ? "Yes" : "No",
-                dlVerified: verificationResults.dl_verified ? "Yes" : "No",
-              },
-            }),
-          });
-
-          if (emailResponse.ok) {
-            console.log("✅ Email sent successfully");
-          } else {
-            console.warn("⚠️ Email send failed");
-          }
-        } catch (error) {
-          console.error("📧 Email error:", error);
-        }
-      }, 0);
-
-      // ✅ Show Success Message
-      console.log("🎉 KYC submission complete!");
-      toast.success("KYC submitted successfully!", {
-        description:
-          "Your profile is under review. You'll be notified once approved.",
-      });
-
-      // ✅ Redirect after a short delay
       setTimeout(() => {
-        console.log("↩️ Redirecting to dashboard...");
         router.push("/vendor/dashboard");
       }, 1500);
-    } catch (err) {
-      console.error("❌ Unexpected error:", err);
-      setError(err.message || "An unexpected error occurred");
-      toast.error("KYC submission failed", {
-        description: err.message || "An unexpected error occurred",
-      });
-    } finally {
-      setLoading(false);
-    }
+    });
   };
+
   const requiresCAC = [
     "hotels",
     "food_restaurants",
@@ -542,12 +298,13 @@ export default function KYCPage() {
     "events",
     "security",
   ].includes(formData.business_category);
+
   const requiresDL = ["car_rentals", "logistics"].includes(
     formData.business_category
   );
 
   return (
-    <AuthGuard requiredRole="vendor">
+    <AuthGuard>
       <TooltipProvider>
         <div className="container max-w-4xl py-8 bg-white">
           <div className="mb-8">
@@ -854,35 +611,36 @@ export default function KYCPage() {
                   )}
 
                   {requiresDL && (
-                    <div className="space-y-2">
-                      <Label htmlFor="drivers_license">
-                        Driver&apos;s License Number *
-                      </Label>
-                      <Input
-                        id="drivers_license"
-                        name="drivers_license"
-                        placeholder="Enter Driver's License Number"
-                        value={formData.drivers_license}
-                        onChange={handleChange}
-                        required
-                        className="border-gray-200 focus:ring-purple-400"
-                      />
-                    </div>
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="drivers_license">
+                          Driver&apos;s License Number *
+                        </Label>
+                        <Input
+                          id="drivers_license"
+                          name="drivers_license"
+                          placeholder="Enter Driver's License Number"
+                          value={formData.drivers_license}
+                          onChange={handleChange}
+                          required
+                          className="border-gray-200 focus:ring-purple-400"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tax_identification_number">
+                          Tax Identification Number
+                        </Label>
+                        <Input
+                          id="tax_identification_number"
+                          name="tax_identification_number"
+                          placeholder="TIN"
+                          value={formData.tax_identification_number}
+                          onChange={handleChange}
+                          className="border-gray-200 focus:ring-purple-400"
+                        />
+                      </div>
+                    </>
                   )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="tax_identification_number">
-                      Tax Identification Number
-                    </Label>
-                    <Input
-                      id="tax_identification_number"
-                      name="tax_identification_number"
-                      placeholder="TIN"
-                      value={formData.tax_identification_number}
-                      onChange={handleChange}
-                      className="border-gray-200 focus:ring-purple-400"
-                    />
-                  </div>
                 </CardContent>
               </Card>
             )}
@@ -1012,7 +770,7 @@ export default function KYCPage() {
                 <Button
                   type="button"
                   onClick={handleNextStep}
-                  disabled={loading}
+                  disabled={isPending}
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   Next
@@ -1020,10 +778,10 @@ export default function KYCPage() {
               ) : (
                 <Button
                   type="submit"
-                  disabled={loading || !termsAccepted || !verificationConsent}
+                  disabled={isPending || !termsAccepted || !verificationConsent}
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
-                  {loading ? (
+                  {isPending ? (
                     <>
                       <LoadingSpinner className="mr-2 h-4 w-4" />
                       {existingProfile ? "Updating..." : "Submitting..."}

@@ -32,6 +32,63 @@ const normalizeHotelData = (hotel) => ({
   room_types_count: hotel.room_types_count || 0,
   max_price: hotel.max_price || 0,
 });
+const normalizeApartmentData = (apartment) => ({
+  id: apartment.id,
+  title: apartment.name,
+  location:
+    `${apartment.city || ""}${apartment.city && apartment.state ? ", " : ""}${apartment.state || ""}`.trim() ||
+    apartment.address ||
+    "Location not specified",
+  price: apartment.price_per_night || 0,
+  media_urls: apartment.image_urls || [],
+  category: "serviced_apartments",
+  vendor_name: apartment.name,
+  description: apartment.description,
+  amenities: apartment.amenities,
+  // Apartment-specific data
+  apartment_id: apartment.id,
+  apartment_type: apartment.apartment_type,
+  city: apartment.city,
+  state: apartment.state,
+  area: apartment.area,
+  landmark: apartment.landmark,
+  address: apartment.address,
+  bedrooms: apartment.bedrooms,
+  bathrooms: apartment.bathrooms,
+  max_guests: apartment.max_guests,
+  square_meters: apartment.square_meters,
+  price_per_week: apartment.price_per_week,
+  price_per_month: apartment.price_per_month,
+  minimum_stay: apartment.minimum_stay,
+  furnished: apartment.furnished,
+  kitchen_equipped: apartment.kitchen_equipped,
+  parking_spaces: apartment.parking_spaces,
+  has_balcony: apartment.has_balcony,
+  has_terrace: apartment.has_terrace,
+  // Utilities
+  utilities_included: apartment.utilities_included,
+  electricity_included: apartment.electricity_included,
+  generator_available: apartment.generator_available,
+  generator_hours: apartment.generator_hours,
+  inverter_available: apartment.inverter_available,
+  solar_power: apartment.solar_power,
+  water_supply: apartment.water_supply,
+  internet_included: apartment.internet_included,
+  internet_speed: apartment.internet_speed,
+  // Security
+  security_features: apartment.security_features,
+  // Policies
+  check_in_time: apartment.check_in_time,
+  check_out_time: apartment.check_out_time,
+  cancellation_policy: apartment.cancellation_policy,
+  house_rules: apartment.house_rules,
+  caution_deposit: apartment.caution_deposit,
+  // Status
+  status: apartment.status,
+  available_from: apartment.available_from,
+  available_until: apartment.available_until,
+  instant_booking: apartment.instant_booking,
+});
 
 export const useListingsData = (category, searchQuery, filters) => {
   const supabase = createClient();
@@ -96,6 +153,103 @@ export const useListingsData = (category, searchQuery, filters) => {
         }
 
         console.log("✅ Hotels query fully built");
+        return query;
+      }
+      // For serviced apartments, fetch from serviced_apartments table
+      if (currentCategory === "serviced_apartments") {
+        const fields = `
+        id,
+        name,
+        description,
+        apartment_type,
+        address,
+        city,
+        state,
+        area,
+        landmark,
+        bedrooms,
+        bathrooms,
+        max_guests,
+        square_meters,
+        price_per_night,
+        price_per_week,
+        price_per_month,
+        minimum_stay,
+        utilities_included,
+        electricity_included,
+        generator_available,
+        generator_hours,
+        inverter_available,
+        solar_power,
+        water_supply,
+        internet_included,
+        internet_speed,
+        furnished,
+        kitchen_equipped,
+        parking_spaces,
+        has_balcony,
+        has_terrace,
+        security_features,
+        amenities,
+        image_urls,
+        check_in_time,
+        check_out_time,
+        cancellation_policy,
+        house_rules,
+        caution_deposit,
+        status,
+        available_from,
+        available_until,
+        instant_booking
+      `;
+
+        let query = supabase
+          .from("serviced_apartments")
+          .select(fields, { count: "exact" })
+          .eq("status", "active") // Only show active apartments
+          .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
+          .order("created_at", { ascending: false });
+
+        console.log("🏢 Querying serviced_apartments table");
+
+        if (currentQuery) {
+          query = query.or(
+            `name.ilike.%${currentQuery}%,city.ilike.%${currentQuery}%,state.ilike.%${currentQuery}%,area.ilike.%${currentQuery}%,address.ilike.%${currentQuery}%`
+          );
+          console.log("🔍 Added search filter:", currentQuery);
+        }
+
+        if (currentFilters.city) {
+          query = query.eq("city", currentFilters.city);
+          console.log("📍 Added city filter:", currentFilters.city);
+        }
+
+        if (currentFilters.state) {
+          query = query.eq("state", currentFilters.state);
+          console.log("📍 Added state filter:", currentFilters.state);
+        }
+
+        if (currentFilters.bedrooms) {
+          query = query.eq("bedrooms", currentFilters.bedrooms);
+          console.log("🛏️ Added bedrooms filter:", currentFilters.bedrooms);
+        }
+
+        if (currentFilters.bathrooms) {
+          query = query.eq("bathrooms", currentFilters.bathrooms);
+          console.log("🚿 Added bathrooms filter:", currentFilters.bathrooms);
+        }
+
+        if (currentFilters.price_min) {
+          query = query.gte("price_per_night", currentFilters.price_min);
+          console.log("💰 Added min price filter:", currentFilters.price_min);
+        }
+
+        if (currentFilters.price_max) {
+          query = query.lte("price_per_night", currentFilters.price_max);
+          console.log("💰 Added max price filter:", currentFilters.price_max);
+        }
+
+        console.log("✅ Serviced apartments query fully built");
         return query;
       }
 
@@ -234,15 +388,6 @@ export const useListingsData = (category, searchQuery, filters) => {
       currentFilters,
       retryCount = 0
     ) => {
-      console.log("🔍 fetchListings called:", {
-        pageNum,
-        reset,
-        currentCategory,
-        currentQuery,
-        currentFilters,
-        retryCount,
-      });
-
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
 
@@ -294,6 +439,10 @@ export const useListingsData = (category, searchQuery, filters) => {
           safeData = safeData
             .map(normalizeHotelData)
             .filter((hotel) => hotel.available_rooms > 0); // Only show hotels with available rooms
+        }
+        if (currentCategory === "serviced_apartments") {
+          console.log("🏢 Normalizing serviced apartments data");
+          safeData = safeData.map(normalizeApartmentData);
         }
 
         // Apply price filters for hotels after enrichment

@@ -10,6 +10,8 @@ import {
   Wallet,
   Settings,
   X,
+  Truck,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,32 +19,32 @@ import { cn } from "@/lib/utils";
 const navItems = [
   {
     title: "Dashboard",
-    href: "/vendor/dashboard",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Listings",
-    href: "/vendor/dashboard/listings",
+    href: "/admin/dashboard/listings",
     icon: List,
   },
   {
     title: "Bookings",
-    href: "/vendor/dashboard/bookings",
+    href: "/admin/dashboard/bookings",
     icon: Calendar,
   },
   {
-    title: "Wallet",
-    href: "/vendor/dashboard/wallet",
-    icon: Wallet,
+    title: "Logistics Requests",
+    href: "/admin/dashboard/logistics-requests",
+    icon: Truck,
   },
   {
-    title: "Settings",
-    href: "/vendor/dashboard/settings",
-    icon: Settings,
+    title: "Security Requests",
+    href: "/admin/dashboard/security-requests",
+    icon: Users,
   },
 ];
 
-export function VendorSidebar({ isOpen, onClose }) {
+export function AdminSidebar({ isOpen, onClose }) {
   const pathname = usePathname();
 
   const SidebarContent = () => (
@@ -51,7 +53,7 @@ export function VendorSidebar({ isOpen, onClose }) {
       <div className="h-20 flex items-center px-6 border-b border-gray-100">
         <Link href="/" className="flex items-center">
           <Image
-            src="/logo.png"
+            src="/logos/logo.png"
             alt="BookHushly"
             width={160}
             height={160}
@@ -74,7 +76,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                     "group flex items-center gap-3.5 px-4 py-3 rounded-lg text-[15px] font-medium transition-all duration-200",
                     isActive
                       ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
-                      : "text-white hover:bg-gray-50 hover:text-gray-900"
+                      : "text-white hover:bg-gray-50 hover:text-gray-900",
                   )}
                 >
                   <Icon
@@ -82,7 +84,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                       "h-5 w-5 transition-colors",
                       isActive
                         ? "text-white"
-                        : "text-white group-hover:text-gray-600"
+                        : "text-white group-hover:text-gray-600",
                     )}
                     strokeWidth={2}
                   />
@@ -112,7 +114,7 @@ export function VendorSidebar({ isOpen, onClose }) {
           />
           <aside className="fixed left-0 top-0 h-full w-64 bg-white z-50 lg:hidden flex flex-col border-r border-gray-100 shadow-xl">
             <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100">
-              <Link href="/vendor" className="flex items-center">
+              <Link href="/admin" className="flex items-center">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
@@ -143,7 +145,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                           "group flex items-center gap-3.5 px-4 py-3 rounded-lg text-[15px] font-medium transition-all duration-200",
                           isActive
                             ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
                         )}
                         onClick={onClose}
                       >
@@ -152,7 +154,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                             "h-5 w-5 transition-colors",
                             isActive
                               ? "text-white"
-                              : "text-gray-400 group-hover:text-gray-600"
+                              : "text-gray-400 group-hover:text-gray-600",
                           )}
                           strokeWidth={2}
                         />

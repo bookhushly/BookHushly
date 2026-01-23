@@ -12,7 +12,6 @@ export const metadata = {
 export default function VendorLayout({ children }) {
   return (
     <>
-      {" "}
       <main className="min-h-screen ">{children}</main>
       <Toaster />
     </>
