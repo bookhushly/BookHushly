@@ -178,7 +178,7 @@ export default function ServicesPage() {
         <div className="container mx-auto px-4 py-6 md:py-8">
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => router.push("/quote-services")}
+              onClick={() => router.push("/")}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <svg

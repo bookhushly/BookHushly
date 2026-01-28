@@ -25,12 +25,6 @@ export async function submitSecurityRequest(formData) {
     };
 
     // Parse numeric values properly
-    const parseNumeric = (value) => {
-      if (!value || value === "") return null;
-      const parsed = parseFloat(value);
-      return isNaN(parsed) ? null : parsed;
-    };
-
     const parseInteger = (value) => {
       if (!value || value === "") return null;
       const parsed = parseInt(value, 10);
@@ -46,31 +40,45 @@ export async function submitSecurityRequest(formData) {
           full_name: formData.full_name?.trim(),
           phone: formData.phone?.trim(),
           email: formData.email?.trim().toLowerCase(),
-          location_address: formData.location_address?.trim(),
-          location_landmark: formData.location_landmark?.trim() || null,
-          location_lga: formData.location_lga?.trim() || null,
-          location_state: formData.location_state,
+          service_address: formData.service_address?.trim(),
+          landmark: formData.landmark?.trim() || null,
+          lga: formData.lga?.trim() || null,
+          state: formData.state,
           start_date: formatDate(formData.start_date),
-          end_date: formatDate(formData.end_date),
-          coverage_type: formData.coverage_type,
-          coverage_hours: formData.coverage_hours || null,
-          number_of_personnel: parseInteger(formData.number_of_personnel) || 1,
+          end_date: formatDate(formData.end_date) || null,
+          start_time: formatTime(formData.start_time) || null,
+          end_time: formatTime(formData.end_time) || null,
+          duration_type: formData.duration_type || null,
+          number_of_guards: parseInteger(formData.number_of_guards) || 1,
+          guard_type: formData.guard_type || null,
+          requires_canine: Boolean(formData.requires_canine),
+          requires_vehicle: Boolean(formData.requires_vehicle),
+          shift_pattern: formData.shift_pattern || null,
+          event_type: formData.event_type?.trim() || null,
+          expected_attendance:
+            parseInteger(formData.expected_attendance) || null,
+          event_duration_hours:
+            parseInteger(formData.event_duration_hours) || null,
+          vip_protection: Boolean(formData.vip_protection),
           property_type: formData.property_type || null,
           property_size: formData.property_size || null,
-          access_points: parseInteger(formData.access_points),
-          has_existing_security: Boolean(formData.has_existing_security),
-          existing_security_details:
-            formData.existing_security_details?.trim() || null,
-          requires_armed_personnel: Boolean(formData.requires_armed_personnel),
-          requires_security_equipment: Boolean(
-            formData.requires_security_equipment,
-          ),
-          equipment_needed: formData.equipment_needed || null,
-          risk_level: formData.risk_level,
+          number_of_entrances:
+            parseInteger(formData.number_of_entrances) || null,
+          has_cctv: Boolean(formData.has_cctv),
+          has_alarm_system: Boolean(formData.has_alarm_system),
+          risk_level: formData.risk_level || null,
+          specific_threats: formData.specific_threats?.trim() || null,
           previous_incidents: Boolean(formData.previous_incidents),
           incident_details: formData.incident_details?.trim() || null,
-          specific_concerns: formData.specific_concerns?.trim() || null,
-          special_requirements: formData.special_requirements?.trim() || null,
+          requires_background_check: Boolean(
+            formData.requires_background_check,
+          ),
+          requires_uniform: Boolean(formData.requires_uniform),
+          requires_communication_device: Boolean(
+            formData.requires_communication_device,
+          ),
+          additional_equipment: formData.additional_equipment?.trim() || null,
+          special_instructions: formData.special_instructions?.trim() || null,
           status: "pending",
         },
       ])

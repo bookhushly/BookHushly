@@ -48,7 +48,7 @@ export async function POST(request) {
           ),
           vehicleType: requestData.vehicle_type,
         },
-        dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/logistics-requests`,
+        dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/dashboard/logistics-requests`,
         isHighPriority: false,
       }),
       {

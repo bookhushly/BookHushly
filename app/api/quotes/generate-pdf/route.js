@@ -5,52 +5,72 @@ import { createClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 export async function POST(request) {
+  console.log("API /generate-pdf called"); // ENTRY LOG
+
   try {
     const { quoteId, requestType } = await request.json();
-    const supabase = await createClient();
+    console.log("Request body:", { quoteId, requestType });
 
-    // Fetch quote and request details
-    const { data: quote } = await supabase
+    const supabase = await createClient();
+    console.log("Supabase client created");
+
+    // Fetch quote
+    const { data: quote, error: quoteError } = await supabase
       .from("service_quotes")
       .select("*")
       .eq("id", quoteId)
       .single();
 
+    if (quoteError) console.error("Error fetching quote:", quoteError);
+    console.log("Fetched Quote:", quote);
+
     if (!quote) {
+      console.warn("Quote not found for ID:", quoteId);
       return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
 
-    // Fetch request details
+    // Determine table
     const tableName =
       requestType === "logistics" ? "logistics_requests" : "security_requests";
-    const { data: serviceRequest } = await supabase
+    console.log("Request type:", requestType, "Using table:", tableName);
+
+    // Fetch service request
+    const { data: serviceRequest, error: reqError } = await supabase
       .from(tableName)
       .select("*")
       .eq("id", quote.request_id)
       .single();
 
-    // Generate PDF
+    if (reqError) console.error("Error fetching service request:", reqError);
+    console.log("Fetched Service Request:", serviceRequest);
+
+    if (!serviceRequest) {
+      console.warn("Service request not found for ID:", quote.request_id);
+      return NextResponse.json(
+        { error: "Service request not found" },
+        { status: 404 },
+      );
+    }
+
+    // PDF generation
+    console.log("Generating PDF...");
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
     // Header
-    doc.setFillColor(109, 40, 217); // Purple
+    doc.setFillColor(109, 40, 217);
     doc.rect(0, 0, pageWidth, 40, "F");
-
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.text("BookHushly", 15, 20);
     doc.setFontSize(12);
     doc.text("Service Quote", 15, 30);
-
-    // Reset text color
     doc.setTextColor(0, 0, 0);
 
     // Quote details
     let yPos = 55;
     doc.setFontSize(16);
     doc.text("Quote Details", 15, yPos);
-
     yPos += 10;
     doc.setFontSize(10);
     doc.text(`Quote ID: ${quote.id.slice(0, 8)}...`, 15, yPos);
@@ -67,11 +87,10 @@ export async function POST(request) {
       yPos,
     );
 
-    // Customer details
+    // Customer info
     yPos += 15;
     doc.setFontSize(16);
     doc.text("Customer Information", 15, yPos);
-
     yPos += 10;
     doc.setFontSize(10);
     doc.text(`Name: ${serviceRequest.full_name}`, 15, yPos);
@@ -84,9 +103,9 @@ export async function POST(request) {
     yPos += 15;
     doc.setFontSize(16);
     doc.text("Service Details", 15, yPos);
-
     yPos += 10;
     doc.setFontSize(10);
+
     if (requestType === "logistics") {
       doc.text(`Service Type: ${serviceRequest.service_type}`, 15, yPos);
       yPos += 7;
@@ -121,7 +140,6 @@ export async function POST(request) {
     yPos += 15;
     doc.setFontSize(16);
     doc.text("Cost Breakdown", 15, yPos);
-
     yPos += 10;
     doc.setFontSize(10);
     doc.text(`Base Amount:`, 15, yPos);
@@ -133,6 +151,7 @@ export async function POST(request) {
 
     yPos += 7;
     if (quote.breakdown) {
+      console.log("Quote breakdown:", quote.breakdown);
       Object.entries(quote.breakdown).forEach(([key, value]) => {
         doc.text(key, 15, yPos);
         doc.text(
@@ -175,40 +194,49 @@ export async function POST(request) {
       yPos,
     );
 
-    // Generate PDF buffer
+    // Generate PDF
+    console.log("Generating PDF buffer...");
     const pdfBuffer = doc.output("arraybuffer");
     const pdfBase64 = Buffer.from(pdfBuffer).toString("base64");
+    console.log("PDF buffer generated, size:", pdfBuffer.byteLength);
 
-    // Upload to Supabase Storage
+    // Upload PDF
     const fileName = `quote_${quote.id}_${Date.now()}.pdf`;
+    console.log("Uploading PDF to Supabase storage:", fileName);
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("quotes")
       .upload(fileName, Buffer.from(pdfBuffer), {
         contentType: "application/pdf",
       });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      throw uploadError;
+    }
+
+    console.log("PDF uploaded successfully:", uploadData);
 
     // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("quotes").getPublicUrl(fileName);
+    const { data: publicData } = supabase.storage
+      .from("quotes")
+      .getPublicUrl(fileName);
+    console.log("Public URL generated:", publicData?.publicUrl);
 
-    // Update quote with PDF URL
+    // Update quote & request with PDF URL
     await supabase
       .from("service_quotes")
-      .update({ pdf_url: publicUrl })
+      .update({ pdf_url: publicData.publicUrl })
       .eq("id", quoteId);
-
-    // Update request with PDF URL
     await supabase
       .from(tableName)
-      .update({ quote_pdf_url: publicUrl })
+      .update({ quote_pdf_url: publicData.publicUrl })
       .eq("id", quote.request_id);
+
+    console.log("Database updated with PDF URL");
 
     return NextResponse.json({
       success: true,
-      pdfUrl: publicUrl,
+      pdfUrl: publicData.publicUrl,
     });
   } catch (error) {
     console.error("Error generating PDF:", error);

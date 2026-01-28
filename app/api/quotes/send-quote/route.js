@@ -48,8 +48,8 @@ export async function POST(request) {
       dateInfo = new Date(requestData.start_date).toLocaleDateString("en-NG");
     }
 
-    // Render email template
-    const emailHtml = render(
+    // Render email template - AWAIT the render function
+    const emailHtml = await render(
       QuoteEmail({
         customerName: requestData.full_name,
         serviceType: requestData.service_type?.replace("_", " "),
@@ -65,7 +65,7 @@ export async function POST(request) {
 
     // Send email using Resend
     const emailResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/send-email`,
+      `${process.env.NEXT_PUBLIC_SITE_URL}/api/quotes/send-attachment`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,7 +86,9 @@ export async function POST(request) {
     );
 
     if (!emailResponse.ok) {
-      throw new Error("Failed to send email");
+      const errorData = await emailResponse.json();
+      console.error("Email send failed:", errorData);
+      throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
     }
 
     return NextResponse.json({
@@ -97,7 +99,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Error sending quote:", error);
     return NextResponse.json(
-      { error: "Failed to send quote" },
+      { error: "Failed to send quote", details: error.message },
       { status: 500 },
     );
   }

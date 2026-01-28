@@ -36,8 +36,8 @@ export async function POST(request) {
       requestData.risk_level === "critical" ||
       requestData.risk_level === "high";
 
-    // Render email template
-    const emailHtml = render(
+    // Render email template - AWAIT the render function
+    const emailHtml = await render(
       AdminNotificationEmail({
         requestId: requestData.id,
         requestType: "security",
@@ -62,21 +62,30 @@ export async function POST(request) {
     );
 
     // Send email
-    await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/send-emails-quote`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: adminEmails,
-        subject: `${isHighPriority ? "⚠️ URGENT - " : ""}New Security Service Request - BookHushly Admin`,
-        html: emailHtml,
-      }),
-    });
+    const emailResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL}/api/send-emails-quote`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: adminEmails,
+          subject: `${isHighPriority ? "⚠️ URGENT - " : ""}New Security Service Request - BookHushly Admin`,
+          html: emailHtml,
+        }),
+      },
+    );
+
+    if (!emailResponse.ok) {
+      const errorData = await emailResponse.json();
+      console.error("Email send failed:", errorData);
+      throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error sending admin notification:", error);
     return NextResponse.json(
-      { error: "Failed to send notification" },
+      { error: "Failed to send notification", details: error.message },
       { status: 500 },
     );
   }

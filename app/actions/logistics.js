@@ -188,7 +188,7 @@ export async function updateLogisticsRequestWithQuote(requestId, quoteData) {
       .single();
 
     if (quoteError) throw quoteError;
-
+    console.log("Generated Quote:", quote);
     // Generate PDF
     await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/quotes/generate-pdf`, {
       method: "POST",
@@ -209,7 +209,7 @@ export async function updateLogisticsRequestWithQuote(requestId, quoteData) {
       }),
     });
 
-    revalidatePath("/admin/logistics-requests");
+    revalidatePath("/admin/dashboard/logistics-requests");
     return { success: true, data: { request, quote } };
   } catch (error) {
     console.error("Error updating logistics request with quote:", error);
