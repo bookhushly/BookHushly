@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NIGERIAN_STATES } from "@/lib/constants";
+import { NIGERIAN_STATES as STATES } from "@/lib/constants";
 
-const NIGERIAN_STATES = NIGERIAN_STATES.sort();
+const NIGERIAN_STATES = STATES.sort();
 
 const POPULAR_AREAS = {
   Lagos: [

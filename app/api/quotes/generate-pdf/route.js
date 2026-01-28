@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { jsPDF } from "jspdf";
 import { createClient } from "@/lib/supabase/server";
 
+export const runtime = "nodejs";
+
 export async function POST(request) {
   try {
     const { quoteId, requestType } = await request.json();
@@ -21,7 +23,7 @@ export async function POST(request) {
     // Fetch request details
     const tableName =
       requestType === "logistics" ? "logistics_requests" : "security_requests";
-    const { data: request } = await supabase
+    const { data: serviceRequest } = await supabase
       .from(tableName)
       .select("*")
       .eq("id", quote.request_id)
@@ -72,11 +74,11 @@ export async function POST(request) {
 
     yPos += 10;
     doc.setFontSize(10);
-    doc.text(`Name: ${request.full_name}`, 15, yPos);
+    doc.text(`Name: ${serviceRequest.full_name}`, 15, yPos);
     yPos += 7;
-    doc.text(`Phone: ${request.phone}`, 15, yPos);
+    doc.text(`Phone: ${serviceRequest.phone}`, 15, yPos);
     yPos += 7;
-    doc.text(`Email: ${request.email}`, 15, yPos);
+    doc.text(`Email: ${serviceRequest.email}`, 15, yPos);
 
     // Service details
     yPos += 15;
@@ -86,30 +88,30 @@ export async function POST(request) {
     yPos += 10;
     doc.setFontSize(10);
     if (requestType === "logistics") {
-      doc.text(`Service Type: ${request.service_type}`, 15, yPos);
+      doc.text(`Service Type: ${serviceRequest.service_type}`, 15, yPos);
       yPos += 7;
-      doc.text(`From: ${request.pickup_state}`, 15, yPos);
+      doc.text(`From: ${serviceRequest.pickup_state}`, 15, yPos);
       yPos += 7;
-      doc.text(`To: ${request.delivery_state}`, 15, yPos);
+      doc.text(`To: ${serviceRequest.delivery_state}`, 15, yPos);
       yPos += 7;
       doc.text(
-        `Pickup Date: ${new Date(request.pickup_date).toLocaleDateString()}`,
+        `Pickup Date: ${new Date(serviceRequest.pickup_date).toLocaleDateString()}`,
         15,
         yPos,
       );
     } else {
-      doc.text(`Service Type: ${request.service_type}`, 15, yPos);
+      doc.text(`Service Type: ${serviceRequest.service_type}`, 15, yPos);
       yPos += 7;
-      doc.text(`Location: ${request.state}`, 15, yPos);
+      doc.text(`Location: ${serviceRequest.state}`, 15, yPos);
       yPos += 7;
       doc.text(
-        `Start Date: ${new Date(request.start_date).toLocaleDateString()}`,
+        `Start Date: ${new Date(serviceRequest.start_date).toLocaleDateString()}`,
         15,
         yPos,
       );
       yPos += 7;
       doc.text(
-        `Guards: ${request.number_of_guards} ${request.guard_type}`,
+        `Guards: ${serviceRequest.number_of_guards} ${serviceRequest.guard_type}`,
         15,
         yPos,
       );

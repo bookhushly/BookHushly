@@ -7,11 +7,11 @@ import {
   LayoutDashboard,
   List,
   Calendar,
-  Wallet,
-  Settings,
-  X,
   Truck,
   Users,
+  Settings,
+  User,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -44,13 +44,84 @@ const navItems = [
   },
 ];
 
+const bottomNavItems = [
+  {
+    title: "Settings",
+    href: "/admin/dashboard/settings",
+    icon: Settings,
+  },
+  {
+    title: "Profile",
+    href: "/admin/dashboard/profile",
+    icon: User,
+  },
+];
+
 export function AdminSidebar({ isOpen, onClose }) {
   const pathname = usePathname();
 
-  const SidebarContent = () => (
+  const NavLink = ({ item, onClick }) => {
+    const Icon = item.icon;
+    const isActive = pathname === item.href;
+
+    return (
+      <Link href={item.href}>
+        <div
+          className={cn(
+            "group flex items-center gap-3.5 px-4 py-3.5 rounded-lg text-[15px] font-medium transition-all duration-200",
+            isActive
+              ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
+              : "text-white hover:bg-white/10 hover:text-white",
+          )}
+          onClick={onClick}
+        >
+          <Icon
+            className={cn(
+              "h-5 w-5 transition-colors",
+              isActive ? "text-white" : "text-white/80 group-hover:text-white",
+            )}
+            strokeWidth={2}
+          />
+          <span className="tracking-tight">{item.title}</span>
+        </div>
+      </Link>
+    );
+  };
+
+  const MobileNavLink = ({ item, onClick }) => {
+    const Icon = item.icon;
+    const isActive = pathname === item.href;
+
+    return (
+      <Link href={item.href}>
+        <div
+          className={cn(
+            "group flex items-center gap-3.5 px-4 py-3.5 rounded-lg text-[15px] font-medium transition-all duration-200",
+            isActive
+              ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
+              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+          )}
+          onClick={onClick}
+        >
+          <Icon
+            className={cn(
+              "h-5 w-5 transition-colors",
+              isActive
+                ? "text-white"
+                : "text-gray-400 group-hover:text-gray-600",
+            )}
+            strokeWidth={2}
+          />
+          <span className="tracking-tight">{item.title}</span>
+        </div>
+      </Link>
+    );
+  };
+
+  const SidebarContent = ({ isMobile = false }) => (
     <>
-      {/* Logo Header with increased vertical spacing */}
-      <div className="h-20 flex items-center px-6 border-b border-gray-100">
+      {/* Logo Header */}
+      <div className="h-20 flex items-center px-6 border-b border-white/10">
         <Link href="/" className="flex items-center">
           <Image
             src="/logos/logo.png"
@@ -62,46 +133,38 @@ export function AdminSidebar({ isOpen, onClose }) {
         </Link>
       </div>
 
-      {/* Navigation with generous spacing */}
-      <nav className="flex-1 py-8 px-4">
-        <div className="space-y-1.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
-
-            return (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={cn(
-                    "group flex items-center gap-3.5 px-4 py-3 rounded-lg text-[15px] font-medium transition-all duration-200",
-                    isActive
-                      ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
-                      : "text-white hover:bg-gray-50 hover:text-gray-900",
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "h-5 w-5 transition-colors",
-                      isActive
-                        ? "text-white"
-                        : "text-white group-hover:text-gray-600",
-                    )}
-                    strokeWidth={2}
-                  />
-                  <span className="tracking-tight">{item.title}</span>
-                </div>
-              </Link>
-            );
-          })}
+      {/* Main Navigation */}
+      <nav className="flex-1 py-8 px-4 overflow-y-auto">
+        <div className="space-y-2">
+          {navItems.map((item) =>
+            isMobile ? (
+              <MobileNavLink key={item.href} item={item} onClick={onClose} />
+            ) : (
+              <NavLink key={item.href} item={item} />
+            ),
+          )}
         </div>
       </nav>
+
+      {/* Bottom Navigation - Fixed */}
+      <div className="border-t border-white/10 px-4 py-4">
+        <div className="space-y-2">
+          {bottomNavItems.map((item) =>
+            isMobile ? (
+              <MobileNavLink key={item.href} item={item} onClick={onClose} />
+            ) : (
+              <NavLink key={item.href} item={item} />
+            ),
+          )}
+        </div>
+      </div>
     </>
   );
 
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-56 bg-purple-900 border-r border-gray-100 fixed left-0 top-0 h-full z-40">
+      <aside className="hidden lg:flex flex-col w-56 bg-purple-900 border-r border-white/10 fixed left-0 top-0 h-full z-40">
         <SidebarContent />
       </aside>
 
@@ -132,39 +195,7 @@ export function AdminSidebar({ isOpen, onClose }) {
                 <X className="h-5 w-5 text-gray-500" />
               </Button>
             </div>
-            <nav className="flex-1 py-8 px-4">
-              <div className="space-y-1.5">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
-
-                  return (
-                    <Link key={item.href} href={item.href}>
-                      <div
-                        className={cn(
-                          "group flex items-center gap-3.5 px-4 py-3 rounded-lg text-[15px] font-medium transition-all duration-200",
-                          isActive
-                            ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
-                        )}
-                        onClick={onClose}
-                      >
-                        <Icon
-                          className={cn(
-                            "h-5 w-5 transition-colors",
-                            isActive
-                              ? "text-white"
-                              : "text-gray-400 group-hover:text-gray-600",
-                          )}
-                          strokeWidth={2}
-                        />
-                        <span className="tracking-tight">{item.title}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </nav>
+            <SidebarContent isMobile={true} />
           </aside>
         </>
       )}
