@@ -71,7 +71,7 @@ const Hero = () => {
       mouseX.set(e.clientX / innerWidth);
       mouseY.set(e.clientY / innerHeight);
     },
-    [mouseX, mouseY]
+    [mouseX, mouseY],
   );
 
   useEffect(() => {
@@ -85,7 +85,7 @@ const Hero = () => {
     { icon: Shield, text: "Secure Payment Processing" },
   ];
 
-  const featuredCategories = CATEGORIES.slice(0, 4);
+  const featuredCategories = CATEGORIES.slice(0, 5);
 
   return (
     <section
@@ -173,7 +173,13 @@ const Hero = () => {
           {featuredCategories.map((cat, i) => (
             <Link
               key={cat.value}
-              href={`/services?category=${cat.value}`}
+              href={
+                cat.value === "logistics"
+                  ? "/quote-services?tab=logistics"
+                  : cat.value === "security"
+                    ? "/quote-services?tab=security"
+                    : `/services?category=${cat.value}`
+              }
               className={`relative block rounded-2xl overflow-hidden group shadow-lg h-40 sm:h-48 ${
                 i === 0 ? "col-span-2" : ""
               }`}

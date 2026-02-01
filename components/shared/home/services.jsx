@@ -25,17 +25,7 @@ const categories = [
     image:
       "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&auto=format&fit=crop&q=80",
     alt: "Modern serviced apartment interior",
-    span: "col-span-1 row-span-1",
-  },
-  {
-    value: "food",
-    label: "Food & Restaurants",
-    icon: "Restaurant",
-    desc: "Discover top restaurants and enjoy curated dining experiences.",
-    image:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop&q=80",
-    alt: "Restaurant interior with dining tables",
-    span: "col-span-1 row-span-1",
+    span: "col-span-1 row-span-2",
   },
   {
     value: "events",
@@ -48,16 +38,6 @@ const categories = [
     span: "lg:col-span-1 lg:row-span-2",
   },
   {
-    value: "car_rentals",
-    label: "Car Rentals",
-    icon: "Car",
-    desc: "Rent verified vehicles and enjoy stress-free mobility.",
-    image:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80",
-    alt: "Luxury car available for rental",
-    span: "col-span-1 row-span-1",
-  },
-  {
     value: "logistics",
     label: "Logistics",
     icon: "Truck",
@@ -65,7 +45,7 @@ const categories = [
     image:
       "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=80",
     alt: "Logistics and delivery trucks",
-    span: "lg:col-span-2 lg:row-span-1",
+    span: "lg:col-span-3 lg:row-span-1",
   },
   {
     value: "security",
@@ -175,7 +155,15 @@ export default function Services() {
                     text-sm md:text-base px-4 py-2
                   "
                 >
-                  <Link href={`/services?category=${cat.value}`}>
+                  <Link
+                    href={
+                      cat.value === "logistics"
+                        ? "/quote-services?tab=logistics"
+                        : cat.value === "security"
+                          ? "/quote-services?tab=security"
+                          : `/services?category=${cat.value}`
+                    }
+                  >
                     Explore <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

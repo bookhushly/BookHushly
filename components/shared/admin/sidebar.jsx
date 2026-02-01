@@ -12,6 +12,7 @@ import {
   Settings,
   User,
   X,
+  Banknote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,11 @@ const navItems = [
     title: "Bookings",
     href: "/admin/dashboard/bookings",
     icon: Calendar,
+  },
+  {
+    title: "Payments",
+    href: "/admin/dashboard/payments",
+    icon: Banknote,
   },
   {
     title: "Logistics Requests",

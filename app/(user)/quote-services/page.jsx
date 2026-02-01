@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import LogisticsQuestionnaire from "@/components/shared/services/logistics-questionnaire";
 import SecurityQuestionnaire from "@/components/shared/services/security-questionnaire";
@@ -62,18 +62,12 @@ const serviceFeatures = {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
           />
         </svg>
       ),
-      title: "Real-time Tracking",
-      description: "Track your shipment from pickup to delivery",
+      title: "Nationwide Coverage",
+      description: "Delivery services across all major cities in Nigeria",
     },
   ],
   security: [
@@ -147,6 +141,19 @@ export default function ServicesPage() {
   const [successServiceType, setSuccessServiceType] = useState("");
   const { data: user, error, isLoading } = useCurrentUser();
 
+  // Sync tab with URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && (tabParam === "logistics" || tabParam === "security")) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    router.push(`/quote-services?tab=${newTab}`, { scroll: false });
+  };
+
   const handleSuccess = (serviceType) => {
     setSuccessServiceType(serviceType);
     setShowSuccess(true);
@@ -162,6 +169,7 @@ export default function ServicesPage() {
     setShowSuccess(false);
     setSuccessServiceType("");
   };
+
   if (isLoading)
     return (
       <Loading
@@ -222,7 +230,7 @@ export default function ServicesPage() {
           // Questionnaire View
           <Tabs
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={handleTabChange}
             className="w-full"
           >
             {/* Tab Switcher */}

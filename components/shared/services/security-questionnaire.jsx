@@ -75,7 +75,11 @@ export default function SecurityQuestionnaire({ onSuccess }) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 5));
+  const nextStep = (e) => {
+    e.preventDefault();
+    setStep((prev) => Math.min(prev + 1, 5));
+  };
+
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleSubmit = async (e) => {
@@ -150,7 +154,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={step === 5 ? handleSubmit : nextStep}>
         <Card className="p-6">
           {/* Step 1: Service Type */}
           {step === 1 && (
@@ -315,6 +319,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                   <Select
                     value={formData.state}
                     onValueChange={(v) => updateField("state", v)}
+                    required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select state" />
@@ -335,6 +340,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                 <Select
                   value={formData.duration_type}
                   onValueChange={(v) => updateField("duration_type", v)}
+                  required
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -400,6 +406,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                 <Select
                   value={formData.shift_pattern}
                   onValueChange={(v) => updateField("shift_pattern", v)}
+                  required
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -444,6 +451,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                   <Select
                     value={formData.guard_type}
                     onValueChange={(v) => updateField("guard_type", v)}
+                    required
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -657,6 +665,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                 <Select
                   value={formData.risk_level}
                   onValueChange={(v) => updateField("risk_level", v)}
+                  required
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -810,8 +819,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
             )}
             {step < 5 ? (
               <Button
-                type="button"
-                onClick={nextStep}
+                type="submit"
                 className="ml-auto bg-purple-600 hover:bg-purple-700"
               >
                 Next

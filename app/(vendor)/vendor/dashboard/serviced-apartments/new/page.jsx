@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-// import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +33,9 @@ import Step8Review from "../../../../../../components/shared/dashboard/vendor/ap
 import Step7Policies from "../../../../../../components/shared/dashboard/vendor/apartments/step7";
 import { useVendor } from "../../../../../../hooks/use-vendor";
 
+// Force dynamic rendering - prevent SSR
+export const dynamic = "force-dynamic";
+
 const STORAGE_KEY = "apartment_form_draft";
 const STEPS_TOTAL = 8;
 
@@ -60,7 +62,6 @@ const STEP_TITLES = {
 };
 
 const INITIAL_FORM_DATA = {
-  // Basic Info
   name: "",
   description: "",
   apartment_type: "",
@@ -74,22 +75,16 @@ const INITIAL_FORM_DATA = {
   has_balcony: false,
   has_terrace: false,
   parking_spaces: 0,
-
-  // Location
   address: "",
   city: "",
   state: "",
   area: "",
   landmark: "",
-
-  // Pricing
   price_per_night: "",
   price_per_week: "",
   price_per_month: "",
   minimum_stay: 1,
   caution_deposit: "",
-
-  // Utilities
   utilities_included: false,
   electricity_included: false,
   generator_available: false,
@@ -99,8 +94,6 @@ const INITIAL_FORM_DATA = {
   water_supply: "",
   internet_included: false,
   internet_speed: "",
-
-  // Security
   security_features: {
     "24hr_security": false,
     cctv_surveillance: false,
@@ -108,16 +101,10 @@ const INITIAL_FORM_DATA = {
     access_control: false,
     intercom_system: false,
   },
-
-  // Amenities
   amenities: {},
-
-  // Media
   image_urls: [],
   video_url: "",
   virtual_tour_url: "",
-
-  // Policies
   check_in_time: "14:00",
   check_out_time: "12:00",
   cancellation_policy: "",
@@ -136,9 +123,63 @@ export default function ApartmentCreationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted (client-side only)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch user
+  useEffect(() => {
+    if (!mounted) return;
+
+    const getUser = async () => {
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error) {
+          console.error("Error fetching user:", error);
+          toast.error("Failed to authenticate");
+          router.push("/login");
+          return;
+        }
+
+        if (!user) {
+          toast.error("Please log in to continue");
+          router.push("/login");
+          return;
+        }
+
+        setUserId(user.id);
+      } catch (error) {
+        console.error("Error in getUser:", error);
+        toast.error("Authentication error");
+        router.push("/login");
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    getUser();
+  }, [mounted, router, supabase.auth]);
+
+  // Fetch vendor data only when userId is available
+  const {
+    data: vendor,
+    isLoading: vendorLoading,
+    error: vendorError,
+  } = useVendor(userId);
 
   // Load from localStorage on mount
   useEffect(() => {
+    if (!mounted) return;
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -151,10 +192,12 @@ export default function ApartmentCreationForm() {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
-  }, []);
+  }, [mounted]);
 
   // Auto-save to localStorage with debounce
   useEffect(() => {
+    if (!mounted) return;
+
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(
@@ -163,29 +206,55 @@ export default function ApartmentCreationForm() {
             data: formData,
             step: currentStep,
             lastSaved: new Date().toISOString(),
-          })
+          }),
         );
       } catch (error) {
         console.error("Failed to save draft:", error);
       }
-    }, 1000); // Debounce 1 second
+    }, 1000);
 
     return () => clearTimeout(timer);
-  }, [formData, currentStep]);
-  const { data: user, error: userError } = supabase.auth.getUser();
-  console.log("user is", user);
-  const { data: vendor, isLoading, error } = useVendor(user.id);
-  if (isLoading) {
-    return <p>Verifying Vendor...</p>;
+  }, [formData, currentStep, mounted]);
+
+  // Don't render anything until mounted
+  if (!mounted) {
+    return null;
   }
-  if (error) {
-    console.log("Vendor Fetch Failed", error);
-    return <p>Something went wrong</p>;
+
+  // Loading state
+  if (loadingUser || (userId && vendorLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
+          <p className="text-gray-600">Verifying vendor access...</p>
+        </div>
+      </div>
+    );
   }
-  // Update form data
+
+  // Error state
+  if (vendorError || (userId && !vendor)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">
+            {vendorError
+              ? "Failed to verify vendor status"
+              : "Vendor account not found"}
+          </p>
+          <Button onClick={() => router.push("/vendor/dashboard")}>
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const updateFormData = useCallback((updates) => {
     setFormData((prev) => ({ ...prev, ...updates }));
-    // Clear errors for updated fields
     setErrors((prev) => {
       const newErrors = { ...prev };
       Object.keys(updates).forEach((key) => {
@@ -195,35 +264,25 @@ export default function ApartmentCreationForm() {
     });
   }, []);
 
-  // Validate current step
   const validateStep = () => {
     const stepErrors = {};
 
     if (currentStep === 1) {
-      if (!formData.name?.trim()) {
+      if (!formData.name?.trim())
         stepErrors.name = "Apartment name is required";
-      }
-      if (!formData.apartment_type) {
+      if (!formData.apartment_type)
         stepErrors.apartment_type = "Apartment type is required";
-      }
-      if (!formData.bedrooms || formData.bedrooms < 1) {
+      if (!formData.bedrooms || formData.bedrooms < 1)
         stepErrors.bedrooms = "At least 1 bedroom is required";
-      }
-      if (!formData.bathrooms || formData.bathrooms < 1) {
+      if (!formData.bathrooms || formData.bathrooms < 1)
         stepErrors.bathrooms = "At least 1 bathroom is required";
-      }
-      if (!formData.max_guests || formData.max_guests < 1) {
+      if (!formData.max_guests || formData.max_guests < 1)
         stepErrors.max_guests = "Maximum guests is required";
-      }
     }
 
     if (currentStep === 2) {
-      if (!formData.city?.trim()) {
-        stepErrors.city = "City is required";
-      }
-      if (!formData.state?.trim()) {
-        stepErrors.state = "State is required";
-      }
+      if (!formData.city?.trim()) stepErrors.city = "City is required";
+      if (!formData.state?.trim()) stepErrors.state = "State is required";
     }
 
     if (currentStep === 3) {
@@ -242,20 +301,17 @@ export default function ApartmentCreationForm() {
     return Object.keys(stepErrors).length === 0;
   };
 
-  // Navigate to next step
   const handleNext = () => {
     if (!validateStep()) {
       toast.error("Please fill in all required fields");
       return;
     }
-
     if (currentStep < STEPS_TOTAL) {
       setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  // Navigate to previous step
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
@@ -263,7 +319,6 @@ export default function ApartmentCreationForm() {
     }
   };
 
-  // Manual save draft
   const handleSaveDraft = () => {
     setIsSaving(true);
     try {
@@ -273,7 +328,7 @@ export default function ApartmentCreationForm() {
           data: formData,
           step: currentStep,
           lastSaved: new Date().toISOString(),
-        })
+        }),
       );
       toast.success("Draft saved successfully");
     } catch (error) {
@@ -283,7 +338,6 @@ export default function ApartmentCreationForm() {
     }
   };
 
-  // Submit form
   const handleSubmit = async () => {
     if (!validateStep()) {
       toast.error("Please complete all required fields");
@@ -293,22 +347,15 @@ export default function ApartmentCreationForm() {
     setIsSubmitting(true);
 
     try {
-      // Create FormData for server action
       const submitData = new FormData();
-
       submitData.append("vendor_id", vendor.id);
 
-      // Append all form fields
       Object.entries(formData).forEach(([key, value]) => {
-        if (value === null || value === undefined || value === "") {
-          return; // Skip empty values
-        }
+        if (value === null || value === undefined || value === "") return;
 
         if (typeof value === "object" && !Array.isArray(value)) {
-          // JSON objects (amenities, security_features)
           submitData.append(key, JSON.stringify(value));
         } else if (Array.isArray(value)) {
-          // Arrays (image_urls)
           submitData.append(key, JSON.stringify(value));
         } else if (typeof value === "boolean") {
           submitData.append(key, value.toString());
@@ -317,25 +364,16 @@ export default function ApartmentCreationForm() {
         }
       });
 
-      // Call server action
       const result = await createServicedApartment(submitData);
 
       if (result.success) {
         toast.success(result.message || "Apartment created successfully!");
-
-        // Clear localStorage
         localStorage.removeItem(STORAGE_KEY);
-
-        // Redirect to apartment page
         router.push(`/vendor/serviced-apartments/${result.data.id}`);
       } else {
         toast.error(result.error || "Failed to create apartment");
-
-        // Handle validation errors
         if (result.errors) {
           setErrors(result.errors);
-
-          // Find which step has errors and navigate there
           const errorFields = Object.keys(result.errors);
           if (
             errorFields.some((f) =>
@@ -345,7 +383,7 @@ export default function ApartmentCreationForm() {
                 "bedrooms",
                 "bathrooms",
                 "max_guests",
-              ].includes(f)
+              ].includes(f),
             )
           ) {
             setCurrentStep(1);
@@ -366,21 +404,16 @@ export default function ApartmentCreationForm() {
     }
   };
 
-  // Handle exit with unsaved changes
-  const handleExit = () => {
-    setShowExitDialog(true);
-  };
-
+  const handleExit = () => setShowExitDialog(true);
   const confirmExit = () => {
     localStorage.removeItem(STORAGE_KEY);
     router.push("/vendor/dashboard");
   };
 
-  // Clear draft
   const clearDraft = () => {
     if (
       confirm(
-        "Are you sure you want to clear this draft? This cannot be undone."
+        "Are you sure you want to clear this draft? This cannot be undone.",
       )
     ) {
       localStorage.removeItem(STORAGE_KEY);
@@ -390,7 +423,6 @@ export default function ApartmentCreationForm() {
     }
   };
 
-  // Navigate to specific step (for review page)
   const navigateToStep = (step) => {
     if (step >= 1 && step <= STEPS_TOTAL) {
       setCurrentStep(step);
@@ -404,7 +436,6 @@ export default function ApartmentCreationForm() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -440,9 +471,13 @@ export default function ApartmentCreationForm() {
             </div>
           </div>
 
-          {/* Progress Bar */}
           <div className="space-y-2">
-            {/* <Progress value={progress} className="h-2" /> */}
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-purple-600 h-2 rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
             <div className="flex justify-between text-xs text-gray-500">
               <span>Progress: {Math.round(progress)}%</span>
               <span>Auto-saving...</span>
@@ -450,7 +485,6 @@ export default function ApartmentCreationForm() {
           </div>
         </div>
 
-        {/* Step Content */}
         <div className="mb-8">
           {CurrentStepComponent ? (
             currentStep === 8 ? (
@@ -473,15 +507,11 @@ export default function ApartmentCreationForm() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Step Under Construction
               </h3>
-              <p className="text-gray-600">
-                This step is being built. For now, you can navigate using the
-                buttons below.
-              </p>
+              <p className="text-gray-600">This step is being built.</p>
             </div>
           )}
         </div>
 
-        {/* Navigation Buttons */}
         <div className="flex items-center justify-between py-6 border-t border-gray-200 bg-white rounded-lg px-6">
           <Button
             variant="outline"
@@ -492,16 +522,14 @@ export default function ApartmentCreationForm() {
             Previous
           </Button>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearDraft}
-              disabled={isSubmitting}
-            >
-              Clear Draft
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearDraft}
+            disabled={isSubmitting}
+          >
+            Clear Draft
+          </Button>
 
           {currentStep < STEPS_TOTAL ? (
             <Button
@@ -531,7 +559,6 @@ export default function ApartmentCreationForm() {
         </div>
       </div>
 
-      {/* Exit Confirmation Dialog */}
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
