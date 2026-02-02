@@ -1,19 +1,37 @@
+// app/services/[id]/page.jsx
 import { Suspense } from "react";
 import ServiceDetailClient from "./service-detail-content";
 import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   try {
     const { id } = await params;
     const supabase = await createClient();
 
-    const { data: service } = await supabase
-      .from("listings")
-      .select(
-        "title, description, category, location, media_urls, price, price_unit"
-      )
-      .eq("id", id)
-      .maybeSingle();
+    // Try fetching from all possible tables
+    const [listingsResult, hotelsResult, apartmentsResult] = await Promise.all([
+      supabase
+        .from("listings")
+        .select(
+          "title, description, category, location, media_urls, price, price_unit",
+        )
+        .eq("id", id)
+        .maybeSingle(),
+      supabase
+        .from("hotels")
+        .select("name, description, city, state, image_urls")
+        .eq("id", id)
+        .maybeSingle(),
+      supabase
+        .from("serviced_apartments")
+        .select("name, description, city, state, image_urls, price_per_night")
+        .eq("id", id)
+        .maybeSingle(),
+    ]);
+
+    const service =
+      listingsResult.data || hotelsResult.data || apartmentsResult.data;
 
     if (!service) {
       return {
@@ -22,51 +40,29 @@ export async function generateMetadata({ params }) {
       };
     }
 
-    const categoryMap = {
-      hotels: "Hotel",
-      "serviced-apartments": "Serviced Apartment",
-      "food-restaurants": "Restaurant",
-      events: "Event",
-      "car-rentals": "Car Rental",
-      logistics: "Logistics Service",
-      security: "Security Service",
-    };
-
-    const categoryName = categoryMap[service.category] || service.category;
-    const priceText = service.price
-      ? `₦${service.price.toLocaleString()}${service.price_unit ? `/${service.price_unit}` : ""}`
-      : "";
-
-    const description = service.description
-      ? `${service.description.slice(0, 155)}...`
-      : `Book ${service.title} on BookHushly. ${categoryName} in ${service.location}. ${priceText}`;
+    const title = service.title || service.name;
+    const description =
+      service.description?.slice(0, 155) ||
+      `Book ${title} on BookHushly. Quality services across Nigeria.`;
+    const images = service.media_urls || service.image_urls || [];
 
     return {
-      title: `${service.title} | BookHushly`,
+      title: `${title} | BookHushly`,
       description,
       openGraph: {
-        title: service.title,
+        title,
         description,
         type: "website",
-        images: service.media_urls?.[0] ? [service.media_urls[0]] : [],
+        images: images[0] ? [images[0]] : [],
         locale: "en_NG",
         siteName: "BookHushly",
       },
       twitter: {
         card: "summary_large_image",
-        title: service.title,
+        title,
         description,
-        images: service.media_urls?.[0] ? [service.media_urls[0]] : [],
+        images: images[0] ? [images[0]] : [],
       },
-      keywords: [
-        service.title,
-        categoryName,
-        service.location,
-        "Nigeria",
-        "BookHushly",
-        "booking",
-        service.category,
-      ],
     };
   } catch (error) {
     console.error("Error generating metadata:", error);
@@ -77,120 +73,116 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export async function generateStaticParams() {
-  try {
-    const supabase = await createClient();
-
-    const { data: testData, error: testError } = await supabase
-      .from("listings")
-      .select("count", { count: "exact" });
-
-    const { data: allServices, error: allError } = await supabase
-      .from("listings")
-      .select("id, active, title");
-
-    const { data: services, error } = await supabase
-      .from("listings")
-      .select("id, active, title")
-      .eq("active", true);
-
-    if (error) {
-      console.error("Error fetching services for static generation:", error);
-      return [];
-    }
-
-    if (!services || services.length === 0) {
-      console.log("No services found, but query succeeded");
-      return [];
-    }
-
-    const params = services.map((service) => ({
-      id: service.id.toString(),
-    }));
-
-    return params;
-  } catch (err) {
-    console.error("Exception in generateStaticParams:", err);
-    return [];
-  }
-}
-
 export default async function ServiceDetailPage({ params }) {
   try {
     const { id } = await params;
     const supabase = await createClient();
 
-    const { data: service, error } = await supabase
+    // Try fetching from listings first
+    let { data: service, error } = await supabase
       .from("listings")
-      .select(
-        `
-        id,
-        vendor_id,
-        title,
-        description,
-        category,
-        price,
-        location,
-        capacity,
-        duration,
-        availability,
-        features,
-        requirements,
-        cancellation_policy,
-        media_urls,
-        active,
-        vendor_name,
-        vendor_phone,
-        created_at,
-        event_date,
-        updated_at,
-        amenities,
-        category_data,
-        price_unit,
-        operating_hours,
-        service_areas,
-        bedrooms,
-        bathrooms,
-        minimum_stay,
-        security_deposit,
-        remaining_tickets,
-        event_type,
-        ticket_packages
-      `
-      )
+      .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    if (error) {
-      console.error("Error fetching service:", error);
-      return (
-        <div className="container py-8">Error loading service details</div>
-      );
+    let serviceType = "listings";
+
+    // If not found in listings, try hotels
+    if (!service) {
+      const hotelsResult = await supabase
+        .from("hotels")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      service = hotelsResult.data;
+      serviceType = "hotels";
+    }
+
+    // If still not found, try serviced apartments
+    if (!service) {
+      const apartmentsResult = await supabase
+        .from("serviced_apartments")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      service = apartmentsResult.data;
+      serviceType = "serviced_apartments";
     }
 
     if (!service) {
-      console.log("No service found for ID:", id);
-      return <div className="container py-8">Service not found</div>;
+      notFound();
     }
 
-    const parsedService = {
-      ...service,
-      requirements: service.requirements
-        ? service.requirements.split("\n").filter(Boolean)
-        : [],
-      media_urls: service.media_urls || [],
-      amenities: service.amenities || [],
-      ticket_packages: service.ticket_packages || [],
-      category_data: service.category_data || {},
-    };
+    // Normalize service data based on source
+    const normalizedService = normalizeServiceData(service, serviceType);
 
     return (
-      <Suspense>
-        <ServiceDetailClient service={parsedService} />
+      <Suspense fallback={<ServiceDetailSkeleton />}>
+        <ServiceDetailClient service={normalizedService} />
       </Suspense>
     );
   } catch (err) {
     console.error("Exception in ServiceDetailPage:", err);
-    return <div className="container py-8">Error loading service details</div>;
+    notFound();
   }
+}
+
+// Normalize data from different tables
+function normalizeServiceData(service, type) {
+  if (type === "hotels") {
+    return {
+      ...service,
+      title: service.name,
+      category: "hotels",
+      location: `${service.city}, ${service.state}`,
+      media_urls: service.image_urls || [],
+      // Hotels don't have a single price, will be handled in detail component
+    };
+  }
+
+  if (type === "serviced_apartments") {
+    return {
+      ...service,
+      title: service.name,
+      category: "serviced_apartments",
+      location: `${service.area ? service.area + ", " : ""}${service.city}, ${service.state}`,
+      price: service.price_per_night,
+      price_unit: "per_night",
+      media_urls: service.image_urls || [],
+      capacity: service.max_guests,
+    };
+  }
+
+  // Listings table data (already normalized)
+  return {
+    ...service,
+    media_urls: service.media_urls || [],
+    amenities: service.amenities || [],
+    category_data: service.category_data || {},
+  };
+}
+
+// Loading skeleton
+function ServiceDetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50 animate-pulse">
+      <div className="h-[70vh] bg-gray-200" />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 rounded" />
+              <div className="h-4 bg-gray-200 rounded" />
+              <div className="h-4 bg-gray-200 rounded w-5/6" />
+            </div>
+          </div>
+          <div className="h-96 bg-gray-200 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
 }

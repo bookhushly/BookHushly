@@ -1,36 +1,42 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { AuthGuard } from "@/components/shared/auth/auth-guard";
-import { useAuthStore, useBookingStore } from "@/lib/store";
-import { createBooking, getListing } from "@/lib/database";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import dynamic from "next/dynamic";
-import { Suspense } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 
 // Lazy-load service-specific components
 const EventsTicketPurchase = dynamic(
   () => import("../../common/EventTicketPurchase"),
-  {
-    ssr: false,
-  }
+  { ssr: false, loading: () => <ComponentLoader /> },
 );
+
 const EventCentersBookingForm = dynamic(
   () => import("./EventCenterBookingForm"),
-  { ssr: false }
+  { ssr: false, loading: () => <ComponentLoader /> },
 );
-// Add more components later (e.g., HotelsBookingForm)
+
+// Component loader
+function ComponentLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
+        <p className="text-gray-600">Loading form...</p>
+      </div>
+    </div>
+  );
+}
 
 const serviceComponents = {
   events: {
     event_organizer: EventsTicketPurchase,
     event_center: EventCentersBookingForm,
   },
-  hotels: null, // Placeholder for future components
+  hotels: null,
   serviced_apartments: null,
   car_rentals: null,
   food: null,
@@ -41,134 +47,122 @@ const serviceComponents = {
 export default function BookServiceClient() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuthStore();
-  const { addBooking } = useBookingStore();
+  const supabase = createClient();
 
-  const [loading, setLoading] = useState(false);
-  const [serviceLoading, setServiceLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [service, setService] = useState(null);
-  const [serviceError, setServiceError] = useState("");
+  const [error, setError] = useState("");
 
-  // Fetch service data
-  useEffect(() => {
-    const fetchService = async () => {
-      if (!params.id) return;
+  // Fetch service data with optimization
+  const fetchService = useCallback(async () => {
+    if (!params.id) {
+      setError("Invalid service ID");
+      setLoading(false);
+      return;
+    }
 
-      try {
-        setServiceLoading(true);
-        const { data: serviceData, error } = await getListing(params.id);
-        if (error) {
-          console.error("Error fetching listing:", error);
-          setServiceError("Failed to load service details");
-          return;
-        }
-        setService(serviceData);
-      } catch (err) {
-        console.error("Exception fetching service:", err);
-        setServiceError("An error occurred while loading service details");
-      } finally {
-        setServiceLoading(false);
-      }
-    };
-
-    fetchService();
-  }, [params.id]);
-
-  // Updated BookServiceClient.jsx handleSubmit function
-
-  const handleSubmit = async (bookingData) => {
-    setLoading(true);
     try {
-      let data, error;
+      setLoading(true);
+      setError("");
 
-      // Check if this is an event organizer (uses event_bookings table)
+      const { data, error: fetchError } = await supabase
+        .from("listings")
+        .select(
+          `
+          *,
+          vendors:vendor_id (
+            id,
+            business_name,
+            phone_number
+          )
+        `,
+        )
+        .eq("id", params.id)
+        .eq("active", true)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching listing:", fetchError);
+        setError("Service not found or unavailable");
+        return;
+      }
+
+      if (!data) {
+        setError("Service not found");
+        return;
+      }
+
+      setService(data);
+    } catch (err) {
+      console.error("Exception fetching service:", err);
+      setError("An error occurred while loading service details");
+    } finally {
+      setLoading(false);
+    }
+  }, [params.id, supabase]);
+
+  useEffect(() => {
+    fetchService();
+  }, [fetchService]);
+
+  // Handle booking submission
+  const handleSubmit = async (bookingData) => {
+    try {
       const isEventOrganizer =
         service?.category === "events" &&
         service?.event_type === "event_organizer";
 
-      if (isEventOrganizer) {
-        // Use event_bookings table for event organizers
-        const { data: eventBookingData, error: eventBookingError } =
-          await supabase
-            .from("event_bookings")
-            .insert([bookingData])
-            .select()
-            .single();
+      const table = isEventOrganizer ? "event_bookings" : "bookings";
 
-        data = eventBookingData;
-        error = eventBookingError;
-      } else {
-        // Use regular bookings table for other services
-        const result = await createBooking(bookingData);
-        data = result.data;
-        error = result.error;
+      const { data, error: bookingError } = await supabase
+        .from(table)
+        .insert([bookingData])
+        .select()
+        .single();
+
+      if (bookingError) {
+        throw new Error(bookingError.message);
       }
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      addBooking(data);
-
-      const isGuestUser = bookingData.temp_user_id && !bookingData.customer_id;
-
-      if (isGuestUser) {
-        return { data, error: null };
-      } else {
-        toast.success("Booking request submitted!", {
-          description:
-            "The vendor will review and confirm your booking shortly",
-        });
-        router.push("/dashboard/customer?tab=bookings");
-        return { data, error: null };
-      }
+      return { data, error: null };
     } catch (err) {
       console.error("Booking error:", err);
       return { data: null, error: err };
-    } finally {
-      setLoading(false);
     }
   };
+
   // Loading state
-  if (serviceLoading) {
+  if (loading) {
     return (
-      <AuthGuard allowUnauthenticated={true}>
-        <div className="container max-w-4xl py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                Loading service details...
-              </p>
-            </div>
+      <div className="container max-w-4xl py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
+            <p className="text-gray-600">Loading service details...</p>
           </div>
         </div>
-      </AuthGuard>
+      </div>
     );
   }
 
   // Error state
-  if (serviceError || !service) {
+  if (error || !service) {
     return (
-      <AuthGuard allowUnauthenticated={true}>
-        <div className="container max-w-4xl py-8">
-          <div className="mb-6">
-            <Link
-              href="/services"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Services
-            </Link>
-          </div>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {serviceError || "Service not found"}
-            </AlertDescription>
-          </Alert>
+      <div className="container max-w-4xl py-8">
+        <div className="mb-6">
+          <Link
+            href="/services"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Services
+          </Link>
         </div>
-      </AuthGuard>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error || "Service not found"}</AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
@@ -182,47 +176,36 @@ export default function BookServiceClient() {
 
   if (!Component) {
     return (
-      <AuthGuard allowUnauthenticated={true}>
-        <div className="container max-w-4xl py-8">
-          <div className="mb-6">
-            <Link
-              href="/services"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Services
-            </Link>
-          </div>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Unsupported service type</AlertDescription>
-          </Alert>
+      <div className="container max-w-4xl py-8">
+        <div className="mb-6">
+          <Link
+            href="/services"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Services
+          </Link>
         </div>
-      </AuthGuard>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>Unsupported service type</AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   return (
-    <AuthGuard allowUnauthenticated={true}>
-      <div className="container max-w-6xl py-8">
-        <div className="mb-6">
-          <Link
-            href={`/services/${params.id}`}
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Service Details
-          </Link>
-        </div>
-        <Suspense fallback={<div>Loading form...</div>}>
-          <Component
-            service={service}
-            user={user}
-            addBooking={addBooking}
-            onSubmit={handleSubmit}
-          />
-        </Suspense>
+    <div className="container max-w-6xl py-8">
+      <div className="mb-6">
+        <Link
+          href={`/services/${params.id}`}
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Service Details
+        </Link>
       </div>
-    </AuthGuard>
+      <Component service={service} onSubmit={handleSubmit} />
+    </div>
   );
 }

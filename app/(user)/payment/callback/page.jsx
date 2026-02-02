@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ServiceRequestSuccessModal from "../../../../components/shared/payment/request-successful";
 
@@ -8,7 +8,7 @@ export default function PaymentCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [status, setStatus] = useState("verifying"); // verifying, success, failed, pending
+  const [status, setStatus] = useState("verifying");
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [error, setError] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -51,10 +51,31 @@ export default function PaymentCallbackPage() {
         setPaymentDetails(data.payment);
         setStatus("success");
 
-        // Show modal for service requests (logistics/security)
+        // CRITICAL: Check request type and redirect appropriately
         const requestType = data.payment?.request_type;
+
+        // Service requests (logistics/security) show modal
         if (requestType === "logistics" || requestType === "security") {
           setShowSuccessModal(true);
+        }
+        // Event bookings redirect to order-successful for ticket generation
+        else if (requestType === "event") {
+          const eventBookingId = data.payment?.event_booking_id;
+          if (eventBookingId) {
+            // Redirect to order-successful page where tickets are generated
+            router.push(`/order-successful/${eventBookingId}`);
+            return; // Stop here, don't show this page
+          }
+        }
+        // Hotel/Apartment bookings also go to order-successful
+        else if (requestType === "hotel" || requestType === "apartment") {
+          const bookingId =
+            data.payment?.hotel_booking_id ||
+            data.payment?.apartment_booking_id;
+          if (bookingId) {
+            router.push(`/order-successful/${bookingId}`);
+            return;
+          }
         }
       } else {
         setStatus("failed");
@@ -87,31 +108,32 @@ export default function PaymentCallbackPage() {
 
     const requestType = paymentDetails.request_type;
 
-    // Service requests (logistics/security) show modal instead
+    // Service requests (logistics/security) show modal
     if (requestType === "logistics" || requestType === "security") {
       setShowSuccessModal(true);
       return;
     }
 
-    // For bookings, redirect to appropriate pages when they exist
-    // For now, redirect to dashboard
-    router.push("/dashboard");
+    // Event bookings redirect to order-successful
+    if (requestType === "event") {
+      const eventBookingId = paymentDetails.event_booking_id;
+      if (eventBookingId) {
+        router.push(`/order-successful/${eventBookingId}`);
+        return;
+      }
+    }
 
-    /* Future implementation when booking pages are ready:
+    // Hotel/Apartment bookings redirect to order-successful
     const hotelBookingId = paymentDetails.hotel_booking_id;
     const apartmentBookingId = paymentDetails.apartment_booking_id;
-    const eventBookingId = paymentDetails.event_booking_id;
 
     if (hotelBookingId) {
-      router.push(`/bookings/hotel/${hotelBookingId}`);
+      router.push(`/order-successful/${hotelBookingId}`);
     } else if (apartmentBookingId) {
-      router.push(`/bookings/apartment/${apartmentBookingId}`);
-    } else if (eventBookingId) {
-      router.push(`/bookings/event/${eventBookingId}`);
+      router.push(`/order-successful/${apartmentBookingId}`);
     } else {
       router.push("/dashboard");
     }
-    */
   };
 
   const handleRetry = () => {
@@ -146,7 +168,8 @@ export default function PaymentCallbackPage() {
     );
   }
 
-  // Success state - Show modal for service requests, otherwise show success page
+  // Success state - Only shown for service requests now
+  // Events/Hotels/Apartments are redirected to order-successful
   if (status === "success") {
     const isServiceRequest =
       paymentDetails?.request_type === "logistics" ||
@@ -158,7 +181,6 @@ export default function PaymentCallbackPage() {
         <>
           <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
             <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-              {/* This content is behind the modal but shown if modal is closed */}
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg
                   className="w-12 h-12 text-green-600"
@@ -202,7 +224,7 @@ export default function PaymentCallbackPage() {
       );
     }
 
-    // Bookings show standard success page
+    // Fallback: This should rarely be reached since we redirect bookings
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
@@ -229,51 +251,12 @@ export default function PaymentCallbackPage() {
             Your payment has been confirmed and processed successfully.
           </p>
 
-          {paymentDetails && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Reference</span>
-                  <span className="font-medium text-gray-900 font-mono">
-                    {paymentDetails.reference}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Amount</span>
-                  <span className="font-medium text-gray-900">
-                    ₦{paymentDetails.amount?.toLocaleString()}
-                  </span>
-                </div>
-                {paymentDetails.channel && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Payment Method</span>
-                    <span className="font-medium text-gray-900 capitalize">
-                      {paymentDetails.channel}
-                    </span>
-                  </div>
-                )}
-                {paymentDetails.paid_at && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Paid At</span>
-                    <span className="font-medium text-gray-900">
-                      {new Date(paymentDetails.paid_at).toLocaleString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           <button
             onClick={handleContinue}
             className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-purple-700 transition-colors"
           >
             Continue
           </button>
-
-          <p className="text-xs text-gray-500 mt-4">
-            A confirmation email has been sent to your registered email address.
-          </p>
         </div>
       </div>
     );

@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { verifyPayment } from "@/lib/payments";
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   generateEventTicketsZip,
@@ -19,161 +18,223 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import {
-  detectBookingType,
-  fetchBooking,
-  fetchPayment,
-  updateBookingStatus,
-  supportsTickets,
-  getBookingTypeName,
-  validateBookingData,
-  BOOKING_TYPES,
-} from "@/services/booking";
-import {
-  EventBookingDisplay,
-  HotelBookingDisplay,
-  ApartmentBookingDisplay,
-} from "@/components/shared/book/display";
+import { createClient } from "@/lib/supabase/client";
+
+const BOOKING_TYPES = {
+  EVENT: "event",
+  HOTEL: "hotel",
+  APARTMENT: "apartment",
+};
 
 const OrderSuccessful = () => {
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Memoize booking type to prevent unnecessary re-renders
-  const bookingType = useMemo(() => {
-    return detectBookingType(searchParams);
-  }, [searchParams?.get("type")]);
+  const supabase = createClient();
 
   const [booking, setBooking] = useState(null);
   const [payment, setPayment] = useState(null);
+  const [bookingType, setBookingType] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const [emailAttempted, setEmailAttempted] = useState(false);
 
-  useEffect(() => {
-    if (!params?.id) {
-      console.log("❌ No booking ID found in params");
-      return;
+  // Detect booking type from URL or data
+  const detectBookingType = useCallback((bookingData) => {
+    // Check if it's an event booking (has ticket_details or guests field used for tickets)
+    if (bookingData?.ticket_details) {
+      return BOOKING_TYPES.EVENT;
     }
+    // Check for hotel-specific fields
+    if (bookingData?.room_type_id || bookingData?.check_in_date) {
+      return BOOKING_TYPES.HOTEL;
+    }
+    // Check for apartment-specific fields
+    if (bookingData?.check_in_date && bookingData?.bedrooms) {
+      return BOOKING_TYPES.APARTMENT;
+    }
+    // Default to event if has listing_id (most listings are events)
+    return BOOKING_TYPES.EVENT;
+  }, []);
+
+  // Fetch booking data
+  const fetchBookingData = useCallback(
+    async (bookingId) => {
+      // Try event_bookings first
+      let { data: eventBooking, error: eventError } = await supabase
+        .from("event_bookings")
+        .select(
+          `
+        *,
+        listing:listing_id (
+          id,
+          title,
+          description,
+          location,
+          event_date,
+          event_time,
+          ticket_packages,
+          vendors:vendor_id (
+            business_name,
+            phone_number
+          )
+        )
+      `,
+        )
+        .eq("id", bookingId)
+        .single();
+
+      if (eventBooking) {
+        return { data: eventBooking, type: BOOKING_TYPES.EVENT };
+      }
+
+      // Try hotel_bookings
+      let { data: hotelBooking, error: hotelError } = await supabase
+        .from("hotel_bookings")
+        .select(
+          `
+        *,
+        hotel:hotel_id (
+          id,
+          name,
+          location,
+          vendors:vendor_id (
+            business_name,
+            phone_number
+          )
+        )
+      `,
+        )
+        .eq("id", bookingId)
+        .single();
+
+      if (hotelBooking) {
+        return { data: hotelBooking, type: BOOKING_TYPES.HOTEL };
+      }
+
+      // Try apartment_bookings
+      let { data: apartmentBooking, error: apartmentError } = await supabase
+        .from("apartment_bookings")
+        .select(
+          `
+        *,
+        apartment:apartment_id (
+          id,
+          name,
+          location,
+          vendors:vendor_id (
+            business_name,
+            phone_number
+          )
+        )
+      `,
+        )
+        .eq("id", bookingId)
+        .single();
+
+      if (apartmentBooking) {
+        return { data: apartmentBooking, type: BOOKING_TYPES.APARTMENT };
+      }
+
+      throw new Error("Booking not found");
+    },
+    [supabase],
+  );
+
+  // Fetch payment record
+  const fetchPaymentData = useCallback(
+    async (bookingId, type) => {
+      const column =
+        type === BOOKING_TYPES.EVENT
+          ? "event_booking_id"
+          : type === BOOKING_TYPES.HOTEL
+            ? "hotel_booking_id"
+            : "apartment_booking_id";
+
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*")
+        .eq(column, bookingId)
+        .single();
+
+      if (error || !data) {
+        throw new Error("Payment record not found");
+      }
+
+      return data;
+    },
+    [supabase],
+  );
+
+  // Verify and process order
+  useEffect(() => {
+    if (!params?.id) return;
 
     let isCancelled = false;
 
     const verifyOrder = async () => {
-      console.log("🔄 Starting order verification...");
       try {
         setLoading(true);
 
         const bookingId = String(params.id).trim().toLowerCase();
-        console.log("📦 Booking ID:", bookingId);
 
         // Validate UUID format
         const uuidRegex =
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(bookingId)) {
-          console.log("❌ Invalid booking ID format");
           throw new Error("Invalid booking ID format");
         }
 
-        console.log("✅ Booking ID format verified");
-        console.log("📋 Booking type:", bookingType);
-
         // Fetch booking data
-        console.log("📡 Fetching booking from database...");
-        const bookingData = await fetchBooking(bookingId, bookingType);
-        console.log("✅ Booking data fetched successfully:", bookingData);
+        const { data: bookingData, type } = await fetchBookingData(bookingId);
 
-        // Validate booking data
-        validateBookingData(bookingData, bookingType);
-        console.log("✅ Booking data validated");
+        if (isCancelled) return;
 
-        if (!isCancelled) {
-          setBooking(bookingData);
-        }
+        setBooking(bookingData);
+        setBookingType(type);
 
         // Fetch payment record
-        console.log("📡 Fetching payment record...");
-        const paymentData = await fetchPayment(bookingId, bookingType);
-        console.log("✅ Payment data fetched:", paymentData);
+        const paymentData = await fetchPaymentData(bookingId, type);
 
-        if (!isCancelled) {
-          setPayment(paymentData);
-        }
+        if (isCancelled) return;
 
-        // Verify payment externally
-        console.log("🔍 Verifying payment with provider...");
-        const { data: verificationData, error: verificationError } =
-          await verifyPayment(paymentData.reference);
+        setPayment(paymentData);
 
-        if (verificationError || !verificationData) {
-          console.log("❌ Payment verification failed:", verificationError);
-          throw new Error(
-            `Payment verification failed: ${
-              verificationError?.message || "Invalid payment status"
-            }`
-          );
-        }
+        // Check if payment is already verified
+        if (
+          paymentData.status === "completed" ||
+          paymentData.status === "success"
+        ) {
+          // Payment already verified, show success
+          toast.success("Order confirmed! Your booking is ready.");
 
-        console.log("✅ Payment verification response:", verificationData);
-
-        if (verificationData.status === "success") {
-          console.log("💰 Payment verified successfully, updating booking...");
-          await updateBookingStatus(
-            bookingId,
-            bookingType,
-            bookingType !== "hotel" ? undefined : "confirmed"
-          );
-          console.log("✅ Booking status updated to 'confirmed'");
-
-          if (!isCancelled) {
-            console.log("🎉 Order confirmed! Showing success toast...");
-            toast.success("Order confirmed! Your booking is ready.");
-          }
-
-          // Send confirmation email (only once)
-          if (!emailAttempted && !isCancelled) {
-            setEmailAttempted(true); // Set immediately to prevent double-sending
-
+          // Send confirmation email (only if not already sent)
+          if (!emailSent && bookingData.payment_status !== "paid") {
+            setEmailSent(true);
             try {
-              console.log("📧 Sending confirmation email...");
               const emailResponse = await fetch("/api/send-payment-email", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   bookingId: bookingId,
-                  bookingType: bookingType,
+                  bookingType: type,
                 }),
               });
 
-              const emailResult = await emailResponse.json();
-
-              if (emailResponse.ok && emailResult.success) {
-                console.log("✅ Confirmation email sent successfully!");
-                if (!isCancelled) {
-                  setEmailSent(true);
-                  toast.success("Confirmation sent to your email!");
-                }
-              } else {
-                console.error("❌ Email failed:", emailResult);
-                if (!isCancelled) {
-                  toast.warning(
-                    "Order confirmed, but email delivery failed. You can still download your confirmation."
-                  );
-                }
+              if (emailResponse.ok) {
+                toast.success("Confirmation sent to your email!");
               }
             } catch (emailErr) {
-              console.error("❌ Failed to send confirmation email:", emailErr);
-              if (!isCancelled) {
-                toast.info(
-                  "Order confirmed! Download your confirmation below (email will arrive shortly)."
-                );
-              }
+              console.error("Email send failed:", emailErr);
             }
           }
+        } else {
+          // Payment not verified yet
+          throw new Error(
+            "Payment verification pending. Please wait a moment.",
+          );
         }
       } catch (err) {
-        console.log("❌ Error during verification:", err);
+        console.error("Order verification error:", err);
         if (!isCancelled) {
           const message =
             err instanceof Error ? err.message : "An unexpected error occurred";
@@ -183,10 +244,7 @@ const OrderSuccessful = () => {
       } finally {
         if (!isCancelled) {
           setLoading(false);
-        } else {
-          console.log("⚠️ Cleanup skipped, component unmounted");
         }
-        console.log("🏁 Verification flow complete.");
       }
     };
 
@@ -195,23 +253,25 @@ const OrderSuccessful = () => {
     return () => {
       isCancelled = true;
     };
-  }, [params?.id, bookingType, emailAttempted]); // Stable dependencies
+  }, [params?.id, fetchBookingData, fetchPaymentData, emailSent]);
 
-  const handleDownloadEventTickets = async () => {
+  // Download event tickets
+  const handleDownloadEventTickets = useCallback(async () => {
     if (!booking) return;
 
     try {
       const totalTickets = await generateEventTicketsZip(booking);
       toast.success(
-        `Successfully generated ${totalTickets} ticket${totalTickets > 1 ? "s" : ""}`
+        `Successfully generated ${totalTickets} ticket${totalTickets > 1 ? "s" : ""}`,
       );
     } catch (err) {
       console.error("Error generating tickets:", err);
       toast.error(err.message || "Failed to generate tickets");
     }
-  };
+  }, [booking]);
 
-  const handleDownloadConfirmation = async () => {
+  // Download booking confirmation
+  const handleDownloadConfirmation = useCallback(async () => {
     if (!booking || !payment) return;
 
     try {
@@ -221,34 +281,25 @@ const OrderSuccessful = () => {
       console.error("Error generating confirmation:", err);
       toast.error(err.message || "Failed to generate confirmation");
     }
-  };
+  }, [booking, payment, bookingType]);
 
-  const getContactEmail = () => {
-    if (bookingType === BOOKING_TYPES.EVENT) {
-      return booking?.contact_email;
-    } else if (bookingType === BOOKING_TYPES.HOTEL) {
-      return booking?.guest_email;
-    } else if (bookingType === BOOKING_TYPES.APARTMENT) {
-      return booking?.guest_email;
-    }
-    return "N/A";
-  };
+  // Get contact details based on booking type
+  const getContactEmail = useCallback(() => {
+    if (!booking) return "N/A";
+    return booking.contact_email || booking.guest_email || "N/A";
+  }, [booking]);
 
-  const getContactPhone = () => {
-    if (bookingType === BOOKING_TYPES.EVENT) {
-      return booking?.contact_phone;
-    } else if (bookingType === BOOKING_TYPES.HOTEL) {
-      return booking?.guest_phone;
-    } else if (bookingType === BOOKING_TYPES.APARTMENT) {
-      return booking?.guest_phone;
-    }
-    return "N/A";
-  };
+  const getContactPhone = useCallback(() => {
+    if (!booking) return "N/A";
+    return booking.contact_phone || booking.guest_phone || "N/A";
+  }, [booking]);
 
-  const getTotalAmount = () => {
-    return booking?.total_amount || booking?.total_price || 0;
-  };
+  const getTotalAmount = useCallback(() => {
+    if (!booking) return 0;
+    return booking.total_amount || booking.total_price || 0;
+  }, [booking]);
 
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -262,6 +313,7 @@ const OrderSuccessful = () => {
     );
   }
 
+  // Error state
   if (error || !booking || !payment) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -287,6 +339,7 @@ const OrderSuccessful = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-4 py-8">
+        {/* Success Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-600 rounded-full mb-3">
             <CheckCircle className="w-6 h-6 text-white" />
@@ -299,42 +352,129 @@ const OrderSuccessful = () => {
           </p>
         </div>
 
-        {/* Render appropriate booking display */}
-        <div className="mb-5">
-          {bookingType === BOOKING_TYPES.EVENT && (
-            <EventBookingDisplay booking={booking} />
-          )}
-          {bookingType === BOOKING_TYPES.HOTEL && (
-            <HotelBookingDisplay booking={booking} />
-          )}
-          {bookingType === BOOKING_TYPES.APARTMENT && (
-            <ApartmentBookingDisplay booking={booking} />
-          )}
+        {/* Booking Details */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
+          <h3 className="font-semibold text-gray-900 text-sm mb-3">
+            Booking Details
+          </h3>
+          <div className="space-y-2 text-sm">
+            {bookingType === BOOKING_TYPES.EVENT && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Event</span>
+                  <span className="text-gray-900 font-medium">
+                    {booking.listing?.title || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date</span>
+                  <span className="text-gray-900">
+                    {booking.listing?.event_date
+                      ? new Date(
+                          booking.listing.event_date,
+                        ).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Location</span>
+                  <span className="text-gray-900">
+                    {booking.listing?.location || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Tickets</span>
+                  <span className="text-gray-900">{booking.guests || 0}</span>
+                </div>
+              </>
+            )}
+
+            {bookingType === BOOKING_TYPES.HOTEL && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Hotel</span>
+                  <span className="text-gray-900 font-medium">
+                    {booking.hotel?.name || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Check-in</span>
+                  <span className="text-gray-900">
+                    {booking.check_in_date
+                      ? new Date(booking.check_in_date).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Check-out</span>
+                  <span className="text-gray-900">
+                    {booking.check_out_date
+                      ? new Date(booking.check_out_date).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Guests</span>
+                  <span className="text-gray-900">
+                    {booking.number_of_guests || 0}
+                  </span>
+                </div>
+              </>
+            )}
+
+            {bookingType === BOOKING_TYPES.APARTMENT && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Apartment</span>
+                  <span className="text-gray-900 font-medium">
+                    {booking.apartment?.name || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Check-in</span>
+                  <span className="text-gray-900">
+                    {booking.check_in_date
+                      ? new Date(booking.check_in_date).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Check-out</span>
+                  <span className="text-gray-900">
+                    {booking.check_out_date
+                      ? new Date(booking.check_out_date).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Guests</span>
+                  <span className="text-gray-900">
+                    {booking.number_of_guests || 0}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Total amount */}
+        {/* Total Amount */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Total Paid</span>
             <span className="text-xl font-bold text-gray-900">
-              {payment.vendor_currency || "NGN"}{" "}
+              {payment.currency || "NGN"}{" "}
               {Number(getTotalAmount()).toLocaleString()}
             </span>
           </div>
         </div>
 
-        {/* Download button */}
+        {/* Download Button */}
         <button
-          onClick={() => {
-            if (
-              bookingType === BOOKING_TYPES.EVENT &&
-              supportsTickets(bookingType)
-            ) {
-              handleDownloadEventTickets();
-            } else {
-              handleDownloadConfirmation();
-            }
-          }}
+          onClick={
+            bookingType === BOOKING_TYPES.EVENT
+              ? handleDownloadEventTickets
+              : handleDownloadConfirmation
+          }
           className="w-full mb-5 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-colors text-sm"
         >
           <Download className="w-4 h-4" />
@@ -343,7 +483,7 @@ const OrderSuccessful = () => {
             : "Download Confirmation"}
         </button>
 
-        {/* Contact details */}
+        {/* Contact Details */}
         <div className="grid sm:grid-cols-2 gap-4 mb-5">
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <h3 className="font-semibold text-gray-900 text-sm mb-3">
@@ -381,7 +521,7 @@ const OrderSuccessful = () => {
           </div>
         </div>
 
-        {/* Important notes */}
+        {/* Important Notes */}
         {bookingType === BOOKING_TYPES.EVENT && (
           <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-5">
             <h3 className="font-semibold text-gray-900 text-sm mb-3">
@@ -435,6 +575,7 @@ const OrderSuccessful = () => {
           </div>
         )}
 
+        {/* Footer */}
         <div className="text-center pt-5 border-t border-gray-100">
           <a
             href="/services"
