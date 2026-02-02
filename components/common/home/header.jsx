@@ -284,7 +284,7 @@ export function Header() {
             isMenuOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="p-4 sm:p-6 flex flex-col min-h-full justify-between">
+          <div className="p-4 sm:p-6 flex flex-col min-h-full justify-between pt-20">
             <div className="flex-1">
               {/* User Info */}
               {isLoading ? (
