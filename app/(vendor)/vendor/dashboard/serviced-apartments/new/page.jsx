@@ -31,10 +31,7 @@ import Step4Utilities from "../../../../../../components/shared/dashboard/vendor
 import Step6Images from "../../../../../../components/shared/dashboard/vendor/apartments/step6";
 import Step8Review from "../../../../../../components/shared/dashboard/vendor/apartments/step8";
 import Step7Policies from "../../../../../../components/shared/dashboard/vendor/apartments/step7";
-import { useVendor } from "../../../../../../hooks/use-vendor";
-
-// Force dynamic rendering - prevent SSR
-export const dynamic = "force-dynamic";
+import { useAuth } from "@/hooks/use-auth";
 
 const STORAGE_KEY = "apartment_form_draft";
 const STEPS_TOTAL = 8;
@@ -116,70 +113,19 @@ const INITIAL_FORM_DATA = {
 
 export default function ApartmentCreationForm() {
   const router = useRouter();
-  const supabase = createClient();
+  const { data: authData, isLoading: authLoading } = useAuth();
+  const user = authData?.user;
+  const vendor = authData?.vendor;
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [userId, setUserId] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  // Ensure component is mounted (client-side only)
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Fetch user
-  useEffect(() => {
-    if (!mounted) return;
-
-    const getUser = async () => {
-      try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-
-        if (error) {
-          console.error("Error fetching user:", error);
-          toast.error("Failed to authenticate");
-          router.push("/login");
-          return;
-        }
-
-        if (!user) {
-          toast.error("Please log in to continue");
-          router.push("/login");
-          return;
-        }
-
-        setUserId(user.id);
-      } catch (error) {
-        console.error("Error in getUser:", error);
-        toast.error("Authentication error");
-        router.push("/login");
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    getUser();
-  }, [mounted, router, supabase.auth]);
-
-  // Fetch vendor data only when userId is available
-  const {
-    data: vendor,
-    isLoading: vendorLoading,
-    error: vendorError,
-  } = useVendor(userId);
 
   // Load from localStorage on mount
   useEffect(() => {
-    if (!mounted) return;
-
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -192,12 +138,10 @@ export default function ApartmentCreationForm() {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
-  }, [mounted]);
+  }, []);
 
   // Auto-save to localStorage with debounce
   useEffect(() => {
-    if (!mounted) return;
-
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(
@@ -214,44 +158,15 @@ export default function ApartmentCreationForm() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [formData, currentStep, mounted]);
+  }, [formData, currentStep]);
 
-  // Don't render anything until mounted
-  if (!mounted) {
-    return null;
-  }
-
-  // Loading state
-  if (loadingUser || (userId && vendorLoading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
-          <p className="text-gray-600">Verifying vendor access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (vendorError || (userId && !vendor)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">
-            {vendorError
-              ? "Failed to verify vendor status"
-              : "Vendor account not found"}
-          </p>
-          <Button onClick={() => router.push("/vendor/dashboard")}>
-            Go to Dashboard
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Redirect if not authenticated or not a vendor
+  useEffect(() => {
+    if (!authLoading && !user) {
+      toast.error("Please log in to continue");
+      router.push("/login");
+    }
+  }, [authLoading, user, router]);
 
   const updateFormData = useCallback((updates) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -344,6 +259,11 @@ export default function ApartmentCreationForm() {
       return;
     }
 
+    if (!vendor) {
+      toast.error("Vendor information not found");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -429,6 +349,44 @@ export default function ApartmentCreationForm() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  // Loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated
+  if (!user) {
+    return null; // Will redirect via useEffect
+  }
+
+  // Not a vendor or vendor data not loaded
+  if (!vendor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-4">
+            You need to complete vendor verification to access this page.
+          </p>
+          <Button
+            onClick={() => router.push("/vendor/dashboard")}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const progress = (currentStep / STEPS_TOTAL) * 100;
   const CurrentStepComponent = STEP_COMPONENTS[currentStep];

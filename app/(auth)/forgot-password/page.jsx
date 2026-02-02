@@ -18,7 +18,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Mail, ArrowLeft, CheckCircle, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { sendPasswordResetOtp, verifyPasswordResetOtp } from "./actions";
+import {
+  sendPasswordResetOtp,
+  verifyPasswordResetOtp,
+} from "@/app/actions/auth";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();

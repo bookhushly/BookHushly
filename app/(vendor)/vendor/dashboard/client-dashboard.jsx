@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,15 +33,17 @@ import {
   Share2,
   Trash2,
   Eye,
-  Edit,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 import jsPDF from "jspdf";
-import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
-import { useListingStore, useBookingStore } from "@/lib/store";
+import {
+  useVendorDashboard,
+  useDeleteListing,
+} from "@/hooks/use-vendor-dashboard";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 function getApprovalStatus(vendor) {
   if (!vendor) {
@@ -75,222 +77,29 @@ function getApprovalStatus(vendor) {
   };
 }
 
-export default function VendorDashboardClient({
-  user,
-  vendor,
-  stats: initialStats,
-}) {
-  const supabase = createClient();
-
-  // Get data from Zustand stores
-  const { listings, setListings } = useListingStore();
-  const { bookings, setBookings } = useBookingStore();
-
-  const [stats, setStats] = useState(initialStats);
+export default function VendorDashboardClient({ user, vendor }) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [copied, setCopied] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listingToDelete, setListingToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const approvalStatus = getApprovalStatus(vendor);
   const StatusIcon = approvalStatus.icon;
 
-  // Fetch and populate stores if empty
-  useEffect(() => {
-    async function loadData() {
-      if (!vendor?.approved) return;
+  // Fetch dashboard data with React Query
+  const {
+    listings,
+    bookings,
+    stats,
+    isLoading,
+    error,
+    recentListings,
+    recentBookings,
+  } = useVendorDashboard(vendor?.id, vendor?.business_category);
 
-      const isEventVendor = vendor.business_category === "events";
-      const isHotelVendor = vendor.business_category === "hotels";
-      const isApartmentVendor =
-        vendor.business_category === "serviced_apartments";
-
-      // Fetch listings if store is empty
-      if (listings.length === 0) {
-        if (isHotelVendor) {
-          const { data: hotelsData } = await supabase
-            .from("hotels")
-            .select(
-              "id, name, description, address, city, state, image_urls, amenities, created_at"
-            )
-            .eq("vendor_id", user?.id)
-            .order("created_at", { ascending: false });
-
-          if (hotelsData) {
-            // Transform hotels data to match listings structure
-            const transformedHotels = hotelsData.map((hotel) => ({
-              id: hotel.id,
-              title: hotel.name,
-              city: hotel.city,
-              price: null, // Hotels don't have a single price
-              created_at: hotel.created_at,
-              active: true, // Adjust based on your hotel status logic
-              media_urls: hotel.image_urls,
-              category: "hotels",
-              description: hotel.description,
-              location: `${hotel.city}, ${hotel.state}`,
-            }));
-            setListings(transformedHotels);
-          }
-        } else if (isApartmentVendor) {
-          const { data: apartmentsData } = await supabase
-            .from("serviced_apartments")
-            .select(
-              "id, name, city, state, area, bedrooms, bathrooms, max_guests, price_per_night, price_per_month, image_urls, status, created_at"
-            )
-            .eq("vendor_id", user?.id)
-            .order("created_at", { ascending: false });
-
-          if (apartmentsData) {
-            const transformedApartments = apartmentsData.map((apt) => ({
-              id: apt.id,
-              title: apt.name,
-              city: apt.city,
-              area: apt.area,
-              price: apt.price_per_night,
-              price_monthly: apt.price_per_month,
-              bedrooms: apt.bedrooms,
-              bathrooms: apt.bathrooms,
-              max_guests: apt.max_guests,
-              created_at: apt.created_at,
-              active: apt.status === "active",
-              media_urls: apt.image_urls,
-              category: "serviced_apartments",
-              location: `${apt.area ? apt.area + ", " : ""}${apt.city}, ${apt.state}`,
-            }));
-            setListings(transformedApartments);
-          }
-        } else {
-          const { data: listingsData } = await supabase
-            .from("listings")
-            .select(
-              "id, title, price, created_at, active, media_urls, category, description, location"
-            )
-            .eq("vendor_id", vendor.id)
-            .order("created_at", { ascending: false });
-
-          if (listingsData) {
-            setListings(listingsData);
-          }
-        }
-      }
-
-      // Fetch bookings if store is empty
-      if (bookings.length === 0 && (listings.length > 0 || vendor)) {
-        const listingIds = listings.length > 0 ? listings.map((l) => l.id) : [];
-
-        if (listingIds.length > 0) {
-          if (isEventVendor) {
-            const { data: eventBookingsData } = await supabase
-              .from("event_bookings")
-              .select(
-                `
-              id, 
-              total_amount, 
-              booking_date, 
-              status, 
-              created_at, 
-              listing_id,
-              listings(title, media_urls)
-            `
-              )
-              .in("listing_id", listingIds)
-              .order("created_at", { ascending: false });
-
-            if (eventBookingsData) {
-              setBookings(eventBookingsData);
-            }
-          } else if (isApartmentVendor) {
-            const { data: apartmentBookingsData } = await supabase
-              .from("apartment_bookings")
-              .select(
-                `
-          id,
-          total_amount,
-          check_in_date as booking_date,
-          booking_status as status,
-          created_at,
-          apartment_id,
-          serviced_apartments(name, image_urls)
-        `
-              )
-              .in("apartment_id", listingIds)
-              .order("created_at", { ascending: false });
-
-            if (apartmentBookingsData) {
-              // Transform to match bookings structure
-              const transformedBookings = apartmentBookingsData.map(
-                (booking) => ({
-                  id: booking.id,
-                  total_amount: booking.total_amount,
-                  booking_date: booking.booking_date,
-                  status: booking.status,
-                  created_at: booking.created_at,
-                  listing_id: booking.apartment_id,
-                  listings: {
-                    title: booking.serviced_apartments?.name,
-                    media_urls: booking.serviced_apartments?.image_urls,
-                  },
-                })
-              );
-              setBookings(transformedBookings);
-            }
-          } else {
-            const { data: regularBookingsData } = await supabase
-              .from("bookings")
-              .select(
-                `
-              id, 
-              total_amount, 
-              booking_date, 
-              status, 
-              created_at, 
-              listing_id,
-              listings(title, media_urls)
-            `
-              )
-              .in("listing_id", listingIds)
-              .order("created_at", { ascending: false });
-
-            if (regularBookingsData) {
-              setBookings(regularBookingsData);
-            }
-          }
-        }
-      }
-    }
-
-    loadData();
-  }, [
-    vendor,
-    listings.length,
-    bookings.length,
-    setListings,
-    setBookings,
-    supabase,
-  ]);
-
-  // Recalculate stats when listings or bookings change
-  useEffect(() => {
-    if (vendor?.approved) {
-      const totalListings = listings.length;
-      const activeBookings = bookings.filter(
-        (b) => b.status === "confirmed"
-      ).length;
-      const pendingRequests = bookings.filter(
-        (b) => b.status === "pending"
-      ).length;
-
-      setStats((prev) => ({
-        ...prev,
-        totalListings,
-        activeBookings,
-        pendingRequests,
-      }));
-    }
-  }, [listings, bookings, vendor]);
+  // Delete mutation
+  const deleteMutation = useDeleteListing(vendor?.business_category);
 
   // QR Code generation
   const generateQRCode = async () => {
@@ -404,7 +213,7 @@ export default function VendorDashboardClient({
       `Generated on ${new Date().toLocaleDateString()} | © Bookhushly`,
       pageWidth / 2,
       pageHeight - 15,
-      { align: "center" }
+      { align: "center" },
     );
     pdf.save(`${vendor.business_name || "vendor"}-profile-qr.pdf`);
     toast.success("QR code PDF downloaded successfully");
@@ -414,50 +223,21 @@ export default function VendorDashboardClient({
   const handleDeleteListing = async () => {
     if (!listingToDelete) return;
 
-    setIsDeleting(true);
-    try {
-      if (
-        listingToDelete.vendor_id &&
-        vendor?.id &&
-        listingToDelete.vendor_id !== vendor.id
-      ) {
-        throw new Error("You don't have permission to delete this listing");
-      }
-
-      const res = await fetch(`/api/listings/${listingToDelete.id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const payload = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(payload?.error || "Failed to delete listing");
-      }
-
-      const deletedData = payload?.data;
-      if (!deletedData || deletedData.length === 0) {
-        throw new Error(
-          "Failed to delete listing. The database policy may be blocking this action."
-        );
-      }
-
-      // Update Zustand store instead of local state
-      const updatedListings = listings.filter(
-        (listing) => listing.id !== listingToDelete.id
-      );
-      setListings(updatedListings);
-
-      toast.success("Listing deleted successfully");
-      setDeleteDialogOpen(false);
-      setListingToDelete(null);
-    } catch (error) {
-      toast.error(
-        error.message || "Failed to delete listing. Please try again."
-      );
-    } finally {
-      setIsDeleting(false);
+    if (
+      listingToDelete.vendor_id &&
+      vendor?.id &&
+      listingToDelete.vendor_id !== vendor.id
+    ) {
+      toast.error("You don't have permission to delete this listing");
+      return;
     }
+
+    deleteMutation.mutate(listingToDelete.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false);
+        setListingToDelete(null);
+      },
+    });
   };
 
   const openDeleteDialog = (listing) => {
@@ -465,9 +245,29 @@ export default function VendorDashboardClient({
     setDeleteDialogOpen(true);
   };
 
-  // Get recent items for display - now from store
-  const recentListings = listings.slice(0, 5);
-  const recentBookings = bookings.slice(0, 5);
+  // Loading state
+  if (isLoading && vendor?.approved) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-lg font-medium text-gray-900 mb-2">
+            Failed to load dashboard
+          </p>
+          <p className="text-sm text-gray-500">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 bg-purple-50">
@@ -524,7 +324,7 @@ export default function VendorDashboardClient({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <Card className="border-gray-200/60 hover:border-gray-300  transition-all duration-200 group hover:shadow-md">
+        <Card className="border-gray-200/60 hover:border-gray-300 transition-all duration-200 group hover:shadow-md">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -823,7 +623,6 @@ export default function VendorDashboardClient({
                     key={listing.id}
                     className="group flex items-center gap-3 p-3.5 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-all"
                   >
-                    {/* CORRECTED: media_urls is an array, get first item */}
                     {listing.media_urls?.[0] && (
                       <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                         <Image
@@ -847,7 +646,6 @@ export default function VendorDashboardClient({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* CORRECTED: active is boolean, not status string */}
                       <Badge
                         variant={listing.active ? "default" : "secondary"}
                         className={`text-xs ${
@@ -879,6 +677,7 @@ export default function VendorDashboardClient({
                         size="icon"
                         className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => openDeleteDialog(listing)}
+                        disabled={deleteMutation.isPending}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -934,7 +733,6 @@ export default function VendorDashboardClient({
                     key={booking.id}
                     className="group flex items-center gap-3 p-3.5 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-all cursor-pointer"
                   >
-                    {/* CORRECTED: Access nested listing data from join */}
                     {booking.listings?.media_urls?.[0] && (
                       <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                         <Image
@@ -949,12 +747,11 @@ export default function VendorDashboardClient({
                       <p className="text-[14px] font-medium text-gray-900 truncate group-hover:text-purple-600 transition-colors">
                         {booking.listings?.title || "Listing"}
                       </p>
-                      {/* CORRECTED: total_amount not total_price */}
                       <p className="text-[13px] text-gray-500 mt-0.5">
                         ₦{booking.total_amount?.toLocaleString()} ·{" "}
                         {new Date(booking.booking_date).toLocaleDateString(
                           "en-US",
-                          { month: "short", day: "numeric" }
+                          { month: "short", day: "numeric" },
                         )}
                       </p>
                     </div>
@@ -1010,19 +807,19 @@ export default function VendorDashboardClient({
                 setDeleteDialogOpen(false);
                 setListingToDelete(null);
               }}
-              disabled={isDeleting}
+              disabled={deleteMutation.isPending}
               className="h-11 font-semibold"
             >
               Cancel
             </Button>
             <Button
               onClick={handleDeleteListing}
-              disabled={isDeleting}
+              disabled={deleteMutation.isPending}
               className="bg-red-600 hover:bg-red-700 text-white h-11 font-semibold"
             >
-              {isDeleting ? (
+              {deleteMutation.isPending ? (
                 <>
-                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  <LoadingSpinner className="mr-2 h-4 w-4" />
                   Deleting...
                 </>
               ) : (

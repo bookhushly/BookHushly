@@ -1,22 +1,46 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, User, LogOut, Bell } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  Bell,
+  ChevronDown,
+  Settings,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/lib/store";
-import { signOut } from "@/lib/auth";
+import { useAuth, useAuthActions } from "@/hooks/use-auth";
+import { logout } from "@/app/actions/auth";
 import { CATEGORIES } from "@/lib/constants";
+import { toast } from "sonner";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { data: authData, isLoading } = useAuth();
+  const { clearAuth } = useAuthActions();
+  const [isPending, startTransition] = useTransition();
   const menuRef = useRef(null);
+
+  const user = authData?.user;
+  const vendor = authData?.vendor;
 
   // Detect scroll
   useEffect(() => {
@@ -49,16 +73,31 @@ export function Header() {
     { name: "Contact", href: "/contact" },
   ];
 
-  const handleLogout = async () => {
-    try {
-      console.log("Logging out...");
-      await signOut();
-      logout();
-      router.push("/");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
+  const handleLogout = () => {
+    startTransition(async () => {
+      try {
+        await logout();
+        clearAuth();
+        toast.success("Logged out successfully");
+      } catch (error) {
+        console.error("Logout error:", error);
+        toast.error("Failed to logout");
+      }
+    });
   };
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const displayName = user?.name || user?.email?.split("@")[0] || "User";
+  const userRole = user?.role || "customer";
 
   return (
     <>
@@ -95,7 +134,7 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="relative text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors duration-200"
+                className="relative text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors duration-200 group"
               >
                 {item.name}
                 <span className="absolute left-0 bottom-[-2px] w-0 h-[2px] bg-purple-700 transition-all duration-300 group-hover:w-full"></span>
@@ -105,29 +144,102 @@ export function Header() {
 
           {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center space-x-3">
-            {user ? (
+            {isLoading ? (
+              <LoadingSpinner className="h-5 w-5" />
+            ) : user ? (
               <>
-                <button
-                  variant="ghost"
-                  size="sm"
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-md hover:text-primary text-gray-700"
+                <Link
+                  href={
+                    userRole === "vendor"
+                      ? "/vendor/dashboard"
+                      : `/${userRole}/dashboard`
+                  }
+                  className="text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors"
                 >
-                  <User className="h-4 w-4 mr-2" />
-                  {user.user_metadata?.name || "Account"}
-                </button>
-                <Button
-                  onClick={handleLogout}
-                  size="sm"
-                  className="bg-purple-700 hover:bg-purple-600 text-white"
-                >
-                  Logout
-                </Button>
+                  Dashboard
+                </Link>
+
+                {userRole === "vendor" && vendor && (
+                  <Link
+                    href="/vendor/dashboard/listings"
+                    className="text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors"
+                  >
+                    My Listings
+                  </Link>
+                )}
+
+                {/* User Dropdown Menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center space-x-2 hover:bg-gray-100"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar_url} alt={displayName} />
+                        <AvatarFallback className="bg-purple-600 text-white">
+                          {getInitials(displayName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium">{displayName}</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">{displayName}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                        <p className="text-xs text-purple-600 capitalize">
+                          {userRole}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={`/${userRole}/profile`}
+                        className="flex items-center cursor-pointer"
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={`/${userRole}/settings`}
+                        className="flex items-center cursor-pointer"
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      disabled={isPending}
+                      className="cursor-pointer text-red-600 focus:text-red-600"
+                    >
+                      {isPending ? (
+                        <>
+                          <LoadingSpinner className="mr-2 h-4 w-4" />
+                          Logging out...
+                        </>
+                      ) : (
+                        <>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Logout
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
                 <Link
                   href="/login"
-                  className="text-gray-700 hover:text-purple-700 font-medium"
+                  className="text-gray-700 hover:text-purple-700 font-medium transition-colors"
                 >
                   Login
                 </Link>
@@ -175,25 +287,86 @@ export function Header() {
           <div className="p-4 sm:p-6 flex flex-col min-h-full justify-between">
             <div className="flex-1">
               {/* User Info */}
-              {user ? (
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <div className="flex-1 min-w-0 mr-2">
-                    <p className="font-medium text-gray-800 truncate">
-                      Hi, {user.user_metadata?.name || "Guest"}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {user.user_metadata?.email}
-                    </p>
+              {isLoading ? (
+                <div className="flex justify-center mb-6">
+                  <LoadingSpinner className="h-5 w-5" />
+                </div>
+              ) : user ? (
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex items-center space-x-3 pb-4 border-b">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.avatar_url} alt={displayName} />
+                      <AvatarFallback className="bg-purple-600 text-white">
+                        {getInitials(displayName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 truncate">
+                        Hi, {displayName}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {user.email}
+                      </p>
+                      <p className="text-xs text-purple-600 capitalize">
+                        {userRole}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-600 hover:text-red-600 flex-shrink-0"
+                      onClick={handleLogout}
+                      disabled={isPending}
+                      aria-label="Logout"
+                    >
+                      {isPending ? (
+                        <LoadingSpinner className="h-4 w-4" />
+                      ) : (
+                        <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-600 hover:text-red-600 flex-shrink-0"
-                    onClick={handleLogout}
-                    aria-label="Logout"
-                  >
-                    <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </Button>
+
+                  {/* Dashboard Links */}
+                  <div className="space-y-2 mt-4">
+                    <Link
+                      href={
+                        userRole === "vendor"
+                          ? "/vendor/dashboard"
+                          : `/${userRole}/dashboard`
+                      }
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
+                    >
+                      Dashboard
+                    </Link>
+
+                    {userRole === "vendor" && vendor && (
+                      <Link
+                        href="/vendor/dashboard/listings"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
+                      >
+                        My Listings
+                      </Link>
+                    )}
+
+                    <Link
+                      href={`/${userRole}/profile`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
+                    >
+                      Profile
+                    </Link>
+
+                    <Link
+                      href={`/${userRole}/settings`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
+                    >
+                      Settings
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="flex space-x-2 sm:space-x-3 mb-4 sm:mb-6">

@@ -28,7 +28,7 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { signup } from "./actions";
+import { signup } from "@/app/actions/auth";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -119,7 +119,7 @@ export default function RegisterPage() {
             color: "#b91c1c",
             border: "1px solid #b91c1c",
           },
-        }
+        },
       );
       return false;
     }
@@ -167,7 +167,7 @@ export default function RegisterPage() {
                   color: "#b91c1c",
                   border: "1px solid #b91c1c",
                 },
-              }
+              },
             );
             break;
           default:

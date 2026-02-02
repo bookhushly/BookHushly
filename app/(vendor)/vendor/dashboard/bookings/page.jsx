@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import {
   Card,
@@ -13,82 +13,72 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { useAuthStore, useBookingStore } from "@/lib/store";
-import { getBooking, getBookings, updateBookingStatus } from "@/lib/database";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  useVendorBookings,
+  useUpdateBookingStatus,
+} from "@/hooks/use-bookings";
 import {
   Calendar,
   Clock,
   User,
   Phone,
   Mail,
-  MapPin,
-  CreditCard,
   CheckCircle,
   XCircle,
   AlertCircle,
   ArrowLeft,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
 export default function VendorBookingsPage() {
-  const { user } = useAuthStore();
-  const { bookings, setBookings } = useBookingStore();
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null);
+  const { data: authData } = useAuth();
+  const user = authData?.user;
 
-  useEffect(() => {
-    const loadBookings = async () => {
-      if (!user) return;
+  // Fetch bookings with React Query
+  const { data: bookings = [], isLoading, error } = useVendorBookings(user?.id);
 
-      try {
-        setLoading(true);
-        const { data, error } = await getBookings(user.id, "vendor");
+  // Update status mutation
+  const updateStatusMutation = useUpdateBookingStatus();
 
-        if (error) {
-          console.error("Bookings error:", error);
-          toast.error("Failed to load bookings");
-        } else {
-          setBookings(data || []);
-        }
-      } catch (error) {
-        console.error("Load bookings error:", error);
-        toast.error("Failed to load bookings");
-      } finally {
-        setLoading(false);
-      }
+  // Calculate stats
+  const stats = useMemo(() => {
+    return {
+      total: bookings.length,
+      pending: bookings.filter((b) => b.status === "pending").length,
+      confirmed: bookings.filter((b) => b.status === "confirmed").length,
+      completed: bookings.filter((b) => b.status === "completed").length,
     };
+  }, [bookings]);
 
-    loadBookings();
-  }, [user, setBookings]);
+  // Group bookings by status
+  const groupedBookings = useMemo(() => {
+    return {
+      pending: bookings.filter((b) => b.status === "pending"),
+      confirmed: bookings.filter((b) => b.status === "confirmed"),
+      completed: bookings.filter((b) => b.status === "completed"),
+    };
+  }, [bookings]);
 
-  const handleStatusUpdate = async (bookingId, newStatus) => {
-    setActionLoading(bookingId);
-
-    try {
-      const { data, error } = await updateBookingStatus(bookingId, newStatus);
-
-      if (error) {
-        toast.error("Failed to update booking status");
-        return;
-      }
-
-      // Update local state
-      setBookings(
-        bookings.map((booking) =>
-          booking.id === bookingId ? { ...booking, status: newStatus } : booking
-        )
-      );
-
-      toast.success(`Booking ${newStatus}!`, {
-        description: `The customer has been notified of the status change`,
-      });
-    } catch (error) {
-      toast.error("Failed to update booking status");
-    } finally {
-      setActionLoading(null);
-    }
+  const handleStatusUpdate = (bookingId, newStatus) => {
+    updateStatusMutation.mutate(
+      { bookingId, status: newStatus },
+      {
+        onSuccess: () => {
+          toast.success(`Booking ${newStatus}!`, {
+            description: "The customer has been notified of the status change",
+          });
+        },
+        onError: (error) => {
+          toast.error("Failed to update booking status", {
+            description: error.message,
+          });
+        },
+      },
+    );
   };
 
   const getStatusColor = (status) => {
@@ -122,6 +112,10 @@ export default function VendorBookingsPage() {
   };
 
   const getActionButtons = (booking) => {
+    const isUpdating =
+      updateStatusMutation.isPending &&
+      updateStatusMutation.variables?.bookingId === booking.id;
+
     switch (booking.status) {
       case "pending":
         return (
@@ -129,9 +123,10 @@ export default function VendorBookingsPage() {
             <Button
               size="sm"
               onClick={() => handleStatusUpdate(booking.id, "confirmed")}
-              disabled={actionLoading === booking.id}
+              disabled={isUpdating}
+              className="bg-purple-600 hover:bg-purple-700"
             >
-              {actionLoading === booking.id ? (
+              {isUpdating ? (
                 <LoadingSpinner className="h-4 w-4" />
               ) : (
                 <>
@@ -144,7 +139,7 @@ export default function VendorBookingsPage() {
               variant="outline"
               size="sm"
               onClick={() => handleStatusUpdate(booking.id, "cancelled")}
-              disabled={actionLoading === booking.id}
+              disabled={isUpdating}
             >
               <XCircle className="h-4 w-4 mr-1" />
               Decline
@@ -157,9 +152,9 @@ export default function VendorBookingsPage() {
             variant="outline"
             size="sm"
             onClick={() => handleStatusUpdate(booking.id, "completed")}
-            disabled={actionLoading === booking.id}
+            disabled={isUpdating}
           >
-            {actionLoading === booking.id ? (
+            {isUpdating ? (
               <LoadingSpinner className="h-4 w-4" />
             ) : (
               <>
@@ -174,11 +169,126 @@ export default function VendorBookingsPage() {
     }
   };
 
-  if (loading) {
+  const renderBookingCard = (booking) => (
+    <Card
+      key={booking.id}
+      className={
+        booking.status === "pending"
+          ? "border-yellow-200 bg-yellow-50/50"
+          : booking.status === "confirmed"
+            ? "border-purple-200 bg-purple-50/50"
+            : "border-green-200 bg-green-50/50"
+      }
+    >
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">{booking.listings?.title}</CardTitle>
+            <CardDescription>
+              {booking.status === "pending"
+                ? "Booking request from customer"
+                : booking.status === "confirmed"
+                  ? "Confirmed booking - ready to serve"
+                  : "Service completed successfully"}
+            </CardDescription>
+          </div>
+          <Badge className={getStatusColor(booking.status)}>
+            {getStatusIcon(booking.status)}
+            <span className="ml-1 capitalize">{booking.status}</span>
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="flex items-center text-sm">
+            <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>{format(new Date(booking.booking_date), "PPP")}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>{booking.booking_time}</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <User className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>
+              {booking.guests} guest{booking.guests > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="flex items-center text-sm">
+            <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span>₦{booking.total_amount?.toLocaleString()}</span>
+          </div>
+        </div>
+
+        {booking.status === "pending" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="flex items-center text-sm">
+              <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{booking.contact_phone}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{booking.contact_email}</span>
+            </div>
+          </div>
+        )}
+
+        {booking.status === "confirmed" && (
+          <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
+            <div className="flex items-center">
+              <Phone className="h-3 w-3 mr-1" />
+              <span>{booking.contact_phone}</span>
+            </div>
+            <div className="flex items-center">
+              <Mail className="h-3 w-3 mr-1" />
+              <span>{booking.contact_email}</span>
+            </div>
+          </div>
+        )}
+
+        {booking.special_requests && booking.status === "pending" && (
+          <div className="mb-4">
+            <h5 className="font-medium text-sm mb-1">Special Requests:</h5>
+            <p className="text-sm text-muted-foreground bg-white p-3 rounded border">
+              {booking.special_requests}
+            </p>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center">
+          {booking.status !== "completed" && (
+            <div className="text-xs text-muted-foreground">
+              Requested {format(new Date(booking.created_at), "PPp")}
+            </div>
+          )}
+          {getActionButtons(booking)}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Loading state
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner className="h-8 w-8" />
       </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <AuthGuard requiredRole="vendor">
+        <div className="container py-8">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load bookings. Please try again.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </AuthGuard>
     );
   }
 
@@ -188,8 +298,7 @@ export default function VendorBookingsPage() {
         <div className="mb-8">
           <Link
             href="/vendor/dashboard"
-            replace
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -210,7 +319,7 @@ export default function VendorBookingsPage() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{bookings.length}</div>
+              <div className="text-2xl font-bold">{stats.total}</div>
             </CardContent>
           </Card>
 
@@ -220,9 +329,7 @@ export default function VendorBookingsPage() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {bookings.filter((b) => b.status === "pending").length}
-              </div>
+              <div className="text-2xl font-bold">{stats.pending}</div>
             </CardContent>
           </Card>
 
@@ -232,9 +339,7 @@ export default function VendorBookingsPage() {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {bookings.filter((b) => b.status === "confirmed").length}
-              </div>
+              <div className="text-2xl font-bold">{stats.confirmed}</div>
             </CardContent>
           </Card>
 
@@ -244,9 +349,7 @@ export default function VendorBookingsPage() {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {bookings.filter((b) => b.status === "completed").length}
-              </div>
+              <div className="text-2xl font-bold">{stats.completed}</div>
             </CardContent>
           </Card>
         </div>
@@ -263,7 +366,7 @@ export default function VendorBookingsPage() {
                 Booking requests will appear here once customers start booking
                 your services
               </p>
-              <Button asChild>
+              <Button asChild className="bg-purple-600 hover:bg-purple-700">
                 <Link href="/vendor/dashboard/listings/create">
                   Create More Listings
                 </Link>
@@ -273,246 +376,40 @@ export default function VendorBookingsPage() {
         ) : (
           <div className="space-y-6">
             {/* Pending Bookings */}
-            {bookings.filter((b) => b.status === "pending").length > 0 && (
+            {groupedBookings.pending.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold mb-4 flex items-center">
                   <Clock className="h-5 w-5 mr-2 text-yellow-600" />
-                  Pending Requests (
-                  {bookings.filter((b) => b.status === "pending").length})
+                  Pending Requests ({groupedBookings.pending.length})
                 </h2>
                 <div className="space-y-4">
-                  {bookings
-                    .filter((b) => b.status === "pending")
-                    .map((booking) => (
-                      <Card
-                        key={booking.id}
-                        className="border-yellow-200 bg-yellow-50/50"
-                      >
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <CardTitle className="text-lg">
-                                {booking.listings?.title}
-                              </CardTitle>
-                              <CardDescription>
-                                Booking request from customer
-                              </CardDescription>
-                            </div>
-                            <Badge className={getStatusColor(booking.status)}>
-                              {getStatusIcon(booking.status)}
-                              <span className="ml-1 capitalize">
-                                {booking.status}
-                              </span>
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            <div className="flex items-center text-sm">
-                              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                {format(new Date(booking.booking_date), "PPP")}
-                              </span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>{booking.booking_time}</span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                {booking.guests} guest
-                                {booking.guests > 1 ? "s" : ""}
-                              </span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                ₦{booking.total_amount?.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div className="flex items-center text-sm">
-                              <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>{booking.contact_phone}</span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>{booking.contact_email}</span>
-                            </div>
-                          </div>
-
-                          {booking.special_requests && (
-                            <div className="mb-4">
-                              <h5 className="font-medium text-sm mb-1">
-                                Special Requests:
-                              </h5>
-                              <p className="text-sm text-muted-foreground bg-white p-3 rounded border">
-                                {booking.special_requests}
-                              </p>
-                            </div>
-                          )}
-
-                          <div className="flex justify-between items-center">
-                            <div className="text-xs text-muted-foreground">
-                              Requested{" "}
-                              {format(new Date(booking.created_at), "PPp")}
-                            </div>
-                            {getActionButtons(booking)}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  {groupedBookings.pending.map(renderBookingCard)}
                 </div>
               </div>
             )}
 
             {/* Confirmed Bookings */}
-            {bookings.filter((b) => b.status === "confirmed").length > 0 && (
+            {groupedBookings.confirmed.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold mb-4 flex items-center">
                   <CheckCircle className="h-5 w-5 mr-2 text-blue-600" />
-                  Confirmed Bookings (
-                  {bookings.filter((b) => b.status === "confirmed").length})
+                  Confirmed Bookings ({groupedBookings.confirmed.length})
                 </h2>
                 <div className="space-y-4">
-                  {bookings
-                    .filter((b) => b.status === "confirmed")
-                    .map((booking) => (
-                      <Card
-                        key={booking.id}
-                        className="border-purple-200 bg-purple-50/50"
-                      >
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <CardTitle className="text-lg">
-                                {booking.listings?.title}
-                              </CardTitle>
-                              <CardDescription>
-                                Confirmed booking - ready to serve
-                              </CardDescription>
-                            </div>
-                            <Badge className={getStatusColor(booking.status)}>
-                              {getStatusIcon(booking.status)}
-                              <span className="ml-1 capitalize">
-                                {booking.status}
-                              </span>
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            <div className="flex items-center text-sm">
-                              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                {format(new Date(booking.booking_date), "PPP")}
-                              </span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>{booking.booking_time}</span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                {booking.guests} guest
-                                {booking.guests > 1 ? "s" : ""}
-                              </span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                ₦{booking.total_amount?.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <div className="flex items-center">
-                                <Phone className="h-3 w-3 mr-1" />
-                                <span>{booking.contact_phone}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <Mail className="h-3 w-3 mr-1" />
-                                <span>{booking.contact_email}</span>
-                              </div>
-                            </div>
-                            {getActionButtons(booking)}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  {groupedBookings.confirmed.map(renderBookingCard)}
                 </div>
               </div>
             )}
 
             {/* Completed Bookings */}
-            {bookings.filter((b) => b.status === "completed").length > 0 && (
+            {groupedBookings.completed.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold mb-4 flex items-center">
                   <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
-                  Completed Bookings (
-                  {bookings.filter((b) => b.status === "completed").length})
+                  Completed Bookings ({groupedBookings.completed.length})
                 </h2>
                 <div className="space-y-4">
-                  {bookings
-                    .filter((b) => b.status === "completed")
-                    .map((booking) => (
-                      <Card
-                        key={booking.id}
-                        className="border-green-200 bg-green-50/50"
-                      >
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <CardTitle className="text-lg">
-                                {booking.listings?.title}
-                              </CardTitle>
-                              <CardDescription>
-                                Service completed successfully
-                              </CardDescription>
-                            </div>
-                            <Badge className={getStatusColor(booking.status)}>
-                              {getStatusIcon(booking.status)}
-                              <span className="ml-1 capitalize">
-                                {booking.status}
-                              </span>
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="flex items-center text-sm">
-                              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                {format(new Date(booking.booking_date), "PPP")}
-                              </span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>{booking.booking_time}</span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                {booking.guests} guest
-                                {booking.guests > 1 ? "s" : ""}
-                              </span>
-                            </div>
-                            <div className="flex items-center text-sm">
-                              <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <span>
-                                ₦{booking.total_amount?.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  {groupedBookings.completed.map(renderBookingCard)}
                 </div>
               </div>
             )}

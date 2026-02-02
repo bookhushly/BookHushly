@@ -35,7 +35,7 @@ export async function login(formData) {
 
   revalidatePath("/", "layout");
   redirect(
-    `${role === "vendor" ? "/vendor/dashboard" : `/${role}/dashboard/`}`
+    `${role === "vendor" ? "/vendor/dashboard" : `/${role}/dashboard/`}`,
   );
 }
 
@@ -43,5 +43,5 @@ export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/login");
+  redirect("/");
 }

@@ -7,20 +7,54 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useTransition } from "react";
+import { logout } from "@/app/actions/auth";
+import { useAuth, useAuthActions } from "@/hooks/use-auth";
+import { toast } from "sonner";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function VendorHeader({ onMenuClick }) {
   const router = useRouter();
-  const supabase = createClient();
+  const { data: authData } = useAuth();
+  const { clearAuth } = useAuthActions();
+  const [isPending, startTransition] = useTransition();
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
+  const user = authData?.user;
+  const vendor = authData?.vendor;
+
+  const getInitials = (name) => {
+    if (!name) return "VN";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const displayName =
+    vendor?.business_name ||
+    user?.full_name ||
+    user?.email?.split("@")[0] ||
+    "Vendor";
+
+  const handleSignOut = () => {
+    startTransition(async () => {
+      try {
+        await logout();
+        clearAuth();
+        toast.success("Logged out successfully");
+      } catch (error) {
+        console.error("Logout error:", error);
+        toast.error("Failed to logout");
+      }
+    });
   };
 
   return (
@@ -62,17 +96,24 @@ export function VendorHeader({ onMenuClick }) {
               className="h-9 px-2 hover:bg-gray-100 gap-2"
             >
               <Avatar className="h-7 w-7">
-                <AvatarImage src="" alt="Vendor" />
+                <AvatarImage src={user?.avatar_url} alt={displayName} />
                 <AvatarFallback className="bg-purple-100 text-purple-700 text-xs font-medium">
-                  VN
+                  {getInitials(displayName)}
                 </AvatarFallback>
               </Avatar>
               <span className="hidden sm:inline text-[14px] font-medium text-gray-700">
-                Vendor
+                {displayName}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium">{displayName}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => router.push("/vendor/profile")}
               className="cursor-pointer text-[14px] py-2"
@@ -83,10 +124,20 @@ export function VendorHeader({ onMenuClick }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
+              disabled={isPending}
               className="cursor-pointer text-[14px] text-red-600 focus:text-red-600 py-2"
             >
-              <LogOut className="mr-2 h-4 w-4" strokeWidth={2} />
-              Sign Out
+              {isPending ? (
+                <>
+                  <LoadingSpinner className="mr-2 h-4 w-4" />
+                  Signing Out...
+                </>
+              ) : (
+                <>
+                  <LogOut className="mr-2 h-4 w-4" strokeWidth={2} />
+                  Sign Out
+                </>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

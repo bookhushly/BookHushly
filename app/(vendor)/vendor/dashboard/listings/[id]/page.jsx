@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import {
@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { useAuthStore, useListingStore } from "@/lib/store";
-import { getListing, updateListing } from "@/lib/database";
+import { useAuth } from "@/hooks/use-auth";
+import { useListing, useUpdateListing } from "@/hooks/useListingsData";
 import { CATEGORIES } from "@/lib/constants";
 import {
   ArrowLeft,
@@ -35,20 +35,19 @@ import {
   MapPin,
   Clock,
   Users,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 export default function EditListingPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, vendor } = useAuthStore();
-  const supabase = createClient();
-  const { updateListing: updateListingInStore } = useListingStore();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [listing, setListing] = useState(null);
+  const { data: authData } = useAuth();
+  const user = authData?.user;
+  const vendor = authData?.vendor;
+
+  const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -64,71 +63,51 @@ export default function EditListingPage() {
   });
   const [error, setError] = useState("");
 
+  // Fetch listing with React Query
+  const {
+    data: listing,
+    isLoading,
+    error: fetchError,
+  } = useListing(params.id, vendor?.business_category);
+
+  // Update mutation
+  const updateMutation = useUpdateListing(vendor?.business_category);
+
+  // Populate form when listing loads
   useEffect(() => {
-    const loadListing = async () => {
-      try {
-        setLoading(true);
-        if (vendor.business_category === "hotels") {
-          const { data: hotelData, error: hotelError } = await supabase
-            .from("hotels")
-            .select("*")
-            .eq("id", params.id)
-            .single();
+    if (!listing) return;
 
-          if (hotelError) {
-            setError("Failed to load hotel");
-            return;
-          }
-
-          setListing(hotelData);
-          setFormData({
-            title: hotelData.name || "",
-            description: hotelData.description || "",
-            category: "hotels",
-            price: "",
-            location:
-              `${hotelData.address || ""}, ${hotelData.city || ""}, ${hotelData.state || ""}`.trim(),
-            capacity: "",
-            duration: "",
-            availability: "available",
-            features: hotelData.amenities
-              ? JSON.stringify(hotelData.amenities)
-              : "",
-            requirements: "",
-            cancellation_policy: hotelData.checkout_policy || "",
-          });
-        } else {
-          const { data, error } = await getListing(params.id);
-
-          if (error) {
-            setError("Failed to load listing");
-            return;
-          }
-
-          setListing(data);
-          setFormData({
-            title: data.title || "",
-            description: data.description || "",
-            category: data.category || "",
-            price: data.price?.toString() || "",
-            location: data.location || "",
-            capacity: data.capacity?.toString() || "",
-            duration: data.duration || "",
-            availability: data.availability || "available",
-            features: data.features || "",
-            requirements: data.requirements || "",
-            cancellation_policy: data.cancellation_policy || "",
-          });
-        }
-      } catch (err) {
-        setError("An unexpected error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadListing();
-  }, [vendor, params.id]);
+    if (vendor?.business_category === "hotels") {
+      setFormData({
+        title: listing.name || "",
+        description: listing.description || "",
+        category: "hotels",
+        price: "",
+        location:
+          `${listing.address || ""}, ${listing.city || ""}, ${listing.state || ""}`.trim(),
+        capacity: "",
+        duration: "",
+        availability: "available",
+        features: listing.amenities ? JSON.stringify(listing.amenities) : "",
+        requirements: "",
+        cancellation_policy: listing.checkout_policy || "",
+      });
+    } else {
+      setFormData({
+        title: listing.title || "",
+        description: listing.description || "",
+        category: listing.category || "",
+        price: listing.price?.toString() || "",
+        location: listing.location || "",
+        capacity: listing.capacity?.toString() || "",
+        duration: listing.duration || "",
+        availability: listing.availability || "available",
+        features: listing.features || "",
+        requirements: listing.requirements || "",
+        cancellation_policy: listing.cancellation_policy || "",
+      });
+    }
+  }, [listing, vendor?.business_category]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -151,7 +130,9 @@ export default function EditListingPage() {
     const required = ["title", "description", "category", "price", "location"];
     for (const field of required) {
       if (!formData[field].trim()) {
-        setError(`${field.replace("_", " ")} is required`);
+        setError(
+          `${field.replace("_", " ").charAt(0).toUpperCase() + field.replace("_", " ").slice(1)} is required`,
+        );
         return false;
       }
     }
@@ -169,10 +150,9 @@ export default function EditListingPage() {
 
     if (!validateForm()) return;
 
-    setSaving(true);
     setError("");
 
-    try {
+    startTransition(async () => {
       const updateData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -185,34 +165,28 @@ export default function EditListingPage() {
         features: formData.features.trim() || null,
         requirements: formData.requirements.trim() || null,
         cancellation_policy: formData.cancellation_policy.trim() || null,
-        updated_at: new Date().toISOString(),
       };
 
-      const { data, error } = await updateListing(params.id, updateData);
-
-      if (error) {
-        setError(error.message);
-        toast.error("Failed to update listing", {
-          description: error.message,
-        });
-        return;
-      }
-
-      updateListingInStore(params.id, data);
-      toast.success("Listing updated successfully!");
-
-      router.push("/vendor/dashboard");
-    } catch (err) {
-      setError("An unexpected error occurred");
-      toast.error("Failed to update listing", {
-        description: "An unexpected error occurred",
-      });
-    } finally {
-      setSaving(false);
-    }
+      updateMutation.mutate(
+        { listingId: params.id, updateData },
+        {
+          onSuccess: () => {
+            toast.success("Listing updated successfully!");
+            router.push("/vendor/dashboard");
+          },
+          onError: (error) => {
+            setError(error.message || "Failed to update listing");
+            toast.error("Failed to update listing", {
+              description: error.message,
+            });
+          },
+        },
+      );
+    });
   };
 
-  if (loading) {
+  // Loading state
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner className="h-8 w-8" />
@@ -220,14 +194,38 @@ export default function EditListingPage() {
     );
   }
 
+  // Error state
+  if (fetchError) {
+    return (
+      <div className="container max-w-2xl py-8">
+        <Card>
+          <CardContent className="text-center py-12">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              Error Loading Listing
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              {fetchError.message || "Failed to load listing"}
+            </p>
+            <Button asChild>
+              <Link href="/vendor/dashboard">Back to Dashboard</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Not found state
   if (!listing) {
     return (
       <div className="container max-w-2xl py-8">
         <Card>
           <CardContent className="text-center py-12">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Listing Not Found</h3>
             <p className="text-muted-foreground mb-4">
-              The listing you&lsquo;re trying to edit could not be found.
+              The listing you&apos;re trying to edit could not be found.
             </p>
             <Button asChild>
               <Link href="/vendor/dashboard">Back to Dashboard</Link>
@@ -244,7 +242,7 @@ export default function EditListingPage() {
         <div className="mb-8">
           <Link
             href="/vendor/dashboard"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -258,6 +256,7 @@ export default function EditListingPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {error && (
             <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -272,7 +271,9 @@ export default function EditListingPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Service Title *</Label>
+                <Label htmlFor="title">
+                  Service Title <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="title"
                   name="title"
@@ -280,11 +281,14 @@ export default function EditListingPage() {
                   value={formData.title}
                   onChange={handleChange}
                   required
+                  disabled={isPending}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">
+                  Description <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="description"
                   name="description"
@@ -293,17 +297,21 @@ export default function EditListingPage() {
                   onChange={handleChange}
                   rows={4}
                   required
+                  disabled={isPending}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
+                  <Label htmlFor="category">
+                    Category <span className="text-red-500">*</span>
+                  </Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) =>
                       handleSelectChange("category", value)
                     }
+                    disabled={isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
@@ -322,7 +330,9 @@ export default function EditListingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (₦) *</Label>
+                  <Label htmlFor="price">
+                    Price (₦) <span className="text-red-500">*</span>
+                  </Label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -336,6 +346,7 @@ export default function EditListingPage() {
                       min="0"
                       step="0.01"
                       required
+                      disabled={isPending}
                     />
                   </div>
                 </div>
@@ -353,7 +364,9 @@ export default function EditListingPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="location">Location *</Label>
+                <Label htmlFor="location">
+                  Location <span className="text-red-500">*</span>
+                </Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -364,6 +377,7 @@ export default function EditListingPage() {
                     onChange={handleChange}
                     className="pl-10"
                     required
+                    disabled={isPending}
                   />
                 </div>
               </div>
@@ -382,6 +396,7 @@ export default function EditListingPage() {
                       onChange={handleChange}
                       className="pl-10"
                       min="1"
+                      disabled={isPending}
                     />
                   </div>
                 </div>
@@ -397,6 +412,7 @@ export default function EditListingPage() {
                       value={formData.duration}
                       onChange={handleChange}
                       className="pl-10"
+                      disabled={isPending}
                     />
                   </div>
                 </div>
@@ -409,6 +425,7 @@ export default function EditListingPage() {
                   onValueChange={(value) =>
                     handleSelectChange("availability", value)
                   }
+                  disabled={isPending}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -441,6 +458,7 @@ export default function EditListingPage() {
                   value={formData.features}
                   onChange={handleChange}
                   rows={3}
+                  disabled={isPending}
                 />
               </div>
 
@@ -453,6 +471,7 @@ export default function EditListingPage() {
                   value={formData.requirements}
                   onChange={handleChange}
                   rows={3}
+                  disabled={isPending}
                 />
               </div>
 
@@ -465,6 +484,7 @@ export default function EditListingPage() {
                   value={formData.cancellation_policy}
                   onChange={handleChange}
                   rows={3}
+                  disabled={isPending}
                 />
               </div>
             </CardContent>
@@ -472,11 +492,20 @@ export default function EditListingPage() {
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" asChild>
+            <Button
+              type="button"
+              variant="outline"
+              asChild
+              disabled={isPending}
+            >
               <Link href="/vendor/dashboard">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? (
+            <Button
+              type="submit"
+              disabled={isPending || updateMutation.isPending}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {isPending || updateMutation.isPending ? (
                 <>
                   <LoadingSpinner className="mr-2 h-4 w-4" />
                   Saving Changes...

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback, useTransition, useRef } from "react";
+import { useState, useCallback, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuthStore, useListingStore } from "@/lib/store";
-import { createListing } from "@/lib/database";
+import { useAuth } from "@/hooks/use-auth";
+import { createListing } from "@/app/actions/listings";
 import {
   getCategoryFormConfig,
   prepareCategoryData,
@@ -39,15 +39,16 @@ const MAX_TICKETS = 10;
 
 export default function CreateListingPage() {
   const supabase = createClient();
-  const { user, vendor } = useAuthStore();
-  const { addListing } = useListingStore();
+  const { data: authData } = useAuth();
+  const user = authData?.user;
+  const vendor = authData?.vendor;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   // Track if form has been initialized to prevent re-initialization
   const isInitialized = useRef(false);
   const currentCategory = useRef("");
-  console.log("Vendor data:", vendor);
+
   // Core state - grouped logically
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -81,7 +82,7 @@ export default function CreateListingPage() {
     description: "",
   });
 
-  // Memoized category config - only recalculate when dependencies change
+  // Memoized category config
   const categoryConfig = selectedCategory
     ? getCategoryFormConfig(selectedCategory, eventType)
     : null;
@@ -102,7 +103,6 @@ export default function CreateListingPage() {
         setTickets(parsed.tickets || []);
         setUseMultiplePackages(parsed.useMultiplePackages || false);
 
-        // Mark as initialized if we loaded draft data
         if (parsed.selectedCategory) {
           isInitialized.current = true;
           currentCategory.current = parsed.selectedCategory;
@@ -113,7 +113,7 @@ export default function CreateListingPage() {
     }
   }, [user?.id]);
 
-  // Debounced save to localStorage - only save when user pauses
+  // Debounced save to localStorage
   useEffect(() => {
     if (!user?.id || Object.keys(formData).length === 0) return;
 
@@ -131,7 +131,7 @@ export default function CreateListingPage() {
       try {
         localStorage.setItem(
           `listing-draft-${user.id}`,
-          JSON.stringify(draftData)
+          JSON.stringify(draftData),
         );
       } catch (e) {
         console.error("Failed to save draft:", e);
@@ -150,16 +150,14 @@ export default function CreateListingPage() {
     user?.id,
   ]);
 
-  // Initialize form data when category changes - FIXED to prevent infinite loop
+  // Initialize form data when category changes
   useEffect(() => {
     if (!selectedCategory || !categoryConfig) return;
 
-    // Only initialize if category actually changed
     if (currentCategory.current === selectedCategory && isInitialized.current) {
       return;
     }
 
-    // Mark as initializing this category
     currentCategory.current = selectedCategory;
     isInitialized.current = true;
 
@@ -174,7 +172,6 @@ export default function CreateListingPage() {
     setFormData(initialData);
     setErrors({});
 
-    // Reset category-specific data
     if (selectedCategory === "food") {
       setMeals([]);
     }
@@ -183,9 +180,8 @@ export default function CreateListingPage() {
     }
   }, [selectedCategory, eventType, categoryConfig]);
 
-  // Handlers - memoized to prevent recreation
+  // Handlers
   const handleCategoryChange = useCallback((category) => {
-    // Reset initialization flag when category changes
     isInitialized.current = false;
     setSelectedCategory(category);
     setEventType("");
@@ -401,7 +397,7 @@ export default function CreateListingPage() {
       tickets,
       images,
       useMultiplePackages,
-    ]
+    ],
   );
 
   const nextStep = useCallback(() => {
@@ -418,17 +414,19 @@ export default function CreateListingPage() {
     });
   }, []);
 
-  // Upload functions - OPTIMIZED with parallel processing
+  // Optimized upload functions with parallel processing
   const uploadImages = async () => {
     const bucket =
       selectedCategory === "food" ? "food-images" : "listing-images";
 
-    // Upload all images in parallel
     const uploadPromises = images.map(async (image, index) => {
       const filePath = `${user.id}/${Date.now()}-${index}-${image.name}`;
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(filePath, image);
+        .upload(filePath, image, {
+          cacheControl: "3600",
+          upsert: false,
+        });
 
       if (error)
         throw new Error(`Failed to upload ${image.name}: ${error.message}`);
@@ -440,7 +438,6 @@ export default function CreateListingPage() {
       return urlData.publicUrl;
     });
 
-    // Wait for all uploads and update progress
     const uploadedUrls = await Promise.all(uploadPromises);
     setUploadProgress(100);
 
@@ -448,14 +445,16 @@ export default function CreateListingPage() {
   };
 
   const uploadMealImages = async () => {
-    // Filter meals with images and upload in parallel
     const mealsWithImages = meals.filter((meal) => meal.image);
 
     const uploadPromises = mealsWithImages.map(async (meal, index) => {
       const filePath = `${user.id}/${Date.now()}-meal-${index}-${meal.image.name}`;
       const { data, error } = await supabase.storage
         .from("food-images")
-        .upload(filePath, meal.image);
+        .upload(filePath, meal.image, {
+          cacheControl: "3600",
+          upsert: false,
+        });
 
       if (error)
         throw new Error(`Failed to upload meal image: ${error.message}`);
@@ -469,7 +468,6 @@ export default function CreateListingPage() {
 
     const uploadedMeals = await Promise.all(uploadPromises);
 
-    // Map back to original meals array order
     return meals.map((meal) => {
       const uploaded = uploadedMeals.find((um) => um.meal === meal);
       return uploaded ? uploaded.url : null;
@@ -478,20 +476,26 @@ export default function CreateListingPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep(TOTAL_STEPS)) return;
+    console.log("[Client] ===== FORM SUBMIT START =====");
+
+    if (!validateStep(TOTAL_STEPS)) {
+      console.log("[Client] Validation failed at step:", TOTAL_STEPS);
+      return;
+    }
 
     setLoading(true);
     setErrors({});
 
     try {
-      // Step 1: Prepare all data that doesn't require async operations
+      console.log("[Client] Step 1: Processing amenities");
+      // Process amenities
       const processedAmenities = Array.isArray(formData.amenities)
         ? formData.amenities.map((amenityValue) => {
             const amenityField = categoryConfig?.fields.find(
-              (f) => f.name === "amenities"
+              (f) => f.name === "amenities",
             );
             const amenityOption = amenityField?.options?.find(
-              (opt) => opt.value === amenityValue
+              (opt) => opt.value === amenityValue,
             );
             return {
               value: amenityValue,
@@ -500,18 +504,30 @@ export default function CreateListingPage() {
             };
           })
         : [];
+      console.log("[Client] Processed amenities:", processedAmenities);
 
-      // Step 2: Upload all images in parallel (main images + meal images)
+      // Upload all images in parallel
+      console.log("[Client] Step 2: Starting image uploads");
+      setUploadProgress(10);
       const uploadPromises = [uploadImages()];
 
       if (selectedCategory === "food" && meals.length > 0) {
+        console.log("[Client] Adding meal image uploads");
         uploadPromises.push(uploadMealImages());
       }
 
+      console.log("[Client] Waiting for image uploads...");
       const [uploadedImageUrls, mealImageUrls] =
         await Promise.all(uploadPromises);
+      console.log("[Client] Image uploads complete:", {
+        mainImages: uploadedImageUrls.length,
+        mealImages: mealImageUrls?.length || 0,
+      });
 
-      // Step 3: Process meals with uploaded image URLs
+      setUploadProgress(50);
+
+      // Process meals with uploaded image URLs
+      console.log("[Client] Step 3: Processing meals");
       let processedMeals = null;
       if (selectedCategory === "food" && meals.length > 0) {
         processedMeals = meals.map((meal, i) => ({
@@ -520,9 +536,11 @@ export default function CreateListingPage() {
           description: meal.description,
           image_url: mealImageUrls[i],
         }));
+        console.log("[Client] Processed meals:", processedMeals);
       }
 
-      // Step 4: Process tickets and calculate pricing
+      // Process tickets and calculate pricing
+      console.log("[Client] Step 4: Processing tickets");
       let listingPrice = parseFloat(formData.price) || 0;
       let processedTickets = null;
       let totalTickets = 0;
@@ -537,9 +555,17 @@ export default function CreateListingPage() {
         }));
         totalTickets = processedTickets.reduce((sum, t) => sum + t.total, 0);
         listingPrice = Math.min(...processedTickets.map((t) => t.price));
+        console.log("[Client] Processed tickets:", {
+          count: processedTickets.length,
+          totalTickets,
+          lowestPrice: listingPrice,
+        });
       }
 
-      // Step 5: Prepare category-specific data
+      setUploadProgress(70);
+
+      // Prepare category-specific data
+      console.log("[Client] Step 5: Preparing category data");
       const categoryData = prepareCategoryData(
         {
           ...formData,
@@ -549,18 +575,18 @@ export default function CreateListingPage() {
           amenities: processedAmenities,
         },
         selectedCategory,
-        eventType
+        eventType,
       );
+      console.log("[Client] Category data prepared:", categoryData);
 
-      // Step 6: Create final listing data object
+      // Create final listing data object
+      console.log("[Client] Step 6: Creating final listing data");
       const listingData = {
         ...categoryData,
         vendor_id: user.id,
         vendor_name: vendor?.business_name || "",
         vendor_phone: vendor?.phone_number || "",
         active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
         event_type: selectedCategory === "events" ? eventType : null,
         price: listingPrice,
         total_tickets: totalTickets,
@@ -568,35 +594,52 @@ export default function CreateListingPage() {
         ticket_packages: processedTickets || [],
         amenities: processedAmenities,
       };
+      console.log("[Client] Final listing data:", listingData);
 
-      // Step 7: Create listing in database
-      const { data, error } = await createListing(listingData);
+      setUploadProgress(90);
 
-      if (error) throw error;
+      // Create listing via server action
+      console.log("[Client] Step 7: Calling server action");
+      console.time("[Client] Server action duration");
+      const result = await createListing(listingData);
+      console.timeEnd("[Client] Server action duration");
+      console.log("[Client] Server action result:", result);
 
-      // Step 8: Update local state and cleanup
-      addListing(data);
+      if (!result.success) {
+        console.error("[Client] Server action failed:", result.error);
+        throw new Error(result.error);
+      }
+
+      setUploadProgress(100);
+      console.log("[Client] Step 8: Success! Cleaning up");
+
+      // Cleanup
       localStorage.removeItem(`listing-draft-${user?.id}`);
 
-      // Show success and navigate
       toast.success("Listing created successfully!");
-
-      // Use router.replace for faster navigation and prevent back issues
-      router.replace("/vendor/dashboard");
+      console.log("[Client] Navigating to dashboard");
+      router.push("/vendor/dashboard");
+      console.log("[Client] ===== FORM SUBMIT SUCCESS =====");
     } catch (err) {
-      console.error("Listing creation error:", err);
+      console.error("[Client] ===== FORM SUBMIT ERROR =====");
+      console.error("[Client] Error:", err);
+      console.error("[Client] Error message:", err.message);
+      console.error("[Client] Error stack:", err.stack);
       setErrors({
         global: err.message || "Failed to create listing. Please try again.",
       });
       toast.error(err.message || "Failed to create listing");
     } finally {
+      console.log("[Client] Cleanup: resetting loading state");
       setLoading(false);
       setUploadProgress(0);
     }
   };
+
   const onComplete = () => {
     router.push("/vendor/dashboard");
   };
+
   return (
     <AuthGuard>
       <div className="max-w-4xl mx-auto py-10 min-h-screen">
@@ -641,7 +684,12 @@ export default function CreateListingPage() {
                   <AlertDescription>
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-purple-900">
-                        Uploading images... {uploadProgress}%
+                        {uploadProgress < 50
+                          ? "Uploading images..."
+                          : uploadProgress < 90
+                            ? "Creating listing..."
+                            : "Finalizing..."}{" "}
+                        {uploadProgress}%
                       </p>
                       <div className="w-full bg-purple-200 rounded-full h-2">
                         <div
@@ -727,7 +775,7 @@ export default function CreateListingPage() {
                   />
                 )}
               </div>
-              .
+
               <NavigationButtons
                 step={step}
                 totalSteps={TOTAL_STEPS}

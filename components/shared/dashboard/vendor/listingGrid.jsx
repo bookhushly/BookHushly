@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuthStore, useListingStore } from "@/lib/store";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  useVendorListings,
+  useDeleteListing,
+} from "@/hooks/use-vendor-dashboard";
 import {
   Eye,
   Pencil,
@@ -13,8 +16,6 @@ import {
   MoreVertical,
   AlertCircle,
   MapPin,
-  Star,
-  Bed,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,123 +34,35 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function VendorListingsGrid() {
-  const { user, vendor } = useAuthStore();
-  const { listings, setListings, setLoading, deleteListing } =
-    useListingStore();
+  const { data: authData } = useAuth();
+  const vendor = authData?.vendor;
+
   const [deleteId, setDeleteId] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState(null);
-  const [roomCounts, setRoomCounts] = useState({});
 
   const isHotelCategory = vendor?.business_category === "hotels";
 
-  useEffect(() => {
-    if (vendor?.id) {
-      if (isHotelCategory) {
-        fetchHotels();
-      } else {
-        fetchListings();
-      }
-    }
-  }, [vendor?.id, vendor?.business_category]);
+  // Fetch listings with React Query
+  const {
+    data: listings = [],
+    isLoading,
+    error,
+    refetch,
+  } = useVendorListings(vendor?.id, vendor?.business_category);
 
-  const fetchListings = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .from("listings")
-        .select(
-          `
-          *,
-          vendors (
-            business_name,
-            approved,
-            users (
-              name,
-              email
-            )
-          )
-        `
-        )
-        .eq("vendor_id", vendor.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setListings(data || []);
-    } catch (err) {
-      console.error("Error fetching listings:", err);
-      setError("Failed to load listings. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchHotels = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error } = await supabase
-        .from("hotels")
-        .select("*")
-        .eq("vendor_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setListings(data || []);
-
-      // Fetch room counts for each hotel
-      if (data && data.length > 0) {
-        const counts = {};
-        await Promise.all(
-          data.map(async (hotel) => {
-            const { count } = await supabase
-              .from("hotel_rooms")
-              .select("*", { count: "exact", head: true })
-              .eq("hotel_id", hotel.id);
-            counts[hotel.id] = count || 0;
-          })
-        );
-        setRoomCounts(counts);
-      }
-    } catch (err) {
-      console.error("Error fetching hotels:", err);
-      setError("Failed to load hotels. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Delete mutation
+  const deleteMutation = useDeleteListing(vendor?.business_category);
 
   const handleDelete = async () => {
     if (!deleteId) return;
 
-    try {
-      setIsDeleting(true);
-      setError(null);
-
-      const tableName = isHotelCategory ? "hotels" : "listings";
-
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq("id", deleteId);
-
-      if (error) throw error;
-
-      deleteListing(deleteId);
-      setDeleteId(null);
-    } catch (err) {
-      console.error("Error deleting:", err);
-      setError(
-        `Failed to delete ${isHotelCategory ? "hotel" : "listing"}. Please try again.`
-      );
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteMutation.mutate(deleteId, {
+      onSuccess: () => {
+        setDeleteId(null);
+      },
+    });
   };
 
   const formatPrice = (price, priceUnit) => {
@@ -216,10 +129,13 @@ export function VendorListingsGrid() {
     );
   };
 
-  const getAmenitiesCount = (amenities) => {
-    if (!amenities) return 0;
-    return Object.values(amenities).filter(Boolean).length;
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner className="h-8 w-8" />
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -229,11 +145,8 @@ export function VendorListingsGrid() {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Error Loading {isHotelCategory ? "Hotels" : "Listings"}
           </h3>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button
-            onClick={isHotelCategory ? fetchHotels : fetchListings}
-            variant="outline"
-          >
+          <p className="text-gray-600 mb-4">{error.message}</p>
+          <Button onClick={() => refetch()} variant="outline">
             Try Again
           </Button>
         </div>
@@ -255,7 +168,13 @@ export function VendorListingsGrid() {
               : "Manage and organize your service listings"}
           </p>
         </div>
-        <Link href="/vendor/dashboard/listings/create">
+        <Link
+          href={
+            isHotelCategory
+              ? "/vendor/dashboard/hotels/create"
+              : "/vendor/dashboard/listings/create"
+          }
+        >
           <Button className="bg-purple-600 hover:bg-purple-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
             {isHotelCategory ? "Add Hotel" : "Create Listing"}
@@ -296,13 +215,9 @@ export function VendorListingsGrid() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {listings.map((listing) => {
-            const imageUrl = isHotelCategory
-              ? getListingImage(listing.image_urls)
-              : getListingImage(listing.media_urls);
-            const title = isHotelCategory ? listing.name : listing.title;
-            const location = isHotelCategory
-              ? `${listing.city}, ${listing.state}`
-              : null;
+            const imageUrl = getListingImage(listing.media_urls);
+            const title = listing.title;
+            const location = listing.location;
 
             return (
               <div
@@ -324,7 +239,7 @@ export function VendorListingsGrid() {
                       </span>
                     </div>
                   )}
-                  {!isHotelCategory && (
+                  {!isHotelCategory && listing.category && (
                     <div className="absolute top-3 left-3">
                       {getCategoryBadge(listing.category)}
                     </div>
@@ -346,7 +261,10 @@ export function VendorListingsGrid() {
                             href={
                               isHotelCategory
                                 ? `/vendor/dashboard/hotels/${listing.id}`
-                                : `/vendor/dashboard/listings/${listing.id}`
+                                : vendor?.business_category ===
+                                    "serviced_apartments"
+                                  ? `/vendor/dashboard/serviced-apartments/${listing.id}`
+                                  : `/vendor/dashboard/listings/${listing.id}`
                             }
                             className="cursor-pointer"
                           >
@@ -357,6 +275,7 @@ export function VendorListingsGrid() {
                         <DropdownMenuItem
                           onClick={() => setDeleteId(listing.id)}
                           className="text-red-600 cursor-pointer"
+                          disabled={deleteMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
@@ -382,14 +301,18 @@ export function VendorListingsGrid() {
                       )}
                     </>
                   ) : (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {listing.description}
-                    </p>
+                    <>
+                      {listing.description && (
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {listing.description}
+                        </p>
+                      )}
+                    </>
                   )}
 
                   {/* Footer */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    {!isHotelCategory && (
+                    {!isHotelCategory && listing.price && (
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-500 mb-1">
                           Price
@@ -399,12 +322,25 @@ export function VendorListingsGrid() {
                         </span>
                       </div>
                     )}
+                    {vendor?.business_category === "serviced_apartments" && (
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-500 mb-1">
+                          Bedrooms
+                        </span>
+                        <span className="font-semibold text-purple-600">
+                          {listing.bedrooms} bed
+                        </span>
+                      </div>
+                    )}
                     <div className="flex gap-2 ml-auto">
                       <Link
                         href={
                           isHotelCategory
                             ? `/vendor/dashboard/hotels/${listing.id}`
-                            : `/vendor/dashboard/listings/${listing.id}`
+                            : vendor?.business_category ===
+                                "serviced_apartments"
+                              ? `/vendor/dashboard/serviced-apartments/${listing.id}`
+                              : `/vendor/dashboard/listings/${listing.id}`
                         }
                       >
                         <Button
@@ -448,13 +384,22 @@ export function VendorListingsGrid() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={isDeleting}
+              disabled={deleteMutation.isPending}
               className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? (
+                <>
+                  <LoadingSpinner className="mr-2 h-4 w-4" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

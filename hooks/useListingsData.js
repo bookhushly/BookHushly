@@ -1,11 +1,35 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+// lib/hooks/useListings.js
+"use client";
+
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { toast } from "react-hot-toast";
-import { debounce } from "lodash";
+import { vendorDashboardKeys } from "./use-vendor-dashboard";
+import { useInView } from "react-intersection-observer";
+import { useEffect, useMemo } from "react";
+
+const supabase = createClient();
 
 const ITEMS_PER_PAGE = 16;
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000;
+
+// Query keys
+export const listingKeys = {
+  all: ["listings"],
+  detail: (id) => [...listingKeys.all, "detail", id],
+  category: (category) => [...listingKeys.all, "category", category],
+  filtered: (category, searchQuery, filters) => [
+    ...listingKeys.category(category),
+    "filtered",
+    searchQuery,
+    filters,
+  ],
+};
+
+// ==================== NORMALIZATION FUNCTIONS ====================
 
 const normalizeHotelData = (hotel) => ({
   id: hotel.id,
@@ -14,13 +38,12 @@ const normalizeHotelData = (hotel) => ({
     `${hotel.city || ""}${hotel.city && hotel.state ? ", " : ""}${hotel.state || ""}`.trim() ||
     hotel.address ||
     "Location not specified",
-  price: hotel.min_price || 0, // Minimum room price from aggregation
+  price: hotel.min_price || 0,
   media_urls: hotel.image_urls || [],
   category: "hotels",
   vendor_name: hotel.name,
   description: hotel.description,
   amenities: hotel.amenities,
-  // Hotel-specific data
   hotel_id: hotel.id,
   city: hotel.city,
   state: hotel.state,
@@ -32,6 +55,7 @@ const normalizeHotelData = (hotel) => ({
   room_types_count: hotel.room_types_count || 0,
   max_price: hotel.max_price || 0,
 });
+
 const normalizeApartmentData = (apartment) => ({
   id: apartment.id,
   title: apartment.name,
@@ -45,7 +69,6 @@ const normalizeApartmentData = (apartment) => ({
   vendor_name: apartment.name,
   description: apartment.description,
   amenities: apartment.amenities,
-  // Apartment-specific data
   apartment_id: apartment.id,
   apartment_type: apartment.apartment_type,
   city: apartment.city,
@@ -65,7 +88,6 @@ const normalizeApartmentData = (apartment) => ({
   parking_spaces: apartment.parking_spaces,
   has_balcony: apartment.has_balcony,
   has_terrace: apartment.has_terrace,
-  // Utilities
   utilities_included: apartment.utilities_included,
   electricity_included: apartment.electricity_included,
   generator_available: apartment.generator_available,
@@ -75,494 +97,440 @@ const normalizeApartmentData = (apartment) => ({
   water_supply: apartment.water_supply,
   internet_included: apartment.internet_included,
   internet_speed: apartment.internet_speed,
-  // Security
   security_features: apartment.security_features,
-  // Policies
   check_in_time: apartment.check_in_time,
   check_out_time: apartment.check_out_time,
   cancellation_policy: apartment.cancellation_policy,
   house_rules: apartment.house_rules,
   caution_deposit: apartment.caution_deposit,
-  // Status
   status: apartment.status,
   available_from: apartment.available_from,
   available_until: apartment.available_until,
   instant_booking: apartment.instant_booking,
 });
 
-export const useListingsData = (category, searchQuery, filters) => {
-  const supabase = createClient();
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+// ==================== ENRICHMENT FUNCTIONS ====================
 
-  const cache = useRef(new Map());
-  const observer = useRef(null);
-  const abortControllerRef = useRef(null);
+async function enrichHotelsWithRoomData(hotels) {
+  if (!hotels.length) return hotels;
 
-  const buildQuery = useCallback(
-    (pageNum, currentCategory, currentQuery, currentFilters) => {
-      console.log("🔧 Building query:", {
-        pageNum,
-        currentCategory,
-        currentQuery,
-        currentFilters,
-      });
+  const hotelIds = hotels.map((h) => h.id);
 
-      // For hotels, fetch from hotels table with room aggregations
-      if (currentCategory === "hotels") {
-        const fields = `
-          id,
-          name,
-          description,
-          address,
-          city,
-          state,
-          image_urls,
-          amenities,
-          checkout_policy,
-          policies
-        `;
+  // Fetch room and room type data in parallel
+  const [roomDataResult, roomTypesResult] = await Promise.all([
+    supabase
+      .from("hotel_rooms")
+      .select("hotel_id,price_per_night,status")
+      .in("hotel_id", hotelIds),
+    supabase
+      .from("hotel_room_types")
+      .select("hotel_id,id")
+      .in("hotel_id", hotelIds),
+  ]);
 
-        let query = supabase
-          .from("hotels")
-          .select(fields, { count: "exact" })
-          .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
-          .order("created_at", { ascending: false });
+  const roomData = roomDataResult.data || [];
+  const roomTypesData = roomTypesResult.data || [];
 
-        console.log("🏨 Querying hotels table");
+  // Aggregate data per hotel
+  const hotelDataMap = new Map();
 
-        if (currentQuery) {
-          query = query.or(
-            `name.ilike.%${currentQuery}%,city.ilike.%${currentQuery}%,state.ilike.%${currentQuery}%,address.ilike.%${currentQuery}%`
-          );
-          console.log("🔍 Added search filter:", currentQuery);
-        }
-
-        if (currentFilters.city) {
-          query = query.eq("city", currentFilters.city);
-          console.log("📍 Added city filter:", currentFilters.city);
-        }
-
-        if (currentFilters.state) {
-          query = query.eq("state", currentFilters.state);
-          console.log("📍 Added state filter:", currentFilters.state);
-        }
-
-        console.log("✅ Hotels query fully built");
-        return query;
-      }
-      // For serviced apartments, fetch from serviced_apartments table
-      if (currentCategory === "serviced_apartments") {
-        const fields = `
-        id,
-        name,
-        description,
-        apartment_type,
-        address,
-        city,
-        state,
-        area,
-        landmark,
-        bedrooms,
-        bathrooms,
-        max_guests,
-        square_meters,
-        price_per_night,
-        price_per_week,
-        price_per_month,
-        minimum_stay,
-        utilities_included,
-        electricity_included,
-        generator_available,
-        generator_hours,
-        inverter_available,
-        solar_power,
-        water_supply,
-        internet_included,
-        internet_speed,
-        furnished,
-        kitchen_equipped,
-        parking_spaces,
-        has_balcony,
-        has_terrace,
-        security_features,
-        amenities,
-        image_urls,
-        check_in_time,
-        check_out_time,
-        cancellation_policy,
-        house_rules,
-        caution_deposit,
-        status,
-        available_from,
-        available_until,
-        instant_booking
-      `;
-
-        let query = supabase
-          .from("serviced_apartments")
-          .select(fields, { count: "exact" })
-          .eq("status", "active") // Only show active apartments
-          .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
-          .order("created_at", { ascending: false });
-
-        console.log("🏢 Querying serviced_apartments table");
-
-        if (currentQuery) {
-          query = query.or(
-            `name.ilike.%${currentQuery}%,city.ilike.%${currentQuery}%,state.ilike.%${currentQuery}%,area.ilike.%${currentQuery}%,address.ilike.%${currentQuery}%`
-          );
-          console.log("🔍 Added search filter:", currentQuery);
-        }
-
-        if (currentFilters.city) {
-          query = query.eq("city", currentFilters.city);
-          console.log("📍 Added city filter:", currentFilters.city);
-        }
-
-        if (currentFilters.state) {
-          query = query.eq("state", currentFilters.state);
-          console.log("📍 Added state filter:", currentFilters.state);
-        }
-
-        if (currentFilters.bedrooms) {
-          query = query.eq("bedrooms", currentFilters.bedrooms);
-          console.log("🛏️ Added bedrooms filter:", currentFilters.bedrooms);
-        }
-
-        if (currentFilters.bathrooms) {
-          query = query.eq("bathrooms", currentFilters.bathrooms);
-          console.log("🚿 Added bathrooms filter:", currentFilters.bathrooms);
-        }
-
-        if (currentFilters.price_min) {
-          query = query.gte("price_per_night", currentFilters.price_min);
-          console.log("💰 Added min price filter:", currentFilters.price_min);
-        }
-
-        if (currentFilters.price_max) {
-          query = query.lte("price_per_night", currentFilters.price_max);
-          console.log("💰 Added max price filter:", currentFilters.price_max);
-        }
-
-        console.log("✅ Serviced apartments query fully built");
-        return query;
-      }
-
-      // For other categories, fetch from listings table
-      const fields =
-        "id,title,location,price,media_urls,category,vendor_name,description,amenities";
-
-      let query = supabase
-        .from("listings")
-        .select(fields, { count: "exact" })
-        .eq("active", true)
-        .eq("category", currentCategory)
-        .range((pageNum - 1) * ITEMS_PER_PAGE, pageNum * ITEMS_PER_PAGE - 1)
-        .order("created_at", { ascending: false });
-
-      console.log("📝 Querying listings table with category:", currentCategory);
-
-      if (currentQuery) {
-        query = query.or(
-          `title.ilike.%${currentQuery}%,location.ilike.%${currentQuery}%`
-        );
-        console.log("🔍 Added search filter:", currentQuery);
-      }
-
-      if (currentFilters.price_min) {
-        query = query.gte("price", currentFilters.price_min);
-        console.log("💰 Added min price filter:", currentFilters.price_min);
-      }
-      if (currentFilters.price_max) {
-        query = query.lte("price", currentFilters.price_max);
-        console.log("💰 Added max price filter:", currentFilters.price_max);
-      }
-
-      // Category-specific filters
-      if (currentFilters.bedrooms) {
-        query = query.eq("bedrooms", currentFilters.bedrooms);
-      }
-      if (currentFilters.bathrooms) {
-        query = query.eq("bathrooms", currentFilters.bathrooms);
-      }
-      if (currentFilters.capacity) {
-        query = query.gte("maximum_capacity", currentFilters.capacity);
-      }
-
-      console.log("✅ Query fully built");
-      return query;
-    },
-    []
-  );
-
-  // Fetch room data for hotels to get pricing and availability
-  const enrichHotelsWithRoomData = useCallback(
-    async (hotels) => {
-      if (!hotels.length) return hotels;
-
-      const hotelIds = hotels.map((h) => h.id);
-
-      // Get room pricing and availability aggregates
-      const { data: roomData } = await supabase
-        .from("hotel_rooms")
-        .select("hotel_id,price_per_night,status")
-        .in("hotel_id", hotelIds);
-
-      // Get room types count
-      const { data: roomTypesData } = await supabase
-        .from("hotel_room_types")
-        .select("hotel_id,id")
-        .in("hotel_id", hotelIds);
-
-      // Aggregate data per hotel
-      const hotelDataMap = new Map();
-
-      hotelIds.forEach((id) => {
-        hotelDataMap.set(id, {
-          total_rooms: 0,
-          available_rooms: 0,
-          room_types_count: 0,
-          min_price: null,
-          max_price: null,
-          prices: [],
-        });
-      });
-
-      // Process room data
-      roomData?.forEach((room) => {
-        const hotelData = hotelDataMap.get(room.hotel_id);
-        if (hotelData) {
-          hotelData.total_rooms++;
-          if (room.status === "available") {
-            hotelData.available_rooms++;
-          }
-          if (room.price_per_night) {
-            hotelData.prices.push(parseFloat(room.price_per_night));
-          }
-        }
-      });
-
-      // Process room types data
-      roomTypesData?.forEach((roomType) => {
-        const hotelData = hotelDataMap.get(roomType.hotel_id);
-        if (hotelData) {
-          hotelData.room_types_count++;
-        }
-      });
-
-      // Calculate min/max prices
-      hotelDataMap.forEach((data) => {
-        if (data.prices.length > 0) {
-          data.min_price = Math.min(...data.prices);
-          data.max_price = Math.max(...data.prices);
-        }
-      });
-
-      // Enrich hotels with aggregated data
-      return hotels.map((hotel) => {
-        const data = hotelDataMap.get(hotel.id) || {};
-        return {
-          ...hotel,
-          total_rooms: data.total_rooms || 0,
-          available_rooms: data.available_rooms || 0,
-          room_types_count: data.room_types_count || 0,
-          min_price: data.min_price || 0,
-          max_price: data.max_price || 0,
-        };
-      });
-    },
-    [supabase]
-  );
-
-  const fetchListings = useCallback(
-    async (
-      pageNum,
-      reset,
-      currentCategory,
-      currentQuery,
-      currentFilters,
-      retryCount = 0
-    ) => {
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-      abortControllerRef.current = new AbortController();
-
-      const cacheKey = `${currentCategory}:${currentQuery}:${JSON.stringify(currentFilters)}:${pageNum}`;
-
-      if (cache.current.has(cacheKey)) {
-        console.log("✅ Using cached data");
-        const cachedData = cache.current.get(cacheKey);
-        setListings((prev) => (reset ? cachedData : [...prev, ...cachedData]));
-        setHasMore(cachedData.length === ITEMS_PER_PAGE);
-        setLoading(false);
-        setIsLoadingMore(false);
-        return;
-      }
-
-      setIsLoadingMore(!reset && pageNum > 1);
-      if (reset) setLoading(true);
-
-      try {
-        const query = buildQuery(
-          pageNum,
-          currentCategory,
-          currentQuery,
-          currentFilters
-        );
-
-        const { data, error, count } = await query.abortSignal(
-          abortControllerRef.current.signal
-        );
-
-        console.log("📦 Query result:", {
-          dataLength: data?.length,
-          error: error?.message,
-          count,
-        });
-
-        if (error) {
-          console.error("❌ Supabase error:", error);
-          throw error;
-        }
-
-        let safeData = Array.isArray(data) ? data : [];
-        console.log("✅ Safe data length:", safeData.length);
-
-        // Enrich hotel data with room information
-        if (currentCategory === "hotels") {
-          console.log("🏨 Enriching hotel data with room information");
-          safeData = await enrichHotelsWithRoomData(safeData);
-          safeData = safeData
-            .map(normalizeHotelData)
-            .filter((hotel) => hotel.available_rooms > 0); // Only show hotels with available rooms
-        }
-        if (currentCategory === "serviced_apartments") {
-          console.log("🏢 Normalizing serviced apartments data");
-          safeData = safeData.map(normalizeApartmentData);
-        }
-
-        // Apply price filters for hotels after enrichment
-        if (currentCategory === "hotels") {
-          if (currentFilters.price_min) {
-            safeData = safeData.filter(
-              (hotel) => hotel.price >= currentFilters.price_min
-            );
-          }
-          if (currentFilters.price_max) {
-            safeData = safeData.filter(
-              (hotel) => hotel.price <= currentFilters.price_max
-            );
-          }
-        }
-
-        cache.current.set(cacheKey, safeData);
-
-        if (cache.current.size > 30) {
-          const firstKey = cache.current.keys().next().value;
-          cache.current.delete(firstKey);
-        }
-
-        setListings((prev) => (reset ? safeData : [...prev, ...safeData]));
-        setHasMore(
-          safeData.length === ITEMS_PER_PAGE && count > pageNum * ITEMS_PER_PAGE
-        );
-        setFetchError(null);
-        console.log("✅ Listings set successfully:", safeData.length);
-      } catch (error) {
-        if (error?.name === "AbortError") {
-          console.log("⚠️ Request aborted");
-          return;
-        }
-
-        console.error("❌ Fetch error:", error);
-
-        if (retryCount < MAX_RETRIES) {
-          console.log(`🔄 Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-          return fetchListings(
-            pageNum,
-            reset,
-            currentCategory,
-            currentQuery,
-            currentFilters,
-            retryCount + 1
-          );
-        }
-
-        console.error("💥 Max retries reached");
-        setFetchError(error.message);
-        toast.error(`Failed to load services: ${error.message}`);
-      } finally {
-        setIsLoadingMore(false);
-        setLoading(false);
-      }
-    },
-    [buildQuery, enrichHotelsWithRoomData]
-  );
-
-  const debouncedFetchListings = useMemo(
-    () =>
-      debounce(
-        (pageNum, reset, cat, query, filts) =>
-          fetchListings(pageNum, reset, cat, query, filts),
-        300
-      ),
-    [fetchListings]
-  );
-
-  useEffect(() => {
-    console.log("🚀 Initial fetch triggered:", {
-      category,
-      searchQuery,
-      filters,
+  hotelIds.forEach((id) => {
+    hotelDataMap.set(id, {
+      total_rooms: 0,
+      available_rooms: 0,
+      room_types_count: 0,
+      prices: [],
     });
-    setLoading(true);
-    setPage(1);
-    setListings([]);
-    setHasMore(true);
-    debouncedFetchListings(1, true, category, searchQuery, filters);
-    return () => debouncedFetchListings.cancel();
-  }, [category, searchQuery, filters, debouncedFetchListings]);
+  });
 
-  useEffect(() => {
-    if (page > 1)
-      debouncedFetchListings(page, false, category, searchQuery, filters);
-  }, [page, category, searchQuery, filters, debouncedFetchListings]);
+  // Process room data
+  roomData.forEach((room) => {
+    const hotelData = hotelDataMap.get(room.hotel_id);
+    if (hotelData) {
+      hotelData.total_rooms++;
+      if (room.status === "available") {
+        hotelData.available_rooms++;
+      }
+      if (room.price_per_night) {
+        hotelData.prices.push(parseFloat(room.price_per_night));
+      }
+    }
+  });
 
-  const lastListingRef = useCallback(
-    (node) => {
-      if (isLoadingMore || !hasMore) return;
-      if (observer.current) observer.current.disconnect();
+  // Process room types data
+  roomTypesData.forEach((roomType) => {
+    const hotelData = hotelDataMap.get(roomType.hotel_id);
+    if (hotelData) {
+      hotelData.room_types_count++;
+    }
+  });
 
-      observer.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) setPage((prev) => prev + 1);
-        },
-        { threshold: 0.1, rootMargin: "300px" }
+  // Enrich hotels with aggregated data
+  return hotels.map((hotel) => {
+    const data = hotelDataMap.get(hotel.id) || {
+      total_rooms: 0,
+      available_rooms: 0,
+      room_types_count: 0,
+      prices: [],
+    };
+
+    return {
+      ...hotel,
+      total_rooms: data.total_rooms,
+      available_rooms: data.available_rooms,
+      room_types_count: data.room_types_count,
+      min_price: data.prices.length > 0 ? Math.min(...data.prices) : 0,
+      max_price: data.prices.length > 0 ? Math.max(...data.prices) : 0,
+    };
+  });
+}
+
+// ==================== QUERY BUILDERS ====================
+
+function buildQuery(category, searchQuery, filters, pageParam) {
+  const offset = pageParam * ITEMS_PER_PAGE;
+
+  // Hotels query
+  if (category === "hotels") {
+    const fields = `
+      id,
+      name,
+      description,
+      address,
+      city,
+      state,
+      image_urls,
+      amenities,
+      checkout_policy,
+      policies
+    `;
+
+    let query = supabase
+      .from("hotels")
+      .select(fields, { count: "exact" })
+      .range(offset, offset + ITEMS_PER_PAGE - 1)
+      .order("created_at", { ascending: false });
+
+    if (searchQuery) {
+      query = query.or(
+        `name.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,state.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`,
       );
+    }
 
-      if (node) observer.current.observe(node);
-    },
-    [isLoadingMore, hasMore]
+    if (filters.city) query = query.eq("city", filters.city);
+    if (filters.state) query = query.eq("state", filters.state);
+
+    return query;
+  }
+
+  // Serviced apartments query
+  if (category === "serviced_apartments") {
+    const fields = `
+      id,
+      name,
+      description,
+      apartment_type,
+      address,
+      city,
+      state,
+      area,
+      landmark,
+      bedrooms,
+      bathrooms,
+      max_guests,
+      square_meters,
+      price_per_night,
+      price_per_week,
+      price_per_month,
+      minimum_stay,
+      utilities_included,
+      electricity_included,
+      generator_available,
+      generator_hours,
+      inverter_available,
+      solar_power,
+      water_supply,
+      internet_included,
+      internet_speed,
+      furnished,
+      kitchen_equipped,
+      parking_spaces,
+      has_balcony,
+      has_terrace,
+      security_features,
+      amenities,
+      image_urls,
+      check_in_time,
+      check_out_time,
+      cancellation_policy,
+      house_rules,
+      caution_deposit,
+      status,
+      available_from,
+      available_until,
+      instant_booking
+    `;
+
+    let query = supabase
+      .from("serviced_apartments")
+      .select(fields, { count: "exact" })
+      .eq("status", "active")
+      .range(offset, offset + ITEMS_PER_PAGE - 1)
+      .order("created_at", { ascending: false });
+
+    if (searchQuery) {
+      query = query.or(
+        `name.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,state.ilike.%${searchQuery}%,area.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`,
+      );
+    }
+
+    if (filters.city) query = query.eq("city", filters.city);
+    if (filters.state) query = query.eq("state", filters.state);
+    if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms);
+    if (filters.bathrooms) query = query.eq("bathrooms", filters.bathrooms);
+    if (filters.price_min)
+      query = query.gte("price_per_night", filters.price_min);
+    if (filters.price_max)
+      query = query.lte("price_per_night", filters.price_max);
+
+    return query;
+  }
+
+  // Regular listings query
+  const fields =
+    "id,title,location,price,media_urls,category,vendor_name,description,amenities";
+
+  let query = supabase
+    .from("listings")
+    .select(fields, { count: "exact" })
+    .eq("active", true)
+    .eq("category", category)
+    .range(offset, offset + ITEMS_PER_PAGE - 1)
+    .order("created_at", { ascending: false });
+
+  if (searchQuery) {
+    query = query.or(
+      `title.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`,
+    );
+  }
+
+  if (filters.price_min) query = query.gte("price", filters.price_min);
+  if (filters.price_max) query = query.lte("price", filters.price_max);
+  if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms);
+  if (filters.bathrooms) query = query.eq("bathrooms", filters.bathrooms);
+  if (filters.capacity) query = query.gte("maximum_capacity", filters.capacity);
+
+  return query;
+}
+
+// ==================== FETCH FUNCTIONS ====================
+
+// Fetch single listing
+async function fetchListing(listingId, businessCategory) {
+  if (!listingId) throw new Error("Listing ID is required");
+
+  if (businessCategory === "hotels") {
+    const { data, error } = await supabase
+      .from("hotels")
+      .select("*")
+      .eq("id", listingId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  if (businessCategory === "serviced_apartments") {
+    const { data, error } = await supabase
+      .from("serviced_apartments")
+      .select("*")
+      .eq("id", listingId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("id", listingId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Fetch listings page for infinite scroll
+async function fetchListingsPage({
+  pageParam = 0,
+  category,
+  searchQuery,
+  filters,
+}) {
+  const query = buildQuery(category, searchQuery, filters, pageParam);
+  const { data, error, count } = await query;
+
+  if (error) throw error;
+
+  let items = data || [];
+
+  // Enrich and normalize based on category
+  if (category === "hotels") {
+    items = await enrichHotelsWithRoomData(items);
+    items = items
+      .map(normalizeHotelData)
+      .filter((hotel) => hotel.available_rooms > 0);
+
+    // Apply price filters after enrichment
+    if (filters.price_min) {
+      items = items.filter((hotel) => hotel.price >= filters.price_min);
+    }
+    if (filters.price_max) {
+      items = items.filter((hotel) => hotel.price <= filters.price_max);
+    }
+  } else if (category === "serviced_apartments") {
+    items = items.map(normalizeApartmentData);
+  }
+
+  return {
+    items,
+    nextPage: items.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
+    totalCount: count,
+  };
+}
+
+// Update listing
+async function updateListingData(listingId, updateData, businessCategory) {
+  if (!listingId) throw new Error("Listing ID is required");
+
+  const dataToUpdate = {
+    ...updateData,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (businessCategory === "hotels") {
+    const { data, error } = await supabase
+      .from("hotels")
+      .update(dataToUpdate)
+      .eq("id", listingId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  if (businessCategory === "serviced_apartments") {
+    const { data, error } = await supabase
+      .from("serviced_apartments")
+      .update(dataToUpdate)
+      .eq("id", listingId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  const { data, error } = await supabase
+    .from("listings")
+    .update(dataToUpdate)
+    .eq("id", listingId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// ==================== HOOKS ====================
+
+// Hook: Fetch single listing
+export function useListing(listingId, businessCategory) {
+  return useQuery({
+    queryKey: listingKeys.detail(listingId),
+    queryFn: () => fetchListing(listingId, businessCategory),
+    enabled: !!listingId && !!businessCategory,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+// Hook: Infinite scroll listings with filters
+export function useListingsData(category, searchQuery = "", filters = {}) {
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    queryKey: listingKeys.filtered(category, searchQuery, filters),
+    queryFn: ({ pageParam = 0 }) =>
+      fetchListingsPage({ pageParam, category, searchQuery, filters }),
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!category,
+    refetchOnWindowFocus: false,
+    retry: 2,
+  });
+
+  // Flatten all pages into single array
+  const listings = useMemo(
+    () => data?.pages.flatMap((page) => page.items) || [],
+    [data],
   );
 
+  // Intersection observer for infinite scroll
+  const { ref: lastListingRef, inView } = useInView({
+    threshold: 0.1,
+    rootMargin: "300px",
+  });
+
+  // Fetch next page when last item comes into view
   useEffect(() => {
-    return () => {
-      if (observer.current) observer.current.disconnect();
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-    };
-  }, []);
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return {
     listings,
-    loading,
-    fetchError,
-    isLoadingMore,
-    hasMore,
+    loading: isLoading,
+    fetchError: error,
+    isLoadingMore: isFetchingNextPage,
+    hasMore: hasNextPage,
     lastListingRef,
+    totalCount: data?.pages[0]?.totalCount || 0,
   };
-};
+}
+
+// Hook: Update listing mutation
+export function useUpdateListing(businessCategory) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ listingId, updateData }) =>
+      updateListingData(listingId, updateData, businessCategory),
+    onSuccess: (data, variables) => {
+      // Invalidate detail query
+      queryClient.invalidateQueries({
+        queryKey: listingKeys.detail(variables.listingId),
+      });
+
+      // Invalidate vendor dashboard
+      queryClient.invalidateQueries({
+        queryKey: vendorDashboardKeys.all,
+      });
+
+      // Invalidate all filtered listings that might contain this listing
+      queryClient.invalidateQueries({
+        queryKey: listingKeys.all,
+      });
+    },
+  });
+}

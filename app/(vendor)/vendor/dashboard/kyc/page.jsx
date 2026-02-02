@@ -19,8 +19,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TermsAndConditionsModal } from "@/components/shared/kyc/Terms&ConditionModal";
-import { useAuthStore } from "@/lib/store";
-import { getVendorProfile } from "@/lib/database";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Upload,
   FileText,
@@ -67,7 +66,7 @@ const CustomProgressBar = ({ currentStep, totalSteps }) => {
                 "w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
                 currentStep >= index + 1
                   ? "bg-purple-600 text-white"
-                  : "bg-gray-200 text-gray-500"
+                  : "bg-gray-200 text-gray-500",
               )}
             >
               {index + 1}
@@ -94,10 +93,9 @@ const CustomProgressBar = ({ currentStep, totalSteps }) => {
 };
 
 export default function KYCPage() {
-  const { user } = useAuthStore();
   const router = useRouter();
+  const { data: authData, isLoading } = useAuth();
   const [isPending, startTransition] = useTransition();
-  const [existingProfile, setExistingProfile] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [verificationConsent, setVerificationConsent] = useState(false);
   const [formData, setFormData] = useState({
@@ -128,51 +126,33 @@ export default function KYCPage() {
   ];
 
   useEffect(() => {
-    const loadExistingProfile = async () => {
-      if (!user) return;
+    if (!authData?.vendor) return;
 
-      try {
-        const { data: profile, error } = await getVendorProfile(user.id);
+    const vendor = authData.vendor;
+    setFormData({
+      business_name: vendor.business_name || "",
+      business_description: vendor.business_description || "",
+      business_address: vendor.business_address || "",
+      phone_number: vendor.phone_number || "",
+      business_registration_number: vendor.business_registration_number || "",
+      nin: vendor.nin || "",
+      nin_first_name: vendor.nin_first_name || "",
+      nin_last_name: vendor.nin_last_name || "",
+      drivers_license: vendor.drivers_license || "",
+      tax_identification_number: vendor.tax_identification_number || "",
+      bank_account_name: vendor.bank_account_name || "",
+      bank_account_number: vendor.bank_account_number || "",
+      bank_name: vendor.bank_name || "",
+      business_category: vendor.business_category || "",
+      years_in_operation: vendor.years_in_operation || "",
+      website_url: vendor.website_url || "",
+    });
 
-        if (error && error.code !== "PGRST116") {
-          console.error("Profile load error:", error);
-          toast.error("Failed to load profile", { description: error.message });
-        }
-
-        if (profile) {
-          setExistingProfile(profile);
-          setFormData({
-            business_name: profile.business_name || "",
-            business_description: profile.business_description || "",
-            business_address: profile.business_address || "",
-            phone_number: profile.phone_number || "",
-            business_registration_number:
-              profile.business_registration_number || "",
-            nin: profile.nin || "",
-            nin_first_name: profile.nin_first_name || "",
-            nin_last_name: profile.nin_last_name || "",
-            drivers_license: profile.drivers_license || "",
-            tax_identification_number: profile.tax_identification_number || "",
-            bank_account_name: profile.bank_account_name || "",
-            bank_account_number: profile.bank_account_number || "",
-            bank_name: profile.bank_name || "",
-            business_category: profile.business_category || "",
-            years_in_operation: profile.years_in_operation || "",
-            website_url: profile.website_url || "",
-          });
-          if (profile.approved) {
-            setTermsAccepted(true);
-            setVerificationConsent(true);
-          }
-        }
-      } catch (error) {
-        console.error("Load profile error:", error);
-        toast.error("Failed to load profile", { description: error.message });
-      }
-    };
-
-    loadExistingProfile();
-  }, [user]);
+    if (vendor.approved) {
+      setTermsAccepted(true);
+      setVerificationConsent(true);
+    }
+  }, [authData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -197,7 +177,7 @@ export default function KYCPage() {
     for (const field of requiredFields[currentStep]) {
       if (!formData[field].trim()) {
         setError(
-          `${field.replace("_", " ").replace(/^\w/, (c) => c.toUpperCase())} is required`
+          `${field.replace("_", " ").replace(/^\w/, (c) => c.toUpperCase())} is required`,
         );
         return false;
       }
@@ -266,7 +246,7 @@ export default function KYCPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
     setError("");
   };
-
+  console.log("VendorId", authData);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -275,7 +255,7 @@ export default function KYCPage() {
     setError("");
 
     startTransition(async () => {
-      const result = await submitKYC(formData, existingProfile?.id);
+      const result = await submitKYC(formData, authData?.vendor?.id);
 
       if (!result.success) {
         setError(result.error);
@@ -300,8 +280,16 @@ export default function KYCPage() {
   ].includes(formData.business_category);
 
   const requiresDL = ["car_rentals", "logistics"].includes(
-    formData.business_category
+    formData.business_category,
   );
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-4xl py-8 flex items-center justify-center min-h-screen">
+        <LoadingSpinner className="h-8 w-8" />
+      </div>
+    );
+  }
 
   return (
     <AuthGuard>
@@ -316,10 +304,10 @@ export default function KYCPage() {
               Back to Dashboard
             </Link>
             <h1 className="text-3xl font-bold mb-2">
-              {existingProfile ? "Update" : "Complete"} KYC Verification
+              {authData?.vendor ? "Update" : "Complete"} KYC Verification
             </h1>
             <p className="text-gray-500">
-              {existingProfile
+              {authData?.vendor
                 ? "Update your business information and documents"
                 : "Provide your business information to get verified and start accepting bookings"}
             </p>
@@ -327,28 +315,28 @@ export default function KYCPage() {
 
           <CustomProgressBar currentStep={currentStep} totalSteps={5} />
 
-          {existingProfile && (
+          {authData?.vendor && (
             <div className="mb-6">
               <Alert
                 className={
-                  existingProfile.approved
+                  authData.vendor.approved
                     ? "border-green-200 bg-green-50"
                     : "border-yellow-200 bg-yellow-50"
                 }
               >
-                {existingProfile.approved ? (
+                {authData.vendor.approved ? (
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 ) : (
                   <AlertCircle className="h-4 w-4 text-yellow-600" />
                 )}
                 <AlertDescription
                   className={
-                    existingProfile.approved
+                    authData.vendor.approved
                       ? "text-green-800"
                       : "text-yellow-800"
                   }
                 >
-                  {existingProfile.approved
+                  {authData.vendor.approved
                     ? "Your KYC has been approved. You can update your information anytime."
                     : "Your KYC is currently under review. Updates will require re-approval."}
                 </AlertDescription>
@@ -771,7 +759,7 @@ export default function KYCPage() {
                   type="button"
                   onClick={handleNextStep}
                   disabled={isPending}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
                 >
                   Next
                 </Button>
@@ -779,17 +767,17 @@ export default function KYCPage() {
                 <Button
                   type="submit"
                   disabled={isPending || !termsAccepted || !verificationConsent}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
                 >
                   {isPending ? (
                     <>
                       <LoadingSpinner className="mr-2 h-4 w-4" />
-                      {existingProfile ? "Updating..." : "Submitting..."}
+                      {authData?.vendor ? "Updating..." : "Submitting..."}
                     </>
                   ) : (
                     <>
                       <Upload className="mr-2 h-4 w-4" />
-                      {existingProfile ? "Update KYC" : "Submit for Review"}
+                      {authData?.vendor ? "Update KYC" : "Submit for Review"}
                     </>
                   )}
                 </Button>

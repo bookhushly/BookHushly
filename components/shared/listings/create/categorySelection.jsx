@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -9,7 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createClient } from "@/lib/supabase/client";
+import { useVendorCategories } from "@/hooks/use-categories";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+const EVENT_TYPES = [
+  { value: "event_center", label: "Event Center" },
+  { value: "event_organizer", label: "Event Organizer" },
+];
 
 export default function CategorySelection({
   selectedCategory,
@@ -19,37 +27,35 @@ export default function CategorySelection({
   errors,
   vendorCategory,
 }) {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Fetch categories with React Query
+  const {
+    data: categories = [],
+    isLoading,
+    error: fetchError,
+  } = useVendorCategories(vendorCategory);
 
-  useEffect(() => {
-    async function loadCategories() {
-      if (!vendorCategory) {
-        setLoading(false);
-        return;
-      }
+  // Memoize whether to show event type selector
+  const showEventTypeSelector = useMemo(
+    () => selectedCategory === "events",
+    [selectedCategory],
+  );
 
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from("categories")
-          .select("*")
-          .eq("value", vendorCategory);
+  // Memoized category options for better performance
+  const categoryOptions = useMemo(() => {
+    if (!categories.length) return null;
 
-        if (!error && data) {
-          setCategories(data);
-        }
-      } catch (err) {
-        console.error("Failed to load categories:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
+    return categories.map((category) => (
+      <SelectItem key={category.value} value={category.value}>
+        <div className="flex items-center">
+          <span className="mr-2">{category.icon}</span>
+          <span>{category.label}</span>
+        </div>
+      </SelectItem>
+    ));
+  }, [categories]);
 
-    loadCategories();
-  }, [vendorCategory]);
-
-  if (loading) {
+  // Loading state
+  if (isLoading) {
     return (
       <Card className="border-none shadow-lg rounded-2xl bg-white">
         <CardHeader>
@@ -58,9 +64,52 @@ export default function CategorySelection({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          <div className="flex items-center justify-center py-12">
+            <LoadingSpinner className="h-8 w-8" />
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Error state
+  if (fetchError) {
+    return (
+      <Card className="border-none shadow-lg rounded-2xl bg-white">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            Select Category
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load categories. Please refresh the page.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Empty state
+  if (!categories.length) {
+    return (
+      <Card className="border-none shadow-lg rounded-2xl bg-white">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            Select Category
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              No categories available for your business type. Please contact
+              support.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -75,57 +124,68 @@ export default function CategorySelection({
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div>
+        {/* Category Selection */}
+        <div className="space-y-2">
+          <label
+            htmlFor="category-select"
+            className="text-sm font-medium text-gray-700"
+          >
+            Service Category <span className="text-red-500">*</span>
+          </label>
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
             <SelectTrigger
-              className={`w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 ${
-                errors.global ? "border-red-500" : ""
+              id="category-select"
+              className={`w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 transition-colors ${
+                errors.global ? "border-red-500 focus:ring-red-500" : ""
               }`}
             >
               <SelectValue placeholder="Choose a category" />
             </SelectTrigger>
 
-            <SelectContent className="rounded-xl">
-              {categories.length > 0 ? (
-                categories.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>
-                    <span className="mr-2">{c.icon}</span> {c.label}
-                  </SelectItem>
-                ))
-              ) : (
-                <div className="px-2 py-4 text-sm text-gray-500">
-                  No categories available
-                </div>
-              )}
+            <SelectContent className="rounded-xl max-h-[300px]">
+              {categoryOptions}
             </SelectContent>
           </Select>
 
           {errors.global && (
-            <p className="text-sm text-red-500 font-medium mt-2">
+            <p className="text-sm text-red-500 font-medium flex items-center gap-1.5">
+              <AlertCircle className="h-3.5 w-3.5" />
               {errors.global}
             </p>
           )}
         </div>
 
-        {selectedCategory === "events" && (
-          <div>
+        {/* Event Type Selection - Only shown for events category */}
+        {showEventTypeSelector && (
+          <div className="space-y-2">
+            <label
+              htmlFor="event-type-select"
+              className="text-sm font-medium text-gray-700"
+            >
+              Event Type <span className="text-red-500">*</span>
+            </label>
             <Select value={eventType} onValueChange={onEventTypeChange}>
               <SelectTrigger
-                className={`w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 ${
-                  errors.eventType ? "border-red-500" : ""
+                id="event-type-select"
+                className={`w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 transition-colors ${
+                  errors.eventType ? "border-red-500 focus:ring-red-500" : ""
                 }`}
               >
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
 
               <SelectContent className="rounded-xl">
-                <SelectItem value="event_center">Event Center</SelectItem>
-                <SelectItem value="event_organizer">Event Organizer</SelectItem>
+                {EVENT_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             {errors.eventType && (
-              <p className="text-sm text-red-500 font-medium mt-2">
+              <p className="text-sm text-red-500 font-medium flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5" />
                 {errors.eventType}
               </p>
             )}

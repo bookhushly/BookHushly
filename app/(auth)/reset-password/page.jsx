@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Eye, EyeOff, Lock, CheckCircle, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { updatePassword } from "./actions";
+import { updatePassword } from "@/app/actions/auth";
 import { useAuthActions } from "@/hooks/use-auth";
 
 export default function ResetPasswordPage() {
