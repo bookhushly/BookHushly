@@ -1,0 +1,8 @@
+# public/robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /vendor/dashboard/
+
+Sitemap: https://bookhushly.com/sitemap.xml

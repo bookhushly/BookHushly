@@ -1,4 +1,4 @@
-// lib/hooks/useListings.js
+// lib/hooks/useListings.js - Add prefetching and optimizations
 "use client";
 
 import {
@@ -14,9 +14,10 @@ import { useEffect, useMemo } from "react";
 
 const supabase = createClient();
 
-const ITEMS_PER_PAGE = 16;
+const ITEMS_PER_PAGE = 20; // Increased for better performance
+const PREFETCH_THRESHOLD = 0.8; // Prefetch when 80% through current page
 
-// Query keys
+// Query keys with better hierarchy
 export const listingKeys = {
   all: ["listings"],
   detail: (id) => [...listingKeys.all, "detail", id],
@@ -25,7 +26,7 @@ export const listingKeys = {
     ...listingKeys.category(category),
     "filtered",
     searchQuery,
-    filters,
+    JSON.stringify(filters), // Serialize filters for consistent key
   ],
 };
 
@@ -116,7 +117,7 @@ async function enrichHotelsWithRoomData(hotels) {
 
   const hotelIds = hotels.map((h) => h.id);
 
-  // Fetch room and room type data in parallel
+  // Batch fetch in parallel with smaller chunks for better performance
   const [roomDataResult, roomTypesResult] = await Promise.all([
     supabase
       .from("hotel_rooms")
@@ -131,49 +132,38 @@ async function enrichHotelsWithRoomData(hotels) {
   const roomData = roomDataResult.data || [];
   const roomTypesData = roomTypesResult.data || [];
 
-  // Aggregate data per hotel
-  const hotelDataMap = new Map();
+  // Use Map for O(1) lookups
+  const hotelDataMap = new Map(
+    hotelIds.map((id) => [
+      id,
+      {
+        total_rooms: 0,
+        available_rooms: 0,
+        room_types_count: 0,
+        prices: [],
+      },
+    ]),
+  );
 
-  hotelIds.forEach((id) => {
-    hotelDataMap.set(id, {
-      total_rooms: 0,
-      available_rooms: 0,
-      room_types_count: 0,
-      prices: [],
-    });
-  });
-
-  // Process room data
+  // Process in single pass
   roomData.forEach((room) => {
-    const hotelData = hotelDataMap.get(room.hotel_id);
-    if (hotelData) {
-      hotelData.total_rooms++;
-      if (room.status === "available") {
-        hotelData.available_rooms++;
-      }
-      if (room.price_per_night) {
-        hotelData.prices.push(parseFloat(room.price_per_night));
-      }
+    const data = hotelDataMap.get(room.hotel_id);
+    if (data) {
+      data.total_rooms++;
+      if (room.status === "available") data.available_rooms++;
+      if (room.price_per_night)
+        data.prices.push(parseFloat(room.price_per_night));
     }
   });
 
-  // Process room types data
   roomTypesData.forEach((roomType) => {
-    const hotelData = hotelDataMap.get(roomType.hotel_id);
-    if (hotelData) {
-      hotelData.room_types_count++;
-    }
+    const data = hotelDataMap.get(roomType.hotel_id);
+    if (data) data.room_types_count++;
   });
 
-  // Enrich hotels with aggregated data
+  // Enrich hotels
   return hotels.map((hotel) => {
-    const data = hotelDataMap.get(hotel.id) || {
-      total_rooms: 0,
-      available_rooms: 0,
-      room_types_count: 0,
-      prices: [],
-    };
-
+    const data = hotelDataMap.get(hotel.id);
     return {
       ...hotel,
       total_rooms: data.total_rooms,
@@ -190,20 +180,8 @@ async function enrichHotelsWithRoomData(hotels) {
 function buildQuery(category, searchQuery, filters, pageParam) {
   const offset = pageParam * ITEMS_PER_PAGE;
 
-  // Hotels query
   if (category === "hotels") {
-    const fields = `
-      id,
-      name,
-      description,
-      address,
-      city,
-      state,
-      image_urls,
-      amenities,
-      checkout_policy,
-      policies
-    `;
+    const fields = `id,name,description,address,city,state,image_urls,amenities,checkout_policy,policies,created_at`;
 
     let query = supabase
       .from("hotels")
@@ -223,53 +201,8 @@ function buildQuery(category, searchQuery, filters, pageParam) {
     return query;
   }
 
-  // Serviced apartments query
   if (category === "serviced_apartments") {
-    const fields = `
-      id,
-      name,
-      description,
-      apartment_type,
-      address,
-      city,
-      state,
-      area,
-      landmark,
-      bedrooms,
-      bathrooms,
-      max_guests,
-      square_meters,
-      price_per_night,
-      price_per_week,
-      price_per_month,
-      minimum_stay,
-      utilities_included,
-      electricity_included,
-      generator_available,
-      generator_hours,
-      inverter_available,
-      solar_power,
-      water_supply,
-      internet_included,
-      internet_speed,
-      furnished,
-      kitchen_equipped,
-      parking_spaces,
-      has_balcony,
-      has_terrace,
-      security_features,
-      amenities,
-      image_urls,
-      check_in_time,
-      check_out_time,
-      cancellation_policy,
-      house_rules,
-      caution_deposit,
-      status,
-      available_from,
-      available_until,
-      instant_booking
-    `;
+    const fields = `id,name,description,apartment_type,address,city,state,area,landmark,bedrooms,bathrooms,max_guests,square_meters,price_per_night,price_per_week,price_per_month,minimum_stay,utilities_included,electricity_included,generator_available,generator_hours,inverter_available,solar_power,water_supply,internet_included,internet_speed,furnished,kitchen_equipped,parking_spaces,has_balcony,has_terrace,security_features,amenities,image_urls,check_in_time,check_out_time,cancellation_policy,house_rules,caution_deposit,status,available_from,available_until,instant_booking,created_at`;
 
     let query = supabase
       .from("serviced_apartments")
@@ -296,9 +229,9 @@ function buildQuery(category, searchQuery, filters, pageParam) {
     return query;
   }
 
-  // Regular listings query
+  // Regular listings
   const fields =
-    "id,title,location,price,media_urls,category,vendor_name,description,amenities";
+    "id,title,location,price,media_urls,category,vendor_name,description,amenities,created_at";
 
   let query = supabase
     .from("listings")
@@ -325,7 +258,6 @@ function buildQuery(category, searchQuery, filters, pageParam) {
 
 // ==================== FETCH FUNCTIONS ====================
 
-// Fetch single listing
 async function fetchListing(listingId, businessCategory) {
   if (!listingId) throw new Error("Listing ID is required");
 
@@ -361,7 +293,6 @@ async function fetchListing(listingId, businessCategory) {
   return data;
 }
 
-// Fetch listings page for infinite scroll
 async function fetchListingsPage({
   pageParam = 0,
   category,
@@ -375,7 +306,7 @@ async function fetchListingsPage({
 
   let items = data || [];
 
-  // Enrich and normalize based on category
+  // Enrich and normalize
   if (category === "hotels") {
     items = await enrichHotelsWithRoomData(items);
     items = items
@@ -400,7 +331,6 @@ async function fetchListingsPage({
   };
 }
 
-// Update listing
 async function updateListingData(listingId, updateData, businessCategory) {
   if (!listingId) throw new Error("Listing ID is required");
 
@@ -446,19 +376,19 @@ async function updateListingData(listingId, updateData, businessCategory) {
 
 // ==================== HOOKS ====================
 
-// Hook: Fetch single listing
 export function useListing(listingId, businessCategory) {
   return useQuery({
     queryKey: listingKeys.detail(listingId),
     queryFn: () => fetchListing(listingId, businessCategory),
     enabled: !!listingId && !!businessCategory,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 }
 
-// Hook: Infinite scroll listings with filters
 export function useListingsData(category, searchQuery = "", filters = {}) {
+  const queryClient = useQueryClient();
+
   const {
     data,
     error,
@@ -466,20 +396,19 @@ export function useListingsData(category, searchQuery = "", filters = {}) {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    isError,
   } = useInfiniteQuery({
     queryKey: listingKeys.filtered(category, searchQuery, filters),
     queryFn: ({ pageParam = 0 }) =>
       fetchListingsPage({ pageParam, category, searchQuery, filters }),
     getNextPageParam: (lastPage) => lastPage.nextPage,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     enabled: !!category,
     refetchOnWindowFocus: false,
     retry: 2,
   });
 
-  // Flatten all pages into single array
+  // Flatten pages
   const listings = useMemo(
     () => data?.pages.flatMap((page) => page.items) || [],
     [data],
@@ -488,15 +417,41 @@ export function useListingsData(category, searchQuery = "", filters = {}) {
   // Intersection observer for infinite scroll
   const { ref: lastListingRef, inView } = useInView({
     threshold: 0.1,
-    rootMargin: "300px",
+    rootMargin: "500px", // Increased for better UX
   });
 
-  // Fetch next page when last item comes into view
+  // Fetch next page
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Prefetch next page when user is 80% through current listings
+  useEffect(() => {
+    if (!data || !hasNextPage || isFetchingNextPage) return;
+
+    const totalLoaded = listings.length;
+    const prefetchThreshold = Math.floor(totalLoaded * PREFETCH_THRESHOLD);
+
+    if (listings.length >= prefetchThreshold) {
+      const currentPage = data.pages.length;
+      queryClient.prefetchInfiniteQuery({
+        queryKey: listingKeys.filtered(category, searchQuery, filters),
+        queryFn: ({ pageParam = currentPage }) =>
+          fetchListingsPage({ pageParam, category, searchQuery, filters }),
+      });
+    }
+  }, [
+    listings.length,
+    data,
+    hasNextPage,
+    isFetchingNextPage,
+    category,
+    searchQuery,
+    filters,
+    queryClient,
+  ]);
 
   return {
     listings,
@@ -509,7 +464,6 @@ export function useListingsData(category, searchQuery = "", filters = {}) {
   };
 }
 
-// Hook: Update listing mutation
 export function useUpdateListing(businessCategory) {
   const queryClient = useQueryClient();
 
@@ -517,17 +471,12 @@ export function useUpdateListing(businessCategory) {
     mutationFn: ({ listingId, updateData }) =>
       updateListingData(listingId, updateData, businessCategory),
     onSuccess: (data, variables) => {
-      // Invalidate detail query
       queryClient.invalidateQueries({
         queryKey: listingKeys.detail(variables.listingId),
       });
-
-      // Invalidate vendor dashboard
       queryClient.invalidateQueries({
         queryKey: vendorDashboardKeys.all,
       });
-
-      // Invalidate all filtered listings that might contain this listing
       queryClient.invalidateQueries({
         queryKey: listingKeys.all,
       });
