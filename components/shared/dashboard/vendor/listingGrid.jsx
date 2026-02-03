@@ -367,7 +367,7 @@ export function VendorListingsGrid() {
               <Plus className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No {labels.plural.toLowerCase()} yet
+              No {labels.plural?.toLowerCase()} yet
             </h3>
             <p className="text-gray-600 mb-6">
               Get started by creating your first {labels.singular.toLowerCase()}
