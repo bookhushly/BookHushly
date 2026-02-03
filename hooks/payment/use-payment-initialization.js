@@ -2,13 +2,13 @@
 
 import { useState, useCallback } from "react";
 
-// Loads Paystack's inline script once, returns the PaystackPop constructor
+// Loads Paystack v1 inline script once, caches on window
 function loadPaystackScript() {
   return new Promise((resolve, reject) => {
     if (window.PaystackPop) return resolve(window.PaystackPop);
 
     const script = document.createElement("script");
-    script.src = "https://js.paystack.co/v2/inline.js";
+    script.src = "https://js.paystack.co/v1/inline.js";
     script.async = true;
     script.onload = () => resolve(window.PaystackPop);
     script.onerror = () => reject(new Error("Failed to load Paystack script"));
@@ -67,32 +67,30 @@ export function usePaymentInitialization() {
     }
   };
 
-  // For Paystack: uses inline SDK so callback is handled client-side, no dashboard config needed.
-  // For crypto: falls back to redirect since NOWPayments requires it.
+  // Crypto → redirect (NOWPayments requires it)
+  // Paystack → v1 inline modal, callback handles redirect
   const redirectToPayment = useCallback(async (paymentData) => {
     if (!paymentData?.payment_url) return;
 
-    // Crypto payments still use redirect — NOWPayments requires it
     if (paymentData.provider === "crypto") {
       window.location.href = paymentData.payment_url;
       return;
     }
 
-    // Paystack inline SDK path
+    // Paystack v1 inline path
     try {
-      const PaystackPop = await loadPaystackScript();
+      await loadPaystackScript();
 
-      const handler = new PaystackPop({
+      const handler = PaystackPop.setup({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
         email: paymentData.email,
-        amount: paymentData.amount * 100, // Paystack expects kobo
+        amount: paymentData.amount * 100, // kobo
         currency: paymentData.currency || "NGN",
-        reference: paymentData.reference,
+        ref: paymentData.reference,
         metadata: paymentData.metadata || {},
 
-        // Fires after successful payment — this is your reliable callback
-        onSuccess: (transaction) => {
-          // Redirect to your verification/callback page with the reference
+        // v1 uses `callback`, not `onSuccess`
+        callback: (transaction) => {
           const verifyUrl = new URL(
             `${window.location.origin}/payment/callback`,
           );
@@ -101,16 +99,15 @@ export function usePaymentInitialization() {
           window.location.href = verifyUrl.toString();
         },
 
-        // User closed the payment modal without completing
         onClose: () => {
           console.log("Payment modal closed by user");
         },
       });
 
-      handler.openModal();
+      handler.openIframe();
     } catch (err) {
       console.error("Paystack SDK error:", err);
-      // Fallback: open authorization_url directly (still subject to dashboard callback issue)
+      // Fallback: full-page redirect to Paystack
       window.location.href = paymentData.payment_url;
     }
   }, []);
