@@ -374,7 +374,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                       key={index}
                       className="border border-gray-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-lg transition-all"
                     >
-                      <div className="flex flex-wrap justify-between items-center gap-4">
+                      <div className="flex flex-col flex-wrap justify-between  gap-4">
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-bold text-gray-900 mb-2">
                             {ticket.name}

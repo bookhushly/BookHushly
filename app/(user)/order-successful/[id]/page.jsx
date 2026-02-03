@@ -337,7 +337,7 @@ const OrderSuccessful = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Success Header */}
         <div className="text-center mb-6">
