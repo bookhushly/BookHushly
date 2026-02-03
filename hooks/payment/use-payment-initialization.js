@@ -2,13 +2,13 @@
 
 import { useState, useCallback } from "react";
 
-// Loads Paystack v1 inline script once, caches on window
+// Loads Paystack v2 inline script once, caches on window
 function loadPaystackScript() {
   return new Promise((resolve, reject) => {
     if (window.PaystackPop) return resolve(window.PaystackPop);
 
     const script = document.createElement("script");
-    script.src = "https://js.paystack.co/v1/inline.js";
+    script.src = "https://js.paystack.co/v2/inline.js";
     script.async = true;
     script.onload = () => resolve(window.PaystackPop);
     script.onerror = () => reject(new Error("Failed to load Paystack script"));
@@ -67,30 +67,37 @@ export function usePaymentInitialization() {
     }
   };
 
-  // Crypto → redirect (NOWPayments requires it)
-  // Paystack → v1 inline modal, callback handles redirect
+  // Crypto → full-page redirect (NOWPayments requires it)
+  // Paystack → v2 resumeTransaction using access_code from server
   const redirectToPayment = useCallback(async (paymentData) => {
-    if (!paymentData?.payment_url) return;
+    if (!paymentData) return;
 
+    // Crypto path — NOWPayments needs a full redirect
     if (paymentData.provider === "crypto") {
+      if (!paymentData.payment_url) return;
       window.location.href = paymentData.payment_url;
       return;
     }
 
-    // Paystack v1 inline path
+    // Paystack v2 path — resume the transaction the server already created
+    if (!paymentData.access_code) {
+      // No access_code means we can't use resumeTransaction;
+      // fall back to full-page redirect via authorization_url
+      if (paymentData.payment_url) {
+        window.location.href = paymentData.payment_url;
+      }
+      return;
+    }
+
     try {
       await loadPaystackScript();
 
-      const handler = PaystackPop.setup({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
-        email: paymentData.email,
-        amount: paymentData.amount * 100, // kobo
-        currency: paymentData.currency || "NGN",
-        ref: paymentData.reference,
-        metadata: paymentData.metadata || {},
+      const popup = new PaystackPop();
 
-        // v1 uses `callback`, not `onSuccess`
-        callback: (transaction) => {
+      // resumeTransaction picks up the transaction by access_code.
+      // Email, amount, key — all already set server-side. Nothing to pass here.
+      popup.resumeTransaction(paymentData.access_code, {
+        onSuccess: (transaction) => {
           const verifyUrl = new URL(
             `${window.location.origin}/payment/callback`,
           );
@@ -99,16 +106,24 @@ export function usePaymentInitialization() {
           window.location.href = verifyUrl.toString();
         },
 
-        onClose: () => {
+        onCancel: () => {
           console.log("Payment modal closed by user");
         },
-      });
 
-      handler.openIframe();
+        onError: (error) => {
+          console.error("Paystack popup error:", error);
+          // Fall back to full-page redirect if the popup itself fails
+          if (paymentData.payment_url) {
+            window.location.href = paymentData.payment_url;
+          }
+        },
+      });
     } catch (err) {
-      console.error("Paystack SDK error:", err);
-      // Fallback: full-page redirect to Paystack
-      window.location.href = paymentData.payment_url;
+      console.error("Paystack SDK load error:", err);
+      // Script failed to load entirely — redirect is the only option
+      if (paymentData.payment_url) {
+        window.location.href = paymentData.payment_url;
+      }
     }
   }, []);
 

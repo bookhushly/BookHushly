@@ -168,12 +168,12 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
         setCurrentImageIndex((prev) => (prev + 1) % validImages.length);
       } else {
         setCurrentImageIndex(
-          (prev) => (prev - 1 + validImages.length) % validImages.length
+          (prev) => (prev - 1 + validImages.length) % validImages.length,
         );
       }
       setTimeout(startAutoPlay, 3000); // Resume after 3 seconds
     },
-    [validImages.length, stopAutoPlay, startAutoPlay]
+    [validImages.length, stopAutoPlay, startAutoPlay],
   );
 
   const navigateLightbox = useCallback(
@@ -182,11 +182,11 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
         setLightboxIndex((prev) => (prev + 1) % validImages.length);
       } else {
         setLightboxIndex(
-          (prev) => (prev - 1 + validImages.length) % validImages.length
+          (prev) => (prev - 1 + validImages.length) % validImages.length,
         );
       }
     },
-    [validImages.length]
+    [validImages.length],
   );
 
   const openLightbox = useCallback(
@@ -196,7 +196,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
       document.body.style.overflow = "hidden";
       stopAutoPlay();
     },
-    [stopAutoPlay]
+    [stopAutoPlay],
   );
 
   const closeLightbox = useCallback(() => {
@@ -269,7 +269,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       {/* Floating Navigation */}
       <div
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
@@ -746,7 +746,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                       <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <span className="break-words">{policy}</span>
                     </div>
-                  )
+                  ),
                 )}
                 <div className="flex gap-2">
                   <Shield className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />

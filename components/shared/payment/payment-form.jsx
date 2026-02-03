@@ -88,6 +88,8 @@ export default function PaymentForm({
       requestData?.contact_email ||
       requestData?.guest_email ||
       "";
+    console.log("Resolved Email", resolvedEmail);
+    console.log("Request Data:", requestData);
 
     // Always validate email, regardless of requestType
     if (!resolvedEmail || !/^\S+@\S+\.\S+$/.test(resolvedEmail)) {
