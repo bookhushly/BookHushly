@@ -142,7 +142,7 @@ export default function PaymentForm({
       });
 
       // Redirect to payment page
-      redirectToPayment(payment.payment_url || payment.authorization_url);
+      redirectToPayment(payment);
     } catch (err) {
       console.error("Payment initialization failed:", err);
     }

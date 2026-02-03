@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import path from "path";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAllTicketPDFsServer } from "../../../lib/generatePDFServer";
 import {
   sendHotelConfirmationEmail,
@@ -13,7 +13,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
    EVENT EMAIL (PDF + STORAGE + SIGNED URL)
 --------------------------------------------- */
 async function sendEventTicketEmail({ booking, payment }, bookingId) {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   const recipientEmail = booking.contact_email;
@@ -142,7 +142,7 @@ function generateEventEmailTemplate(
 --------------------------------------------- */
 export async function POST(request) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
     const { bookingId, bookingType } = await request.json();
 
     if (!bookingId || !bookingType) {
