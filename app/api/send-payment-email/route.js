@@ -10,6 +10,77 @@ import {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 /* ---------------------------------------------
+   RETRY HELPER
+   Retries an async fn up to `attempts` times
+   with exponential backoff. Throws the last error
+   if all attempts fail.
+--------------------------------------------- */
+async function withRetry(fn, attempts = 3, baseDelay = 1000) {
+  let lastError;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, baseDelay * Math.pow(2, i)));
+      }
+    }
+  }
+  throw lastError;
+}
+
+/* ---------------------------------------------
+   IDEMPOTENCY GUARD
+   Checks whether an email has already been sent
+   for this booking. Returns the existing record
+   if one exists, null otherwise.
+--------------------------------------------- */
+async function getExistingEmailRecord(supabase, bookingId, bookingType) {
+  const { data } = await supabase
+    .from("email_logs")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .eq("booking_type", bookingType)
+    .eq("status", "sent")
+    .single();
+  return data || null;
+}
+
+/* ---------------------------------------------
+   LOG EMAIL ATTEMPT
+   Writes a row to email_logs before sending.
+   Status starts as "pending", gets updated to
+   "sent" or "failed" after the attempt resolves.
+--------------------------------------------- */
+async function createEmailLog(supabase, bookingId, bookingType) {
+  const { data, error } = await supabase
+    .from("email_logs")
+    .insert({
+      booking_id: bookingId,
+      booking_type: bookingType,
+      status: "pending",
+      created_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function updateEmailLog(supabase, logId, status, error = null) {
+  await supabase
+    .from("email_logs")
+    .update({
+      status,
+      error_message: error,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", logId);
+}
+
+/* ---------------------------------------------
    EVENT EMAIL (PDF + STORAGE + SIGNED URL)
 --------------------------------------------- */
 async function sendEventTicketEmail({ booking, payment }, bookingId) {
@@ -29,29 +100,35 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
 
   console.log(`✅ Generated ${ticketPDFs.length} PDF(s)`);
 
+  // Upload all PDFs and collect signed URLs.
+  // Each upload is individually retried — a failure on one
+  // doesn't orphan the ones that already succeeded.
   const signedUrls = [];
 
   for (const ticket of ticketPDFs) {
     const filePath = `${bookingId}/${ticket.filename}`;
 
-    // Upload PDF
-    const { error: uploadError } = await supabase.storage
-      .from("event-tickets")
-      .upload(filePath, ticket.content, {
-        contentType: "application/pdf",
-        upsert: true,
-      });
+    // Retry the upload itself — transient storage errors are common
+    await withRetry(async () => {
+      const { error: uploadError } = await supabase.storage
+        .from("event-tickets")
+        .upload(filePath, ticket.content, {
+          contentType: "application/pdf",
+          upsert: true, // upsert means re-running this is safe
+        });
 
-    if (uploadError) throw uploadError;
+      if (uploadError) throw uploadError;
+    });
 
-    // Save DB reference
-    const { error: dbError } = await supabase
-      .from("event_ticket_files")
-      .insert({
+    // DB reference — upsert so re-runs don't duplicate rows
+    const { error: dbError } = await supabase.from("event_ticket_files").upsert(
+      {
         booking_id: bookingId,
         ticket_name: ticket.filename,
         file_path: filePath,
-      });
+      },
+      { onConflict: "booking_id, ticket_name" },
+    );
 
     if (dbError) throw dbError;
 
@@ -76,18 +153,22 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
 
   console.log(`📧 Sending email to ${recipientEmail}`);
 
-  const { error } = await resend.emails.send({
-    from: "BookHushly <tickets@bookhushly.com>",
-    to: recipientEmail,
-    subject: `Your Tickets for ${booking.listing?.title || "Event"}`,
-    html: generateEventEmailTemplate(
-      booking,
-      payment,
-      ticketSummary,
-      bookingId,
-      signedUrls,
-    ),
-  });
+  // Retry the Resend call — transient API failures are the most
+  // common reason emails don't go out
+  const { error } = await withRetry(() =>
+    resend.emails.send({
+      from: "BookHushly <tickets@bookhushly.com>",
+      to: recipientEmail,
+      subject: `Your Tickets for ${booking.listing?.title || "Event"}`,
+      html: generateEventEmailTemplate(
+        booking,
+        payment,
+        ticketSummary,
+        bookingId,
+        signedUrls,
+      ),
+    }),
+  );
 
   if (error) throw error;
 
@@ -141,8 +222,10 @@ function generateEventEmailTemplate(
    API ROUTE
 --------------------------------------------- */
 export async function POST(request) {
+  const supabase = await createAdminClient();
+  let emailLog = null;
+
   try {
-    const supabase = await createAdminClient();
     const { bookingId, bookingType } = await request.json();
 
     if (!bookingId || !bookingType) {
@@ -151,6 +234,30 @@ export async function POST(request) {
         { status: 400 },
       );
     }
+
+    // --- Idempotency check ---
+    // If we already successfully sent an email for this booking, bail out.
+    // This is what prevents duplicate emails on retries or double-calls.
+    const existing = await getExistingEmailRecord(
+      supabase,
+      bookingId,
+      bookingType,
+    );
+    if (existing) {
+      console.log(
+        `⏭️  Email already sent for ${bookingType} booking ${bookingId}, skipping`,
+      );
+      return Response.json({
+        success: true,
+        message: "Email already sent",
+        alreadySent: true,
+      });
+    }
+
+    // --- Create a pending log row before doing anything ---
+    // If the route crashes mid-way, this row stays as "pending"
+    // so you can identify bookings that need a retry.
+    emailLog = await createEmailLog(supabase, bookingId, bookingType);
 
     let booking;
     let payment;
@@ -278,6 +385,14 @@ export async function POST(request) {
     }
 
     if (!booking || !payment) {
+      if (emailLog) {
+        await updateEmailLog(
+          supabase,
+          emailLog.id,
+          "failed",
+          "Booking or payment not found",
+        );
+      }
       return Response.json(
         { success: false, error: "Booking or payment not found" },
         { status: 404 },
@@ -289,24 +404,48 @@ export async function POST(request) {
     /* ---------------------------------
        ROUTING
     --------------------------------- */
+    let result;
+
     if (bookingType === "event") {
-      return sendEventTicketEmail(payload, bookingId);
+      result = await sendEventTicketEmail(payload, bookingId);
+    } else if (bookingType === "hotel") {
+      result = await sendHotelConfirmationEmail(payload, bookingId);
+    } else if (bookingType === "apartment") {
+      result = await sendApartmentConfirmationEmail(payload, bookingId);
+    } else {
+      if (emailLog) {
+        await updateEmailLog(
+          supabase,
+          emailLog.id,
+          "failed",
+          "Unsupported booking type",
+        );
+      }
+      return Response.json(
+        { success: false, error: "Unsupported booking type" },
+        { status: 400 },
+      );
     }
 
-    if (bookingType === "hotel") {
-      return sendHotelConfirmationEmail(payload, bookingId);
+    // Mark the log as sent — this is what the idempotency check
+    // looks for on subsequent calls
+    if (emailLog) {
+      await updateEmailLog(supabase, emailLog.id, "sent");
     }
 
-    if (bookingType === "apartment") {
-      return sendApartmentConfirmationEmail(payload, bookingId);
-    }
-
-    return Response.json(
-      { success: false, error: "Unsupported booking type" },
-      { status: 400 },
-    );
+    return result;
   } catch (error) {
     console.error("❌ Email sending error:", error);
+
+    // Mark the log as failed so you know which bookings need a retry
+    if (emailLog) {
+      try {
+        await updateEmailLog(supabase, emailLog.id, "failed", error.message);
+      } catch {
+        // Don't let the log update failure mask the original error
+      }
+    }
+
     return Response.json(
       { success: false, error: error.message },
       { status: 500 },

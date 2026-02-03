@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import { submitKYC } from "@/app/actions/kyc";
 import {
   Card,
@@ -292,508 +291,502 @@ export default function KYCPage() {
   }
 
   return (
-    <AuthGuard>
-      <TooltipProvider>
-        <div className="container max-w-4xl py-8 bg-white">
-          <div className="mb-8">
-            <Link
-              href="/vendor/dashboard"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
+    <TooltipProvider>
+      <div className="container max-w-4xl py-8 bg-white">
+        <div className="mb-8">
+          <Link
+            href="/vendor/dashboard"
+            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Link>
+          <h1 className="text-3xl font-bold mb-2">
+            {authData?.vendor ? "Update" : "Complete"} KYC Verification
+          </h1>
+          <p className="text-gray-500">
+            {authData?.vendor
+              ? "Update your business information and documents"
+              : "Provide your business information to get verified and start accepting bookings"}
+          </p>
+        </div>
+
+        <CustomProgressBar currentStep={currentStep} totalSteps={5} />
+
+        {authData?.vendor && (
+          <div className="mb-6">
+            <Alert
+              className={
+                authData.vendor.approved
+                  ? "border-green-200 bg-green-50"
+                  : "border-yellow-200 bg-yellow-50"
+              }
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Link>
-            <h1 className="text-3xl font-bold mb-2">
-              {authData?.vendor ? "Update" : "Complete"} KYC Verification
-            </h1>
-            <p className="text-gray-500">
-              {authData?.vendor
-                ? "Update your business information and documents"
-                : "Provide your business information to get verified and start accepting bookings"}
-            </p>
-          </div>
-
-          <CustomProgressBar currentStep={currentStep} totalSteps={5} />
-
-          {authData?.vendor && (
-            <div className="mb-6">
-              <Alert
+              {authData.vendor.approved ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+              )}
+              <AlertDescription
                 className={
                   authData.vendor.approved
-                    ? "border-green-200 bg-green-50"
-                    : "border-yellow-200 bg-yellow-50"
+                    ? "text-green-800"
+                    : "text-yellow-800"
                 }
               >
-                {authData.vendor.approved ? (
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                ) : (
-                  <AlertCircle className="h-4 w-4 text-yellow-600" />
-                )}
-                <AlertDescription
-                  className={
-                    authData.vendor.approved
-                      ? "text-green-800"
-                      : "text-yellow-800"
-                  }
-                >
-                  {authData.vendor.approved
-                    ? "Your KYC has been approved. You can update your information anytime."
-                    : "Your KYC is currently under review. Updates will require re-approval."}
-                </AlertDescription>
-              </Alert>
-            </div>
+                {authData.vendor.approved
+                  ? "Your KYC has been approved. You can update your information anytime."
+                  : "Your KYC is currently under review. Updates will require re-approval."}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {currentStep === 1 && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Building className="mr-2 h-5 w-5" />
+                  Business Information
+                </CardTitle>
+                <CardDescription>Tell us about your business</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="business_name">Business Name *</Label>
+                    <Input
+                      id="business_name"
+                      name="business_name"
+                      placeholder="Enter your business name"
+                      value={formData.business_name}
+                      onChange={handleChange}
+                      required
+                      className="border-gray-200 focus:ring-purple-400"
+                    />
+                  </div>
 
-            {currentStep === 1 && (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Building className="mr-2 h-5 w-5" />
-                    Business Information
-                  </CardTitle>
-                  <CardDescription>Tell us about your business</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="business_category"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Business Category *
+                    </Label>
+                    <Select
+                      name="business_category"
+                      value={formData.business_category}
+                      onValueChange={(value) =>
+                        handleSelectChange("business_category", value)
+                      }
+                      required
+                    >
+                      <SelectTrigger
+                        id="business_category"
+                        className="h-11 bg-white border border-gray-200 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)] !text-black"
+                      >
+                        <SelectValue
+                          placeholder="Select a category"
+                          className="text-black"
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                        {businessCategories.map((category) => (
+                          <SelectItem
+                            key={category.value}
+                            value={category.value}
+                            className="text-sm !text-black hover:bg-gray-50 focus:bg-gray-50 transition-colors duration-200"
+                          >
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="business_description">
+                    Business Description *
+                  </Label>
+                  <Textarea
+                    id="business_description"
+                    name="business_description"
+                    placeholder="Describe your business and services"
+                    value={formData.business_description}
+                    onChange={handleChange}
+                    rows={4}
+                    required
+                    className="border-gray-200 focus:ring-purple-400"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="years_in_operation">
+                      Years in Operation
+                    </Label>
+                    <Input
+                      id="years_in_operation"
+                      name="years_in_operation"
+                      type="number"
+                      placeholder="e.g., 5"
+                      value={formData.years_in_operation}
+                      onChange={handleChange}
+                      className="border-gray-200 focus:ring-purple-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="website_url">Website URL</Label>
+                    <Input
+                      id="website_url"
+                      name="website_url"
+                      type="url"
+                      placeholder="https://your-website.com"
+                      value={formData.website_url}
+                      onChange={handleChange}
+                      className="border-gray-200 focus:ring-purple-400"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {currentStep === 2 && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Phone className="mr-2 h-5 w-5" />
+                  Contact Information
+                </CardTitle>
+                <CardDescription>How customers can reach you</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="business_address">Business Address *</Label>
+                  <Textarea
+                    id="business_address"
+                    name="business_address"
+                    placeholder="Enter your complete business address"
+                    value={formData.business_address}
+                    onChange={handleChange}
+                    rows={3}
+                    required
+                    className="border-gray-200 focus:ring-purple-400"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone_number">Phone Number *</Label>
+                  <Input
+                    id="phone_number"
+                    name="phone_number"
+                    type="tel"
+                    placeholder="+234 xxx xxx xxxx"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    required
+                    className="border-gray-200 focus:ring-purple-400"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {currentStep === 3 && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Legal Information
+                </CardTitle>
+                <CardDescription>
+                  Provide {requiresCAC ? "CAC Registration Number" : "NIN"}
+                  {requiresDL
+                    ? " and Driver's License"
+                    : requiresCAC
+                      ? " or NIN"
+                      : ""}{" "}
+                  details
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {requiresCAC && (
+                  <div className="space-y-2">
+                    <Label htmlFor="business_registration_number">
+                      CAC Registration Number{requiresCAC ? " *" : ""}
+                    </Label>
+                    <Input
+                      id="business_registration_number"
+                      name="business_registration_number"
+                      placeholder="Enter CAC Registration Number"
+                      value={formData.business_registration_number}
+                      onChange={handleChange}
+                      required={requiresCAC}
+                      className="border-gray-200 focus:ring-purple-400"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="nin">
+                      National Identification Number (NIN)
+                      {!requiresCAC ? " *" : ""}
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-gray-500 cursor-help">ⓘ</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Enter your 11-digit NIN. Provide the individual&apos;s
+                        first and last name associated with the NIN.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Input
+                    id="nin"
+                    name="nin"
+                    placeholder="Enter 11-digit NIN"
+                    value={formData.nin}
+                    onChange={handleChange}
+                    required={!requiresCAC}
+                    className="border-gray-200 focus:ring-purple-400"
+                  />
+                </div>
+
+                {formData.nin && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="business_name">Business Name *</Label>
+                      <Label htmlFor="nin_first_name">
+                        First Name for NIN *
+                      </Label>
                       <Input
-                        id="business_name"
-                        name="business_name"
-                        placeholder="Enter your business name"
-                        value={formData.business_name}
+                        id="nin_first_name"
+                        name="nin_first_name"
+                        placeholder="Enter first name"
+                        value={formData.nin_first_name}
                         onChange={handleChange}
                         required
                         className="border-gray-200 focus:ring-purple-400"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nin_last_name">Last Name for NIN *</Label>
+                      <Input
+                        id="nin_last_name"
+                        name="nin_last_name"
+                        placeholder="Enter last name"
+                        value={formData.nin_last_name}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-200 focus:ring-purple-400"
+                      />
+                    </div>
+                  </div>
+                )}
 
+                {requiresDL && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="drivers_license">
+                        Driver&apos;s License Number *
+                      </Label>
+                      <Input
+                        id="drivers_license"
+                        name="drivers_license"
+                        placeholder="Enter Driver's License Number"
+                        value={formData.drivers_license}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-200 focus:ring-purple-400"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tax_identification_number">
+                        Tax Identification Number
+                      </Label>
+                      <Input
+                        id="tax_identification_number"
+                        name="tax_identification_number"
+                        placeholder="TIN"
+                        value={formData.tax_identification_number}
+                        onChange={handleChange}
+                        className="border-gray-200 focus:ring-purple-400"
+                      />
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {currentStep === 4 && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Building className="mr-2 h-5 w-5" />
+                  Banking Information
+                </CardTitle>
+                <CardDescription>For payment processing</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bank_account_name">Account Name</Label>
+                  <Input
+                    id="bank_account_name"
+                    name="bank_account_name"
+                    placeholder="Account holder name"
+                    value={formData.bank_account_name}
+                    onChange={handleChange}
+                    className="border-gray-200 focus:ring-purple-400"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bank_account_number">Account Number</Label>
+                    <Input
+                      id="bank_account_number"
+                      name="bank_account_number"
+                      placeholder="10-digit account number"
+                      value={formData.bank_account_number}
+                      onChange={handleChange}
+                      className="border-gray-200 focus:ring-purple-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bank_name">Bank Name</Label>
+                    <Input
+                      id="bank_name"
+                      name="bank_name"
+                      placeholder="e.g., First Bank, GTBank"
+                      value={formData.bank_name}
+                      onChange={handleChange}
+                      className="border-gray-200 focus:ring-purple-400"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {currentStep === 5 && (
+            <>
+              <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="verification_consent"
+                      checked={verificationConsent}
+                      onCheckedChange={setVerificationConsent}
+                      className="mt-1"
+                    />
                     <div className="space-y-2">
                       <Label
-                        htmlFor="business_category"
-                        className="text-sm font-medium text-gray-700"
+                        htmlFor="verification_consent"
+                        className="text-sm font-medium leading-relaxed cursor-pointer"
                       >
-                        Business Category *
+                        I consent to identity and document verification *
                       </Label>
-                      <Select
-                        name="business_category"
-                        value={formData.business_category}
-                        onValueChange={(value) =>
-                          handleSelectChange("business_category", value)
-                        }
-                        required
+                      <p className="text-xs text-gray-500">
+                        By checking this box, you agree to allow verification of
+                        your CAC, NIN, and/or Driver&apos;s License through our
+                        trusted partner, QoreID, in compliance with Nigeria Data
+                        Protection Regulation.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="terms"
+                      checked={termsAccepted}
+                      onCheckedChange={setTermsAccepted}
+                      className="mt-1"
+                    />
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="terms"
+                        className="text-sm font-medium leading-relaxed cursor-pointer"
                       >
-                        <SelectTrigger
-                          id="business_category"
-                          className="h-11 bg-white border border-gray-200 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)] !text-black"
-                        >
-                          <SelectValue
-                            placeholder="Select a category"
-                            className="text-black"
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-                          {businessCategories.map((category) => (
-                            <SelectItem
-                              key={category.value}
-                              value={category.value}
-                              className="text-sm !text-black hover:bg-gray-50 focus:bg-gray-50 transition-colors duration-200"
-                            >
-                              {category.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="business_description">
-                      Business Description *
-                    </Label>
-                    <Textarea
-                      id="business_description"
-                      name="business_description"
-                      placeholder="Describe your business and services"
-                      value={formData.business_description}
-                      onChange={handleChange}
-                      rows={4}
-                      required
-                      className="border-gray-200 focus:ring-purple-400"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="years_in_operation">
-                        Years in Operation
+                        I have read and agree to the <TermsAndConditionsModal />{" "}
+                        *
                       </Label>
-                      <Input
-                        id="years_in_operation"
-                        name="years_in_operation"
-                        type="number"
-                        placeholder="e.g., 5"
-                        value={formData.years_in_operation}
-                        onChange={handleChange}
-                        className="border-gray-200 focus:ring-purple-400"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="website_url">Website URL</Label>
-                      <Input
-                        id="website_url"
-                        name="website_url"
-                        type="url"
-                        placeholder="https://your-website.com"
-                        value={formData.website_url}
-                        onChange={handleChange}
-                        className="border-gray-200 focus:ring-purple-400"
-                      />
+                      <p className="text-xs text-gray-500">
+                        By checking this box, you acknowledge that you have
+                        read, understood, and agree to be bound by our Terms and
+                        Conditions for listing on BOOKHUSHLY.com.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            )}
+            </>
+          )}
 
-            {currentStep === 2 && (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Phone className="mr-2 h-5 w-5" />
-                    Contact Information
-                  </CardTitle>
-                  <CardDescription>How customers can reach you</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="business_address">Business Address *</Label>
-                    <Textarea
-                      id="business_address"
-                      name="business_address"
-                      placeholder="Enter your complete business address"
-                      value={formData.business_address}
-                      onChange={handleChange}
-                      rows={3}
-                      required
-                      className="border-gray-200 focus:ring-purple-400"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone_number">Phone Number *</Label>
-                    <Input
-                      id="phone_number"
-                      name="phone_number"
-                      type="tel"
-                      placeholder="+234 xxx xxx xxxx"
-                      value={formData.phone_number}
-                      onChange={handleChange}
-                      required
-                      className="border-gray-200 focus:ring-purple-400"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === 3 && (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <FileText className="mr-2 h-5 w-5" />
-                    Legal Information
-                  </CardTitle>
-                  <CardDescription>
-                    Provide {requiresCAC ? "CAC Registration Number" : "NIN"}
-                    {requiresDL
-                      ? " and Driver's License"
-                      : requiresCAC
-                        ? " or NIN"
-                        : ""}{" "}
-                    details
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {requiresCAC && (
-                    <div className="space-y-2">
-                      <Label htmlFor="business_registration_number">
-                        CAC Registration Number{requiresCAC ? " *" : ""}
-                      </Label>
-                      <Input
-                        id="business_registration_number"
-                        name="business_registration_number"
-                        placeholder="Enter CAC Registration Number"
-                        value={formData.business_registration_number}
-                        onChange={handleChange}
-                        required={requiresCAC}
-                        className="border-gray-200 focus:ring-purple-400"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="nin">
-                        National Identification Number (NIN)
-                        {!requiresCAC ? " *" : ""}
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-gray-500 cursor-help">ⓘ</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Enter your 11-digit NIN. Provide the individual&apos;s
-                          first and last name associated with the NIN.
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <Input
-                      id="nin"
-                      name="nin"
-                      placeholder="Enter 11-digit NIN"
-                      value={formData.nin}
-                      onChange={handleChange}
-                      required={!requiresCAC}
-                      className="border-gray-200 focus:ring-purple-400"
-                    />
-                  </div>
-
-                  {formData.nin && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="nin_first_name">
-                          First Name for NIN *
-                        </Label>
-                        <Input
-                          id="nin_first_name"
-                          name="nin_first_name"
-                          placeholder="Enter first name"
-                          value={formData.nin_first_name}
-                          onChange={handleChange}
-                          required
-                          className="border-gray-200 focus:ring-purple-400"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="nin_last_name">
-                          Last Name for NIN *
-                        </Label>
-                        <Input
-                          id="nin_last_name"
-                          name="nin_last_name"
-                          placeholder="Enter last name"
-                          value={formData.nin_last_name}
-                          onChange={handleChange}
-                          required
-                          className="border-gray-200 focus:ring-purple-400"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {requiresDL && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="drivers_license">
-                          Driver&apos;s License Number *
-                        </Label>
-                        <Input
-                          id="drivers_license"
-                          name="drivers_license"
-                          placeholder="Enter Driver's License Number"
-                          value={formData.drivers_license}
-                          onChange={handleChange}
-                          required
-                          className="border-gray-200 focus:ring-purple-400"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="tax_identification_number">
-                          Tax Identification Number
-                        </Label>
-                        <Input
-                          id="tax_identification_number"
-                          name="tax_identification_number"
-                          placeholder="TIN"
-                          value={formData.tax_identification_number}
-                          onChange={handleChange}
-                          className="border-gray-200 focus:ring-purple-400"
-                        />
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === 4 && (
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Building className="mr-2 h-5 w-5" />
-                    Banking Information
-                  </CardTitle>
-                  <CardDescription>For payment processing</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bank_account_name">Account Name</Label>
-                    <Input
-                      id="bank_account_name"
-                      name="bank_account_name"
-                      placeholder="Account holder name"
-                      value={formData.bank_account_name}
-                      onChange={handleChange}
-                      className="border-gray-200 focus:ring-purple-400"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="bank_account_number">
-                        Account Number
-                      </Label>
-                      <Input
-                        id="bank_account_number"
-                        name="bank_account_number"
-                        placeholder="10-digit account number"
-                        value={formData.bank_account_number}
-                        onChange={handleChange}
-                        className="border-gray-200 focus:ring-purple-400"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="bank_name">Bank Name</Label>
-                      <Input
-                        id="bank_name"
-                        name="bank_name"
-                        placeholder="e.g., First Bank, GTBank"
-                        value={formData.bank_name}
-                        onChange={handleChange}
-                        className="border-gray-200 focus:ring-purple-400"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === 5 && (
-              <>
-                <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        id="verification_consent"
-                        checked={verificationConsent}
-                        onCheckedChange={setVerificationConsent}
-                        className="mt-1"
-                      />
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="verification_consent"
-                          className="text-sm font-medium leading-relaxed cursor-pointer"
-                        >
-                          I consent to identity and document verification *
-                        </Label>
-                        <p className="text-xs text-gray-500">
-                          By checking this box, you agree to allow verification
-                          of your CAC, NIN, and/or Driver&apos;s License through
-                          our trusted partner, QoreID, in compliance with
-                          Nigeria Data Protection Regulation.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-purple-200 bg-purple-50/50 shadow-sm">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        id="terms"
-                        checked={termsAccepted}
-                        onCheckedChange={setTermsAccepted}
-                        className="mt-1"
-                      />
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="terms"
-                          className="text-sm font-medium leading-relaxed cursor-pointer"
-                        >
-                          I have read and agree to the{" "}
-                          <TermsAndConditionsModal /> *
-                        </Label>
-                        <p className="text-xs text-gray-500">
-                          By checking this box, you acknowledge that you have
-                          read, understood, and agree to be bound by our Terms
-                          and Conditions for listing on BOOKHUSHLY.com.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-
-            <div className="flex justify-between space-x-4">
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrevStep}
-                  className="border-gray-200 hover:bg-gray-50"
-                >
-                  Previous
-                </Button>
-              )}
-              {currentStep < 5 ? (
-                <Button
-                  type="button"
-                  onClick={handleNextStep}
-                  disabled={isPending}
-                  className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={isPending || !termsAccepted || !verificationConsent}
-                  className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
-                >
-                  {isPending ? (
-                    <>
-                      <LoadingSpinner className="mr-2 h-4 w-4" />
-                      {authData?.vendor ? "Updating..." : "Submitting..."}
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      {authData?.vendor ? "Update KYC" : "Submit for Review"}
-                    </>
-                  )}
-                </Button>
-              )}
+          <div className="flex justify-between space-x-4">
+            {currentStep > 1 && (
               <Button
                 type="button"
                 variant="outline"
-                asChild
+                onClick={handlePrevStep}
                 className="border-gray-200 hover:bg-gray-50"
               >
-                <Link href="/vendor/dashboard">Cancel</Link>
+                Previous
               </Button>
-            </div>
-          </form>
-        </div>
-      </TooltipProvider>
-    </AuthGuard>
+            )}
+            {currentStep < 5 ? (
+              <Button
+                type="button"
+                onClick={handleNextStep}
+                disabled={isPending}
+                className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
+              >
+                Next
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={isPending || !termsAccepted || !verificationConsent}
+                className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
+              >
+                {isPending ? (
+                  <>
+                    <LoadingSpinner className="mr-2 h-4 w-4" />
+                    {authData?.vendor ? "Updating..." : "Submitting..."}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    {authData?.vendor ? "Update KYC" : "Submit for Review"}
+                  </>
+                )}
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              asChild
+              className="border-gray-200 hover:bg-gray-50"
+            >
+              <Link href="/vendor/dashboard">Cancel</Link>
+            </Button>
+          </div>
+        </form>
+      </div>
+    </TooltipProvider>
   );
 }

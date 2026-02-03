@@ -10,7 +10,7 @@ const ServiceCardWrapper = dynamic(
   {
     loading: () => <SkeletonCard />,
     ssr: false,
-  }
+  },
 );
 
 const ListingsGrid = memo(
@@ -37,7 +37,7 @@ const ListingsGrid = memo(
 
     return (
       <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {listings.map((service, index) => (
             <div
               key={service.id}
@@ -56,7 +56,7 @@ const ListingsGrid = memo(
         )}
       </>
     );
-  }
+  },
 );
 
 ListingsGrid.displayName = "ListingsGrid";

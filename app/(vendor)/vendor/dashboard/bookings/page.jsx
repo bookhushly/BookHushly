@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import {
   Card,
   CardContent,
@@ -279,143 +278,139 @@ export default function VendorBookingsPage() {
   // Error state
   if (error) {
     return (
-      <AuthGuard requiredRole="vendor">
-        <div className="container py-8">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Failed to load bookings. Please try again.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </AuthGuard>
+      <div className="container py-8">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to load bookings. Please try again.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   return (
-    <AuthGuard requiredRole="vendor">
-      <div className="container py-8">
-        <div className="mb-8">
-          <Link
-            href="/vendor/dashboard"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold mb-2">Booking Requests</h1>
-          <p className="text-muted-foreground">
-            Manage your incoming booking requests and confirmed bookings
-          </p>
-        </div>
-
-        {/* Stats Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Requests
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.confirmed}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completed}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Bookings List */}
-        {bookings.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                No booking requests yet
-              </h3>
-              <p className="text-muted-foreground text-center mb-4">
-                Booking requests will appear here once customers start booking
-                your services
-              </p>
-              <Button asChild className="bg-purple-600 hover:bg-purple-700">
-                <Link href="/vendor/dashboard/listings/create">
-                  Create More Listings
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            {/* Pending Bookings */}
-            {groupedBookings.pending.length > 0 && (
-              <div>
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <Clock className="h-5 w-5 mr-2 text-yellow-600" />
-                  Pending Requests ({groupedBookings.pending.length})
-                </h2>
-                <div className="space-y-4">
-                  {groupedBookings.pending.map(renderBookingCard)}
-                </div>
-              </div>
-            )}
-
-            {/* Confirmed Bookings */}
-            {groupedBookings.confirmed.length > 0 && (
-              <div>
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2 text-blue-600" />
-                  Confirmed Bookings ({groupedBookings.confirmed.length})
-                </h2>
-                <div className="space-y-4">
-                  {groupedBookings.confirmed.map(renderBookingCard)}
-                </div>
-              </div>
-            )}
-
-            {/* Completed Bookings */}
-            {groupedBookings.completed.length > 0 && (
-              <div>
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
-                  Completed Bookings ({groupedBookings.completed.length})
-                </h2>
-                <div className="space-y-4">
-                  {groupedBookings.completed.map(renderBookingCard)}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+    <div className="container py-8">
+      <div className="mb-8">
+        <Link
+          href="/vendor/dashboard"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Link>
+        <h1 className="text-3xl font-bold mb-2">Booking Requests</h1>
+        <p className="text-muted-foreground">
+          Manage your incoming booking requests and confirmed bookings
+        </p>
       </div>
-    </AuthGuard>
+
+      {/* Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Requests
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pending}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Confirmed</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.confirmed}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.completed}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bookings List */}
+      {bookings.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              No booking requests yet
+            </h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Booking requests will appear here once customers start booking
+              your services
+            </p>
+            <Button asChild className="bg-purple-600 hover:bg-purple-700">
+              <Link href="/vendor/dashboard/listings/create">
+                Create More Listings
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {/* Pending Bookings */}
+          {groupedBookings.pending.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                <Clock className="h-5 w-5 mr-2 text-yellow-600" />
+                Pending Requests ({groupedBookings.pending.length})
+              </h2>
+              <div className="space-y-4">
+                {groupedBookings.pending.map(renderBookingCard)}
+              </div>
+            </div>
+          )}
+
+          {/* Confirmed Bookings */}
+          {groupedBookings.confirmed.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                <CheckCircle className="h-5 w-5 mr-2 text-blue-600" />
+                Confirmed Bookings ({groupedBookings.confirmed.length})
+              </h2>
+              <div className="space-y-4">
+                {groupedBookings.confirmed.map(renderBookingCard)}
+              </div>
+            </div>
+          )}
+
+          {/* Completed Bookings */}
+          {groupedBookings.completed.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+                Completed Bookings ({groupedBookings.completed.length})
+              </h2>
+              <div className="space-y-4">
+                {groupedBookings.completed.map(renderBookingCard)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore, useBookingStore } from "@/lib/store";
@@ -132,7 +131,7 @@ export default function CustomerDashboard() {
         setLoading(true);
 
         const toastShown = localStorage.getItem(
-          `customer-welcome-toast-${user.id}`
+          `customer-welcome-toast-${user.id}`,
         );
         setHasShownWelcomeToast(!!toastShown);
 
@@ -161,7 +160,7 @@ export default function CustomerDashboard() {
 
         if (!toastShown) {
           toast.success(
-            `Welcome back, ${user?.user_metadata?.name || "Customer"}!`
+            `Welcome back, ${user?.user_metadata?.name || "Customer"}!`,
           );
           localStorage.setItem(`customer-welcome-toast-${user.id}`, "true");
           setHasShownWelcomeToast(true);
@@ -219,157 +218,262 @@ export default function CustomerDashboard() {
 
   if (loading) {
     return (
-      <AuthGuard requiredRole="customer">
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-          <LoadingSpinner className="h-8 w-8 text-purple-600" />
-        </div>
-      </AuthGuard>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <LoadingSpinner className="h-8 w-8 text-purple-600" />
+      </div>
     );
   }
 
   return (
-    <AuthGuard requiredRole="customer">
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user?.user_metadata?.name || "Customer"}!
-            </h2>
-            <p className="text-gray-600">
-              Here's what's happening with your account today.
-            </p>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {user?.user_metadata?.name || "Customer"}!
+          </h2>
+          <p className="text-gray-600">
+            Here's what's happening with your account today.
+          </p>
+        </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatsCard
-              title="Total Bookings"
-              value={stats.totalBookings}
-              description="All time bookings"
-              icon={Calendar}
-              variant="primary"
-            />
-            <StatsCard
-              title="Pending"
-              value={stats.pendingBookings}
-              description="Awaiting confirmation"
-              icon={Clock}
-              variant="default"
-            />
-            <StatsCard
-              title="Confirmed"
-              value={stats.confirmedBookings}
-              description="Ready to go"
-              icon={CheckCircle}
-              variant="secondary"
-            />
-            <StatsCard
-              title="Completed"
-              value={stats.completedBookings}
-              description="Finished services"
-              icon={Star}
-              variant="default"
-            />
-          </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatsCard
+            title="Total Bookings"
+            value={stats.totalBookings}
+            description="All time bookings"
+            icon={Calendar}
+            variant="primary"
+          />
+          <StatsCard
+            title="Pending"
+            value={stats.pendingBookings}
+            description="Awaiting confirmation"
+            icon={Clock}
+            variant="default"
+          />
+          <StatsCard
+            title="Confirmed"
+            value={stats.confirmedBookings}
+            description="Ready to go"
+            icon={CheckCircle}
+            variant="secondary"
+          />
+          <StatsCard
+            title="Completed"
+            value={stats.completedBookings}
+            description="Finished services"
+            icon={Star}
+            variant="default"
+          />
+        </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-gray-200">
-            {["Overview", "Bookings", "Favorites", "Profile"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab.toLowerCase())}
-                className={`px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
-                  activeTab === tab.toLowerCase()
-                    ? "bg-purple-600 text-white"
-                    : "text-gray-600 hover:bg-purple-50 hover:text-purple-600"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        {/* Navigation Tabs */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 border-b border-gray-200">
+          {["Overview", "Bookings", "Favorites", "Profile"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab.toLowerCase())}
+              className={`px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
+                activeTab === tab.toLowerCase()
+                  ? "bg-purple-600 text-white"
+                  : "text-gray-600 hover:bg-purple-50 hover:text-purple-600"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
 
-          {/* Content Based on Active Tab */}
-          {activeTab === "overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                {/* Quick Actions */}
-                <div className="bg-white border border-purple-100 rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Quick Actions
+        {/* Content Based on Active Tab */}
+        {activeTab === "overview" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Quick Actions */}
+              <div className="bg-white border border-purple-100 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Quick Actions
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <QuickActionButton
+                    icon={Calendar}
+                    label="Book Service"
+                    href="/services"
+                  />
+                  <QuickActionButton
+                    icon={Heart}
+                    label="Favorites"
+                    onClick={() => setActiveTab("favorites")}
+                  />
+                  <QuickActionButton
+                    icon={Star}
+                    label="My Bookings"
+                    onClick={() => setActiveTab("bookings")}
+                  />
+                  <QuickActionButton
+                    icon={User}
+                    label="Profile"
+                    onClick={() => setActiveTab("profile")}
+                  />
+                </div>
+              </div>
+
+              {/* Recent Bookings */}
+              <div className="bg-white border border-purple-100 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Recent Bookings
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <QuickActionButton
-                      icon={Calendar}
-                      label="Book Service"
-                      href="/services"
-                    />
-                    <QuickActionButton
-                      icon={Heart}
-                      label="Favorites"
-                      onClick={() => setActiveTab("favorites")}
-                    />
-                    <QuickActionButton
-                      icon={Star}
-                      label="My Bookings"
-                      onClick={() => setActiveTab("bookings")}
-                    />
-                    <QuickActionButton
-                      icon={User}
-                      label="Profile"
-                      onClick={() => setActiveTab("profile")}
-                    />
+                  <button
+                    onClick={() => setActiveTab("bookings")}
+                    className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
+                  >
+                    View All
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                {bookings.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Calendar className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                    <p className="text-sm text-gray-500 mb-4">
+                      No bookings yet
+                    </p>
+                    <Button
+                      asChild
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Link href="/services">Browse Services</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {bookings.slice(0, 3).map((booking) => (
+                      <div
+                        key={booking.id}
+                        className="flex items-center justify-between p-4 border border-purple-100 rounded-xl hover:bg-purple-50 transition-all cursor-pointer"
+                        onClick={() => handleViewDetails(booking.id)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-900 truncate">
+                            {booking.listings?.title}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {format(new Date(booking.booking_date), "PPP")}
+                          </p>
+                        </div>
+                        <Badge
+                          className={`${getStatusColor(booking.status)} ml-4`}
+                        >
+                          {getStatusIcon(booking.status)}
+                          <span className="ml-1 capitalize">
+                            {booking.status}
+                          </span>
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Account Summary */}
+              <div className="bg-white border border-purple-100 rounded-2xl p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Account Summary
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
+                    <span className="text-sm text-gray-700">
+                      Active Bookings
+                    </span>
+                    <span className="font-semibold text-gray-900">
+                      {stats.confirmedBookings + stats.pendingBookings}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
+                    <span className="text-sm text-gray-700">Completed</span>
+                    <span className="font-semibold text-gray-900">
+                      {stats.completedBookings}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                {/* Recent Bookings */}
-                <div className="bg-white border border-purple-100 rounded-2xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Recent Bookings
-                    </h3>
-                    <button
-                      onClick={() => setActiveTab("bookings")}
-                      className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
-                    >
-                      View All
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+              {/* Next Booking Preview */}
+              {bookings.length > 0 && bookings[0] && (
+                <div className="bg-purple-600 text-white rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="h-5 w-5" />
+                    <span className="text-sm font-medium">Next Booking</span>
                   </div>
-                  {bookings.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Calendar className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                      <p className="text-sm text-gray-500 mb-4">
-                        No bookings yet
-                      </p>
-                      <Button
-                        asChild
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        <Link href="/services">Browse Services</Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {bookings.slice(0, 3).map((booking) => (
-                        <div
-                          key={booking.id}
-                          className="flex items-center justify-between p-4 border border-purple-100 rounded-xl hover:bg-purple-50 transition-all cursor-pointer"
-                          onClick={() => handleViewDetails(booking.id)}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-gray-900 truncate">
+                  <h4 className="font-semibold mb-2">
+                    {bookings[0].listings?.title}
+                  </h4>
+                  <p className="text-sm text-purple-100 mb-4">
+                    {format(new Date(bookings[0].booking_date), "PPP")}
+                  </p>
+                  <button
+                    onClick={() => handleViewDetails(bookings[0].id)}
+                    className="w-full bg-white text-purple-600 py-2 px-4 rounded-lg font-medium hover:bg-purple-50 transition-colors"
+                  >
+                    View Details
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "bookings" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h2 className="text-2xl font-bold text-gray-900">My Bookings</h2>
+              <Button asChild className="bg-purple-600 hover:bg-purple-700">
+                <Link href="/services">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Book New Service
+                </Link>
+              </Button>
+            </div>
+
+            {bookings.length === 0 ? (
+              <div className="bg-white border border-purple-100 rounded-2xl p-12 text-center">
+                <Calendar className="h-16 w-16 text-purple-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No bookings yet
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Start exploring our services and make your first booking
+                </p>
+                <Button asChild className="bg-purple-600 hover:bg-purple-700">
+                  <Link href="/services">Browse Services</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {bookings.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="bg-white border border-purple-100 rounded-2xl p-6 hover:shadow-lg transition-all"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">
                               {booking.listings?.title}
-                            </h4>
+                            </h3>
                             <p className="text-sm text-gray-500">
-                              {format(new Date(booking.booking_date), "PPP")}
+                              by {booking.listings?.vendor_name}
                             </p>
                           </div>
                           <Badge
-                            className={`${getStatusColor(booking.status)} ml-4`}
+                            className={`${getStatusColor(booking.status)}`}
                           >
                             {getStatusIcon(booking.status)}
                             <span className="ml-1 capitalize">
@@ -377,238 +481,127 @@ export default function CustomerDashboard() {
                             </span>
                           </Badge>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-6">
-                {/* Account Summary */}
-                <div className="bg-white border border-purple-100 rounded-2xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Account Summary
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
-                      <span className="text-sm text-gray-700">
-                        Active Bookings
-                      </span>
-                      <span className="font-semibold text-gray-900">
-                        {stats.confirmedBookings + stats.pendingBookings}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
-                      <span className="text-sm text-gray-700">Completed</span>
-                      <span className="font-semibold text-gray-900">
-                        {stats.completedBookings}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Next Booking Preview */}
-                {bookings.length > 0 && bookings[0] && (
-                  <div className="bg-purple-600 text-white rounded-2xl p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Calendar className="h-5 w-5" />
-                      <span className="text-sm font-medium">Next Booking</span>
-                    </div>
-                    <h4 className="font-semibold mb-2">
-                      {bookings[0].listings?.title}
-                    </h4>
-                    <p className="text-sm text-purple-100 mb-4">
-                      {format(new Date(bookings[0].booking_date), "PPP")}
-                    </p>
-                    <button
-                      onClick={() => handleViewDetails(bookings[0].id)}
-                      className="w-full bg-white text-purple-600 py-2 px-4 rounded-lg font-medium hover:bg-purple-50 transition-colors"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "bookings" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  My Bookings
-                </h2>
-                <Button asChild className="bg-purple-600 hover:bg-purple-700">
-                  <Link href="/services">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Book New Service
-                  </Link>
-                </Button>
-              </div>
-
-              {bookings.length === 0 ? (
-                <div className="bg-white border border-purple-100 rounded-2xl p-12 text-center">
-                  <Calendar className="h-16 w-16 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No bookings yet
-                  </h3>
-                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    Start exploring our services and make your first booking
-                  </p>
-                  <Button asChild className="bg-purple-600 hover:bg-purple-700">
-                    <Link href="/services">Browse Services</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {bookings.map((booking) => (
-                    <div
-                      key={booking.id}
-                      className="bg-white border border-purple-100 rounded-2xl p-6 hover:shadow-lg transition-all"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {booking.listings?.title}
-                              </h3>
-                              <p className="text-sm text-gray-500">
-                                by {booking.listings?.vendor_name}
-                              </p>
-                            </div>
-                            <Badge
-                              className={`${getStatusColor(booking.status)}`}
-                            >
-                              {getStatusIcon(booking.status)}
-                              <span className="ml-1 capitalize">
-                                {booking.status}
-                              </span>
-                            </Badge>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600 mt-4">
+                          <div>
+                            <span className="font-medium">Date:</span>{" "}
+                            {format(new Date(booking.booking_date), "PPP")}
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600 mt-4">
-                            <div>
-                              <span className="font-medium">Date:</span>{" "}
-                              {format(new Date(booking.booking_date), "PPP")}
-                            </div>
-                            <div>
-                              <span className="font-medium">Time:</span>{" "}
-                              {booking.booking_time}
-                            </div>
-                            <div>
-                              <span className="font-medium">Guests:</span>{" "}
-                              {booking.guests}
-                            </div>
+                          <div>
+                            <span className="font-medium">Time:</span>{" "}
+                            {booking.booking_time}
                           </div>
-                          <div className="mt-2">
-                            <span className="text-lg font-semibold text-gray-900">
-                              ₦{booking.total_amount?.toLocaleString()}
-                            </span>
+                          <div>
+                            <span className="font-medium">Guests:</span>{" "}
+                            {booking.guests}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2">
+                        <div className="mt-2">
+                          <span className="text-lg font-semibold text-gray-900">
+                            ₦{booking.total_amount?.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewDetails(booking.id)}
+                          className="border-purple-200 hover:bg-purple-50 text-purple-700"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
+                        </Button>
+                        {booking.status === "completed" && (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleViewDetails(booking.id)}
                             className="border-purple-200 hover:bg-purple-50 text-purple-700"
                           >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
+                            <Star className="h-4 w-4 mr-2" />
+                            Review
                           </Button>
-                          {booking.status === "completed" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-purple-200 hover:bg-purple-50 text-purple-700"
+                        )}
+                        {booking.status === "confirmed" && (
+                          <Button
+                            size="sm"
+                            asChild
+                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <Link
+                              href={`/payments?booking=${booking.id}&reference=${booking.payment_reference}`}
                             >
-                              <Star className="h-4 w-4 mr-2" />
-                              Review
-                            </Button>
-                          )}
-                          {booking.status === "confirmed" && (
-                            <Button
-                              size="sm"
-                              asChild
-                              className="bg-purple-600 hover:bg-purple-700 text-white"
-                            >
-                              <Link
-                                href={`/payments?booking=${booking.id}&reference=${booking.payment_reference}`}
-                              >
-                                Pay Now
-                              </Link>
-                            </Button>
-                          )}
-                        </div>
+                              Pay Now
+                            </Link>
+                          </Button>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-          {activeTab === "favorites" && (
-            <div className="bg-white border border-purple-100 rounded-2xl p-12 text-center">
-              <Heart className="h-16 w-16 text-purple-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No favorites yet
+        {activeTab === "favorites" && (
+          <div className="bg-white border border-purple-100 rounded-2xl p-12 text-center">
+            <Heart className="h-16 w-16 text-purple-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No favorites yet
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Save services you love to easily find them later
+            </p>
+            <Button asChild className="bg-purple-600 hover:bg-purple-700">
+              <Link href="/services">Browse Services</Link>
+            </Button>
+          </div>
+        )}
+
+        {activeTab === "profile" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white border border-purple-100 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                Personal Information
               </h3>
-              <p className="text-gray-600 mb-6">
-                Save services you love to easily find them later
-              </p>
-              <Button asChild className="bg-purple-600 hover:bg-purple-700">
-                <Link href="/services">Browse Services</Link>
-              </Button>
-            </div>
-          )}
-
-          {activeTab === "profile" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white border border-purple-100 rounded-2xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                  Personal Information
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">
-                      Name
-                    </label>
-                    <p className="text-gray-900 mt-1">
-                      {user?.user_metadata?.name}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <p className="text-gray-900 mt-1">{user?.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">
-                      Role
-                    </label>
-                    <p className="text-gray-900 mt-1">Customer</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full border-purple-200 hover:bg-purple-50 text-purple-700"
-                  >
-                    Edit Profile
-                  </Button>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Name
+                  </label>
+                  <p className="text-gray-900 mt-1">
+                    {user?.user_metadata?.name}
+                  </p>
                 </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <p className="text-gray-900 mt-1">{user?.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Role
+                  </label>
+                  <p className="text-gray-900 mt-1">Customer</p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full border-purple-200 hover:bg-purple-50 text-purple-700"
+                >
+                  Edit Profile
+                </Button>
               </div>
             </div>
-          )}
-        </div>
-
-        <BookingDetailsModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          bookingId={selectedBookingId}
-        />
+          </div>
+        )}
       </div>
-    </AuthGuard>
+
+      <BookingDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        bookingId={selectedBookingId}
+      />
+    </div>
   );
 }

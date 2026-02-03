@@ -4,7 +4,6 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AuthGuard } from "@/components/shared/auth/auth-guard";
 import {
   Card,
   CardContent,
@@ -237,289 +236,278 @@ export default function EditListingPage() {
   }
 
   return (
-    <AuthGuard requiredRole="vendor">
-      <div className="container max-w-4xl py-8">
-        <div className="mb-8">
-          <Link
-            href="/vendor/dashboard"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold mb-2">Edit Listing</h1>
-          <p className="text-muted-foreground">
-            Update your service information
-          </p>
-        </div>
+    <div className="container max-w-4xl py-8">
+      <div className="mb-8">
+        <Link
+          href="/vendor/dashboard"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Link>
+        <h1 className="text-3xl font-bold mb-2">Edit Listing</h1>
+        <p className="text-muted-foreground">Update your service information</p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>
-                Essential details about your service
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Basic Information</CardTitle>
+            <CardDescription>
+              Essential details about your service
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">
+                Service Title <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="title"
+                name="title"
+                placeholder="e.g., Luxury Hotel Suite, Event Security Service"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                disabled={isPending}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">
+                Description <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Describe your service in detail..."
+                value={formData.description}
+                onChange={handleChange}
+                rows={4}
+                required
+                disabled={isPending}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="title">
-                  Service Title <span className="text-red-500">*</span>
+                <Label htmlFor="category">
+                  Category <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="title"
-                  name="title"
-                  placeholder="e.g., Luxury Hotel Suite, Event Security Service"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    handleSelectChange("category", value)
+                  }
                   disabled={isPending}
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        <div className="flex items-center">
+                          <span className="mr-2">{category.icon}</span>
+                          {category.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">
-                  Description <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="Describe your service in detail..."
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  required
-                  disabled={isPending}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category">
-                    Category <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      handleSelectChange("category", value)
-                    }
-                    disabled={isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((category) => (
-                        <SelectItem key={category.value} value={category.value}>
-                          <div className="flex items-center">
-                            <span className="mr-2">{category.icon}</span>
-                            {category.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="price">
-                    Price (₦) <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="price"
-                      name="price"
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.price}
-                      onChange={handleChange}
-                      className="pl-10"
-                      min="0"
-                      step="0.01"
-                      required
-                      disabled={isPending}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Service Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Service Details</CardTitle>
-              <CardDescription>
-                Location and capacity information
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="location">
-                  Location <span className="text-red-500">*</span>
+                <Label htmlFor="price">
+                  Price (₦) <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="location"
-                    name="location"
-                    placeholder="e.g., Victoria Island, Lagos"
-                    value={formData.location}
+                    id="price"
+                    name="price"
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.price}
                     onChange={handleChange}
                     className="pl-10"
+                    min="0"
+                    step="0.01"
                     required
                     disabled={isPending}
                   />
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="capacity">Capacity (Optional)</Label>
-                  <div className="relative">
-                    <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="capacity"
-                      name="capacity"
-                      type="number"
-                      placeholder="e.g., 50 guests"
-                      value={formData.capacity}
-                      onChange={handleChange}
-                      className="pl-10"
-                      min="1"
-                      disabled={isPending}
-                    />
-                  </div>
+        {/* Service Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Service Details</CardTitle>
+            <CardDescription>Location and capacity information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="location">
+                Location <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="location"
+                  name="location"
+                  placeholder="e.g., Victoria Island, Lagos"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="pl-10"
+                  required
+                  disabled={isPending}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="capacity">Capacity (Optional)</Label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="capacity"
+                    name="capacity"
+                    type="number"
+                    placeholder="e.g., 50 guests"
+                    value={formData.capacity}
+                    onChange={handleChange}
+                    className="pl-10"
+                    min="1"
+                    disabled={isPending}
+                  />
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration (Optional)</Label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="duration"
-                      name="duration"
-                      placeholder="e.g., 2 hours, 1 day"
-                      value={formData.duration}
-                      onChange={handleChange}
-                      className="pl-10"
-                      disabled={isPending}
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration (Optional)</Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="duration"
+                    name="duration"
+                    placeholder="e.g., 2 hours, 1 day"
+                    value={formData.duration}
+                    onChange={handleChange}
+                    className="pl-10"
+                    disabled={isPending}
+                  />
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="availability">Availability</Label>
-                <Select
-                  value={formData.availability}
-                  onValueChange={(value) =>
-                    handleSelectChange("availability", value)
-                  }
-                  disabled={isPending}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="busy">Busy</SelectItem>
-                    <SelectItem value="unavailable">Unavailable</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="space-y-2">
+              <Label htmlFor="availability">Availability</Label>
+              <Select
+                value={formData.availability}
+                onValueChange={(value) =>
+                  handleSelectChange("availability", value)
+                }
+                disabled={isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="busy">Busy</SelectItem>
+                  <SelectItem value="unavailable">Unavailable</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Additional Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Information</CardTitle>
-              <CardDescription>
-                Features, requirements, and policies
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="features">Features & Amenities</Label>
-                <Textarea
-                  id="features"
-                  name="features"
-                  placeholder="List key features and amenities (e.g., WiFi, AC, Security, etc.)"
-                  value={formData.features}
-                  onChange={handleChange}
-                  rows={3}
-                  disabled={isPending}
-                />
-              </div>
+        {/* Additional Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Additional Information</CardTitle>
+            <CardDescription>
+              Features, requirements, and policies
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="features">Features & Amenities</Label>
+              <Textarea
+                id="features"
+                name="features"
+                placeholder="List key features and amenities (e.g., WiFi, AC, Security, etc.)"
+                value={formData.features}
+                onChange={handleChange}
+                rows={3}
+                disabled={isPending}
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="requirements">Requirements</Label>
-                <Textarea
-                  id="requirements"
-                  name="requirements"
-                  placeholder="Any special requirements or conditions"
-                  value={formData.requirements}
-                  onChange={handleChange}
-                  rows={3}
-                  disabled={isPending}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="requirements">Requirements</Label>
+              <Textarea
+                id="requirements"
+                name="requirements"
+                placeholder="Any special requirements or conditions"
+                value={formData.requirements}
+                onChange={handleChange}
+                rows={3}
+                disabled={isPending}
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cancellation_policy">Cancellation Policy</Label>
-                <Textarea
-                  id="cancellation_policy"
-                  name="cancellation_policy"
-                  placeholder="Describe your cancellation and refund policy"
-                  value={formData.cancellation_policy}
-                  onChange={handleChange}
-                  rows={3}
-                  disabled={isPending}
-                />
-              </div>
-            </CardContent>
-          </Card>
+            <div className="space-y-2">
+              <Label htmlFor="cancellation_policy">Cancellation Policy</Label>
+              <Textarea
+                id="cancellation_policy"
+                name="cancellation_policy"
+                placeholder="Describe your cancellation and refund policy"
+                value={formData.cancellation_policy}
+                onChange={handleChange}
+                rows={3}
+                disabled={isPending}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Submit Button */}
-          <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              asChild
-              disabled={isPending}
-            >
-              <Link href="/vendor/dashboard">Cancel</Link>
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending || updateMutation.isPending}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              {isPending || updateMutation.isPending ? (
-                <>
-                  <LoadingSpinner className="mr-2 h-4 w-4" />
-                  Saving Changes...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </AuthGuard>
+        {/* Submit Button */}
+        <div className="flex justify-end space-x-4">
+          <Button type="button" variant="outline" asChild disabled={isPending}>
+            <Link href="/vendor/dashboard">Cancel</Link>
+          </Button>
+          <Button
+            type="submit"
+            disabled={isPending || updateMutation.isPending}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            {isPending || updateMutation.isPending ? (
+              <>
+                <LoadingSpinner className="mr-2 h-4 w-4" />
+                Saving Changes...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
