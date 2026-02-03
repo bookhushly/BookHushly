@@ -81,12 +81,22 @@ export default function PaymentForm({
       return;
     }
 
-    // Validate customer info if needed
+    // Resolve email with proper fallback — empty string does NOT count
+    const resolvedEmail =
+      customerInfo.email ||
+      requestData?.email ||
+      requestData?.contact_email ||
+      requestData?.guest_email ||
+      "";
+
+    // Always validate email, regardless of requestType
+    if (!resolvedEmail || !/^\S+@\S+\.\S+$/.test(resolvedEmail)) {
+      alert("A valid email address is required to proceed with payment.");
+      return;
+    }
+
+    // Validate customer info only if the form is shown
     if (needsCustomerInfo) {
-      if (!customerInfo.email || !/^\S+@\S+\.\S+$/.test(customerInfo.email)) {
-        alert("Please enter a valid email address");
-        return;
-      }
       if (!customerInfo.phone) {
         alert("Please enter your phone number");
         return;
@@ -106,7 +116,7 @@ export default function PaymentForm({
           requestData?.amount ||
           requestData?.total_amount ||
           requestData?.total_price,
-        email: customerInfo.email || requestData?.email,
+        email: resolvedEmail, // Use the resolved, validated value
         provider: provider || "paystack",
         payCurrency: selectedCrypto,
         metadata: {
@@ -120,7 +130,6 @@ export default function PaymentForm({
             requestData?.phone,
           service_type: requestData?.service_type,
           quote_id: quoteData?.id,
-          // Add booking-specific metadata
           ...(requestType === "event" && {
             event_title: requestData?.listing?.title,
             event_date: requestData?.booking_date,
@@ -141,7 +150,6 @@ export default function PaymentForm({
         },
       });
 
-      // Redirect to payment page
       redirectToPayment(payment);
     } catch (err) {
       console.error("Payment initialization failed:", err);

@@ -374,8 +374,8 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                       key={index}
                       className="border border-gray-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-lg transition-all"
                     >
-                      <div className="flex justify-between items-center gap-4">
-                        <div className="flex-1">
+                      <div className="flex flex-wrap justify-between items-center gap-4">
+                        <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-bold text-gray-900 mb-2">
                             {ticket.name}
                           </h3>
@@ -388,7 +388,8 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-4">
+
+                        <div className="flex items-center gap-3 shrink-0">
                           <Badge
                             className={`${
                               ticket.remaining > 0
@@ -398,23 +399,27 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                           >
                             {ticket.remaining > 0 ? "Available" : "Sold Out"}
                           </Badge>
+
                           {ticket.remaining > 0 && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 w-[140px] justify-between">
                               <Button
                                 variant="outline"
                                 size="sm"
+                                disabled={selectedTickets[ticket.name] === 0}
                                 onClick={() =>
                                   handleTicketChange(
                                     ticket.name,
                                     (selectedTickets[ticket.name] || 0) - 1,
                                   )
                                 }
-                                disabled={selectedTickets[ticket.name] === 0}
                               >
                                 -
                               </Button>
+
                               <Input
                                 type="number"
+                                min="0"
+                                max={ticket.remaining}
                                 value={selectedTickets[ticket.name] || 0}
                                 onChange={(e) =>
                                   handleTicketChange(
@@ -422,22 +427,21 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                                     parseInt(e.target.value) || 0,
                                   )
                                 }
-                                className="w-16 text-center"
-                                min="0"
-                                max={ticket.remaining}
+                                className="w-12 text-center px-1"
                               />
+
                               <Button
                                 variant="outline"
                                 size="sm"
+                                disabled={
+                                  selectedTickets[ticket.name] >=
+                                  ticket.remaining
+                                }
                                 onClick={() =>
                                   handleTicketChange(
                                     ticket.name,
                                     (selectedTickets[ticket.name] || 0) + 1,
                                   )
-                                }
-                                disabled={
-                                  selectedTickets[ticket.name] >=
-                                  ticket.remaining
                                 }
                               >
                                 +
