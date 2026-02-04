@@ -290,8 +290,8 @@ export default function VendorBookingsPage() {
   }
 
   return (
-    <div className="container py-8">
-      <div className="mb-8">
+    <div className=" ">
+      <div className="">
         <Link
           href="/vendor/dashboard"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"

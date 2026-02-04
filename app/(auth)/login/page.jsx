@@ -19,6 +19,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { login } from "@/app/actions/auth";
 import { useAuthActions } from "@/hooks/use-auth";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({

@@ -15,6 +15,7 @@ import {
   ChevronUp,
   LogOut,
   Banknote,
+  Users2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -27,12 +28,13 @@ const navSections = [
     items: [
       { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
       { title: "Listings", href: "/admin/dashboard/listings", icon: List },
+      { title: "Vendors", href: "/admin/dashboard/vendors", icon: Users2 },
+      { title: "Customers", href: "/admin/dashboard/customers", icon: Users2 },
     ],
   },
   {
     label: "Operations",
     items: [
-      { title: "Bookings", href: "/admin/dashboard/bookings", icon: Calendar },
       { title: "Payments", href: "/admin/dashboard/payments", icon: Banknote },
       {
         title: "Logistics Requests",
@@ -180,7 +182,7 @@ export function AdminSidebar({ isOpen, onClose }) {
   const admin = null; // replace with real admin data
 
   const isActive = (href) =>
-    pathname === href || pathname.startsWith(href + "/");
+    pathname === href || pathname.startsWith(href + "/admin/dashboard");
 
   // ── Sectioned nav (reused desktop & mobile) ─────────────────────────────
   const NavLinks = ({ isDark }) => (

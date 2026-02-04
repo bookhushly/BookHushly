@@ -192,7 +192,7 @@ export function VendorSidebar({ isOpen, onClose }) {
   const vendor = authData?.vendor;
 
   const isActive = (href) =>
-    pathname === href || pathname.startsWith(href + "/");
+    pathname === href || pathname.startsWith(href + "/vendor/dashboard");
 
   // ── Sectioned nav (reused desktop & mobile) ─────────────────────────────
   const NavLinks = ({ isDark }) => (

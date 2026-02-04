@@ -207,10 +207,10 @@ export default function VendorPaymentsPage() {
 
   // ── render ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       {/* ── Header ───────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className=" border-b border-gray-200">
+        <div className="max-w-8xl mx-auto px-0 sm:px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
             <p className="text-sm text-gray-500 mt-0.5">
@@ -229,7 +229,7 @@ export default function VendorPaymentsPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <div className="max-w-8xl mx-auto px-0 sm:px-2 py-6 space-y-6">
         {/* ── Date range tabs ──────────────────────────────────────────── */}
         <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit">
           {["today", "week", "month", "3months", "all"].map((r) => (

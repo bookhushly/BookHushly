@@ -35,7 +35,7 @@ export async function login(formData) {
 
   revalidatePath("/", "layout");
   redirect(
-    `${role === "vendor" ? "/vendor/dashboard" : `/${role}/dashboard/`}`,
+    `${role === "customer" ? "/dashboard/customer" : `/${role}/dashboard/`}`,
   );
 }
 

@@ -304,7 +304,7 @@ export function VendorListingsGrid() {
   }, [businessCategory, isHotelCategory, isEventCategory]);
 
   const createRoute = isHotelCategory
-    ? "/vendor/dashboard/hotels/create"
+    ? "/vendor/dashboard/listings/create"
     : "/vendor/dashboard/listings/create";
 
   const handleDelete = () => {

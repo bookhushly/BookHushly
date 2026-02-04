@@ -8,6 +8,7 @@ const PROTECTED_ROUTES = [
   "/api/webhooks",
   "/vendor/dashboard",
   "/profile",
+
   "/settings",
 ];
 
@@ -32,7 +33,7 @@ function isProtectedRoute(pathname) {
 
 function isPublicRoute(pathname) {
   return PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
+    (route) => pathname === route || pathname.startsWith(route + "/"),
   );
 }
 
@@ -66,7 +67,7 @@ export async function middleware(request) {
             });
           },
         },
-      }
+      },
     );
 
     // Get session directly (more reliable than getClaims for middleware)
