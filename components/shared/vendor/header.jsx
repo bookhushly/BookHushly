@@ -13,17 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { logout } from "@/app/actions/auth";
-import { useAuth, useAuthActions } from "@/hooks/use-auth";
-import { toast } from "sonner";
+import { useAuth, useLogout } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function VendorHeader({ onMenuClick }) {
   const router = useRouter();
   const { data: authData } = useAuth();
-  const { clearAuth } = useAuthActions();
-  const [isPending, startTransition] = useTransition();
+  const logoutMutation = useLogout();
 
   const user = authData?.user;
   const vendor = authData?.vendor;
@@ -45,16 +41,7 @@ export function VendorHeader({ onMenuClick }) {
     "Vendor";
 
   const handleSignOut = () => {
-    startTransition(async () => {
-      try {
-        await logout();
-        clearAuth();
-        toast.success("Logged out successfully");
-      } catch (error) {
-        console.error("Logout error:", error);
-        toast.error("Failed to logout");
-      }
-    });
+    logoutMutation.mutate();
   };
 
   return (
@@ -124,10 +111,10 @@ export function VendorHeader({ onMenuClick }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
-              disabled={isPending}
+              disabled={logoutMutation.isPending}
               className="cursor-pointer text-[14px] text-red-600 focus:text-red-600 py-2"
             >
-              {isPending ? (
+              {logoutMutation.isPending ? (
                 <>
                   <LoadingSpinner className="mr-2 h-4 w-4" />
                   Signing Out...

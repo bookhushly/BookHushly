@@ -7,20 +7,36 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useAuth, useLogout } from "@/hooks/use-auth";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function AdminHeader({ onMenuClick }) {
   const router = useRouter();
-  const supabase = createClient();
+  const { data: authData } = useAuth();
+  const logoutMutation = useLogout();
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
+  const user = authData?.user;
+
+  const getInitials = (name) => {
+    if (!name) return "AD";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const displayName = user?.full_name || user?.email?.split("@")[0] || "Admin";
+
+  const handleSignOut = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -62,19 +78,26 @@ export function AdminHeader({ onMenuClick }) {
               className="h-9 px-2 hover:bg-gray-100 gap-2"
             >
               <Avatar className="h-7 w-7">
-                <AvatarImage src="" alt="Vendor" />
+                <AvatarImage src={user?.avatar_url} alt={displayName} />
                 <AvatarFallback className="bg-purple-100 text-purple-700 text-xs font-medium">
-                  VN
+                  {getInitials(displayName)}
                 </AvatarFallback>
               </Avatar>
               <span className="hidden sm:inline text-[14px] font-medium text-gray-700">
-                Vendor
+                {displayName}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium">{displayName}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => router.push("/vendor/profile")}
+              onClick={() => router.push("/admin/profile")}
               className="cursor-pointer text-[14px] py-2"
             >
               <User className="mr-2 h-4 w-4" strokeWidth={2} />
@@ -83,10 +106,20 @@ export function AdminHeader({ onMenuClick }) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
+              disabled={logoutMutation.isPending}
               className="cursor-pointer text-[14px] text-red-600 focus:text-red-600 py-2"
             >
-              <LogOut className="mr-2 h-4 w-4" strokeWidth={2} />
-              Sign Out
+              {logoutMutation.isPending ? (
+                <>
+                  <LoadingSpinner className="mr-2 h-4 w-4" />
+                  Signing Out...
+                </>
+              ) : (
+                <>
+                  <LogOut className="mr-2 h-4 w-4" strokeWidth={2} />
+                  Sign Out
+                </>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

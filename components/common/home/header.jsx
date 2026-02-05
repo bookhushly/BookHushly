@@ -1,19 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useTransition } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Menu,
-  X,
-  User,
-  LogOut,
-  Bell,
-  ChevronDown,
-  Settings,
-} from "lucide-react";
+import { Menu, X, User, LogOut, ChevronDown, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,10 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { useAuth, useAuthActions } from "@/hooks/use-auth";
-import { logout } from "@/app/actions/auth";
+import { useAuth, useLogout } from "@/hooks/use-auth";
 import { CATEGORIES } from "@/lib/constants";
-import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function Header() {
@@ -35,8 +24,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const { data: authData, isLoading } = useAuth();
-  const { clearAuth } = useAuthActions();
-  const [isPending, startTransition] = useTransition();
+  const logoutMutation = useLogout();
   const menuRef = useRef(null);
 
   const user = authData?.user;
@@ -74,16 +62,7 @@ export function Header() {
   ];
 
   const handleLogout = () => {
-    startTransition(async () => {
-      try {
-        await logout();
-        clearAuth();
-        toast.success("Logged out successfully");
-      } catch (error) {
-        console.error("Logout error:", error);
-        toast.error("Failed to logout");
-      }
-    });
+    logoutMutation.mutate();
   };
 
   const getInitials = (name) => {
@@ -217,10 +196,10 @@ export function Header() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      disabled={isPending}
+                      disabled={logoutMutation.isPending}
                       className="cursor-pointer text-red-600 focus:text-red-600"
                     >
-                      {isPending ? (
+                      {logoutMutation.isPending ? (
                         <>
                           <LoadingSpinner className="mr-2 h-4 w-4" />
                           Logging out...
@@ -316,10 +295,10 @@ export function Header() {
                       size="icon"
                       className="text-gray-600 hover:text-red-600 flex-shrink-0"
                       onClick={handleLogout}
-                      disabled={isPending}
+                      disabled={logoutMutation.isPending}
                       aria-label="Logout"
                     >
-                      {isPending ? (
+                      {logoutMutation.isPending ? (
                         <LoadingSpinner className="h-4 w-4" />
                       ) : (
                         <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />

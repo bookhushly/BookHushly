@@ -582,7 +582,7 @@ export default function CreateListingPage() {
       console.log("[Client] Step 6: Creating final listing data");
       const listingData = {
         ...categoryData,
-        vendor_id: user.id,
+        vendor_id: vendor.id,
         vendor_name: vendor?.business_name || "",
         vendor_phone: vendor?.phone_number || "",
         active: true,

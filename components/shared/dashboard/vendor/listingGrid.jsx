@@ -278,7 +278,7 @@ export function VendorListingsGrid() {
     isLoading,
     error,
     refetch,
-  } = useVendorListings(vendor?.user_id, businessCategory);
+  } = useVendorListings(vendor?.id, businessCategory);
 
   const deleteMutation = useDeleteListing(businessCategory);
 

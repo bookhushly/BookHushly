@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useAuthStore } from "@/lib/store";
+import { useAuth } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Building2 } from "lucide-react";
@@ -15,12 +15,15 @@ import { HotelStaffTab } from "@/components/shared/dashboard/vendor/hotels/detai
 export default function HotelManagementPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, loading: authLoading } = useAuthStore();
+  const { data: authData, isLoading: authLoading } = useAuth();
   const supabase = createClient();
 
   const [loading, setLoading] = useState(true);
   const [hotel, setHotel] = useState(null);
   const [activeTab, setActiveTab] = useState("details");
+
+  const user = authData?.user;
+  const vendor = authData?.vendor;
 
   useEffect(() => {
     if (!authLoading && user?.id) {
@@ -29,7 +32,7 @@ export default function HotelManagementPage() {
   }, [params.id, user?.id, authLoading]);
 
   const loadHotel = async () => {
-    if (!user?.id) return;
+    if (!user?.id || !vendor?.id) return;
 
     try {
       setLoading(true);
@@ -38,7 +41,7 @@ export default function HotelManagementPage() {
         .from("hotels")
         .select("*")
         .eq("id", params.id)
-        .eq("vendor_id", user.id)
+        .eq("vendor_id", vendor.id)
         .single();
 
       if (error) throw error;

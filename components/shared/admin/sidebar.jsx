@@ -20,6 +20,8 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth, useLogout } from "@/hooks/use-auth";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // ─── Nav structure (mirrors vendor sidebar's sectioned pattern) ──────────────
 const navSections = [
@@ -51,7 +53,7 @@ const navSections = [
 ];
 
 // ─── Profile Popover (identical API to vendor sidebar) ──────────────────────
-function ProfilePopover({ admin, onLogout, onClose }) {
+function ProfilePopover({ admin, onLogout, onClose, isLoggingOut }) {
   const popoverRef = useRef(null);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ function ProfilePopover({ admin, onLogout, onClose }) {
     >
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
         <p className="text-sm font-semibold text-gray-900 truncate">
-          {admin?.name || "Admin"}
+          {admin?.full_name || admin?.email?.split("@")[0] || "Admin"}
         </p>
         <p className="text-xs text-gray-500 truncate">
           {admin?.email || "Administrator"}
@@ -98,10 +100,20 @@ function ProfilePopover({ admin, onLogout, onClose }) {
             onClose();
             onLogout?.();
           }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors mt-1 border-t border-gray-100 pt-3"
+          disabled={isLoggingOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors mt-1 border-t border-gray-100 pt-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut className="h-4 w-4" />
-          Log out
+          {isLoggingOut ? (
+            <>
+              <LoadingSpinner className="h-4 w-4" />
+              Logging out...
+            </>
+          ) : (
+            <>
+              <LogOut className="h-4 w-4" />
+              Log out
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -109,22 +121,21 @@ function ProfilePopover({ admin, onLogout, onClose }) {
 }
 
 // ─── Bottom Profile Strip ────────────────────────────────────────────────────
-function BottomProfile({ admin, isDark }) {
+function BottomProfile({ admin, isDark, onLogout, isLoggingOut }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleLogout = () => {
-    console.log("logout");
-  };
-
-  const initial = (admin?.name || "A").charAt(0).toUpperCase();
+  const displayName =
+    admin?.full_name || admin?.email?.split("@")[0] || "Admin";
+  const initial = displayName.charAt(0).toUpperCase();
 
   return (
     <div className="relative">
       {isOpen && (
         <ProfilePopover
           admin={admin}
-          onLogout={handleLogout}
+          onLogout={onLogout}
           onClose={() => setIsOpen(false)}
+          isLoggingOut={isLoggingOut}
         />
       )}
       <button
@@ -151,7 +162,7 @@ function BottomProfile({ admin, isDark }) {
               isDark ? "text-white" : "text-gray-900",
             )}
           >
-            {admin?.name || "Admin"}
+            {displayName}
           </p>
           <p
             className={cn(
@@ -177,9 +188,13 @@ function BottomProfile({ admin, isDark }) {
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 export function AdminSidebar({ isOpen, onClose }) {
   const pathname = usePathname();
+  const { data: authData } = useAuth();
+  const logoutMutation = useLogout();
+  const admin = authData?.user;
 
-  // wire to your actual admin auth hook — e.g. useAdmin() or useAuth()
-  const admin = null; // replace with real admin data
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
 
   const isActive = (href) =>
     pathname === href || pathname.startsWith(href + "/admin/dashboard");
@@ -257,7 +272,12 @@ export function AdminSidebar({ isOpen, onClose }) {
         </nav>
 
         <div className="border-t border-purple-800 shrink-0">
-          <BottomProfile admin={admin} isDark={true} />
+          <BottomProfile
+            admin={admin}
+            isDark={true}
+            onLogout={handleLogout}
+            isLoggingOut={logoutMutation.isPending}
+          />
         </div>
       </aside>
 
@@ -294,7 +314,12 @@ export function AdminSidebar({ isOpen, onClose }) {
             </nav>
 
             <div className="border-t border-gray-100 shrink-0">
-              <BottomProfile admin={admin} isDark={false} />
+              <BottomProfile
+                admin={admin}
+                isDark={false}
+                onLogout={handleLogout}
+                isLoggingOut={logoutMutation.isPending}
+              />
             </div>
           </aside>
         </>

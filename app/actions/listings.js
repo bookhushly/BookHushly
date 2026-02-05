@@ -146,6 +146,7 @@ export async function createListing(listingData) {
       .select("id")
       .eq("user_id", listingData.vendor_id)
       .single();
+    console.log(vendor);
 
     if (vendorError) {
       console.error("[Server] Vendor fetch error:", vendorError);

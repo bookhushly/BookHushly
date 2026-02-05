@@ -20,7 +20,8 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, useLogout } from "@/hooks/use-auth";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // ─── Nav structure ───────────────────────────────────────────────────────────
 const navSections = [
@@ -61,7 +62,7 @@ const navSections = [
 ];
 
 // ─── Profile Popover ─────────────────────────────────────────────────────────
-function ProfilePopover({ vendor, onLogout, onClose }) {
+function ProfilePopover({ vendor, onLogout, onClose, isLoggingOut }) {
   const popoverRef = useRef(null);
 
   useEffect(() => {
@@ -109,10 +110,20 @@ function ProfilePopover({ vendor, onLogout, onClose }) {
             onClose();
             onLogout?.();
           }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors mt-1 border-t border-gray-100 pt-3"
+          disabled={isLoggingOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors mt-1 border-t border-gray-100 pt-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut className="h-4 w-4" />
-          Log out
+          {isLoggingOut ? (
+            <>
+              <LoadingSpinner className="h-4 w-4" />
+              Logging out...
+            </>
+          ) : (
+            <>
+              <LogOut className="h-4 w-4" />
+              Log out
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -120,12 +131,8 @@ function ProfilePopover({ vendor, onLogout, onClose }) {
 }
 
 // ─── Bottom Profile Strip ───────────────────────────────────────────────────
-function BottomProfile({ vendor, isDark }) {
+function BottomProfile({ vendor, isDark, onLogout, isLoggingOut }) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const handleLogout = () => {
-    console.log("logout");
-  };
 
   const initial = (vendor?.business_name || "V").charAt(0).toUpperCase();
 
@@ -134,8 +141,9 @@ function BottomProfile({ vendor, isDark }) {
       {isOpen && (
         <ProfilePopover
           vendor={vendor}
-          onLogout={handleLogout}
+          onLogout={onLogout}
           onClose={() => setIsOpen(false)}
+          isLoggingOut={isLoggingOut}
         />
       )}
       <button
@@ -189,7 +197,12 @@ function BottomProfile({ vendor, isDark }) {
 export function VendorSidebar({ isOpen, onClose }) {
   const pathname = usePathname();
   const { data: authData } = useAuth();
+  const logoutMutation = useLogout();
   const vendor = authData?.vendor;
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
 
   const isActive = (href) =>
     pathname === href || pathname.startsWith(href + "/vendor/dashboard");
@@ -268,13 +281,18 @@ export function VendorSidebar({ isOpen, onClose }) {
         </div>
 
         {/* Nav — vertically centered in remaining space */}
-        <nav className="flex-1 flex flex-col justify-start pt-6 px-4">
+        <nav className="flex-1 flex flex-col justify-start pt-6 px-4 overflow-y-auto">
           <NavLinks isDark={true} />
         </nav>
 
         {/* Profile pinned to bottom */}
         <div className="border-t border-purple-800 shrink-0">
-          <BottomProfile vendor={vendor} isDark={true} />
+          <BottomProfile
+            vendor={vendor}
+            isDark={true}
+            onLogout={handleLogout}
+            isLoggingOut={logoutMutation.isPending}
+          />
         </div>
       </aside>
 
@@ -314,7 +332,12 @@ export function VendorSidebar({ isOpen, onClose }) {
 
             {/* Profile pinned to bottom */}
             <div className="border-t border-gray-100 shrink-0">
-              <BottomProfile vendor={vendor} isDark={false} />
+              <BottomProfile
+                vendor={vendor}
+                isDark={false}
+                onLogout={handleLogout}
+                isLoggingOut={logoutMutation.isPending}
+              />
             </div>
           </aside>
         </>
