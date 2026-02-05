@@ -19,10 +19,15 @@ export async function login(formData) {
     return { error: error.message };
   }
 
-  const role = data.user.user_metadata?.role || "customer";
-
+  // Revalidate to clear any cached data
   revalidatePath("/", "layout");
-  redirect(role === "vendor" ? "/vendor/dashboard" : `/${role}/dashboard/`);
+
+  // Return success with role for client-side redirect
+  const role = data.user.user_metadata?.role || "customer";
+  const redirectPath =
+    role === "customer" ? "/dashboard/customer" : `/${role}/dashboard`;
+
+  return { success: true, redirectPath };
 }
 
 export async function logout() {
@@ -36,9 +41,8 @@ export async function logout() {
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  return { success: true };
 }
-
 export async function signup({ formData }) {
   const supabase = await createClient();
 

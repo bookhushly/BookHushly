@@ -91,7 +91,15 @@ export function useLogout() {
   const { clearAuth } = useAuthActions();
 
   return useMutation({
-    mutationFn: logout,
+    mutationFn: async () => {
+      const result = await logout();
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      return result;
+    },
     onSuccess: () => {
       clearAuth();
       toast.success("Logged out successfully");
