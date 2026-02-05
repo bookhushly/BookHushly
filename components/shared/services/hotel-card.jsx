@@ -4,17 +4,28 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  MapPin,
-  Building,
-  DoorOpen,
-  Star,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import * as LucideIcons from "lucide-react";
+
+const AMENITY_CONFIG = {
+  wifi: { label: "WiFi", icon: "Wifi" },
+  "air-vent": { label: "Air Conditioning", icon: "AirVent" },
+  tv: { label: "TV", icon: "Tv" },
+  coffee: { label: "Coffee Maker", icon: "Coffee" },
+  bath: { label: "Bathtub", icon: "Bath" },
+  refrigerator: { label: "Mini Fridge", icon: "Refrigerator" },
+  utensils: { label: "Room Service", icon: "Utensils" },
+  dumbbell: { label: "Gym Access", icon: "Dumbbell" },
+  waves: { label: "Pool Access", icon: "Waves" },
+  car: { label: "Parking", icon: "Car" },
+  shirt: { label: "Laundry", icon: "Shirt" },
+  briefcase: { label: "Work Desk", icon: "Briefcase" },
+  "shield-check": { label: "Safe", icon: "ShieldCheck" },
+  phone: { label: "Phone", icon: "Phone" },
+  wind: { label: "Balcony", icon: "Wind" },
+  droplet: { label: "Hot Water", icon: "Droplet" },
+};
 
 const HotelCard = ({ service }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -34,19 +45,13 @@ const HotelCard = ({ service }) => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
-  // Parse amenities
-  const amenitiesList = Array.isArray(service.amenities)
-    ? service.amenities
-    : typeof service.amenities === "object"
-      ? Object.keys(service.amenities)
-      : [];
-
+  const amenitiesList =
+    service.amenities?.items?.filter((item) => AMENITY_CONFIG[item]) || [];
   const displayAmenities = amenitiesList.slice(0, 4);
 
   return (
     <Link href={`/services/hotels/${service.id}`}>
-      <Card className="group overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 bg-white w-max">
-        {/* Image Section */}
+      <Card className="group overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 bg-white">
         <div className="relative h-56 overflow-hidden">
           <Image
             src={images[currentImageIndex]}
@@ -56,7 +61,6 @@ const HotelCard = ({ service }) => {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
 
-          {/* Image Navigation */}
           {images.length > 1 && (
             <>
               <button
@@ -74,7 +78,6 @@ const HotelCard = ({ service }) => {
                 <ChevronRight className="w-5 h-5 text-gray-700" />
               </button>
 
-              {/* Image Indicators */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                 {images.map((_, index) => (
                   <div
@@ -91,36 +94,30 @@ const HotelCard = ({ service }) => {
           )}
         </div>
 
-        {/* Content Section */}
         <div className="p-4 space-y-3">
-          {/* Hotel Name */}
           <div>
             <h3 className="font-semibold text-lg text-gray-900 line-clamp-1 group-hover:text-purple-600 transition-colors">
               {service.title}
             </h3>
           </div>
 
-          {/* Location */}
           <div className="flex items-start gap-1.5 text-sm text-gray-600">
             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-purple-600" />
             <span className="line-clamp-1">{service.location}</span>
           </div>
 
-          {/* Hotel Stats */}
-
-          {/* Amenities */}
           {displayAmenities.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {displayAmenities.map((amenity, index) => {
-                const iconName = amenity.replace(/\s+/g, "");
-                const Icon = LucideIcons[iconName] || LucideIcons.Check;
+              {displayAmenities.map((amenityKey) => {
+                const amenity = AMENITY_CONFIG[amenityKey];
+                const Icon = LucideIcons[amenity.icon];
                 return (
                   <div
-                    key={index}
+                    key={amenityKey}
                     className="flex items-center gap-1 text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded"
                   >
-                    <Icon className="w-3 h-3" />
-                    <span className="capitalize">{amenity}</span>
+                    {Icon && <Icon className="w-3 h-3" />}
+                    <span>{amenity.label}</span>
                   </div>
                 );
               })}
@@ -132,8 +129,7 @@ const HotelCard = ({ service }) => {
             </div>
           )}
 
-          {/* Price Section */}
-          <div className="pt-3 border-t border-gray-700 flex items-end gap-3 justify-between">
+          <div className="pt-3 border-t border-gray-100 flex items-end gap-3 justify-between">
             <div>
               <p className="text-xs text-gray-500 mb-1">Starting from</p>
               <div className="flex items-baseline gap-1">
@@ -156,7 +152,6 @@ const HotelCard = ({ service }) => {
             </Button>
           </div>
 
-          {/* Free Cancellation Badge */}
           {service.checkout_policy && (
             <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

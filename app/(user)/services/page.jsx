@@ -18,7 +18,6 @@ import ActiveFilters from "@/components/shared/services/active-filters";
 import ListingsGrid from "@/components/shared/services/listings-grid";
 import { SkeletonCard } from "@/components/shared/services/ui";
 
-// BookHushly managed services that redirect to quote page
 const BOOKHUSHLY_SERVICES = ["logistics", "security"];
 
 export default function ServicesPage() {
@@ -32,7 +31,6 @@ export default function ServicesPage() {
   const [filters, setFilters] = useState({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Check if current category is BookHushly-managed
   const isBookHushlyServiceCategory =
     BOOKHUSHLY_SERVICES.includes(activeCategory);
 
@@ -46,7 +44,6 @@ export default function ServicesPage() {
 
     document.title = title;
 
-    // Update meta description
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
       metaDescription = document.createElement("meta");
@@ -55,7 +52,6 @@ export default function ServicesPage() {
     }
     metaDescription.content = description;
 
-    // Update Open Graph tags
     let ogTitle = document.querySelector('meta[property="og:title"]');
     if (!ogTitle) {
       ogTitle = document.createElement("meta");
@@ -74,7 +70,6 @@ export default function ServicesPage() {
     }
     ogDescription.content = description;
 
-    // Update canonical URL
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement("link");
@@ -124,7 +119,6 @@ export default function ServicesPage() {
 
   const handleCategoryChange = useCallback(
     (category) => {
-      // Redirect to quote page for BookHushly services
       if (BOOKHUSHLY_SERVICES.includes(category)) {
         router.push(`/quote-services?tab=${category}`);
         return;
@@ -140,12 +134,19 @@ export default function ServicesPage() {
     [router],
   );
 
-  const handleRemoveFilter = useCallback((filterKey) => {
+  const handleRemoveFilter = useCallback((filterKey, newValue) => {
     setFilters((prev) => {
       const newFilters = { ...prev };
       if (filterKey === "price") {
         delete newFilters.price_min;
         delete newFilters.price_max;
+      } else if (newValue !== undefined) {
+        // For array filters, set the new value
+        if (newValue === null) {
+          delete newFilters[filterKey];
+        } else {
+          newFilters[filterKey] = newValue;
+        }
       } else {
         delete newFilters[filterKey];
       }
@@ -159,7 +160,6 @@ export default function ServicesPage() {
     });
   }, []);
 
-  // Don't render if it's a BookHushly service (will redirect)
   if (isBookHushlyServiceCategory) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -174,7 +174,7 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-center" />
-      {/* SEO: Structured Data */}
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -198,6 +198,7 @@ export default function ServicesPage() {
           }),
         }}
       />
+
       <CategoryTabs
         activeCategory={activeCategory}
         categoryLabel={categoryLabel}
@@ -206,7 +207,6 @@ export default function ServicesPage() {
 
       <div className="container mx-auto px-4 py-6 md:py-8">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Desktop Sidebar */}
           <aside className="hidden lg:block lg:w-80 xl:w-96 flex-shrink-0">
             <FilterPanel
               category={activeCategory}
@@ -218,9 +218,7 @@ export default function ServicesPage() {
             />
           </aside>
 
-          {/* Main Content */}
           <main className="flex-1 min-w-0">
-            {/* Mobile Filter Button */}
             <div className="lg:hidden">
               <FilterPanel
                 category={activeCategory}
@@ -237,7 +235,6 @@ export default function ServicesPage() {
               onRemoveFilter={handleRemoveFilter}
             />
 
-            {/* SEO: H1 with category */}
             <h1 className="sr-only">
               {categoryLabel} Services in Nigeria - Book Online
             </h1>
@@ -268,7 +265,7 @@ export default function ServicesPage() {
           </main>
         </div>
       </div>
-      {/* SEO: Footer with category keywords */}
+
       <footer className="bg-white border-t mt-16 py-8">
         <div className="container mx-auto px-4">
           <div className="text-center text-sm text-gray-600 max-w-4xl mx-auto">

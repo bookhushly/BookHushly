@@ -1,139 +1,198 @@
 // components/shared/services/active-filters.jsx
 "use client";
 
-import React, { useMemo, memo } from "react";
+import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { X, DollarSign, MapPin, Bed, Bath, Users, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+import {
+  AMENITY_ICONS,
+  APARTMENT_TYPES,
+  WATER_SUPPLY_OPTIONS,
+  SECURITY_FEATURES,
+} from "@/lib/constants/filters";
 
-const APARTMENT_TYPE_LABELS = {
-  studio: "Studio",
-  "1_bedroom": "1 Bedroom",
-  "2_bedroom": "2 Bedroom",
-  "3_bedroom": "3 Bedroom",
-  penthouse: "Penthouse",
-};
+const ActiveFilters = ({ filters, onRemoveFilter }) => {
+  const filterLabels = [];
 
-const ActiveFilters = memo(({ filters, onRemoveFilter }) => {
-  const activeFilters = useMemo(() => {
-    const items = [];
+  // Price filters
+  if (filters.price_min || filters.price_max) {
+    const priceLabel = [];
+    if (filters.price_min)
+      priceLabel.push(`From ₦${filters.price_min.toLocaleString()}`);
+    if (filters.price_max)
+      priceLabel.push(`To ₦${filters.price_max.toLocaleString()}`);
+    filterLabels.push({
+      key: "price",
+      label: priceLabel.join(" - "),
+    });
+  }
 
-    // Price range
-    if (filters.price_min || filters.price_max) {
-      items.push({
-        key: "price",
-        icon: <DollarSign className="h-3 w-3" />,
-        label: `₦${(filters.price_min || 0).toLocaleString()} - ₦${(filters.price_max || "∞").toLocaleString()}`,
-        onRemove: () => onRemoveFilter("price"),
-      });
-    }
+  // Location filters
+  if (filters.state) {
+    filterLabels.push({ key: "state", label: filters.state });
+  }
+  if (filters.city) {
+    filterLabels.push({ key: "city", label: filters.city });
+  }
 
-    // Location filters
-    if (filters.state) {
-      items.push({
-        key: "state",
-        icon: <MapPin className="h-3 w-3" />,
-        label: filters.state,
-        onRemove: () => onRemoveFilter("state"),
-      });
-    }
+  // Apartment type
+  if (filters.apartment_type) {
+    const type = APARTMENT_TYPES.find(
+      (t) => t.value === filters.apartment_type,
+    );
+    filterLabels.push({
+      key: "apartment_type",
+      label: type?.label || filters.apartment_type,
+    });
+  }
 
-    if (filters.city) {
-      items.push({
-        key: "city",
-        icon: <MapPin className="h-3 w-3" />,
-        label: filters.city,
-        onRemove: () => onRemoveFilter("city"),
-      });
-    }
+  // Number filters
+  if (filters.bedrooms) {
+    filterLabels.push({
+      key: "bedrooms",
+      label: `${filters.bedrooms}+ Bedrooms`,
+    });
+  }
+  if (filters.bathrooms) {
+    filterLabels.push({
+      key: "bathrooms",
+      label: `${filters.bathrooms}+ Bathrooms`,
+    });
+  }
+  if (filters.max_guests) {
+    filterLabels.push({
+      key: "max_guests",
+      label: `${filters.max_guests}+ Guests`,
+    });
+  }
+  if (filters.parking_spaces) {
+    filterLabels.push({
+      key: "parking_spaces",
+      label: `${filters.parking_spaces}+ Parking`,
+    });
+  }
+  if (filters.capacity) {
+    filterLabels.push({
+      key: "capacity",
+      label: `${filters.capacity}+ Capacity`,
+    });
+  }
 
-    // Apartment type
-    if (filters.apartment_type) {
-      items.push({
-        key: "apartment_type",
-        icon: <Home className="h-3 w-3" />,
-        label:
-          APARTMENT_TYPE_LABELS[filters.apartment_type] ||
-          filters.apartment_type,
-        onRemove: () => onRemoveFilter("apartment_type"),
-      });
-    }
+  // Boolean filters
+  if (filters.furnished === true) {
+    filterLabels.push({ key: "furnished", label: "Furnished" });
+  } else if (filters.furnished === false) {
+    filterLabels.push({ key: "furnished", label: "Unfurnished" });
+  }
 
-    // Bedrooms
-    if (filters.bedrooms) {
-      items.push({
-        key: "bedrooms",
-        icon: <Bed className="h-3 w-3" />,
-        label: `${filters.bedrooms}+ Beds`,
-        onRemove: () => onRemoveFilter("bedrooms"),
-      });
-    }
+  if (filters.utilities_included === true) {
+    filterLabels.push({
+      key: "utilities_included",
+      label: "Utilities Included",
+    });
+  } else if (filters.utilities_included === false) {
+    filterLabels.push({
+      key: "utilities_included",
+      label: "Utilities Not Included",
+    });
+  }
 
-    // Bathrooms
-    if (filters.bathrooms) {
-      items.push({
-        key: "bathrooms",
-        icon: <Bath className="h-3 w-3" />,
-        label: `${filters.bathrooms}+ Baths`,
-        onRemove: () => onRemoveFilter("bathrooms"),
-      });
-    }
+  if (filters.internet_included === true) {
+    filterLabels.push({ key: "internet_included", label: "Internet Included" });
+  } else if (filters.internet_included === false) {
+    filterLabels.push({ key: "internet_included", label: "No Internet" });
+  }
 
-    // Max guests
-    if (filters.max_guests) {
-      items.push({
-        key: "max_guests",
-        icon: <Users className="h-3 w-3" />,
-        label: `${filters.max_guests}+ Guests`,
-        onRemove: () => onRemoveFilter("max_guests"),
-      });
-    }
+  // Power supply
+  if (filters.generator_available) {
+    filterLabels.push({ key: "generator_available", label: "Generator" });
+  }
+  if (filters.inverter_available) {
+    filterLabels.push({ key: "inverter_available", label: "Inverter" });
+  }
+  if (filters.solar_power) {
+    filterLabels.push({ key: "solar_power", label: "Solar Power" });
+  }
 
-    // Capacity (events)
-    if (filters.capacity) {
-      items.push({
-        key: "capacity",
-        icon: <Users className="h-3 w-3" />,
-        label: `${filters.capacity}+ Capacity`,
-        onRemove: () => onRemoveFilter("capacity"),
-      });
-    }
+  // Water supply
+  if (filters.water_supply) {
+    const water = WATER_SUPPLY_OPTIONS.find(
+      (w) => w.value === filters.water_supply,
+    );
+    filterLabels.push({
+      key: "water_supply",
+      label: water?.label || filters.water_supply,
+    });
+  }
 
-    return items;
-  }, [filters, onRemoveFilter]);
+  // Amenities
+  if (filters.amenities && filters.amenities.length > 0) {
+    filters.amenities.forEach((amenityValue) => {
+      const amenity = AMENITY_ICONS.find((a) => a.value === amenityValue);
+      if (amenity) {
+        filterLabels.push({
+          key: `amenity_${amenityValue}`,
+          label: amenity.label,
+          removeKey: "amenities",
+          removeValue: amenityValue,
+        });
+      }
+    });
+  }
 
-  if (!activeFilters.length) return null;
+  // Security features
+  if (filters.security_features && filters.security_features.length > 0) {
+    filters.security_features.forEach((featureValue) => {
+      const feature = SECURITY_FEATURES.find((f) => f.value === featureValue);
+      if (feature) {
+        filterLabels.push({
+          key: `security_${featureValue}`,
+          label: feature.label,
+          removeKey: "security_features",
+          removeValue: featureValue,
+        });
+      }
+    });
+  }
+
+  if (filterLabels.length === 0) return null;
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-sm font-medium text-gray-700">
-          Active Filters:
-        </span>
-        <span className="text-xs text-gray-500">({activeFilters.length})</span>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {activeFilters.map((filter) => (
-          <Badge
-            key={filter.key}
-            variant="secondary"
-            className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+    <div className="flex flex-wrap gap-2 mb-6">
+      {filterLabels.map((filter) => (
+        <Badge
+          key={filter.key}
+          variant="secondary"
+          className="px-3 py-1.5 bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100"
+        >
+          <span className="text-sm">{filter.label}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (filter.removeKey && filter.removeValue) {
+                // For array filters, remove specific item
+                const current = filters[filter.removeKey] || [];
+                const updated = current.filter(
+                  (item) => item !== filter.removeValue,
+                );
+                onRemoveFilter(
+                  filter.removeKey,
+                  updated.length > 0 ? updated : null,
+                );
+              } else {
+                onRemoveFilter(filter.key);
+              }
+            }}
+            className="ml-2 h-4 w-4 p-0 hover:bg-transparent"
           >
-            {filter.icon}
-            {filter.label}
-            <button
-              onClick={filter.onRemove}
-              className="ml-1 hover:text-purple-900 transition-colors"
-              aria-label={`Remove ${filter.label} filter`}
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        ))}
-      </div>
+            <X className="h-3 w-3" />
+          </Button>
+        </Badge>
+      ))}
     </div>
   );
-});
-
-ActiveFilters.displayName = "ActiveFilters";
+};
 
 export default ActiveFilters;

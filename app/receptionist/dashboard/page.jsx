@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
-import { useAuthStore } from "@/lib/store";
+import { useAuth, useLogout } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import {
   Building2,
   DoorOpen,
-  Sparkles,
   Clock,
   AlertCircle,
   MapPin,
@@ -23,12 +22,14 @@ import { CheckInTab } from "../../../components/shared/dashboard/receptionist/ch
 import { RoomStatusTab } from "../../../components/shared/dashboard/receptionist/room-status";
 import { CurrentGuestsTab } from "../../../components/shared/dashboard/receptionist/current-guests";
 import { FaBroom } from "react-icons/fa";
-import { signOut } from "@/lib/auth";
 
 export default function ReceptionistDashboardPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuthStore();
+  const { data: authData, isLoading: authLoading } = useAuth();
+  const logoutMutation = useLogout();
   const supabase = createClient();
+
+  const user = authData?.user;
 
   const [loading, setLoading] = useState(true);
   const [hotel, setHotel] = useState(null);
@@ -42,10 +43,10 @@ export default function ReceptionistDashboardPage() {
   const [activeTab, setActiveTab] = useState("checkin");
 
   useEffect(() => {
-    if (user?.id) {
+    if (!authLoading && user?.id) {
       loadDashboardData();
     }
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
 
   const loadDashboardData = async () => {
     if (!user?.id) return;
@@ -116,9 +117,8 @@ export default function ReceptionistDashboardPage() {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push("/");
+  const handleSignOut = () => {
+    logoutMutation.mutate();
   };
 
   if (authLoading || loading) {
@@ -184,10 +184,20 @@ export default function ReceptionistDashboardPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
+                disabled={logoutMutation.isPending}
                 className="text-gray-600 hover:text-gray-900"
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                {logoutMutation.isPending ? (
+                  <>
+                    <LoadingSpinner className="h-4 w-4 mr-2" />
+                    Signing Out...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </>
+                )}
               </Button>
             </div>
           </div>

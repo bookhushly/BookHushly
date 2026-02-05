@@ -13,7 +13,7 @@ export default function VendorLayout({ children }) {
   return (
     <>
       {" "}
-      <SessionProvider>{children}</SessionProvider>
+      {children}
       <Toaster />
     </>
   );

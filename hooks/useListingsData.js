@@ -1,4 +1,4 @@
-// lib/hooks/useListings.js - Add prefetching and optimizations
+// lib/hooks/useListingsData.js
 "use client";
 
 import {
@@ -14,8 +14,8 @@ import { useEffect, useMemo } from "react";
 
 const supabase = createClient();
 
-const ITEMS_PER_PAGE = 20; // Increased for better performance
-const PREFETCH_THRESHOLD = 0.8; // Prefetch when 80% through current page
+const ITEMS_PER_PAGE = 20;
+const PREFETCH_THRESHOLD = 0.8;
 
 // Query keys with better hierarchy
 export const listingKeys = {
@@ -26,12 +26,59 @@ export const listingKeys = {
     ...listingKeys.category(category),
     "filtered",
     searchQuery,
-    JSON.stringify(filters), // Serialize filters for consistent key
+    JSON.stringify(filters),
   ],
 };
 
-// ==================== NORMALIZATION FUNCTIONS ====================
+// ==================== CLIENT-SIDE AMENITIES FILTER ====================
+function filterByAmenities(items, amenitiesFilter) {
+  if (!amenitiesFilter || amenitiesFilter.length === 0) return items;
 
+  return items.filter((item) => {
+    const itemAmenities = item.amenities?.items || [];
+    // Also check room_amenities for hotels
+    const roomAmenities = item.room_amenities || [];
+    const allAmenities = [...itemAmenities, ...roomAmenities];
+    return amenitiesFilter.every((amenity) => allAmenities.includes(amenity));
+  });
+}
+
+// ==================== CLIENT-SIDE BED SIZE FILTER ====================
+function filterByBedSizes(items, bedSizesFilter) {
+  if (!bedSizesFilter || bedSizesFilter.length === 0) return items;
+
+  return items.filter((item) => {
+    const itemBedSizes = item.bed_sizes || [];
+    return bedSizesFilter.some((size) => itemBedSizes.includes(size));
+  });
+}
+
+// ==================== CLIENT-SIDE MAX OCCUPANCY FILTER ====================
+function filterByMaxOccupancy(items, minOccupancy) {
+  if (!minOccupancy) return items;
+  return items.filter((item) => item.max_occupancy >= minOccupancy);
+}
+
+// ==================== CLIENT-SIDE FLOOR FILTER ====================
+function filterByFloor(items, floorFilter) {
+  if (!floorFilter) return items;
+  return items.filter((item) => {
+    const floors = item.floors || [];
+    return floors.includes(floorFilter);
+  });
+}
+
+// ==================== CLIENT-SIDE SECURITY FEATURES FILTER ====================
+function filterBySecurityFeatures(items, securityFilter) {
+  if (!securityFilter || securityFilter.length === 0) return items;
+
+  return items.filter((item) => {
+    const features = item.security_features || {};
+    return securityFilter.every((feature) => features[feature] === true);
+  });
+}
+
+// ==================== NORMALIZATION FUNCTIONS ====================
 const normalizeHotelData = (hotel) => ({
   id: hotel.id,
   title: hotel.name,
@@ -111,72 +158,116 @@ const normalizeApartmentData = (apartment) => ({
 });
 
 // ==================== ENRICHMENT FUNCTIONS ====================
-
 async function enrichHotelsWithRoomData(hotels) {
   if (!hotels.length) return hotels;
 
   const hotelIds = hotels.map((h) => h.id);
 
-  // Batch fetch in parallel with smaller chunks for better performance
-  const [roomDataResult, roomTypesResult] = await Promise.all([
-    supabase
-      .from("hotel_rooms")
-      .select("hotel_id,price_per_night,status")
-      .in("hotel_id", hotelIds),
-    supabase
-      .from("hotel_room_types")
-      .select("hotel_id,id")
-      .in("hotel_id", hotelIds),
-  ]);
+  try {
+    const [roomDataResult, roomTypesResult] = await Promise.all([
+      supabase
+        .from("hotel_rooms")
+        .select("hotel_id,price_per_night,status,beds,floor,amenities")
+        .in("hotel_id", hotelIds),
+      supabase
+        .from("hotel_room_types")
+        .select("hotel_id,id,name,max_occupancy,base_price,size_sqm,amenities")
+        .in("hotel_id", hotelIds),
+    ]);
 
-  const roomData = roomDataResult.data || [];
-  const roomTypesData = roomTypesResult.data || [];
+    const roomData = roomDataResult.data || [];
+    const roomTypesData = roomTypesResult.data || [];
 
-  // Use Map for O(1) lookups
-  const hotelDataMap = new Map(
-    hotelIds.map((id) => [
-      id,
-      {
-        total_rooms: 0,
-        available_rooms: 0,
-        room_types_count: 0,
-        prices: [],
-      },
-    ]),
-  );
+    const hotelDataMap = new Map(
+      hotelIds.map((id) => [
+        id,
+        {
+          total_rooms: 0,
+          available_rooms: 0,
+          room_types_count: 0,
+          prices: [],
+          bed_sizes: new Set(),
+          max_occupancy: 0,
+          floors: new Set(),
+          room_type_names: new Set(),
+          room_amenities: new Set(),
+        },
+      ]),
+    );
 
-  // Process in single pass
-  roomData.forEach((room) => {
-    const data = hotelDataMap.get(room.hotel_id);
-    if (data) {
-      data.total_rooms++;
-      if (room.status === "available") data.available_rooms++;
-      if (room.price_per_night)
-        data.prices.push(parseFloat(room.price_per_night));
-    }
-  });
+    // Process rooms
+    roomData.forEach((room) => {
+      const data = hotelDataMap.get(room.hotel_id);
+      if (data) {
+        data.total_rooms++;
+        if (room.status === "available") data.available_rooms++;
+        if (room.price_per_night)
+          data.prices.push(parseFloat(room.price_per_night));
 
-  roomTypesData.forEach((roomType) => {
-    const data = hotelDataMap.get(roomType.hotel_id);
-    if (data) data.room_types_count++;
-  });
+        // Extract bed sizes from beds JSONB
+        if (room.beds) {
+          const beds = Array.isArray(room.beds) ? room.beds : [room.beds];
+          beds.forEach((bed) => {
+            if (bed.type) data.bed_sizes.add(bed.type.toLowerCase());
+          });
+        }
 
-  // Enrich hotels
-  return hotels.map((hotel) => {
-    const data = hotelDataMap.get(hotel.id);
-    return {
-      ...hotel,
-      total_rooms: data.total_rooms,
-      available_rooms: data.available_rooms,
-      room_types_count: data.room_types_count,
-      min_price: data.prices.length > 0 ? Math.min(...data.prices) : 0,
-      max_price: data.prices.length > 0 ? Math.max(...data.prices) : 0,
-    };
-  });
+        // Track floors
+        if (room.floor) data.floors.add(room.floor);
+
+        // Collect room amenities
+        if (room.amenities?.items) {
+          room.amenities.items.forEach((amenity) =>
+            data.room_amenities.add(amenity),
+          );
+        }
+      }
+    });
+
+    // Process room types
+    roomTypesData.forEach((roomType) => {
+      const data = hotelDataMap.get(roomType.hotel_id);
+      if (data) {
+        data.room_types_count++;
+        if (roomType.name) data.room_type_names.add(roomType.name);
+        if (roomType.max_occupancy)
+          data.max_occupancy = Math.max(
+            data.max_occupancy,
+            roomType.max_occupancy,
+          );
+
+        // Collect room type amenities
+        if (roomType.amenities?.items) {
+          roomType.amenities.items.forEach((amenity) =>
+            data.room_amenities.add(amenity),
+          );
+        }
+      }
+    });
+
+    return hotels.map((hotel) => {
+      const data = hotelDataMap.get(hotel.id);
+      return {
+        ...hotel,
+        total_rooms: data.total_rooms,
+        available_rooms: data.available_rooms,
+        room_types_count: data.room_types_count,
+        min_price: data.prices.length > 0 ? Math.min(...data.prices) : 0,
+        max_price: data.prices.length > 0 ? Math.max(...data.prices) : 0,
+        bed_sizes: Array.from(data.bed_sizes),
+        max_occupancy: data.max_occupancy,
+        floors: Array.from(data.floors).sort((a, b) => a - b),
+        room_type_names: Array.from(data.room_type_names),
+        room_amenities: Array.from(data.room_amenities),
+      };
+    });
+  } catch (error) {
+    console.error("Error enriching hotels:", error);
+    return hotels;
+  }
 }
 
 // ==================== QUERY BUILDERS ====================
-
 function buildQuery(category, searchQuery, filters, pageParam) {
   const offset = pageParam * ITEMS_PER_PAGE;
 
@@ -189,13 +280,14 @@ function buildQuery(category, searchQuery, filters, pageParam) {
       .range(offset, offset + ITEMS_PER_PAGE - 1)
       .order("created_at", { ascending: false });
 
-    if (searchQuery) {
+    if (searchQuery?.trim()) {
+      const sanitized = searchQuery.trim();
       query = query.or(
-        `name.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,state.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`,
+        `name.ilike.%${sanitized}%,city.ilike.%${sanitized}%,state.ilike.%${sanitized}%,address.ilike.%${sanitized}%`,
       );
     }
 
-    if (filters.city) query = query.eq("city", filters.city);
+    if (filters.city?.trim()) query = query.ilike("city", filters.city.trim());
     if (filters.state) query = query.eq("state", filters.state);
 
     return query;
@@ -211,27 +303,61 @@ function buildQuery(category, searchQuery, filters, pageParam) {
       .range(offset, offset + ITEMS_PER_PAGE - 1)
       .order("created_at", { ascending: false });
 
-    if (searchQuery) {
+    if (searchQuery?.trim()) {
+      const sanitized = searchQuery.trim();
       query = query.or(
-        `name.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,state.ilike.%${searchQuery}%,area.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`,
+        `name.ilike.%${sanitized}%,city.ilike.%${sanitized}%,state.ilike.%${sanitized}%,area.ilike.%${sanitized}%,address.ilike.%${sanitized}%`,
       );
     }
 
-    if (filters.city) query = query.eq("city", filters.city);
+    if (filters.city?.trim()) query = query.ilike("city", filters.city.trim());
     if (filters.state) query = query.eq("state", filters.state);
-    if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms);
-    if (filters.bathrooms) query = query.eq("bathrooms", filters.bathrooms);
+    if (filters.apartment_type)
+      query = query.eq("apartment_type", filters.apartment_type);
+    if (filters.bedrooms) query = query.gte("bedrooms", filters.bedrooms);
+    if (filters.bathrooms) query = query.gte("bathrooms", filters.bathrooms);
+    if (filters.max_guests) query = query.gte("max_guests", filters.max_guests);
+    if (filters.parking_spaces)
+      query = query.gte("parking_spaces", filters.parking_spaces);
     if (filters.price_min)
       query = query.gte("price_per_night", filters.price_min);
     if (filters.price_max)
       query = query.lte("price_per_night", filters.price_max);
 
+    // Boolean filters
+    if (filters.furnished !== null && filters.furnished !== undefined) {
+      query = query.eq("furnished", filters.furnished);
+    }
+    if (
+      filters.utilities_included !== null &&
+      filters.utilities_included !== undefined
+    ) {
+      query = query.eq("utilities_included", filters.utilities_included);
+    }
+    if (
+      filters.internet_included !== null &&
+      filters.internet_included !== undefined
+    ) {
+      query = query.eq("internet_included", filters.internet_included);
+    }
+
+    // Power supply filters
+    if (filters.generator_available)
+      query = query.eq("generator_available", true);
+    if (filters.inverter_available)
+      query = query.eq("inverter_available", true);
+    if (filters.solar_power) query = query.eq("solar_power", true);
+
+    // Water supply
+    if (filters.water_supply)
+      query = query.eq("water_supply", filters.water_supply);
+
     return query;
   }
 
-  // Regular listings
+  // Events (listings table)
   const fields =
-    "id,title,location,price,media_urls,category,vendor_name,description,amenities,created_at";
+    "id,title,location,price,media_urls,category,vendor_name,description,amenities,maximum_capacity,created_at";
 
   let query = supabase
     .from("listings")
@@ -241,56 +367,59 @@ function buildQuery(category, searchQuery, filters, pageParam) {
     .range(offset, offset + ITEMS_PER_PAGE - 1)
     .order("created_at", { ascending: false });
 
-  if (searchQuery) {
+  if (searchQuery?.trim()) {
+    const sanitized = searchQuery.trim();
     query = query.or(
-      `title.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`,
+      `title.ilike.%${sanitized}%,location.ilike.%${sanitized}%`,
     );
   }
 
   if (filters.price_min) query = query.gte("price", filters.price_min);
   if (filters.price_max) query = query.lte("price", filters.price_max);
-  if (filters.bedrooms) query = query.eq("bedrooms", filters.bedrooms);
-  if (filters.bathrooms) query = query.eq("bathrooms", filters.bathrooms);
   if (filters.capacity) query = query.gte("maximum_capacity", filters.capacity);
 
   return query;
 }
 
 // ==================== FETCH FUNCTIONS ====================
-
 async function fetchListing(listingId, businessCategory) {
   if (!listingId) throw new Error("Listing ID is required");
 
-  if (businessCategory === "hotels") {
+  try {
+    if (businessCategory === "hotels") {
+      const { data, error } = await supabase
+        .from("hotels")
+        .select("*")
+        .eq("id", listingId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
+    if (businessCategory === "serviced_apartments") {
+      const { data, error } = await supabase
+        .from("serviced_apartments")
+        .select("*")
+        .eq("id", listingId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
     const { data, error } = await supabase
-      .from("hotels")
+      .from("listings")
       .select("*")
       .eq("id", listingId)
       .single();
 
     if (error) throw error;
     return data;
+  } catch (error) {
+    console.error("Error fetching listing:", error);
+    throw error;
   }
-
-  if (businessCategory === "serviced_apartments") {
-    const { data, error } = await supabase
-      .from("serviced_apartments")
-      .select("*")
-      .eq("id", listingId)
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  const { data, error } = await supabase
-    .from("listings")
-    .select("*")
-    .eq("id", listingId)
-    .single();
-
-  if (error) throw error;
-  return data;
 }
 
 async function fetchListingsPage({
@@ -299,36 +428,74 @@ async function fetchListingsPage({
   searchQuery,
   filters,
 }) {
-  const query = buildQuery(category, searchQuery, filters, pageParam);
-  const { data, error, count } = await query;
+  try {
+    const query = buildQuery(category, searchQuery, filters, pageParam);
+    const { data, error, count } = await query;
 
-  if (error) throw error;
+    if (error) throw error;
 
-  let items = data || [];
+    let items = data || [];
 
-  // Enrich and normalize
-  if (category === "hotels") {
-    items = await enrichHotelsWithRoomData(items);
-    items = items
-      .map(normalizeHotelData)
-      .filter((hotel) => hotel.available_rooms > 0);
+    // Enrich and normalize
+    if (category === "hotels") {
+      items = await enrichHotelsWithRoomData(items);
+      items = items
+        .map(normalizeHotelData)
+        .filter((hotel) => hotel.available_rooms > 0);
 
-    // Apply price filters after enrichment
-    if (filters.price_min) {
-      items = items.filter((hotel) => hotel.price >= filters.price_min);
+      // Apply price filters after enrichment
+      if (filters.price_min) {
+        items = items.filter((hotel) => hotel.price >= filters.price_min);
+      }
+      if (filters.price_max) {
+        items = items.filter((hotel) => hotel.price <= filters.price_max);
+      }
+
+      // Apply client-side amenities filter
+      if (filters.amenities && filters.amenities.length > 0) {
+        items = filterByAmenities(items, filters.amenities);
+      }
+
+      // Apply client-side bed size filter
+      if (filters.bed_sizes && filters.bed_sizes.length > 0) {
+        items = filterByBedSizes(items, filters.bed_sizes);
+      }
+
+      // Apply max occupancy filter
+      if (filters.max_occupancy) {
+        items = filterByMaxOccupancy(items, filters.max_occupancy);
+      }
+
+      // Apply floor filter
+      if (filters.floor) {
+        items = filterByFloor(items, filters.floor);
+      }
+    } else if (category === "serviced_apartments") {
+      items = items.map(normalizeApartmentData);
+
+      // Apply client-side filters
+      if (filters.amenities && filters.amenities.length > 0) {
+        items = filterByAmenities(items, filters.amenities);
+      }
+      if (filters.security_features && filters.security_features.length > 0) {
+        items = filterBySecurityFeatures(items, filters.security_features);
+      }
     }
-    if (filters.price_max) {
-      items = items.filter((hotel) => hotel.price <= filters.price_max);
-    }
-  } else if (category === "serviced_apartments") {
-    items = items.map(normalizeApartmentData);
+
+    return {
+      items,
+      nextPage: items.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
+      totalCount: count,
+    };
+  } catch (error) {
+    console.error("Error fetching listings page:", error);
+    // Return empty result instead of throwing to handle network failures gracefully
+    return {
+      items: [],
+      nextPage: undefined,
+      totalCount: 0,
+    };
   }
-
-  return {
-    items,
-    nextPage: items.length === ITEMS_PER_PAGE ? pageParam + 1 : undefined,
-    totalCount: count,
-  };
 }
 
 async function updateListingData(listingId, updateData, businessCategory) {
@@ -339,9 +506,33 @@ async function updateListingData(listingId, updateData, businessCategory) {
     updated_at: new Date().toISOString(),
   };
 
-  if (businessCategory === "hotels") {
+  try {
+    if (businessCategory === "hotels") {
+      const { data, error } = await supabase
+        .from("hotels")
+        .update(dataToUpdate)
+        .eq("id", listingId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
+    if (businessCategory === "serviced_apartments") {
+      const { data, error } = await supabase
+        .from("serviced_apartments")
+        .update(dataToUpdate)
+        .eq("id", listingId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
     const { data, error } = await supabase
-      .from("hotels")
+      .from("listings")
       .update(dataToUpdate)
       .eq("id", listingId)
       .select()
@@ -349,40 +540,21 @@ async function updateListingData(listingId, updateData, businessCategory) {
 
     if (error) throw error;
     return data;
+  } catch (error) {
+    console.error("Error updating listing:", error);
+    throw error;
   }
-
-  if (businessCategory === "serviced_apartments") {
-    const { data, error } = await supabase
-      .from("serviced_apartments")
-      .update(dataToUpdate)
-      .eq("id", listingId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  const { data, error } = await supabase
-    .from("listings")
-    .update(dataToUpdate)
-    .eq("id", listingId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
 }
 
 // ==================== HOOKS ====================
-
 export function useListing(listingId, businessCategory) {
   return useQuery({
     queryKey: listingKeys.detail(listingId),
     queryFn: () => fetchListing(listingId, businessCategory),
     enabled: !!listingId && !!businessCategory,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 2,
   });
 }
 
@@ -401,33 +573,29 @@ export function useListingsData(category, searchQuery = "", filters = {}) {
     queryFn: ({ pageParam = 0 }) =>
       fetchListingsPage({ pageParam, category, searchQuery, filters }),
     getNextPageParam: (lastPage) => lastPage.nextPage,
-    staleTime: 3 * 60 * 1000, // 3 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     enabled: !!category,
     refetchOnWindowFocus: false,
     retry: 2,
   });
 
-  // Flatten pages
   const listings = useMemo(
     () => data?.pages.flatMap((page) => page.items) || [],
     [data],
   );
 
-  // Intersection observer for infinite scroll
   const { ref: lastListingRef, inView } = useInView({
     threshold: 0.1,
-    rootMargin: "500px", // Increased for better UX
+    rootMargin: "500px",
   });
 
-  // Fetch next page
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Prefetch next page when user is 80% through current listings
   useEffect(() => {
     if (!data || !hasNextPage || isFetchingNextPage) return;
 
