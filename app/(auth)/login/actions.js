@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export async function login(formData) {
   const supabase = await createClient();
@@ -19,29 +18,25 @@ export async function login(formData) {
     return { error: error.message };
   }
 
-  // Fetch vendor data if vendor role
-  const role = data.user.user_metadata?.role || "customer";
-  let vendorData = null;
-
-  if (role === "vendor") {
-    const { data: vendor } = await supabase
-      .from("vendors")
-      .select("*")
-      .eq("user_id", data.user?.id)
-      .maybeSingle();
-
-    vendorData = vendor;
-  }
-
+  // Revalidate to clear any cached data
   revalidatePath("/", "layout");
-  redirect(
-    `${role === "customer" ? "/dashboard/customer" : `/${role}/dashboard/`}`,
-  );
+
+  // Return success with role for client-side redirect
+  const role = data.user.user_metadata?.role || "customer";
+  const redirectPath =
+    role === "customer" ? "/dashboard/customer" : `/${role}/dashboard`;
+
+  return { success: true, redirectPath };
 }
 
 export async function logout() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    return { error: error.message };
+  }
+
   revalidatePath("/", "layout");
-  redirect("/");
+  return { success: true };
 }

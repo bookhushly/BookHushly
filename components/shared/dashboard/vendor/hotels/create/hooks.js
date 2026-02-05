@@ -1,76 +1,96 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useTransition } from "react";
 import { toast } from "sonner";
-import { uploadHotelImages, deleteHotelImage } from "@/lib/hotel";
-import { compressImage, uploadImagesInParallel } from "@/lib/images";
+import {
+  uploadHotelImagesAction,
+  deleteHotelImageAction,
+} from "@/app/actions/hotels";
+import { compressImage } from "@/lib/images";
 
-export function useImageUpload(supabase) {
+export function useImageUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isPending, startTransition] = useTransition();
 
-  const handleImageUpload = useCallback(
-    async (files, category) => {
-      if (!files.length) return [];
+  const handleImageUpload = useCallback(async (files, category) => {
+    if (!files || files.length === 0) return [];
 
-      setIsUploading(true);
-      setUploadProgress(0);
+    setIsUploading(true);
+    setUploadProgress(0);
 
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not authenticated");
+    try {
+      // Compress images in parallel
+      const compressionPromises = Array.from(files).map((file) =>
+        compressImage(file),
+      );
 
-        const compressedFiles = await Promise.all(
-          Array.from(files).map((file) => compressImage(file))
-        );
+      const compressedFiles = await Promise.all(compressionPromises);
+      setUploadProgress(30);
 
-        const urls = await uploadImagesInParallel(
-          compressedFiles,
-          async (file) => {
-            const result = await uploadHotelImages([file], user.id, category);
-            return result[0];
-          },
-          3
-        );
+      // Create FormData
+      const formData = new FormData();
+      compressedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+      formData.append("category", category);
 
-        toast.success(`${urls.length} image(s) uploaded`);
-        return urls;
-      } catch (error) {
-        toast.error("Failed to upload images");
-        console.error(error);
-        return [];
-      } finally {
-        setIsUploading(false);
-        setUploadProgress(0);
+      setUploadProgress(50);
+
+      // Upload using Server Action
+      const result = await uploadHotelImagesAction(formData);
+
+      if (!result.success) {
+        throw new Error(result.error);
       }
-    },
-    [supabase]
-  );
+
+      setUploadProgress(100);
+      toast.success(`${result.urls.length} image(s) uploaded successfully`);
+
+      return result.urls;
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload images");
+      return [];
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  }, []);
 
   const removeImage = useCallback(
     async (url, type, setHotelData, setCurrentSuite) => {
-      try {
-        await deleteHotelImage(url);
-        if (type === "hotel") {
-          setHotelData((prev) => ({
-            ...prev,
-            image_urls: prev.image_urls.filter((u) => u !== url),
-          }));
-        } else if (type === "suite") {
-          setCurrentSuite((prev) => ({
-            ...prev,
-            image_urls: prev.image_urls.filter((u) => u !== url),
-          }));
+      startTransition(async () => {
+        try {
+          const result = await deleteHotelImageAction(url);
+
+          if (!result.success) {
+            throw new Error(result.error);
+          }
+
+          // Update state based on type
+          if (type === "hotel") {
+            setHotelData((prev) => ({
+              ...prev,
+              image_urls: prev.image_urls.filter((u) => u !== url),
+            }));
+          } else if (type === "suite") {
+            setCurrentSuite((prev) => ({
+              ...prev,
+              image_urls: prev.image_urls.filter((u) => u !== url),
+            }));
+          }
+
+          toast.success("Image removed");
+        } catch (error) {
+          console.error("Remove image error:", error);
+          toast.error(error.message || "Failed to remove image");
         }
-      } catch (error) {
-        toast.error("Failed to remove image");
-      }
+      });
     },
-    []
+    [],
   );
 
   return {
-    isUploading,
+    isUploading: isUploading || isPending,
     uploadProgress,
     handleImageUpload,
     removeImage,
@@ -137,7 +157,7 @@ export function useRoomConfiguration() {
     floors: [],
   });
 
-  const totalRooms = useMemo(() => {
+  const totalRooms = useCallback(() => {
     if (!roomConfig.floors || !Array.isArray(roomConfig.floors)) return 0;
     return roomConfig.floors.reduce((sum, floor) => {
       if (!floor.rooms || !Array.isArray(floor.rooms)) return sum;
@@ -146,7 +166,7 @@ export function useRoomConfiguration() {
         floor.rooms.reduce((floorSum, room) => floorSum + (room.count || 0), 0)
       );
     }, 0);
-  }, [roomConfig.floors]);
+  }, [roomConfig.floors])();
 
   return {
     roomConfig,
@@ -158,7 +178,7 @@ export function useRoomConfiguration() {
 export function useStepNavigation(hotelData, suiteTypes, roomConfig) {
   const [currentStep, setCurrentStep] = useState(1);
 
-  const canProceed = useMemo(() => {
+  const canProceed = useCallback(() => {
     if (currentStep === 1) {
       return (
         hotelData.name &&
@@ -173,7 +193,7 @@ export function useStepNavigation(hotelData, suiteTypes, roomConfig) {
     if (currentStep === 3) {
       if (!roomConfig.floors || roomConfig.floors.length === 0) return false;
 
-      // Check for room number conflicts on any floor
+      // Check for room number conflicts
       const hasConflicts = roomConfig.floors.some((floor) => {
         if (!floor.rooms || floor.rooms.length <= 1) return false;
 
@@ -199,7 +219,7 @@ export function useStepNavigation(hotelData, suiteTypes, roomConfig) {
       return !hasConflicts;
     }
     return true;
-  }, [currentStep, hotelData, suiteTypes, roomConfig]);
+  }, [currentStep, hotelData, suiteTypes, roomConfig])();
 
   const nextStep = useCallback(() => {
     if (canProceed) {

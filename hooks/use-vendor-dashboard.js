@@ -28,6 +28,7 @@ export const vendorDashboardKeys = {
 // Fetch listings based on vendor category
 async function fetchListings(vendorId, category) {
   if (!vendorId || !category) return [];
+  console.log("id", vendorId);
 
   if (category === "hotels") {
     const { data, error } = await supabase

@@ -6,9 +6,7 @@ import {
   useTransition,
   useMemo,
   useEffect,
-  useRef,
 } from "react";
-import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,12 +16,6 @@ import {
   Bed,
   Check,
 } from "lucide-react";
-import {
-  createHotel,
-  createRoomType,
-  bulkCreateRooms,
-  generateRoomNumbers,
-} from "@/lib/hotel";
 import { toast } from "sonner";
 
 import { StepIndicator } from "./shared";
@@ -39,6 +31,10 @@ import {
   useStepNavigation,
 } from "./hooks";
 import { useFormPersistence } from "@/hooks/useFormPersistence";
+import {
+  createHotelWithRoomsAction,
+  validateRoomConfigAction,
+} from "@/app/actions/hotels";
 
 const STEPS = [
   { id: 1, title: "Hotel Details", icon: Building2 },
@@ -51,7 +47,7 @@ export default function HotelRegistration({ onComplete }) {
   const [isPending, startTransition] = useTransition();
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [savedDraftDate, setSavedDraftDate] = useState(null);
-  const supabase = createClient();
+
   // State management
   const [hotelData, setHotelData] = useState({
     name: "",
@@ -69,7 +65,7 @@ export default function HotelRegistration({ onComplete }) {
 
   // Custom hooks
   const { isUploading, uploadProgress, handleImageUpload, removeImage } =
-    useImageUpload(supabase);
+    useImageUpload();
 
   const {
     suiteTypes,
@@ -98,24 +94,6 @@ export default function HotelRegistration({ onComplete }) {
     setRoomConfig,
     setCurrentStep,
   });
-
-  // Use refs to always have current values (prevents stale closures)
-  const hotelDataRef = useRef(hotelData);
-  const suiteTypesRef = useRef(suiteTypes);
-  const roomConfigRef = useRef(roomConfig);
-
-  // Update refs when state changes
-  useEffect(() => {
-    hotelDataRef.current = hotelData;
-  }, [hotelData]);
-
-  useEffect(() => {
-    suiteTypesRef.current = suiteTypes;
-  }, [suiteTypes]);
-
-  useEffect(() => {
-    roomConfigRef.current = roomConfig;
-  }, [roomConfig]);
 
   // Check for saved draft on mount
   useEffect(() => {
@@ -153,7 +131,7 @@ export default function HotelRegistration({ onComplete }) {
       }
       e.target.value = "";
     },
-    [handleImageUpload]
+    [handleImageUpload],
   );
 
   const handleSuiteImageUpload = useCallback(
@@ -167,14 +145,14 @@ export default function HotelRegistration({ onComplete }) {
       }
       e.target.value = "";
     },
-    [handleImageUpload, setCurrentSuite]
+    [handleImageUpload, setCurrentSuite],
   );
 
   const handleRemoveImage = useCallback(
     (url, type) => {
       removeImage(url, type, setHotelData, setCurrentSuite);
     },
-    [removeImage, setCurrentSuite]
+    [removeImage, setCurrentSuite],
   );
 
   // Amenity toggle handler
@@ -194,208 +172,73 @@ export default function HotelRegistration({ onComplete }) {
             ? prev.amenities.filter((a) => a !== amenity)
             : [...prev.amenities, amenity],
         }));
-      } else if (type === "room") {
-        setRoomConfig((prev) => ({
-          ...prev,
-          amenities: prev.amenities.includes(amenity)
-            ? prev.amenities.filter((a) => a !== amenity)
-            : [...prev.amenities, amenity],
-        }));
       }
     },
-    [setCurrentSuite, setRoomConfig]
+    [setCurrentSuite],
   );
 
-  // Submission handler - using refs to avoid stale closures
+  // Submission handler with Server Action
   const handleSubmit = useCallback(async () => {
     console.log("🚀 Submit button clicked");
 
     startTransition(async () => {
       try {
-        // Use refs to get current state (prevents stale closures)
-        const currentHotelData = hotelDataRef.current;
-        const currentSuiteTypes = suiteTypesRef.current;
-        const currentRoomConfig = roomConfigRef.current;
+        // Validate room configuration first
+        const validation = await validateRoomConfigAction(roomConfig);
 
-        console.log("📊 Current State:");
-        console.log("  Hotel Data:", currentHotelData);
-        console.log("  Suite Types:", currentSuiteTypes.length);
-        console.log("  Room Config Floors:", currentRoomConfig.floors?.length);
-
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          console.error("❌ No authenticated user");
-          throw new Error("Not authenticated");
-        }
-
-        console.log("✅ User authenticated:", user.id);
-
-        // 1. Create Hotel
-        console.log("📝 Creating hotel...");
-        const { data: hotel, error: hotelError } = await createHotel({
-          ...currentHotelData,
-          vendor_id: user.id,
-        });
-
-        if (hotelError) {
-          console.error("❌ Hotel creation error:", hotelError);
-          throw hotelError;
-        }
-
-        console.log("✅ Hotel created:", hotel.id);
-
-        // 2. Create Suite Types in parallel
-        console.log(`📝 Creating ${currentSuiteTypes.length} suite types...`);
-        const suitePromises = currentSuiteTypes.map((suite) => {
-          console.log(`  - Creating suite: ${suite.name}`);
-          return createRoomType({
-            ...suite,
-            hotel_id: hotel.id,
-          });
-        });
-
-        const suiteResults = await Promise.all(suitePromises);
-
-        // Check for errors
-        const suiteErrors = suiteResults.filter((r) => r.error);
-        if (suiteErrors.length > 0) {
-          console.error("❌ Suite creation errors:", suiteErrors);
-          throw new Error(
-            `Failed to create ${suiteErrors.length} suite type(s)`
-          );
-        }
-
-        const createdSuiteTypes = suiteResults.map((result, index) => ({
-          ...result.data,
-          tempId: currentSuiteTypes[index].id,
-        }));
-
-        console.log("✅ Suite types created:", createdSuiteTypes.length);
-
-        // 3. Generate rooms for all floors and room groups
-        console.log("📝 Generating rooms...");
-        const allRooms = [];
-
-        if (
-          !currentRoomConfig.floors ||
-          currentRoomConfig.floors.length === 0
-        ) {
-          console.error("❌ No floors configured");
-          throw new Error("No floors configured");
-        }
-
-        for (const floor of currentRoomConfig.floors) {
-          if (!floor.rooms || floor.rooms.length === 0) {
-            console.warn(`⚠️ Floor ${floor.floor} has no rooms, skipping`);
-            continue;
+        if (!validation.valid) {
+          if (validation.conflicts) {
+            toast.error(
+              `Room number conflicts detected on ${validation.conflicts.length} floor(s)`,
+            );
+          } else {
+            toast.error(validation.error || "Invalid room configuration");
           }
-
-          console.log(
-            `  Processing Floor ${floor.floor} with ${floor.rooms.length} room groups`
-          );
-
-          for (const roomGroup of floor.rooms) {
-            const suite = createdSuiteTypes.find(
-              (s) =>
-                s.id === roomGroup.suite_type_id ||
-                s.tempId === roomGroup.suite_type_id
-            );
-
-            if (!suite) {
-              console.error(`❌ Suite not found for room group:`, roomGroup);
-              continue;
-            }
-
-            const roomNumbers = generateRoomNumbers(
-              floor.floor,
-              roomGroup.count,
-              roomGroup.startNumber
-            );
-
-            console.log(
-              `    - Generating ${roomNumbers.length} rooms: ${roomNumbers[0]}-${roomNumbers[roomNumbers.length - 1]} (${suite.name})`
-            );
-
-            const rooms = roomNumbers.map((roomNumber) => ({
-              hotel_id: hotel.id,
-              room_type_id: suite.id,
-              room_number: roomNumber,
-              floor: floor.floor,
-              beds: roomGroup.beds || [{ type: "king", count: 1 }],
-              status: "available",
-              price_per_night:
-                suite.base_price + (roomGroup.priceAdjustment || 0),
-              amenities: [
-                ...suite.amenities,
-                ...(roomGroup.additionalAmenities || []),
-              ],
-              image_urls: suite.image_urls || [],
-              notes: null,
-            }));
-
-            allRooms.push(...rooms);
-          }
+          return;
         }
 
-        if (allRooms.length === 0) {
-          console.error("❌ No rooms generated");
-          throw new Error(
-            "No rooms were generated. Please configure at least one floor with rooms."
-          );
-        }
+        console.log("✅ Room configuration validated");
 
-        console.log(`✅ Generated ${allRooms.length} total rooms`);
-
-        // 4. Bulk create rooms
-        console.log("📝 Inserting rooms into database...");
-        const { data: createdRooms, error: roomsError } =
-          await bulkCreateRooms(allRooms);
-
-        if (roomsError) {
-          console.error("❌ Room creation error:", roomsError);
-          throw roomsError;
-        }
-
-        console.log(
-          "✅ Rooms created successfully:",
-          createdRooms?.length || allRooms.length
+        // Create hotel with all data using Server Action
+        const result = await createHotelWithRoomsAction(
+          hotelData,
+          suiteTypes,
+          roomConfig,
         );
 
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        console.log("✅ Hotel created successfully:", result.hotel.id);
+
         toast.success(
-          `Hotel "${hotel.name}" created with ${allRooms.length} rooms!`
+          `Hotel "${result.hotel.name}" created with ${result.roomCount} rooms!`,
+          { duration: 5000 },
         );
 
         // Clear draft after successful submission
         clearDraft();
-        console.log("✅ Draft cleared");
 
         if (onComplete) {
-          console.log("✅ Calling onComplete callback");
-          onComplete(hotel);
+          onComplete(result.hotel);
         }
       } catch (error) {
         console.error("💥 Submission error:", error);
 
-        // Provide specific error messages
         let errorMessage = "Failed to create hotel";
 
         if (error.message) {
           errorMessage = error.message;
         }
 
+        // Handle specific error codes
         if (error.code === "23505") {
           errorMessage =
             "Duplicate room numbers detected. Please check your room configuration.";
-        }
-
-        if (error.code === "23503") {
+        } else if (error.code === "23503") {
           errorMessage = "Invalid data reference. Please try again.";
-        }
-
-        if (error.code === "PGRST116") {
+        } else if (error.code === "PGRST116") {
           errorMessage =
             "Database constraint violation. Please check your data.";
         }
@@ -403,11 +246,11 @@ export default function HotelRegistration({ onComplete }) {
         toast.error(errorMessage);
       }
     });
-  }, [supabase, onComplete, clearDraft]);
+  }, [hotelData, suiteTypes, roomConfig, onComplete, clearDraft]);
 
   const totalRoomsAllSuites = useMemo(
     () => totalRooms * suiteTypes.length,
-    [totalRooms, suiteTypes.length]
+    [totalRooms, suiteTypes.length],
   );
 
   // Render current step

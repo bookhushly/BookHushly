@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { VendorSidebar } from "../../../../components/shared/vendor/sidebar";
 import { VendorHeader } from "../../../../components/shared/vendor/header";
-import { SessionProvider } from "@/components/shared/auth/session-provider";
 
 export function VendorLayoutClient({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

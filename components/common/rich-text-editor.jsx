@@ -5,11 +5,11 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import { TextStyleKit } from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   Bold,
   Italic,
@@ -34,7 +34,6 @@ import {
   Quote,
   Code,
   Minus,
-  Type,
 } from "lucide-react";
 
 const COLOR_PRESETS = [
@@ -457,7 +456,7 @@ export default function RichTextEditor({
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
-      TextStyleKit,
+      TextStyle,
       Color,
       Highlight.configure({
         multicolor: true,
@@ -478,7 +477,7 @@ export default function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm max-w-none focus:outline-none px-4 py-3`,
+        class: "focus:outline-none min-h-full",
       },
     },
   });
@@ -528,8 +527,12 @@ export default function RichTextEditor({
       className={`border border-gray-200 rounded-lg overflow-hidden bg-white ${className} ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
     >
       <MenuBar editor={editor} />
-      <div style={{ minHeight }} className="overflow-y-auto relative">
-        <EditorContent editor={editor} />
+
+      {/* Editor Container with proper styling */}
+      <div style={{ minHeight }} className="overflow-y-auto">
+        <div className="px-4 py-3">
+          <EditorContent editor={editor} className="rich-text-editor-content" />
+        </div>
       </div>
 
       {/* Word Count Footer */}
@@ -539,6 +542,139 @@ export default function RichTextEditor({
           <span>{charCount} characters</span>
         </div>
       )}
+
+      {/* Add custom styles for the editor */}
+      <style jsx global>{`
+        .rich-text-editor-content .ProseMirror {
+          min-height: ${minHeight};
+        }
+
+        .rich-text-editor-content .ProseMirror > * + * {
+          margin-top: 0.75em;
+        }
+
+        .rich-text-editor-content .ProseMirror h1 {
+          font-size: 2em;
+          font-weight: 700;
+          line-height: 1.2;
+          margin-top: 0.67em;
+          margin-bottom: 0.67em;
+        }
+
+        .rich-text-editor-content .ProseMirror h2 {
+          font-size: 1.5em;
+          font-weight: 600;
+          line-height: 1.3;
+          margin-top: 0.83em;
+          margin-bottom: 0.83em;
+        }
+
+        .rich-text-editor-content .ProseMirror h3 {
+          font-size: 1.17em;
+          font-weight: 600;
+          line-height: 1.4;
+          margin-top: 1em;
+          margin-bottom: 1em;
+        }
+
+        .rich-text-editor-content .ProseMirror p {
+          margin: 0;
+          line-height: 1.6;
+        }
+
+        .rich-text-editor-content .ProseMirror ul,
+        .rich-text-editor-content .ProseMirror ol {
+          padding-left: 1.5rem;
+          margin: 0.75em 0;
+        }
+
+        .rich-text-editor-content .ProseMirror ul {
+          list-style-type: disc;
+        }
+
+        .rich-text-editor-content .ProseMirror ol {
+          list-style-type: decimal;
+        }
+
+        .rich-text-editor-content .ProseMirror li {
+          margin: 0.25em 0;
+        }
+
+        .rich-text-editor-content .ProseMirror blockquote {
+          border-left: 3px solid #9333ea;
+          padding-left: 1rem;
+          margin: 1em 0;
+          color: #6b7280;
+          font-style: italic;
+        }
+
+        .rich-text-editor-content .ProseMirror code {
+          background-color: #f3f4f6;
+          border-radius: 0.25rem;
+          padding: 0.125rem 0.25rem;
+          font-family: monospace;
+          font-size: 0.9em;
+        }
+
+        .rich-text-editor-content .ProseMirror pre {
+          background-color: #1f2937;
+          color: #f9fafb;
+          border-radius: 0.5rem;
+          padding: 1rem;
+          overflow-x: auto;
+          margin: 1em 0;
+        }
+
+        .rich-text-editor-content .ProseMirror pre code {
+          background-color: transparent;
+          color: inherit;
+          padding: 0;
+        }
+
+        .rich-text-editor-content .ProseMirror hr {
+          border: none;
+          border-top: 2px solid #e5e7eb;
+          margin: 2rem 0;
+        }
+
+        .rich-text-editor-content .ProseMirror img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          margin: 1rem 0;
+        }
+
+        .rich-text-editor-content
+          .ProseMirror
+          p.is-editor-empty:first-child::before {
+          content: "${placeholder}";
+          color: #9ca3af;
+          pointer-events: none;
+          height: 0;
+          float: left;
+        }
+
+        .rich-text-editor-content .ProseMirror:focus {
+          outline: none;
+        }
+
+        /* Text alignment */
+        .rich-text-editor-content .ProseMirror [style*="text-align: left"] {
+          text-align: left;
+        }
+
+        .rich-text-editor-content .ProseMirror [style*="text-align: center"] {
+          text-align: center;
+        }
+
+        .rich-text-editor-content .ProseMirror [style*="text-align: right"] {
+          text-align: right;
+        }
+
+        .rich-text-editor-content .ProseMirror [style*="text-align: justify"] {
+          text-align: justify;
+        }
+      `}</style>
     </div>
   );
 }

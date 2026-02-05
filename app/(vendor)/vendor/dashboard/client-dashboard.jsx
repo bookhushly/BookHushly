@@ -39,10 +39,7 @@ import { toast } from "sonner";
 import QRCode from "qrcode";
 import jsPDF from "jspdf";
 import Image from "next/image";
-import {
-  useVendorDashboard,
-  useDeleteListing,
-} from "@/hooks/use-vendor-dashboard";
+import { useDeleteListing } from "@/hooks/use-vendor-dashboard";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 function getApprovalStatus(vendor) {
@@ -77,7 +74,13 @@ function getApprovalStatus(vendor) {
   };
 }
 
-export default function VendorDashboardClient({ user, vendor }) {
+export default function VendorDashboardClient({
+  user,
+  vendor,
+  stats,
+  listings = [],
+  bookings = [],
+}) {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -87,18 +90,11 @@ export default function VendorDashboardClient({ user, vendor }) {
   const approvalStatus = getApprovalStatus(vendor);
   const StatusIcon = approvalStatus.icon;
 
-  // Fetch dashboard data with React Query
-  const {
-    listings,
-    bookings,
-    stats,
-    isLoading,
-    error,
-    recentListings,
-    recentBookings,
-  } = useVendorDashboard(vendor?.id, vendor?.business_category);
+  // Use server-fetched data
+  const recentListings = listings.slice(0, 5);
+  const recentBookings = bookings.slice(0, 5);
 
-  // Delete mutation
+  // Delete mutation (only client-side operation needed)
   const deleteMutation = useDeleteListing(vendor?.business_category);
 
   // QR Code generation
@@ -244,30 +240,6 @@ export default function VendorDashboardClient({ user, vendor }) {
     setListingToDelete(listing);
     setDeleteDialogOpen(true);
   };
-
-  // Loading state
-  if (isLoading && vendor?.approved) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner className="h-8 w-8" />
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-900 mb-2">
-            Failed to load dashboard
-          </p>
-          <p className="text-sm text-gray-500">{error.message}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8 bg-purple-50">
@@ -450,15 +422,19 @@ export default function VendorDashboardClient({ user, vendor }) {
               >
                 <Link
                   href={
-                    vendor?.business_category === "serviced_apartments"
-                      ? "/vendor/dashboard/serviced-apartments/new"
-                      : "/vendor/dashboard/listings/create"
+                    vendor?.business_category === "hotels"
+                      ? "/vendor/dashboard/hotels/new"
+                      : vendor?.business_category === "serviced_apartments"
+                        ? "/vendor/dashboard/serviced-apartments/new"
+                        : "/vendor/dashboard/listings/create"
                   }
                 >
                   <Plus className="h-4 w-4" strokeWidth={3} />
-                  {vendor?.business_category === "serviced_apartments"
-                    ? "New Apartment"
-                    : "New Listing"}
+                  {vendor?.business_category === "hotels"
+                    ? "New Hotel"
+                    : vendor?.business_category === "serviced_apartments"
+                      ? "New Apartment"
+                      : "New Listing"}
                 </Link>
               </Button>
               <Button
@@ -584,7 +560,11 @@ export default function VendorDashboardClient({ user, vendor }) {
             </div>
             <Button asChild variant="ghost" size="sm" className="h-8">
               <Link
-                href="/vendor/dashboard/listings"
+                href={
+                  vendor?.business_category === "hotels"
+                    ? "/vendor/dashboard/hotels"
+                    : "/vendor/dashboard/listings"
+                }
                 className="text-[13px] font-medium text-purple-600 hover:text-purple-700"
               >
                 View all
@@ -609,7 +589,13 @@ export default function VendorDashboardClient({ user, vendor }) {
                 </p>
                 {vendor?.approved && (
                   <Button asChild size="sm" variant="outline">
-                    <Link href="/vendor/dashboard/listings/create">
+                    <Link
+                      href={
+                        vendor?.business_category === "hotels"
+                          ? "/vendor/dashboard/hotels/new"
+                          : "/vendor/dashboard/listings/create"
+                      }
+                    >
                       <Plus className="mr-2 h-3.5 w-3.5" />
                       Create Listing
                     </Link>
@@ -623,11 +609,11 @@ export default function VendorDashboardClient({ user, vendor }) {
                     key={listing.id}
                     className="group flex items-center gap-3 p-3.5 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-all"
                   >
-                    {listing.media_urls?.[0] && (
+                    {(listing.media_urls?.[0] || listing.image_urls?.[0]) && (
                       <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                         <Image
-                          src={listing.media_urls[0]}
-                          alt={listing.title}
+                          src={listing.media_urls?.[0] || listing.image_urls[0]}
+                          alt={listing.title || listing.name}
                           fill
                           className="object-cover"
                         />
@@ -635,27 +621,29 @@ export default function VendorDashboardClient({ user, vendor }) {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-medium text-gray-900 truncate group-hover:text-purple-600 transition-colors">
-                        {listing.title}
+                        {listing.title || listing.name}
                       </p>
                       <p className="text-[13px] text-black mt-0.5">
                         {vendor?.business_category === "hotels"
-                          ? listing.city
+                          ? `${listing.city}, ${listing.state}`
                           : vendor?.business_category === "serviced_apartments"
                             ? `${listing.bedrooms} bed · ${listing.area}, ${listing.city}`
                             : `₦${listing.price?.toLocaleString()}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge
-                        variant={listing.active ? "default" : "secondary"}
-                        className={`text-xs ${
-                          listing.active
-                            ? "bg-green-100 text-green-700 hover:bg-green-100"
-                            : ""
-                        }`}
-                      >
-                        {listing.active ? "active" : "inactive"}
-                      </Badge>
+                      {listing.active !== undefined && (
+                        <Badge
+                          variant={listing.active ? "default" : "secondary"}
+                          className={`text-xs ${
+                            listing.active
+                              ? "bg-green-100 text-green-700 hover:bg-green-100"
+                              : ""
+                          }`}
+                        >
+                          {listing.active ? "active" : "inactive"}
+                        </Badge>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -664,9 +652,12 @@ export default function VendorDashboardClient({ user, vendor }) {
                       >
                         <Link
                           href={
-                            vendor.business_category !== "serviced_apartments"
-                              ? `/vendor/dashboard/listings/${listing.id}`
-                              : `/vendor/dashboard/serviced-apartments/${listing.id}`
+                            vendor?.business_category === "hotels"
+                              ? `/vendor/dashboard/hotels/${listing.id}`
+                              : vendor?.business_category ===
+                                  "serviced_apartments"
+                                ? `/vendor/dashboard/serviced-apartments/${listing.id}`
+                                : `/vendor/dashboard/listings/${listing.id}`
                           }
                         >
                           <Eye className="h-4 w-4" />
@@ -794,7 +785,7 @@ export default function VendorDashboardClient({ user, vendor }) {
             <DialogDescription className="text-base pt-2">
               Are you sure you want to delete &quot;
               <span className="font-semibold text-gray-900">
-                {listingToDelete?.title}
+                {listingToDelete?.title || listingToDelete?.name}
               </span>
               &quot;? This action cannot be undone and all related data will be
               permanently removed.

@@ -19,7 +19,6 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { login } from "@/app/actions/auth";
 import { useAuthActions } from "@/hooks/use-auth";
-import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -43,14 +42,19 @@ export default function LoginPage() {
 
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate and refetch auth data
       invalidateAuth();
 
       toast.success("Welcome back!", {
-        description: "Logging you in...",
-        duration: 3000,
+        description: "Redirecting...",
+        duration: 2000,
       });
+
+      // Client-side redirect after successful login
+      if (data?.redirectPath) {
+        window.location.href = data.redirectPath;
+      }
     },
     onError: (error) => {
       toast.error("Login failed", {
