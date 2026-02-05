@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -31,22 +31,10 @@ import {
   Info,
   AlertCircle,
   Building,
-  Calendar,
-  Wifi,
-  ParkingSquare,
-  Waves,
-  Dumbbell,
-  UtensilsCrossed,
-  Wine,
-  Sparkles,
-  Shirt,
-  ConciergeBell,
-  Presentation,
-  Bus,
-  PawPrint,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import RichContentRenderer from "@/components/common/rich-text-renderer";
+import { AMENITY_ICONS } from "@/lib/constants/filters";
 
 const HotelDetails = ({ hotel, roomTypes }) => {
   const router = useRouter();
@@ -62,89 +50,49 @@ const HotelDetails = ({ hotel, roomTypes }) => {
   });
 
   const allImages = useMemo(() => {
-    return hotel.image_urls?.length
+    return hotel.image_urls?.length > 0
       ? hotel.image_urls
       : ["/placeholder-hotel.jpg"];
   }, [hotel.image_urls]);
 
-  // Amenity labels for display
-  const amenityLabels = {
-    wifi: "WiFi",
-    parking: "Parking",
-    pool: "Swimming Pool",
-    gym: "Gym/Fitness Center",
-    restaurant: "Restaurant",
-    bar: "Bar/Lounge",
-    spa: "Spa",
-    laundry: "Laundry Service",
-    room_service: "Room Service",
-    conference_room: "Conference Room",
-    airport_shuttle: "Airport Shuttle",
-    pet_friendly: "Pet Friendly",
-  };
-
-  // Icon mapping for amenities
-  const amenityIcons = {
-    wifi: Wifi,
-    parking: ParkingSquare,
-    pool: Waves,
-    gym: Dumbbell,
-    restaurant: UtensilsCrossed,
-    bar: Wine,
-    spa: Sparkles,
-    laundry: Shirt,
-    room_service: ConciergeBell,
-    conference_room: Presentation,
-    airport_shuttle: Bus,
-    pet_friendly: PawPrint,
-  };
-
-  const parseAmenities = (amenitiesData) => {
-    if (!amenitiesData) return [];
-
-    // If it's an object with true/false values (from database)
-    if (typeof amenitiesData === "object" && !Array.isArray(amenitiesData)) {
-      return Object.keys(amenitiesData).filter(
-        (key) => amenitiesData[key] === true
-      );
+  // Parse and display amenities from the AMENITY_ICONS constant
+  const hotelAmenities = useMemo(() => {
+    if (!hotel.amenities?.items || !Array.isArray(hotel.amenities.items)) {
+      return [];
     }
 
-    // If it's already an array
-    if (Array.isArray(amenitiesData)) return amenitiesData;
+    return hotel.amenities.items
+      .map((amenityKey) => {
+        const amenityConfig = AMENITY_ICONS.find((a) => a.value === amenityKey);
+        if (!amenityConfig) return null;
 
-    return [];
-  };
-
-  const hotelAmenities = useMemo(() => {
-    const amenitiesList = parseAmenities(hotel.amenities);
-    return amenitiesList.map((amenity) => {
-      const Icon = amenityIcons[amenity] || Check;
-      const label = amenityLabels[amenity] || amenity.replace(/_/g, " ");
-      return {
-        name: label,
-        Icon,
-        key: amenity,
-      };
-    });
+        const Icon = LucideIcons[amenityConfig.icon];
+        return {
+          key: amenityKey,
+          label: amenityConfig.label,
+          Icon: Icon || Check,
+        };
+      })
+      .filter(Boolean);
   }, [hotel.amenities]);
 
-  const nextImage = () => {
+  const nextImage = useCallback(() => {
     setSelectedImageIndex((prev) => (prev + 1) % allImages.length);
-  };
+  }, [allImages.length]);
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     setSelectedImageIndex((prev) =>
-      prev === 0 ? allImages.length - 1 : prev - 1
+      prev === 0 ? allImages.length - 1 : prev - 1,
     );
-  };
+  }, [allImages.length]);
 
-  const handleBookNow = (roomType) => {
+  const handleBookNow = useCallback((roomType) => {
     setSelectedRoomType(roomType);
     setBookingModalOpen(true);
-  };
+  }, []);
 
-  const handleProceedToBooking = () => {
-    if (!bookingData.checkIn || !bookingData.checkOut) {
+  const handleProceedToBooking = useCallback(() => {
+    if (!bookingData.checkIn || !bookingData.checkOut || !selectedRoomType) {
       return;
     }
 
@@ -156,27 +104,29 @@ const HotelDetails = ({ hotel, roomTypes }) => {
     });
 
     router.push(`/book/hotel/${selectedRoomType.id}?${params.toString()}`);
-  };
+  }, [bookingData, selectedRoomType, router]);
 
-  const calculateNights = () => {
+  const calculateNights = useCallback(() => {
     if (!bookingData.checkIn || !bookingData.checkOut) return 0;
     const checkIn = new Date(bookingData.checkIn);
     const checkOut = new Date(bookingData.checkOut);
     const diffTime = Math.abs(checkOut - checkIn);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
+  }, [bookingData.checkIn, bookingData.checkOut]);
 
-  const location =
-    `${hotel.address || ""}${hotel.address && hotel.city ? ", " : ""}${hotel.city || ""}${hotel.city && hotel.state ? ", " : ""}${hotel.state || ""}`.trim();
+  const location = useMemo(
+    () =>
+      `${hotel.address || ""}${hotel.address && hotel.city ? ", " : ""}${hotel.city || ""}${hotel.city && hotel.state ? ", " : ""}${hotel.state || ""}`.trim(),
+    [hotel.address, hotel.city, hotel.state],
+  );
 
   const nights = calculateNights();
   const estimatedTotal = nights * (selectedRoomType?.base_price || 0);
 
-  // Check if content is HTML (from rich text editor) or plain text
-  const isHtmlContent = (content) => {
+  const isHtmlContent = useCallback((content) => {
     if (!content) return false;
     return /<[a-z][\s\S]*>/i.test(content);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -203,470 +153,336 @@ const HotelDetails = ({ hotel, roomTypes }) => {
         </div>
       </header>
 
-      {/* Image Gallery Section */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {allImages.length === 1 ? (
-          <div
-            className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden cursor-pointer"
-            onClick={() => setShowAllImages(true)}
-          >
-            <Image
-              src={allImages[0]}
-              alt={hotel.name}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
-          </div>
-        ) : allImages.length === 2 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-[400px] sm:h-[500px] lg:h-[600px]">
-            {allImages.slice(0, 2).map((image, index) => (
-              <div
-                key={index}
-                className="relative rounded-2xl overflow-hidden cursor-pointer group"
-                onClick={() => {
-                  setSelectedImageIndex(index);
-                  setShowAllImages(true);
-                }}
-              >
-                <Image
-                  src={image}
-                  alt={`${hotel.name} - ${index + 1}`}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                  priority={index === 0}
-                />
-              </div>
-            ))}
-          </div>
-        ) : allImages.length === 3 ? (
-          <div className="grid grid-cols-2 gap-3 h-[400px] sm:h-[500px] lg:h-[600px]">
-            <div
-              className="relative row-span-2 rounded-2xl overflow-hidden cursor-pointer group"
-              onClick={() => setShowAllImages(true)}
-            >
-              <Image
-                src={allImages[0]}
-                alt={hotel.name}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                sizes="50vw"
-                priority
-              />
-            </div>
-            {allImages.slice(1, 3).map((image, index) => (
-              <div
-                key={index}
-                className="relative rounded-2xl overflow-hidden cursor-pointer group"
-                onClick={() => {
-                  setSelectedImageIndex(index + 1);
-                  setShowAllImages(true);
-                }}
-              >
-                <Image
-                  src={image}
-                  alt={`${hotel.name} - ${index + 2}`}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="50vw"
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-4 gap-3 h-[400px] sm:h-[500px] lg:h-[600px]">
-            <div
-              className="col-span-4 sm:col-span-2 row-span-2 relative rounded-2xl overflow-hidden cursor-pointer group"
-              onClick={() => setShowAllImages(true)}
-            >
-              <Image
-                src={allImages[0]}
-                alt={hotel.name}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                sizes="(max-width: 640px) 100vw, 50vw"
-                priority
-              />
-            </div>
-            {allImages.slice(1, 5).map((image, index) => (
-              <div
-                key={index}
-                className="relative rounded-2xl overflow-hidden cursor-pointer group col-span-2 sm:col-span-1"
-                onClick={() => {
-                  setSelectedImageIndex(index + 1);
-                  setShowAllImages(true);
-                }}
-              >
-                <Image
-                  src={image}
-                  alt={`${hotel.name} - ${index + 2}`}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="(max-width: 640px) 50vw, 25vw"
-                />
-                {index === 3 && allImages.length > 5 && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
-                      +{allImages.length - 5} more
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {allImages.length > 1 && (
-          <button
-            onClick={() => setShowAllImages(true)}
-            className="mt-4 px-6 py-2.5 border-2 border-gray-900 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center gap-2"
-          >
-            <div className="w-5 h-5 grid grid-cols-2 gap-0.5">
-              <div className="bg-gray-900 rounded-sm" />
-              <div className="bg-gray-900 rounded-sm" />
-              <div className="bg-gray-900 rounded-sm" />
-              <div className="bg-gray-900 rounded-sm" />
-            </div>
-            Show all {allImages.length} photos
-          </button>
-        )}
-      </div>
+      {/* Image Gallery */}
+      <ImageGallery
+        images={allImages}
+        hotelName={hotel.name}
+        onShowAll={() => setShowAllImages(true)}
+      />
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="mb-12">
-          <div className="space-y-4 mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              {hotel.name}
-            </h1>
-            <div className="flex items-center gap-2 text-gray-700">
-              <MapPin className="w-5 h-5 text-gray-500" />
-              <span>{location}</span>
-            </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hotel Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            {hotel.name}
+          </h1>
+          <div className="flex items-center gap-2 text-gray-700">
+            <MapPin className="w-5 h-5 text-purple-600" />
+            <span>{location}</span>
           </div>
+        </div>
 
-          {/* Description - Supports both HTML and plain text */}
-          {hotel.description && (
-            <div className="mb-8">
-              {isHtmlContent(hotel.description) ? (
-                <RichContentRenderer
-                  content={hotel.description}
-                  className="text-gray-700 leading-relaxed"
-                />
-              ) : (
-                <p className="text-gray-700 leading-relaxed text-base whitespace-pre-line">
-                  {hotel.description}
-                </p>
-              )}
-            </div>
-          )}
-
-          {hotelAmenities.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Hotel amenities
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {hotelAmenities.map((amenity) => (
-                  <div key={amenity.key} className="flex items-center gap-2">
-                    <amenity.Icon className="w-5 h-5 text-gray-700" />
-                    <span className="text-sm text-gray-900">
-                      {amenity.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Policies - Supports both HTML and plain text */}
-          {(hotel.checkout_policy || hotel.policies) && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Policies
-              </h2>
-              <div className="space-y-3">
-                {hotel.checkout_policy && (
-                  <div className="flex gap-3">
-                    <Info className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        Check-out policy
-                      </p>
-                      <p className="text-gray-700 text-sm">
-                        {hotel.checkout_policy === "fixed_time"
-                          ? "Fixed time checkout at 12:00 PM"
-                          : "24-hour checkout from check-in time"}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                {hotel.policies && (
-                  <div className="flex gap-3">
-                    <AlertCircle className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 mb-2">
-                        House rules
-                      </p>
-                      {isHtmlContent(hotel.policies) ? (
-                        <RichContentRenderer
-                          content={hotel.policies}
-                          className="text-gray-700 text-sm"
-                        />
-                      ) : (
-                        <p className="text-gray-700 text-sm whitespace-pre-line">
-                          {hotel.policies}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <Separator className="my-8" />
-
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Choose your room
-            </h2>
-
-            {roomTypes.length === 0 ? (
-              <div className="text-center py-12">
-                <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  No rooms available at the moment
-                </p>
-              </div>
+        {/* Description */}
+        {hotel.description && (
+          <div className="mb-8">
+            {isHtmlContent(hotel.description) ? (
+              <RichContentRenderer
+                content={hotel.description}
+                className="text-gray-700 leading-relaxed"
+              />
             ) : (
-              <div className="space-y-6">
-                {roomTypes.map((roomType) => (
-                  <RoomTypeCard
-                    key={roomType.id}
-                    roomType={roomType}
-                    onBookNow={handleBookNow}
-                  />
-                ))}
-              </div>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                {hotel.description}
+              </p>
             )}
           </div>
+        )}
+
+        {/* Amenities */}
+        {hotelAmenities.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              What this place offers
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {hotelAmenities.map((amenity) => (
+                <div
+                  key={amenity.key}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <amenity.Icon className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-900">
+                    {amenity.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Separator className="my-8" />
+
+        {/* Policies */}
+        {(hotel.checkout_policy || hotel.policies) && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Things to know
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {hotel.checkout_policy && (
+                <div className="flex gap-3">
+                  <Info className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">
+                      Check-out policy
+                    </p>
+                    <p className="text-gray-700 text-sm">
+                      {hotel.checkout_policy === "fixed_time"
+                        ? "Fixed time checkout at 12:00 PM"
+                        : "24-hour checkout from check-in time"}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {hotel.policies && (
+                <div className="flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 mb-1">
+                      House rules
+                    </p>
+                    {isHtmlContent(hotel.policies) ? (
+                      <RichContentRenderer
+                        content={hotel.policies}
+                        className="text-gray-700 text-sm"
+                      />
+                    ) : (
+                      <p className="text-gray-700 text-sm whitespace-pre-line">
+                        {hotel.policies}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <Separator className="my-8" />
+
+        {/* Room Types */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Choose your room
+          </h2>
+
+          {roomTypes.length === 0 ? (
+            <div className="text-center py-16 bg-gray-50 rounded-xl">
+              <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 font-medium">
+                No rooms available at the moment
+              </p>
+              <p className="text-gray-500 text-sm mt-2">
+                Please check back later or contact us for more information
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {roomTypes.map((roomType) => (
+                <RoomTypeCard
+                  key={roomType.id}
+                  roomType={roomType}
+                  onBookNow={handleBookNow}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Booking Modal */}
-      <Dialog open={bookingModalOpen} onOpenChange={setBookingModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Book {selectedRoomType?.name}</DialogTitle>
-            <DialogDescription>
-              Select your dates and number of guests
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="checkIn">Check-in</Label>
-                <Input
-                  id="checkIn"
-                  type="date"
-                  min={new Date().toISOString().split("T")[0]}
-                  value={bookingData.checkIn}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, checkIn: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="checkOut">Check-out</Label>
-                <Input
-                  id="checkOut"
-                  type="date"
-                  min={
-                    bookingData.checkIn ||
-                    new Date().toISOString().split("T")[0]
-                  }
-                  value={bookingData.checkOut}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, checkOut: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="adults">Adults</Label>
-                <Input
-                  id="adults"
-                  type="number"
-                  min="1"
-                  max={selectedRoomType?.max_occupancy || 4}
-                  value={bookingData.adults}
-                  onChange={(e) =>
-                    setBookingData({
-                      ...bookingData,
-                      adults: parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="children">Children</Label>
-                <Input
-                  id="children"
-                  type="number"
-                  min="0"
-                  value={bookingData.children}
-                  onChange={(e) =>
-                    setBookingData({
-                      ...bookingData,
-                      children: parseInt(e.target.value) || 0,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            {nights > 0 && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Duration:</span>
-                  <span className="font-semibold">
-                    {nights} night{nights !== 1 ? "s" : ""}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Estimated total:</span>
-                  <span className="font-bold text-purple-600">
-                    ₦{estimatedTotal.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <Button
-              className="w-full bg-purple-600 hover:bg-purple-700"
-              onClick={handleProceedToBooking}
-              disabled={!bookingData.checkIn || !bookingData.checkOut}
-            >
-              Continue to Booking
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <BookingModal
+        open={bookingModalOpen}
+        onOpenChange={setBookingModalOpen}
+        roomType={selectedRoomType}
+        bookingData={bookingData}
+        setBookingData={setBookingData}
+        nights={nights}
+        estimatedTotal={estimatedTotal}
+        onProceed={handleProceedToBooking}
+      />
 
       {/* Image Lightbox */}
-      {showAllImages && (
-        <div className="fixed inset-0 z-50 bg-black">
-          <button
-            onClick={() => setShowAllImages(false)}
-            className="fixed top-4 right-4 z-50 w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          <div className="fixed top-4 left-4 z-50 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
-            {selectedImageIndex + 1} / {allImages.length}
-          </div>
-
-          <div className="h-full flex items-center justify-center p-4 sm:p-12">
-            <div className="relative w-full h-full max-w-7xl">
-              <Image
-                src={allImages[selectedImageIndex]}
-                alt={`View ${selectedImageIndex + 1}`}
-                fill
-                className="object-contain"
-                sizes="100vw"
-                priority
-              />
-            </div>
-
-            {allImages.length > 1 && (
-              <>
-                <button
-                  onClick={prevImage}
-                  className="fixed left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="fixed right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </>
-            )}
-          </div>
-
-          <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10">
-            <div className="container mx-auto px-4 py-4">
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {allImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all ${
-                      index === selectedImageIndex
-                        ? "ring-2 ring-white scale-105"
-                        : "opacity-50 hover:opacity-100"
-                    }`}
-                  >
-                    <Image
-                      src={image}
-                      alt={`Thumbnail ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="80px"
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImageLightbox
+        show={showAllImages}
+        images={allImages}
+        selectedIndex={selectedImageIndex}
+        onClose={() => setShowAllImages(false)}
+        onNext={nextImage}
+        onPrev={prevImage}
+        onSelectImage={setSelectedImageIndex}
+      />
     </div>
   );
 };
 
-const RoomTypeCard = ({ roomType, onBookNow }) => {
+// ==================== SUB-COMPONENTS ====================
+
+const ImageGallery = React.memo(({ images, hotelName, onShowAll }) => {
+  if (images.length === 1) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div
+          className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden cursor-pointer"
+          onClick={onShowAll}
+        >
+          <Image
+            src={images[0]}
+            alt={hotelName}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (images.length === 2) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-[400px] sm:h-[500px] lg:h-[600px]">
+          {images.slice(0, 2).map((image, index) => (
+            <div
+              key={index}
+              className="relative rounded-2xl overflow-hidden cursor-pointer group"
+              onClick={onShowAll}
+            >
+              <Image
+                src={image}
+                alt={`${hotelName} - ${index + 1}`}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                sizes="(max-width: 640px) 100vw, 50vw"
+                priority={index === 0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="grid grid-cols-4 gap-3 h-[400px] sm:h-[500px] lg:h-[600px]">
+        <div
+          className="col-span-4 sm:col-span-2 row-span-2 relative rounded-2xl overflow-hidden cursor-pointer group"
+          onClick={onShowAll}
+        >
+          <Image
+            src={images[0]}
+            alt={hotelName}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 640px) 100vw, 50vw"
+            priority
+          />
+        </div>
+        {images.slice(1, 5).map((image, index) => (
+          <div
+            key={index}
+            className="relative rounded-2xl overflow-hidden cursor-pointer group col-span-2 sm:col-span-1"
+            onClick={onShowAll}
+          >
+            <Image
+              src={image}
+              alt={`${hotelName} - ${index + 2}`}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 50vw, 25vw"
+            />
+            {index === 3 && images.length > 5 && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <span className="text-white font-semibold text-lg">
+                  +{images.length - 5} more
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {images.length > 1 && (
+        <button
+          onClick={onShowAll}
+          className="mt-4 px-6 py-2.5 border-2 border-gray-900 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center gap-2"
+        >
+          <div className="w-5 h-5 grid grid-cols-2 gap-0.5">
+            <div className="bg-gray-900 rounded-sm" />
+            <div className="bg-gray-900 rounded-sm" />
+            <div className="bg-gray-900 rounded-sm" />
+            <div className="bg-gray-900 rounded-sm" />
+          </div>
+          Show all {images.length} photos
+        </button>
+      )}
+    </div>
+  );
+});
+
+ImageGallery.displayName = "ImageGallery";
+
+const RoomTypeCard = React.memo(({ roomType, onBookNow }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const images = roomType.image_urls?.length
-    ? roomType.image_urls
-    : ["/placeholder-room.jpg"];
+  const images = useMemo(
+    () =>
+      roomType.image_urls?.length > 0
+        ? roomType.image_urls
+        : ["/placeholder-room.jpg"],
+    [roomType.image_urls],
+  );
 
-  const nextImage = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  };
+  const nextImage = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    },
+    [images.length],
+  );
 
-  const prevImage = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
+  const prevImage = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? images.length - 1 : prev - 1,
+      );
+    },
+    [images.length],
+  );
 
-  const parseAmenities = (amenitiesData) => {
-    if (!amenitiesData) return [];
-    if (Array.isArray(amenitiesData)) return amenitiesData;
-    if (typeof amenitiesData === "object") return Object.keys(amenitiesData);
-    return [];
-  };
+  const amenities = useMemo(() => {
+    if (
+      !roomType.amenities?.items ||
+      !Array.isArray(roomType.amenities.items)
+    ) {
+      return [];
+    }
 
-  const amenities = parseAmenities(roomType.amenities);
+    return roomType.amenities.items
+      .map((amenityKey) => {
+        const amenityConfig = AMENITY_ICONS.find((a) => a.value === amenityKey);
+        if (!amenityConfig) return null;
 
-  // Check if content is HTML or plain text
-  const isHtmlContent = (content) => {
+        const Icon = LucideIcons[amenityConfig.icon];
+        return {
+          key: amenityKey,
+          label: amenityConfig.label,
+          Icon: Icon || Check,
+        };
+      })
+      .filter(Boolean);
+  }, [roomType.amenities]);
+
+  const isHtmlContent = useCallback((content) => {
     if (!content) return false;
     return /<[a-z][\s\S]*>/i.test(content);
-  };
+  }, []);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -713,11 +529,10 @@ const RoomTypeCard = ({ roomType, onBookNow }) => {
 
         <div className="md:col-span-2 flex flex-col">
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
+            <h3 className="text-xl font-bold text-gray-900 mb-3">
               {roomType.name}
             </h3>
 
-            {/* Room Description - Supports both HTML and plain text */}
             {roomType.description && (
               <div className="mb-4">
                 {isHtmlContent(roomType.description) ? (
@@ -736,36 +551,38 @@ const RoomTypeCard = ({ roomType, onBookNow }) => {
             <div className="flex flex-wrap gap-4 mb-4">
               {roomType.max_occupancy && (
                 <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Users className="w-4 h-4 text-gray-500" />
+                  <Users className="w-4 h-4 text-purple-600" />
                   <span>{roomType.max_occupancy} guests</span>
                 </div>
               )}
               {roomType.size_sqm && (
                 <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Maximize className="w-4 h-4 text-gray-500" />
+                  <Maximize className="w-4 h-4 text-purple-600" />
                   <span>{roomType.size_sqm} m²</span>
+                </div>
+              )}
+              {roomType.available_rooms && (
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <Bed className="w-4 h-4 text-purple-600" />
+                  <span>{roomType.available_rooms} available</span>
                 </div>
               )}
             </div>
 
             {amenities.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
-                {amenities.slice(0, 4).map((amenity, index) => {
-                  const iconName = amenity.replace(/\s+/g, "");
-                  const Icon = LucideIcons[iconName] || Check;
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center gap-1 text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded"
-                    >
-                      <Icon className="w-3 h-3" />
-                      <span className="capitalize">{amenity}</span>
-                    </div>
-                  );
-                })}
-                {amenities.length > 4 && (
-                  <div className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded">
-                    +{amenities.length - 4} more
+                {amenities.slice(0, 5).map((amenity) => (
+                  <div
+                    key={amenity.key}
+                    className="flex items-center gap-1.5 text-xs text-gray-700 bg-gray-50 px-3 py-1.5 rounded-lg"
+                  >
+                    <amenity.Icon className="w-3.5 h-3.5 text-purple-600" />
+                    <span className="font-medium">{amenity.label}</span>
+                  </div>
+                ))}
+                {amenities.length > 5 && (
+                  <div className="text-xs text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg font-medium">
+                    +{amenities.length - 5} more
                   </div>
                 )}
               </div>
@@ -793,6 +610,208 @@ const RoomTypeCard = ({ roomType, onBookNow }) => {
       </div>
     </Card>
   );
-};
+});
+
+RoomTypeCard.displayName = "RoomTypeCard";
+
+const BookingModal = React.memo(
+  ({
+    open,
+    onOpenChange,
+    roomType,
+    bookingData,
+    setBookingData,
+    nights,
+    estimatedTotal,
+    onProceed,
+  }) => {
+    if (!roomType) return null;
+
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Book {roomType.name}</DialogTitle>
+            <DialogDescription>
+              Select your dates and number of guests
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="checkIn">Check-in</Label>
+                <Input
+                  id="checkIn"
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  value={bookingData.checkIn}
+                  onChange={(e) =>
+                    setBookingData({ ...bookingData, checkIn: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="checkOut">Check-out</Label>
+                <Input
+                  id="checkOut"
+                  type="date"
+                  min={
+                    bookingData.checkIn ||
+                    new Date().toISOString().split("T")[0]
+                  }
+                  value={bookingData.checkOut}
+                  onChange={(e) =>
+                    setBookingData({ ...bookingData, checkOut: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="adults">Adults</Label>
+                <Input
+                  id="adults"
+                  type="number"
+                  min="1"
+                  max={roomType.max_occupancy || 4}
+                  value={bookingData.adults}
+                  onChange={(e) =>
+                    setBookingData({
+                      ...bookingData,
+                      adults: parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="children">Children</Label>
+                <Input
+                  id="children"
+                  type="number"
+                  min="0"
+                  value={bookingData.children}
+                  onChange={(e) =>
+                    setBookingData({
+                      ...bookingData,
+                      children: parseInt(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            {nights > 0 && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Duration:</span>
+                  <span className="font-semibold">
+                    {nights} night{nights !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Estimated total:</span>
+                  <span className="font-bold text-purple-600">
+                    ₦{estimatedTotal.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <Button
+              className="w-full bg-purple-600 hover:bg-purple-700"
+              onClick={onProceed}
+              disabled={!bookingData.checkIn || !bookingData.checkOut}
+            >
+              Continue to Booking
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  },
+);
+
+BookingModal.displayName = "BookingModal";
+
+const ImageLightbox = React.memo(
+  ({ show, images, selectedIndex, onClose, onNext, onPrev, onSelectImage }) => {
+    if (!show) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 bg-black">
+        <button
+          onClick={onClose}
+          className="fixed top-4 right-4 z-50 w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+        >
+          <X className="w-6 h-6" />
+        </button>
+
+        <div className="fixed top-4 left-4 z-50 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
+          {selectedIndex + 1} / {images.length}
+        </div>
+
+        <div className="h-full flex items-center justify-center p-4 sm:p-12">
+          <div className="relative w-full h-full max-w-7xl">
+            <Image
+              src={images[selectedIndex]}
+              alt={`View ${selectedIndex + 1}`}
+              fill
+              className="object-contain"
+              sizes="100vw"
+              priority
+            />
+          </div>
+
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={onPrev}
+                className="fixed left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <button
+                onClick={onNext}
+                className="fixed right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => onSelectImage(index)}
+                  className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all ${
+                    index === selectedIndex
+                      ? "ring-2 ring-white scale-105"
+                      : "opacity-50 hover:opacity-100"
+                  }`}
+                >
+                  <Image
+                    src={image}
+                    alt={`Thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+ImageLightbox.displayName = "ImageLightbox";
 
 export default HotelDetails;

@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
 
   const { data: hotel } = await supabase
     .from("hotels")
-    .select("id, name, city, state, description")
+    .select("id, name, city, state, description, image_urls")
     .eq("id", id)
     .single();
 
@@ -21,10 +21,13 @@ export async function generateMetadata({ params }) {
   }
 
   const location = `${hotel.city}, ${hotel.state}`;
+  const description =
+    hotel.description?.slice(0, 160) ||
+    `Book your stay at ${hotel.name} in ${location}. Premium accommodation with modern amenities and exceptional service.`;
 
   return {
-    title: `${hotel.name} | BookHushly`,
-    description: `Book your stay at ${hotel.name} in ${location}. ${hotel.description || "Premium accommodation with modern amenities and exceptional service."}`,
+    title: `${hotel.name} - ${location} | BookHushly`,
+    description,
     keywords: [
       hotel.name,
       hotel.city,
@@ -33,17 +36,22 @@ export async function generateMetadata({ params }) {
       "accommodation",
       "hotel rooms",
       "lodging",
+      "BookHushly",
     ],
     openGraph: {
-      title: `${hotel.name}`,
-      description: `Premium hotel in ${location}`,
+      title: `${hotel.name} - ${location}`,
+      description,
       type: "website",
       locale: "en_NG",
+      images: hotel.image_urls?.[0]
+        ? [{ url: hotel.image_urls[0], alt: hotel.name }]
+        : [],
     },
     twitter: {
       card: "summary_large_image",
       title: `${hotel.name}`,
-      description: `Book your stay in ${location}`,
+      description,
+      images: hotel.image_urls?.[0] ? [hotel.image_urls[0]] : [],
     },
   };
 }
@@ -51,56 +59,77 @@ export async function generateMetadata({ params }) {
 async function getHotelData(id) {
   const supabase = await createClient();
 
-  // Fetch hotel data
-  const { data: hotel, error: hotelError } = await supabase
-    .from("hotels")
-    .select("*")
-    .eq("id", id)
-    .single();
+  try {
+    // Fetch hotel data
+    const { data: hotel, error: hotelError } = await supabase
+      .from("hotels")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  if (hotelError || !hotel) {
+    if (hotelError || !hotel) {
+      return null;
+    }
+
+    // Fetch room types with availability in a single optimized query
+    const { data: roomTypes } = await supabase
+      .from("hotel_room_types")
+      .select("*")
+      .eq("hotel_id", id)
+      .order("base_price", { ascending: true });
+
+    if (!roomTypes || roomTypes.length === 0) {
+      return {
+        hotel,
+        roomTypes: [],
+      };
+    }
+
+    // Get room type IDs for batch query
+    const roomTypeIds = roomTypes.map((rt) => rt.id);
+
+    // Batch fetch all available rooms for all room types
+    const { data: allRooms } = await supabase
+      .from("hotel_rooms")
+      .select("id, room_type_id, status, price_per_night")
+      .in("room_type_id", roomTypeIds)
+      .eq("status", "available");
+
+    // Group rooms by room type ID
+    const roomsByType = (allRooms || []).reduce((acc, room) => {
+      if (!acc[room.room_type_id]) {
+        acc[room.room_type_id] = [];
+      }
+      acc[room.room_type_id].push(room);
+      return acc;
+    }, {});
+
+    // Enrich room types with availability data
+    const enrichedRoomTypes = roomTypes
+      .map((roomType) => {
+        const rooms = roomsByType[roomType.id] || [];
+        const availableCount = rooms.length;
+        const prices = rooms.map((r) => parseFloat(r.price_per_night));
+        const minPrice =
+          prices.length > 0 ? Math.min(...prices) : roomType.base_price;
+
+        return {
+          ...roomType,
+          available_rooms: availableCount,
+          min_price: minPrice,
+          has_availability: availableCount > 0,
+        };
+      })
+      .filter((rt) => rt.has_availability); // Only return room types with available rooms
+
+    return {
+      hotel,
+      roomTypes: enrichedRoomTypes,
+    };
+  } catch (error) {
+    console.error("Error fetching hotel data:", error);
     return null;
   }
-
-  // Fetch room types for this hotel
-  const { data: roomTypes } = await supabase
-    .from("hotel_room_types")
-    .select("*")
-    .eq("hotel_id", id)
-    .order("base_price", { ascending: true });
-
-  // Fetch room availability for each room type
-  const roomTypesWithAvailability = await Promise.all(
-    (roomTypes || []).map(async (roomType) => {
-      const { data: rooms } = await supabase
-        .from("hotel_rooms")
-        .select("id, status, price_per_night")
-        .eq("room_type_id", roomType.id)
-        .eq("status", "available");
-
-      const availableCount = rooms?.length || 0;
-      const prices = rooms?.map((r) => parseFloat(r.price_per_night)) || [];
-      const minPrice =
-        prices.length > 0 ? Math.min(...prices) : roomType.base_price;
-
-      return {
-        ...roomType,
-        available_rooms: availableCount,
-        min_price: minPrice,
-        has_availability: availableCount > 0,
-      };
-    })
-  );
-
-  // Filter out room types with no availability
-  const availableRoomTypes = roomTypesWithAvailability.filter(
-    (rt) => rt.has_availability
-  );
-
-  return {
-    hotel,
-    roomTypes: availableRoomTypes,
-  };
 }
 
 export default async function HotelPage({ params }) {
@@ -114,8 +143,11 @@ export default async function HotelPage({ params }) {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <div className="flex items-center justify-center min-h-screen bg-white">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+            <p className="text-gray-600">Loading hotel details...</p>
+          </div>
         </div>
       }
     >
@@ -123,3 +155,17 @@ export default async function HotelPage({ params }) {
     </Suspense>
   );
 }
+
+// Generate static params for popular hotels (optional for ISR)
+export async function generateStaticParams() {
+  const supabase = await createClient();
+
+  const { data: hotels } = await supabase.from("hotels").select("id").limit(20);
+
+  return (hotels || []).map((hotel) => ({
+    id: hotel.id,
+  }));
+}
+
+// Revalidate every hour
+export const revalidate = 3600;
