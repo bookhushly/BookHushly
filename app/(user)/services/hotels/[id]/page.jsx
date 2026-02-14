@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import HotelDetails from "./content";
 import { Loader2 } from "lucide-react";
 
@@ -156,16 +157,30 @@ export default async function HotelPage({ params }) {
   );
 }
 
-// Generate static params for popular hotels (optional for ISR)
+// Generate static params for popular hotels at build time
 export async function generateStaticParams() {
-  const supabase = await createClient();
+  try {
+    // Use public client that doesn't require cookies
+    const supabase = createAdminClient();
 
-  const { data: hotels } = await supabase.from("hotels").select("id").limit(20);
+    const { data: hotels, error } = await supabase
+      .from("hotels")
+      .select("id")
+      .limit(20);
 
-  return (hotels || []).map((hotel) => ({
-    id: hotel.id,
-  }));
+    if (error) {
+      console.error("Error fetching hotels for static params:", error);
+      return [];
+    }
+
+    return (hotels || []).map((hotel) => ({
+      id: hotel.id,
+    }));
+  } catch (error) {
+    console.error("Error in generateStaticParams:", error);
+    return [];
+  }
 }
 
-// Revalidate every hour
+// Revalidate every hour (ISR)
 export const revalidate = 3600;

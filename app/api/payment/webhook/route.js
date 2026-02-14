@@ -283,9 +283,11 @@ async function handleCryptoFailed(supabase, payment, parsedEvent, updateData) {
 
 /**
  * Update related entity based on payment
+ * FIXED: Hotel bookings now use correct schema constraints
  */
 async function updateRelatedEntity(supabase, payment, status) {
   try {
+    // Logistics & Security Requests
     if (
       payment.request_type === "logistics" ||
       payment.request_type === "security"
@@ -300,15 +302,44 @@ async function updateRelatedEntity(supabase, payment, status) {
             status === "completed" ? new Date().toISOString() : null,
         })
         .eq("id", payment.request_id);
-    } else if (payment.hotel_booking_id) {
+    }
+
+    // Hotel Bookings - FIXED for schema constraints
+    else if (payment.hotel_booking_id) {
+      const updates = {
+        payment_status: status, // 'completed' or 'failed'
+      };
+
+      // Only update booking_status if payment failed
+      // Success: booking_status stays 'confirmed' (set on creation)
+      // Failed: booking_status becomes 'cancelled'
+      if (status === "failed") {
+        updates.booking_status = "cancelled";
+
+        // Release the room back to available
+        const { data: booking } = await supabase
+          .from("hotel_bookings")
+          .select("room_id")
+          .eq("id", payment.hotel_booking_id)
+          .single();
+
+        if (booking?.room_id) {
+          await supabase
+            .from("hotel_rooms")
+            .update({ status: "available" })
+            .eq("id", booking.room_id);
+        }
+      }
+      // On success, room stays 'reserved', booking_status stays 'confirmed'
+
       await supabase
         .from("hotel_bookings")
-        .update({
-          payment_status: status,
-          status: status === "completed" ? "confirmed" : "pending",
-        })
+        .update(updates)
         .eq("id", payment.hotel_booking_id);
-    } else if (payment.apartment_booking_id) {
+    }
+
+    // Apartment Bookings
+    else if (payment.apartment_booking_id) {
       await supabase
         .from("apartment_bookings")
         .update({
@@ -316,7 +347,10 @@ async function updateRelatedEntity(supabase, payment, status) {
           status: status === "completed" ? "confirmed" : "pending",
         })
         .eq("id", payment.apartment_booking_id);
-    } else if (payment.event_booking_id) {
+    }
+
+    // Event Bookings
+    else if (payment.event_booking_id) {
       await supabase
         .from("event_bookings")
         .update({

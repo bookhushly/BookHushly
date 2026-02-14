@@ -87,20 +87,24 @@ const OrderSuccessful = () => {
         return { data: eventBooking, type: BOOKING_TYPES.EVENT };
       }
 
-      // Try hotel_bookings
+      // Try hotel_bookings - FIXED with correct field names
       let { data: hotelBooking, error: hotelError } = await supabase
         .from("hotel_bookings")
         .select(
           `
         *,
-        hotel:hotel_id (
+        hotels:hotel_id (
           id,
           name,
-          location,
-          vendors:vendor_id (
-            business_name,
-            phone_number
-          )
+          city,
+          state,
+          address
+        ),
+        room_types:room_type_id (
+          id,
+          name,
+          base_price,
+          max_occupancy
         )
       `,
         )
@@ -208,7 +212,7 @@ const OrderSuccessful = () => {
           toast.success("Order confirmed! Your booking is ready.");
 
           // Send confirmation email (only if not already sent)
-          if (!emailSent && bookingData.payment_status !== "paid") {
+          if (!emailSent && bookingData.payment_status !== "completed") {
             setEmailSent(true);
             try {
               const emailResponse = await fetch("/api/send-payment-email", {
@@ -298,6 +302,19 @@ const OrderSuccessful = () => {
     if (!booking) return 0;
     return booking.total_amount || booking.total_price || 0;
   }, [booking]);
+
+  // Get number of guests - FIXED for hotel bookings
+  const getNumberOfGuests = useCallback(() => {
+    if (!booking) return 0;
+
+    // Hotel bookings: adults + children
+    if (bookingType === BOOKING_TYPES.HOTEL) {
+      return (booking.adults || 0) + (booking.children || 0);
+    }
+
+    // Events and apartments use number_of_guests or guests
+    return booking.number_of_guests || booking.guests || 0;
+  }, [booking, bookingType]);
 
   // Loading state
   if (loading) {
@@ -394,7 +411,21 @@ const OrderSuccessful = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Hotel</span>
                   <span className="text-gray-900 font-medium">
-                    {booking.hotel?.name || "N/A"}
+                    {booking.hotels?.name || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Room Type</span>
+                  <span className="text-gray-900">
+                    {booking.room_types?.name || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Location</span>
+                  <span className="text-gray-900">
+                    {booking.hotels?.city && booking.hotels?.state
+                      ? `${booking.hotels.city}, ${booking.hotels.state}`
+                      : booking.hotels?.address || "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -416,7 +447,9 @@ const OrderSuccessful = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Guests</span>
                   <span className="text-gray-900">
-                    {booking.number_of_guests || 0}
+                    {booking.adults || 0} Adult{booking.adults !== 1 ? "s" : ""}
+                    {booking.children > 0 &&
+                      `, ${booking.children} Child${booking.children !== 1 ? "ren" : ""}`}
                   </span>
                 </div>
               </>
@@ -448,9 +481,7 @@ const OrderSuccessful = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Guests</span>
-                  <span className="text-gray-900">
-                    {booking.number_of_guests || 0}
-                  </span>
+                  <span className="text-gray-900">{getNumberOfGuests()}</span>
                 </div>
               </>
             )}

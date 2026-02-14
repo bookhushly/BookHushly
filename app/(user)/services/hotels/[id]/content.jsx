@@ -129,7 +129,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       {/* Header Navigation */}
       <header className="border-b border-gray-200 bg-white sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

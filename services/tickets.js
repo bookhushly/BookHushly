@@ -16,7 +16,6 @@ export const generateEventTicketsZip = async (booking) => {
     throw new Error("Booking data is required");
   }
 
-  // Validate that we're in browser environment
   if (typeof window === "undefined") {
     throw new Error("This function can only be called in the browser");
   }
@@ -30,20 +29,17 @@ export const generateEventTicketsZip = async (booking) => {
     console.log("📍 Base URL:", baseUrl);
     console.log("🖼️ Template URL:", templateUrl);
 
-    // Generate tickets using the universal function
     console.log("⚙️ Calling generateAllTicketPDFs...");
     const tickets = await generateAllTicketPDFs(booking, baseUrl, templateUrl);
 
     console.log(`✅ Generated ${tickets.length} tickets`);
 
-    // Create ZIP file
     const zip = new JSZip();
     tickets.forEach((ticket) => {
       console.log(`📦 Adding ${ticket.filename} to ZIP`);
       zip.file(ticket.filename, ticket.content);
     });
 
-    // Download ZIP
     console.log("💾 Generating ZIP file...");
     const zipBlob = await zip.generateAsync({ type: "blob" });
 
@@ -61,17 +57,17 @@ export const generateEventTicketsZip = async (booking) => {
 
 /**
  * Generate general booking confirmation PDF (for non-event bookings)
+ * FIXED: Uses correct hotel booking field names
  */
 export const generateBookingConfirmationPDF = async (
   booking,
   payment,
-  bookingType
+  bookingType,
 ) => {
   if (!booking || !payment) {
     throw new Error("Booking and payment data are required");
   }
 
-  // Validate that we're in browser environment
   if (typeof window === "undefined") {
     throw new Error("This function can only be called in the browser");
   }
@@ -79,7 +75,7 @@ export const generateBookingConfirmationPDF = async (
   try {
     console.log(
       "📄 Starting confirmation PDF generation for booking:",
-      booking.id
+      booking.id,
     );
 
     const doc = new jsPDF();
@@ -111,30 +107,41 @@ export const generateBookingConfirmationPDF = async (
     yPos += lineHeight;
 
     if (bookingType === "hotel") {
-      doc.text(`Hotel: ${booking.hotel?.name || "N/A"}`, 20, yPos);
+      // FIXED: Use correct field names from hotel_bookings table
+      doc.text(`Hotel: ${booking.hotels?.name || "N/A"}`, 20, yPos);
       yPos += lineHeight;
       doc.text(
-        `Location: ${booking.hotel?.city || "N/A"}, ${booking.hotel?.state || "N/A"}`,
+        `Location: ${booking.hotels?.city || "N/A"}, ${booking.hotels?.state || "N/A"}`,
         20,
-        yPos
+        yPos,
       );
       yPos += lineHeight;
-      doc.text(`Room Type: ${booking.room_type?.name || "N/A"}`, 20, yPos);
+      doc.text(`Room Type: ${booking.room_types?.name || "N/A"}`, 20, yPos);
       yPos += lineHeight;
       doc.text(
-        `Room Number: ${booking.room?.room_number || "Assigned at check-in"}`,
+        `Room Number: ${booking.hotel_rooms?.room_number || "Assigned at check-in"}`,
         20,
-        yPos
+        yPos,
       );
       yPos += lineHeight;
-      doc.text(`Check-in: ${booking.check_in_date || "N/A"}`, 20, yPos);
+      // FIXED: Use check_in_date and check_out_date (not check_in/check_out)
+      doc.text(
+        `Check-in: ${booking.check_in_date ? new Date(booking.check_in_date).toLocaleDateString() : "N/A"}`,
+        20,
+        yPos,
+      );
       yPos += lineHeight;
-      doc.text(`Check-out: ${booking.check_out_date || "N/A"}`, 20, yPos);
+      doc.text(
+        `Check-out: ${booking.check_out_date ? new Date(booking.check_out_date).toLocaleDateString() : "N/A"}`,
+        20,
+        yPos,
+      );
       yPos += lineHeight;
+      // FIXED: Use adults + children (not guests)
       doc.text(
         `Guests: ${booking.adults || 0} Adult${booking.adults !== 1 ? "s" : ""}${booking.children > 0 ? `, ${booking.children} Child${booking.children !== 1 ? "ren" : ""}` : ""}`,
         20,
-        yPos
+        yPos,
       );
     } else if (bookingType === "apartment") {
       doc.text(`Apartment: ${booking.apartment?.name || "N/A"}`, 20, yPos);
@@ -142,17 +149,25 @@ export const generateBookingConfirmationPDF = async (
       doc.text(
         `Location: ${booking.apartment?.city || "N/A"}, ${booking.apartment?.state || "N/A"}`,
         20,
-        yPos
+        yPos,
       );
       yPos += lineHeight;
-      doc.text(`Check-in: ${booking.check_in_date || "N/A"}`, 20, yPos);
-      yPos += lineHeight;
-      doc.text(`Check-out: ${booking.check_out_date || "N/A"}`, 20, yPos);
+      doc.text(
+        `Check-in: ${booking.check_in_date ? new Date(booking.check_in_date).toLocaleDateString() : "N/A"}`,
+        20,
+        yPos,
+      );
       yPos += lineHeight;
       doc.text(
-        `Guests: ${booking.guests || 0} Guest${booking.guests !== 1 ? "s" : ""}`,
+        `Check-out: ${booking.check_out_date ? new Date(booking.check_out_date).toLocaleDateString() : "N/A"}`,
         20,
-        yPos
+        yPos,
+      );
+      yPos += lineHeight;
+      doc.text(
+        `Guests: ${booking.number_of_guests || booking.guests || 0} Guest${(booking.number_of_guests || booking.guests || 0) !== 1 ? "s" : ""}`,
+        20,
+        yPos,
       );
     }
 
@@ -177,11 +192,11 @@ export const generateBookingConfirmationPDF = async (
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
     doc.text(
-      `Total Amount: ${payment.vendor_currency || "NGN"} ${Number(
-        booking.total_amount || booking.total_price
+      `Total Amount: ${payment.currency || "NGN"} ${Number(
+        booking.total_amount || booking.total_price,
       ).toLocaleString()}`,
       20,
-      yPos
+      yPos,
     );
 
     // Payment status

@@ -11,9 +11,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 /* ---------------------------------------------
    RETRY HELPER
-   Retries an async fn up to `attempts` times
-   with exponential backoff. Throws the last error
-   if all attempts fail.
 --------------------------------------------- */
 async function withRetry(fn, attempts = 3, baseDelay = 1000) {
   let lastError;
@@ -32,9 +29,6 @@ async function withRetry(fn, attempts = 3, baseDelay = 1000) {
 
 /* ---------------------------------------------
    IDEMPOTENCY GUARD
-   Checks whether an email has already been sent
-   for this booking. Returns the existing record
-   if one exists, null otherwise.
 --------------------------------------------- */
 async function getExistingEmailRecord(supabase, bookingId, bookingType) {
   const { data } = await supabase
@@ -49,11 +43,29 @@ async function getExistingEmailRecord(supabase, bookingId, bookingType) {
 
 /* ---------------------------------------------
    LOG EMAIL ATTEMPT
-   Writes a row to email_logs before sending.
-   Status starts as "pending", gets updated to
-   "sent" or "failed" after the attempt resolves.
+   Creates or retrieves existing log entry.
+   Handles unique constraint violations gracefully.
 --------------------------------------------- */
 async function createEmailLog(supabase, bookingId, bookingType) {
+  // Try to get existing log first
+  const { data: existing } = await supabase
+    .from("email_logs")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .eq("booking_type", bookingType)
+    .single();
+
+  // If exists and is pending, reuse it (retry scenario)
+  if (existing && existing.status === "pending") {
+    return existing;
+  }
+
+  // If exists and is sent, return null (will be caught by idempotency check)
+  if (existing && existing.status === "sent") {
+    return null;
+  }
+
+  // Create new log entry
   const { data, error } = await supabase
     .from("email_logs")
     .insert({
@@ -65,7 +77,20 @@ async function createEmailLog(supabase, bookingId, bookingType) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    // Handle unique constraint violation by fetching existing record
+    if (error.code === "23505") {
+      const { data: existingLog } = await supabase
+        .from("email_logs")
+        .select("*")
+        .eq("booking_id", bookingId)
+        .eq("booking_type", bookingType)
+        .single();
+      return existingLog;
+    }
+    throw error;
+  }
+
   return data;
 }
 
@@ -81,7 +106,7 @@ async function updateEmailLog(supabase, logId, status, error = null) {
 }
 
 /* ---------------------------------------------
-   EVENT EMAIL (PDF + STORAGE + SIGNED URL)
+   EVENT EMAIL
 --------------------------------------------- */
 async function sendEventTicketEmail({ booking, payment }, bookingId) {
   const supabase = await createAdminClient();
@@ -100,27 +125,22 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
 
   console.log(`✅ Generated ${ticketPDFs.length} PDF(s)`);
 
-  // Upload all PDFs and collect signed URLs.
-  // Each upload is individually retried — a failure on one
-  // doesn't orphan the ones that already succeeded.
   const signedUrls = [];
 
   for (const ticket of ticketPDFs) {
     const filePath = `${bookingId}/${ticket.filename}`;
 
-    // Retry the upload itself — transient storage errors are common
     await withRetry(async () => {
       const { error: uploadError } = await supabase.storage
         .from("event-tickets")
         .upload(filePath, ticket.content, {
           contentType: "application/pdf",
-          upsert: true, // upsert means re-running this is safe
+          upsert: true,
         });
 
       if (uploadError) throw uploadError;
     });
 
-    // DB reference — upsert so re-runs don't duplicate rows
     const { error: dbError } = await supabase.from("event_ticket_files").upsert(
       {
         booking_id: bookingId,
@@ -132,7 +152,6 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
 
     if (dbError) throw dbError;
 
-    // Signed URL (7 days)
     const { data, error: signedError } = await supabase.storage
       .from("event-tickets")
       .createSignedUrl(filePath, 60 * 60 * 24 * 7);
@@ -153,8 +172,6 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
 
   console.log(`📧 Sending email to ${recipientEmail}`);
 
-  // Retry the Resend call — transient API failures are the most
-  // common reason emails don't go out
   const { error } = await withRetry(() =>
     resend.emails.send({
       from: "BookHushly <tickets@bookhushly.com>",
@@ -235,9 +252,7 @@ export async function POST(request) {
       );
     }
 
-    // --- Idempotency check ---
-    // If we already successfully sent an email for this booking, bail out.
-    // This is what prevents duplicate emails on retries or double-calls.
+    // Idempotency check
     const existing = await getExistingEmailRecord(
       supabase,
       bookingId,
@@ -254,10 +269,24 @@ export async function POST(request) {
       });
     }
 
-    // --- Create a pending log row before doing anything ---
-    // If the route crashes mid-way, this row stays as "pending"
-    // so you can identify bookings that need a retry.
+    console.log(
+      `📧 Processing email for ${bookingType} booking ${bookingId}...`,
+    );
+
+    // Create pending log
     emailLog = await createEmailLog(supabase, bookingId, bookingType);
+
+    // If emailLog is null, it means email was already sent
+    if (!emailLog) {
+      console.log(
+        `⏭️  Email already sent for ${bookingType} booking ${bookingId} (from log check)`,
+      );
+      return Response.json({
+        success: true,
+        message: "Email already sent",
+        alreadySent: true,
+      });
+    }
 
     let booking;
     let payment;
@@ -305,43 +334,77 @@ export async function POST(request) {
     }
 
     /* ---------------------------------
-       HOTEL BOOKING
+       HOTEL BOOKING - FIXED
     --------------------------------- */
     if (bookingType === "hotel") {
+      console.log(`🏨 Fetching hotel booking ${bookingId}...`);
+
       const { data: hotelBooking, error } = await supabase
         .from("hotel_bookings")
         .select(
           `
           *,
-          hotel:hotel_id (
+          hotels:hotel_id (
             id,
             name,
             city,
-            state
+            state,
+            address
           ),
-          room_type:room_type_id (
-            name
+          room_types:room_type_id (
+            id,
+            name,
+            base_price,
+            max_occupancy
           ),
-          room:room_id (
-            room_number
+          hotel_rooms:room_id (
+            id,
+            room_number,
+            floor
           )
         `,
         )
         .eq("id", bookingId)
         .single();
 
+      if (error) {
+        console.error("❌ Hotel booking fetch error:", error);
+      }
+
       if (error || !hotelBooking) {
+        if (emailLog) {
+          await updateEmailLog(
+            supabase,
+            emailLog.id,
+            "failed",
+            `Hotel booking not found: ${error?.message || "No data"}`,
+          );
+        }
         return Response.json(
-          { success: false, error: "Hotel booking not found" },
+          {
+            success: false,
+            error: "Hotel booking not found",
+            details: error?.message,
+          },
           { status: 404 },
         );
       }
 
-      const { data: hotelPayment } = await supabase
+      console.log(`✅ Hotel booking fetched: ${hotelBooking.hotels?.name}`);
+
+      const { data: hotelPayment, error: paymentError } = await supabase
         .from("payments")
         .select("*")
         .eq("hotel_booking_id", bookingId)
         .single();
+
+      if (paymentError) {
+        console.error("❌ Hotel payment fetch error:", paymentError);
+      }
+
+      if (!hotelPayment) {
+        console.warn("⚠️ No payment found for hotel booking");
+      }
 
       booking = hotelBooking;
       payment = hotelPayment;
@@ -368,6 +431,14 @@ export async function POST(request) {
         .single();
 
       if (error || !apartmentBooking) {
+        if (emailLog) {
+          await updateEmailLog(
+            supabase,
+            emailLog.id,
+            "failed",
+            "Apartment booking not found",
+          );
+        }
         return Response.json(
           { success: false, error: "Apartment booking not found" },
           { status: 404 },
@@ -427,8 +498,7 @@ export async function POST(request) {
       );
     }
 
-    // Mark the log as sent — this is what the idempotency check
-    // looks for on subsequent calls
+    // Mark as sent
     if (emailLog) {
       await updateEmailLog(supabase, emailLog.id, "sent");
     }
@@ -437,12 +507,11 @@ export async function POST(request) {
   } catch (error) {
     console.error("❌ Email sending error:", error);
 
-    // Mark the log as failed so you know which bookings need a retry
     if (emailLog) {
       try {
         await updateEmailLog(supabase, emailLog.id, "failed", error.message);
       } catch {
-        // Don't let the log update failure mask the original error
+        // Don't mask original error
       }
     }
 

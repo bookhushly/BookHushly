@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,11 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import {
   Users,
-  CreditCard,
-  Bitcoin,
   Shield,
   ChevronLeft,
   AlertCircle,
@@ -23,8 +19,6 @@ import {
   Bed,
 } from "lucide-react";
 import { toast } from "sonner";
-
-import { initializePayment, createNOWPaymentsInvoice } from "@/lib/payments";
 
 export default function HotelBookingPage() {
   const router = useRouter();
@@ -37,7 +31,7 @@ export default function HotelBookingPage() {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const [hotel, setHotel] = useState(null);
@@ -80,7 +74,7 @@ export default function HotelBookingPage() {
             checkout_policy,
             policies
           )
-        `
+        `,
         )
         .eq("id", roomTypeId)
         .single();
@@ -122,13 +116,14 @@ export default function HotelBookingPage() {
         .select("room_id")
         .gte("check_out_date", bookingDetails.checkInDate)
         .lte("check_in_date", bookingDetails.checkOutDate)
-        .in("booking_status", ["confirmed", "checked_in"]);
+        .in("booking_status", ["confirmed", "checked_in"])
+        .neq("payment_status", "failed");
 
       if (bookingsError) throw bookingsError;
 
       const bookedRoomIds = bookingsData.map((b) => b.room_id);
       const available = availableRoomsData.filter(
-        (room) => !bookedRoomIds.includes(room.id)
+        (room) => !bookedRoomIds.includes(room.id),
       );
 
       setAvailableRooms(available);
@@ -212,14 +207,10 @@ export default function HotelBookingPage() {
     }
   };
 
-  const handleContinueToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (!validateGuestDetails()) return;
-    setStep(3);
-    setError("");
-  };
 
-  const handlePayment = async (method) => {
-    setPaymentLoading(true);
+    setSubmitting(true);
     setError("");
 
     try {
@@ -251,7 +242,24 @@ export default function HotelBookingPage() {
       const { data: booking, error: bookingError } = await supabase
         .from("hotel_bookings")
         .insert(bookingData)
-        .select()
+        .select(
+          `
+          *,
+          hotels:hotel_id (
+            id,
+            name,
+            city,
+            state,
+            image_urls,
+            checkout_policy
+          ),
+          room_types:room_type_id (
+            id,
+            name,
+            base_price
+          )
+        `,
+        )
         .single();
 
       if (bookingError) throw bookingError;
@@ -261,51 +269,13 @@ export default function HotelBookingPage() {
         .update({ status: "reserved" })
         .eq("id", selectedRoom.id);
 
-      const paymentData = {
-        email: guestDetails.email,
-        amount: totalAmount,
-        currency: "NGN",
-        reference: `HOTEL_${booking.id}_${Date.now()}`,
-        callback_url: `${window.location.origin}/order-successful/${booking.id}?type=hotel`,
-        metadata: {
-          hotel_booking_id: booking.id.toString(),
-          customer_id: user?.id || "guest",
-          hotel_name: hotel.name,
-          room_type: roomType.name,
-          customer_name: guestDetails.name,
-          check_in: bookingDetails.checkInDate,
-          check_out: bookingDetails.checkOutDate,
-        },
-      };
-
-      let paymentUrl;
-      if (method === "paystack") {
-        const { data, error } = await initializePayment(
-          "paystack",
-          paymentData
-        );
-        if (error) throw error;
-        paymentUrl = data.authorization_url;
-      } else if (method === "crypto") {
-        const { data, error } = await createNOWPaymentsInvoice(
-          paymentData,
-          "usdt"
-        );
-        if (error) throw error;
-        paymentUrl = data.invoice_url;
-      }
-
-      if (paymentUrl) {
-        window.location.href = paymentUrl;
-      } else {
-        throw new Error("No payment URL returned");
-      }
+      router.push(`/payment/hotel/${booking.id}`);
     } catch (err) {
-      console.error("Payment error:", err);
-      setError(err.message || "Payment initialization failed");
-      toast.error("Payment failed to initialize");
+      console.error("Booking creation error:", err);
+      setError(err.message || "Failed to create booking");
+      toast.error("Failed to create booking");
     } finally {
-      setPaymentLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -342,8 +312,7 @@ export default function HotelBookingPage() {
     "/placeholder-room.jpg";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <div className="min-h-screen bg-gray-50 pt-20">
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -362,7 +331,6 @@ export default function HotelBookingPage() {
         </div>
       </div>
 
-      {/* Progress Bar */}
       <div className="bg-white border-b shadow-sm">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center gap-4 max-w-2xl mx-auto">
@@ -393,16 +361,14 @@ export default function HotelBookingPage() {
                     />
                   )}
                 </div>
-              )
+              ),
             )}
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column - Forms */}
           <div className="lg:col-span-7 space-y-6">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
@@ -411,7 +377,6 @@ export default function HotelBookingPage() {
               </div>
             )}
 
-            {/* Step 1: Booking Details */}
             {step === 1 && (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
@@ -526,7 +491,6 @@ export default function HotelBookingPage() {
               </Card>
             )}
 
-            {/* Step 2: Guest Details */}
             {step === 2 && (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
@@ -542,8 +506,7 @@ export default function HotelBookingPage() {
                         </strong>
                       </p>
                       <p className="text-sm text-blue-700 mb-3">
-                        Sign up now to easily manage your reservations and get
-                        exclusive benefits
+                        Sign up now to easily manage your reservations
                       </p>
                       <Button
                         variant="outline"
@@ -617,7 +580,7 @@ export default function HotelBookingPage() {
                             specialRequests: e.target.value,
                           })
                         }
-                        placeholder="Any special requests or requirements..."
+                        placeholder="Any special requests..."
                         rows={3}
                       />
                     </div>
@@ -633,100 +596,17 @@ export default function HotelBookingPage() {
                     </Button>
                     <Button
                       className="flex-1 bg-purple-600 hover:bg-purple-700"
-                      onClick={handleContinueToPayment}
+                      onClick={handleProceedToPayment}
+                      disabled={submitting}
                     >
-                      Continue to Payment
+                      {submitting ? "Creating..." : "Continue to Payment"}
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             )}
-
-            {/* Step 3: Payment */}
-            {step === 3 && (
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    Payment Method
-                  </h2>
-
-                  <div className="space-y-4">
-                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <CreditCard className="h-6 w-6 text-purple-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold">Paystack</h3>
-                            <p className="text-sm text-gray-600">
-                              Card, Bank Transfer, USSD
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          onClick={() => handlePayment("paystack")}
-                          disabled={paymentLoading}
-                          className="bg-purple-600 hover:bg-purple-700"
-                        >
-                          {paymentLoading ? (
-                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white" />
-                          ) : (
-                            "Pay Now"
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {total > 50000 && (
-                      <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                              <Bitcoin className="h-6 w-6 text-orange-600" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold">Cryptocurrency</h3>
-                              <p className="text-sm text-gray-600">
-                                Bitcoin, Ethereum, USDT
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            onClick={() => handlePayment("crypto")}
-                            disabled={paymentLoading}
-                          >
-                            {paymentLoading ? (
-                              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white" />
-                            ) : (
-                              "Pay with Crypto"
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-green-600" />
-                      <span className="text-green-600 text-sm">
-                        Your payment is secure and encrypted
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full mt-6"
-                    onClick={() => setStep(2)}
-                  >
-                    Back
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
-          {/* Right Column - Booking Summary */}
           <div className="lg:col-span-5">
             <Card className="border-0 shadow-sm lg:sticky lg:top-24">
               <CardContent className="p-6">
@@ -775,7 +655,7 @@ export default function HotelBookingPage() {
                           <span className="text-gray-600">Check-in</span>
                           <span className="font-medium">
                             {new Date(
-                              bookingDetails.checkInDate
+                              bookingDetails.checkInDate,
                             ).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -787,7 +667,7 @@ export default function HotelBookingPage() {
                           <span className="text-gray-600">Check-out</span>
                           <span className="font-medium">
                             {new Date(
-                              bookingDetails.checkOutDate
+                              bookingDetails.checkOutDate,
                             ).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
