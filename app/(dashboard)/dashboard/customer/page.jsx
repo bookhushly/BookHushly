@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuthStore, useBookingStore } from "@/lib/store";
+import { useCurrentUser } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
   Heart,
@@ -14,8 +15,6 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Bell,
-  Settings,
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
@@ -108,74 +107,8 @@ const QuickActionButton = ({ icon: Icon, label, onClick, href }) => {
   );
 };
 
-export default function CustomerDashboard() {
-  const { user } = useAuthStore();
-  const { bookings, setBookings } = useBookingStore();
-  const [stats, setStats] = useState({
-    totalBookings: 0,
-    pendingBookings: 0,
-    confirmedBookings: 0,
-    completedBookings: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [selectedBookingId, setSelectedBookingId] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasShownWelcomeToast, setHasShownWelcomeToast] = useState(false);
-
-  useEffect(() => {
-    const loadCustomerData = async () => {
-      if (!user) return;
-
-      try {
-        setLoading(true);
-
-        const toastShown = localStorage.getItem(
-          `customer-welcome-toast-${user.id}`,
-        );
-        setHasShownWelcomeToast(!!toastShown);
-
-        const { data, error } = await getBookings(user.id, "customer");
-        if (error) {
-          toast.error("Failed to fetch bookings");
-          console.error("Fetch bookings error:", error);
-          return;
-        }
-
-        setBookings(data || []);
-
-        const total = data?.length || 0;
-        const pending = data?.filter((b) => b.status === "pending").length || 0;
-        const confirmed =
-          data?.filter((b) => b.status === "confirmed").length || 0;
-        const completed =
-          data?.filter((b) => b.status === "completed").length || 0;
-
-        setStats({
-          totalBookings: total,
-          pendingBookings: pending,
-          confirmedBookings: confirmed,
-          completedBookings: completed,
-        });
-
-        if (!toastShown) {
-          toast.success(
-            `Welcome back, ${user?.user_metadata?.name || "Customer"}!`,
-          );
-          localStorage.setItem(`customer-welcome-toast-${user.id}`, "true");
-          setHasShownWelcomeToast(true);
-        }
-      } catch (error) {
-        console.error("Dashboard error:", error);
-        toast.error("Something went wrong loading dashboard");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCustomerData();
-  }, [user, setBookings]);
-
+// Booking Card Component
+const BookingCard = ({ booking, onClick, onPayNow }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
@@ -206,6 +139,157 @@ export default function CustomerDashboard() {
     }
   };
 
+  return (
+    <div className="bg-white border border-purple-100 rounded-2xl p-6 hover:shadow-lg transition-all">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-start justify-between mb-2">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {booking.listings?.title}
+              </h3>
+              <p className="text-sm text-gray-500">
+                by {booking.listings?.vendor_name}
+              </p>
+            </div>
+            <Badge className={getStatusColor(booking.status)}>
+              {getStatusIcon(booking.status)}
+              <span className="ml-1 capitalize">{booking.status}</span>
+            </Badge>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600 mt-4">
+            <div>
+              <span className="font-medium">Date:</span>{" "}
+              {format(new Date(booking.booking_date), "PPP")}
+            </div>
+            <div>
+              <span className="font-medium">Time:</span> {booking.booking_time}
+            </div>
+            <div>
+              <span className="font-medium">Guests:</span> {booking.guests}
+            </div>
+          </div>
+          <div className="mt-2">
+            <span className="text-lg font-semibold text-gray-900">
+              ₦{booking.total_amount?.toLocaleString()}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onClick(booking.id)}
+            className="border-purple-200 hover:bg-purple-50 text-purple-700"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View Details
+          </Button>
+          {booking.status === "completed" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-purple-200 hover:bg-purple-50 text-purple-700"
+            >
+              <Star className="h-4 w-4 mr-2" />
+              Review
+            </Button>
+          )}
+          {booking.status === "confirmed" && (
+            <Button
+              size="sm"
+              asChild
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <Link
+                href={`/payments?booking=${booking.id}&reference=${booking.payment_reference}`}
+              >
+                Pay Now
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function CustomerDashboard() {
+  const { data: user, isLoading: userLoading } = useCurrentUser();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fetch bookings with React Query
+  const {
+    data: bookings = [],
+    isLoading: bookingsLoading,
+    error: bookingsError,
+  } = useQuery({
+    queryKey: ["customer-bookings", user?.id],
+    queryFn: async () => {
+      const { data, error } = await getBookings(user.id, "customer");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 60 * 1000, // 1 minute
+    refetchOnWindowFocus: false,
+  });
+
+  // Show welcome toast only once
+  useEffect(() => {
+    if (user && !userLoading) {
+      const toastKey = `customer-welcome-toast-${user.id}`;
+      const hasShown = sessionStorage.getItem(toastKey);
+
+      if (!hasShown) {
+        toast.success(
+          `Welcome back, ${user?.user_metadata?.name || "Customer"}!`,
+        );
+        sessionStorage.setItem(toastKey, "true");
+      }
+    }
+  }, [user, userLoading]);
+
+  // Handle booking error
+  useEffect(() => {
+    if (bookingsError) {
+      toast.error("Failed to fetch bookings");
+      console.error("Fetch bookings error:", bookingsError);
+    }
+  }, [bookingsError]);
+
+  // Memoized stats calculation
+  const stats = useMemo(() => {
+    const total = bookings.length;
+    const pending = bookings.filter((b) => b.status === "pending").length;
+    const confirmed = bookings.filter((b) => b.status === "confirmed").length;
+    const completed = bookings.filter((b) => b.status === "completed").length;
+
+    return {
+      totalBookings: total,
+      pendingBookings: pending,
+      confirmedBookings: confirmed,
+      completedBookings: completed,
+    };
+  }, [bookings]);
+
+  // Memoized recent bookings (top 3)
+  const recentBookings = useMemo(() => bookings.slice(0, 3), [bookings]);
+
+  // Memoized next booking
+  const nextBooking = useMemo(() => {
+    const upcomingBookings = bookings.filter(
+      (b) =>
+        (b.status === "confirmed" || b.status === "pending") &&
+        new Date(b.booking_date) >= new Date(),
+    );
+    return upcomingBookings.sort(
+      (a, b) => new Date(a.booking_date) - new Date(b.booking_date),
+    )[0];
+  }, [bookings]);
+
   const handleViewDetails = (bookingId) => {
     setSelectedBookingId(bookingId);
     setIsModalOpen(true);
@@ -216,7 +300,7 @@ export default function CustomerDashboard() {
     setSelectedBookingId(null);
   };
 
-  if (loading) {
+  if (userLoading || bookingsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <LoadingSpinner className="h-8 w-8 text-purple-600" />
@@ -224,10 +308,12 @@ export default function CustomerDashboard() {
     );
   }
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -350,7 +436,7 @@ export default function CustomerDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {bookings.slice(0, 3).map((booking) => (
+                    {recentBookings.map((booking) => (
                       <div
                         key={booking.id}
                         className="flex items-center justify-between p-4 border border-purple-100 rounded-xl hover:bg-purple-50 transition-all cursor-pointer"
@@ -365,9 +451,21 @@ export default function CustomerDashboard() {
                           </p>
                         </div>
                         <Badge
-                          className={`${getStatusColor(booking.status)} ml-4`}
+                          className={`${
+                            booking.status === "pending"
+                              ? "bg-yellow-50 text-yellow-800 border-yellow-200"
+                              : booking.status === "confirmed"
+                                ? "bg-blue-50 text-blue-800 border-blue-200"
+                                : booking.status === "completed"
+                                  ? "bg-green-50 text-green-800 border-green-200"
+                                  : "bg-red-50 text-red-800 border-red-200"
+                          } ml-4`}
                         >
-                          {getStatusIcon(booking.status)}
+                          {booking.status === "pending" ? (
+                            <Clock className="h-4 w-4" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4" />
+                          )}
                           <span className="ml-1 capitalize">
                             {booking.status}
                           </span>
@@ -405,20 +503,20 @@ export default function CustomerDashboard() {
               </div>
 
               {/* Next Booking Preview */}
-              {bookings.length > 0 && bookings[0] && (
+              {nextBooking && (
                 <div className="bg-purple-600 text-white rounded-2xl p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Calendar className="h-5 w-5" />
                     <span className="text-sm font-medium">Next Booking</span>
                   </div>
                   <h4 className="font-semibold mb-2">
-                    {bookings[0].listings?.title}
+                    {nextBooking.listings?.title}
                   </h4>
                   <p className="text-sm text-purple-100 mb-4">
-                    {format(new Date(bookings[0].booking_date), "PPP")}
+                    {format(new Date(nextBooking.booking_date), "PPP")}
                   </p>
                   <button
-                    onClick={() => handleViewDetails(bookings[0].id)}
+                    onClick={() => handleViewDetails(nextBooking.id)}
                     className="w-full bg-white text-purple-600 py-2 px-4 rounded-lg font-medium hover:bg-purple-50 transition-colors"
                   >
                     View Details
@@ -457,86 +555,11 @@ export default function CustomerDashboard() {
             ) : (
               <div className="grid gap-4">
                 {bookings.map((booking) => (
-                  <div
+                  <BookingCard
                     key={booking.id}
-                    className="bg-white border border-purple-100 rounded-2xl p-6 hover:shadow-lg transition-all"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {booking.listings?.title}
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                              by {booking.listings?.vendor_name}
-                            </p>
-                          </div>
-                          <Badge
-                            className={`${getStatusColor(booking.status)}`}
-                          >
-                            {getStatusIcon(booking.status)}
-                            <span className="ml-1 capitalize">
-                              {booking.status}
-                            </span>
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600 mt-4">
-                          <div>
-                            <span className="font-medium">Date:</span>{" "}
-                            {format(new Date(booking.booking_date), "PPP")}
-                          </div>
-                          <div>
-                            <span className="font-medium">Time:</span>{" "}
-                            {booking.booking_time}
-                          </div>
-                          <div>
-                            <span className="font-medium">Guests:</span>{" "}
-                            {booking.guests}
-                          </div>
-                        </div>
-                        <div className="mt-2">
-                          <span className="text-lg font-semibold text-gray-900">
-                            ₦{booking.total_amount?.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewDetails(booking.id)}
-                          className="border-purple-200 hover:bg-purple-50 text-purple-700"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
-                        {booking.status === "completed" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-purple-200 hover:bg-purple-50 text-purple-700"
-                          >
-                            <Star className="h-4 w-4 mr-2" />
-                            Review
-                          </Button>
-                        )}
-                        {booking.status === "confirmed" && (
-                          <Button
-                            size="sm"
-                            asChild
-                            className="bg-purple-600 hover:bg-purple-700 text-white"
-                          >
-                            <Link
-                              href={`/payments?booking=${booking.id}&reference=${booking.payment_reference}`}
-                            >
-                              Pay Now
-                            </Link>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                    booking={booking}
+                    onClick={handleViewDetails}
+                  />
                 ))}
               </div>
             )}

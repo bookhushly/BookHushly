@@ -245,7 +245,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               />
             </div>
             <p className="text-xs text-gray-500">
-              Refundable deposit held for damages (common practice in Nigeria)
+              Refundable deposit held for damages
             </p>
           </div>
 

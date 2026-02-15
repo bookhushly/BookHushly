@@ -271,6 +271,7 @@ export function VendorListingsGrid() {
   const [deleteId, setDeleteId] = useState(null);
 
   const isHotelCategory = businessCategory === "hotels";
+  const isApartmentsCategory = businessCategory === "serviced_apartments";
   const isEventCategory = businessCategory === "events";
 
   const {
@@ -303,8 +304,8 @@ export function VendorListingsGrid() {
     };
   }, [businessCategory, isHotelCategory, isEventCategory]);
 
-  const createRoute = isHotelCategory
-    ? "/vendor/dashboard/listings/create"
+  const createRoute = isApartmentsCategory
+    ? "/vendor/dashboard/serviced-apartments/new"
     : "/vendor/dashboard/listings/create";
 
   const handleDelete = () => {

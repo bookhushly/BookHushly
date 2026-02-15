@@ -1,20 +1,130 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Upload, X, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Camera,
+  Upload,
+  X,
+  AlertCircle,
+  RefreshCw,
+  Pause,
+  Play,
+} from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import imageCompression from "browser-image-compression";
 
-export default function Step6Images({ formData, updateFormData, errors }) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const CHUNK_SIZE = 512 * 1024; // 512KB chunks for resumable uploads
+const MAX_RETRIES = 3;
+const COMPRESSION_OPTIONS = {
+  maxSizeMB: 1,
+  maxWidthOrHeight: 1920,
+  useWebWorker: true,
+  fileType: "image/jpeg",
+};
+
+export default function Step6ImagesOptimized({
+  formData,
+  updateFormData,
+  errors,
+}) {
+  const [uploadQueue, setUploadQueue] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState(new Map());
+  const [pausedUploads, setPausedUploads] = useState(new Set());
   const images = formData.image_urls || [];
   const supabase = createClient();
+  const abortControllers = useRef(new Map());
 
+  // Compress image before upload
+  const compressImage = async (file) => {
+    try {
+      const compressed = await imageCompression(file, COMPRESSION_OPTIONS);
+      return compressed;
+    } catch (error) {
+      console.error("Compression error:", error);
+      return file; // Return original if compression fails
+    }
+  };
+
+  // Upload with retry logic and progress tracking
+  const uploadSingleFile = async (file, fileId) => {
+    let retries = 0;
+    const controller = new AbortController();
+    abortControllers.current.set(fileId, controller);
+
+    const attemptUpload = async () => {
+      try {
+        // Compress image
+        setUploadingFiles((prev) =>
+          new Map(prev).set(fileId, { status: "compressing", progress: 0 }),
+        );
+
+        const compressedFile = await compressImage(file);
+
+        setUploadingFiles((prev) =>
+          new Map(prev).set(fileId, { status: "uploading", progress: 0 }),
+        );
+
+        const fileExt = compressedFile.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `apartments/${fileName}`;
+
+        // Upload with progress tracking
+        const { data, error } = await supabase.storage
+          .from("apartment-images")
+          .upload(filePath, compressedFile, {
+            cacheControl: "3600",
+            upsert: false,
+            onUploadProgress: (progress) => {
+              const percentage = (progress.loaded / progress.total) * 100;
+              setUploadingFiles((prev) =>
+                new Map(prev).set(fileId, {
+                  status: "uploading",
+                  progress: percentage,
+                }),
+              );
+            },
+          });
+
+        if (error) throw error;
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("apartment-images").getPublicUrl(filePath);
+
+        setUploadingFiles((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(fileId);
+          return newMap;
+        });
+
+        return publicUrl;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          throw new Error("Upload cancelled");
+        }
+
+        retries++;
+        if (retries < MAX_RETRIES) {
+          // Exponential backoff
+          const delay = Math.min(1000 * Math.pow(2, retries), 10000);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return attemptUpload();
+        }
+        throw error;
+      }
+    };
+
+    return attemptUpload();
+  };
+
+  // Handle multiple file uploads with queue management
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -27,94 +137,131 @@ export default function Step6Images({ formData, updateFormData, errors }) {
       return;
     }
 
-    const oversizedFiles = files.filter((f) => f.size > 5 * 1024 * 1024);
+    const oversizedFiles = files.filter((f) => f.size > MAX_FILE_SIZE);
     if (oversizedFiles.length > 0) {
-      toast.error("Each image must be less than 5MB");
+      toast.error(`${oversizedFiles.length} file(s) exceed 5MB limit`);
       return;
     }
 
-    setUploading(true);
-    setUploadProgress(0);
+    const fileQueue = files.map((file) => ({
+      id: `${Date.now()}-${Math.random()}`,
+      file,
+      status: "queued",
+    }));
 
-    try {
-      const uploadedUrls = [];
-      const totalFiles = files.length;
+    setUploadQueue(fileQueue);
 
-      for (let i = 0; i < totalFiles; i++) {
-        const file = files[i];
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `apartments/${fileName}`;
+    // Process uploads in parallel (max 3 at a time)
+    const uploadPromises = [];
+    const maxConcurrent = 3;
+    const uploadedUrls = [];
+    const failedFiles = [];
 
-        const { data, error } = await supabase.storage
-          .from("apartment-images")
-          .upload(filePath, file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
+    for (let i = 0; i < fileQueue.length; i += maxConcurrent) {
+      const batch = fileQueue.slice(i, i + maxConcurrent);
 
-        if (error) {
-          console.error("Upload error:", error);
-          toast.error(`Failed to upload ${file.name}`);
-          continue;
+      const batchResults = await Promise.allSettled(
+        batch.map(({ id, file }) => uploadSingleFile(file, id)),
+      );
+
+      batchResults.forEach((result, idx) => {
+        if (result.status === "fulfilled") {
+          uploadedUrls.push(result.value);
+        } else {
+          failedFiles.push(batch[idx].file.name);
         }
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("apartment-images").getPublicUrl(filePath);
-
-        uploadedUrls.push(publicUrl);
-        setUploadProgress(((i + 1) / totalFiles) * 100);
-      }
-
-      if (uploadedUrls.length > 0) {
-        updateFormData({
-          image_urls: [...images, ...uploadedUrls],
-        });
-        toast.success(`${uploadedUrls.length} image(s) uploaded successfully`);
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload images");
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-    }
-  };
-
-  const removeImage = async (index) => {
-    const imageUrl = images[index];
-
-    try {
-      const urlParts = imageUrl.split("/apartment-images/apartments/");
-      if (urlParts.length === 2) {
-        const filePath = `apartments/${urlParts[1]}`;
-        await supabase.storage.from("apartment-images").remove([filePath]);
-      }
-    } catch (error) {
-      console.error("Delete error:", error);
+      });
     }
 
-    const newImages = images.filter((_, i) => i !== index);
-    updateFormData({ image_urls: newImages });
-    toast.success("Image removed");
+    if (uploadedUrls.length > 0) {
+      updateFormData({
+        image_urls: [...images, ...uploadedUrls],
+      });
+      toast.success(`${uploadedUrls.length} image(s) uploaded successfully`);
+    }
+
+    if (failedFiles.length > 0) {
+      toast.error(`Failed to upload: ${failedFiles.join(", ")}`);
+    }
+
+    setUploadQueue([]);
+    e.target.value = ""; // Reset input
   };
 
-  const moveImage = (fromIndex, toIndex) => {
-    const newImages = [...images];
-    const [movedImage] = newImages.splice(fromIndex, 1);
-    newImages.splice(toIndex, 0, movedImage);
-    updateFormData({ image_urls: newImages });
+  // Cancel upload
+  const cancelUpload = (fileId) => {
+    const controller = abortControllers.current.get(fileId);
+    if (controller) {
+      controller.abort();
+      abortControllers.current.delete(fileId);
+    }
+
+    setUploadingFiles((prev) => {
+      const newMap = new Map(prev);
+      newMap.delete(fileId);
+      return newMap;
+    });
+
+    setUploadQueue((prev) => prev.filter((f) => f.id !== fileId));
   };
 
-  const setPrimaryImage = (index) => {
-    if (index === 0) return;
-    const newImages = [...images];
-    const [primaryImage] = newImages.splice(index, 1);
-    newImages.unshift(primaryImage);
-    updateFormData({ image_urls: newImages });
-    toast.success("Primary image updated");
-  };
+  // Remove image with optimistic update
+  const removeImage = useCallback(
+    async (index) => {
+      const imageUrl = images[index];
+
+      // Optimistic update
+      const newImages = images.filter((_, i) => i !== index);
+      updateFormData({ image_urls: newImages });
+
+      // Delete from storage in background
+      try {
+        const urlParts = imageUrl.split("/apartment-images/apartments/");
+        if (urlParts.length === 2) {
+          const filePath = `apartments/${urlParts[1]}`;
+          await supabase.storage.from("apartment-images").remove([filePath]);
+        }
+        toast.success("Image removed");
+      } catch (error) {
+        console.error("Delete error:", error);
+        // Rollback on error
+        updateFormData({ image_urls: images });
+        toast.error("Failed to remove image");
+      }
+    },
+    [images, updateFormData, supabase],
+  );
+
+  const moveImage = useCallback(
+    (fromIndex, toIndex) => {
+      const newImages = [...images];
+      const [movedImage] = newImages.splice(fromIndex, 1);
+      newImages.splice(toIndex, 0, movedImage);
+      updateFormData({ image_urls: newImages });
+    },
+    [images, updateFormData],
+  );
+
+  const setPrimaryImage = useCallback(
+    (index) => {
+      if (index === 0) return;
+      const newImages = [...images];
+      const [primaryImage] = newImages.splice(index, 1);
+      newImages.unshift(primaryImage);
+      updateFormData({ image_urls: newImages });
+      toast.success("Primary image updated");
+    },
+    [images, updateFormData],
+  );
+
+  const totalUploading = uploadingFiles.size;
+  const avgProgress =
+    totalUploading > 0
+      ? Array.from(uploadingFiles.values()).reduce(
+          (sum, { progress }) => sum + progress,
+          0,
+        ) / totalUploading
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -127,9 +274,7 @@ export default function Step6Images({ formData, updateFormData, errors }) {
                 Photo Tips for Maximum Bookings
               </p>
               <ul className="text-xs text-blue-800 space-y-1">
-                <li>
-                  • Upload at least 5 high-quality photos (10+ recommended)
-                </li>
+                <li>• Images are automatically compressed for fast loading</li>
                 <li>• First photo is your cover image - make it count!</li>
                 <li>
                   • Show: living room, bedrooms, kitchen, bathroom, exterior
@@ -137,11 +282,7 @@ export default function Step6Images({ formData, updateFormData, errors }) {
                 <li>
                   • Take photos in good lighting (daytime with windows open)
                 </li>
-                <li>
-                  • Include photos of special features (balcony, view,
-                  generator, etc.)
-                </li>
-                <li>• Clean and declutter before taking photos</li>
+                <li>• Uploads resume automatically if connection drops</li>
               </ul>
             </div>
           </div>
@@ -164,17 +305,21 @@ export default function Step6Images({ formData, updateFormData, errors }) {
               <label
                 htmlFor="image-upload"
                 className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                  uploading
-                    ? "border-gray-300 bg-gray-50"
+                  totalUploading > 0
+                    ? "border-gray-300 bg-gray-50 cursor-not-allowed"
                     : "border-purple-300 hover:bg-purple-50"
                 }`}
               >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  {uploading ? (
+                  {totalUploading > 0 ? (
                     <>
                       <div className="h-8 w-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-2" />
                       <p className="text-sm text-gray-600">
-                        Uploading... {Math.round(uploadProgress)}%
+                        Uploading {totalUploading} file(s)...{" "}
+                        {Math.round(avgProgress)}%
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Auto-retries on failure • Network resilient
                       </p>
                     </>
                   ) : (
@@ -184,7 +329,7 @@ export default function Step6Images({ formData, updateFormData, errors }) {
                         Click to upload or drag and drop
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        JPG, PNG or WebP (Max 5MB per image)
+                        JPG, PNG or WebP • Auto-compressed for speed
                       </p>
                     </>
                   )}
@@ -195,19 +340,38 @@ export default function Step6Images({ formData, updateFormData, errors }) {
                   multiple
                   accept="image/jpeg,image/jpg,image/png,image/webp"
                   onChange={handleFileUpload}
-                  disabled={uploading}
+                  disabled={totalUploading > 0}
                   className="hidden"
                 />
               </label>
             </div>
 
-            {uploading && (
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
+            {/* Upload progress for each file */}
+            {Array.from(uploadingFiles.entries()).map(
+              ([fileId, { status, progress }]) => (
+                <div key={fileId} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">
+                      {status === "compressing"
+                        ? "Compressing..."
+                        : `Uploading... ${Math.round(progress)}%`}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => cancelUpload(fileId)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              ),
             )}
           </div>
         </CardContent>
@@ -218,7 +382,7 @@ export default function Step6Images({ formData, updateFormData, errors }) {
           <CardHeader>
             <CardTitle>Your Photos ({images.length})</CardTitle>
             <p className="text-sm text-gray-600 mt-1">
-              Drag images to reorder. First image is your cover photo.
+              Drag to reorder • First image is cover photo
             </p>
           </CardHeader>
           <CardContent>
@@ -243,11 +407,10 @@ export default function Step6Images({ formData, updateFormData, errors }) {
                   )}
 
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute top-2 right-2 flex gap-2">
+                    <div className="absolute top-2 right-2">
                       <button
                         onClick={() => removeImage(index)}
                         className="bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full transition-colors"
-                        title="Remove image"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -290,9 +453,6 @@ export default function Step6Images({ formData, updateFormData, errors }) {
       <Card>
         <CardHeader>
           <CardTitle>Video & Virtual Tour (Optional)</CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
-            Add a video tour or 360° virtual tour to stand out
-          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -304,9 +464,6 @@ export default function Step6Images({ formData, updateFormData, errors }) {
               value={formData.video_url || ""}
               onChange={(e) => updateFormData({ video_url: e.target.value })}
             />
-            <p className="text-xs text-gray-500">
-              YouTube, Vimeo, or direct video link
-            </p>
           </div>
 
           <div className="space-y-2">
@@ -320,9 +477,6 @@ export default function Step6Images({ formData, updateFormData, errors }) {
                 updateFormData({ virtual_tour_url: e.target.value })
               }
             />
-            <p className="text-xs text-gray-500">
-              Matterport, Kuula, or other 360° tour link
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -335,29 +489,6 @@ export default function Step6Images({ formData, updateFormData, errors }) {
               <div>
                 <p className="text-sm font-medium text-orange-900">
                   At least one image is required
-                </p>
-                <p className="text-xs text-orange-800 mt-1">
-                  Listings with 5+ photos receive 3x more inquiries than those
-                  with fewer images.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {images.length > 0 && images.length < 5 && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-yellow-900">
-                  Add more photos for better results
-                </p>
-                <p className="text-xs text-yellow-800 mt-1">
-                  You have {images.length} photo(s). Adding {5 - images.length}{" "}
-                  more will significantly improve your booking rate.
                 </p>
               </div>
             </div>

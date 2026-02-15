@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Home, Bed, Bath, Users, Maximize } from "lucide-react";
 import RichTextEditor from "@/components/common/rich-text-editor";
+import { memo } from "react";
 
 const APARTMENT_TYPES = [
   { value: "studio", label: "Studio Apartment" },
@@ -21,7 +22,68 @@ const APARTMENT_TYPES = [
   { value: "penthouse", label: "Penthouse" },
 ];
 
-export default function Step1BasicInfo({ formData, updateFormData, errors }) {
+function Step1BasicInfo({ formData, updateFormData, errors }) {
+  const handleApartmentTypeChange = (value) => {
+    if (value !== formData.apartment_type) {
+      updateFormData({ apartment_type: value });
+    }
+  };
+
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    if (value !== formData.name) {
+      updateFormData({ name: value });
+    }
+  };
+
+  const handleDescriptionChange = (html) => {
+    if (html !== formData.description) {
+      updateFormData({ description: html });
+    }
+  };
+
+  const handleBedroomsChange = (e) => {
+    const value = parseInt(e.target.value) || "";
+    if (value !== formData.bedrooms) {
+      updateFormData({ bedrooms: value });
+    }
+  };
+
+  const handleBathroomsChange = (e) => {
+    const value = parseFloat(e.target.value) || "";
+    if (value !== formData.bathrooms) {
+      updateFormData({ bathrooms: value });
+    }
+  };
+
+  const handleMaxGuestsChange = (e) => {
+    const value = parseInt(e.target.value) || "";
+    if (value !== formData.max_guests) {
+      updateFormData({ max_guests: value });
+    }
+  };
+
+  const handleSquareMetersChange = (e) => {
+    const value = parseFloat(e.target.value) || "";
+    if (value !== formData.square_meters) {
+      updateFormData({ square_meters: value });
+    }
+  };
+
+  const handleFloorNumberChange = (e) => {
+    const value = parseInt(e.target.value) || "";
+    if (value !== formData.floor_number) {
+      updateFormData({ floor_number: value });
+    }
+  };
+
+  const handleParkingSpacesChange = (e) => {
+    const value = parseInt(e.target.value) || 0;
+    if (value !== formData.parking_spaces) {
+      updateFormData({ parking_spaces: value });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Apartment Name & Type */}
@@ -41,7 +103,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
               id="name"
               placeholder="e.g., Luxury 2BR in Lekki Phase 1"
               value={formData.name || ""}
-              onChange={(e) => updateFormData({ name: e.target.value })}
+              onChange={handleNameChange}
               className={errors?.name ? "border-red-500" : ""}
             />
             {errors?.name && (
@@ -59,9 +121,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
             </Label>
             <Select
               value={formData.apartment_type || ""}
-              onValueChange={(value) =>
-                updateFormData({ apartment_type: value })
-              }
+              onValueChange={handleApartmentTypeChange}
             >
               <SelectTrigger
                 className={errors?.apartment_type ? "border-red-500" : ""}
@@ -85,7 +145,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
             <Label htmlFor="description">Description</Label>
             <RichTextEditor
               content={formData.description || ""}
-              onChange={(html) => updateFormData({ description: html })}
+              onChange={handleDescriptionChange}
               placeholder="Describe your apartment, highlight unique features, nearby attractions, and what makes it special..."
               minHeight="250px"
               showWordCount={true}
@@ -117,9 +177,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
                 max="10"
                 placeholder="e.g., 2"
                 value={formData.bedrooms || ""}
-                onChange={(e) =>
-                  updateFormData({ bedrooms: parseInt(e.target.value) || "" })
-                }
+                onChange={handleBedroomsChange}
                 className={errors?.bedrooms ? "border-red-500" : ""}
               />
               {errors?.bedrooms && (
@@ -140,11 +198,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
                 step="0.5"
                 placeholder="e.g., 2 or 2.5"
                 value={formData.bathrooms || ""}
-                onChange={(e) =>
-                  updateFormData({
-                    bathrooms: parseFloat(e.target.value) || "",
-                  })
-                }
+                onChange={handleBathroomsChange}
                 className={errors?.bathrooms ? "border-red-500" : ""}
               />
               {errors?.bathrooms && (
@@ -167,9 +221,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
                 max="20"
                 placeholder="e.g., 4"
                 value={formData.max_guests || ""}
-                onChange={(e) =>
-                  updateFormData({ max_guests: parseInt(e.target.value) || "" })
-                }
+                onChange={handleMaxGuestsChange}
                 className={errors?.max_guests ? "border-red-500" : ""}
               />
               {errors?.max_guests && (
@@ -191,11 +243,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
                 min="10"
                 placeholder="e.g., 85"
                 value={formData.square_meters || ""}
-                onChange={(e) =>
-                  updateFormData({
-                    square_meters: parseFloat(e.target.value) || "",
-                  })
-                }
+                onChange={handleSquareMetersChange}
               />
               <p className="text-xs text-gray-500">Optional but recommended</p>
             </div>
@@ -210,9 +258,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
               max="100"
               placeholder="e.g., 3 (Ground floor = 0)"
               value={formData.floor_number || ""}
-              onChange={(e) =>
-                updateFormData({ floor_number: parseInt(e.target.value) || "" })
-              }
+              onChange={handleFloorNumberChange}
             />
             <p className="text-xs text-gray-500">
               Helps guests know if there's elevator access needed
@@ -232,9 +278,11 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
               <input
                 type="checkbox"
                 checked={formData.furnished || false}
-                onChange={(e) =>
-                  updateFormData({ furnished: e.target.checked })
-                }
+                onChange={(e) => {
+                  if (e.target.checked !== formData.furnished) {
+                    updateFormData({ furnished: e.target.checked });
+                  }
+                }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
               <span className="font-medium">Fully Furnished</span>
@@ -244,9 +292,11 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
               <input
                 type="checkbox"
                 checked={formData.kitchen_equipped || false}
-                onChange={(e) =>
-                  updateFormData({ kitchen_equipped: e.target.checked })
-                }
+                onChange={(e) => {
+                  if (e.target.checked !== formData.kitchen_equipped) {
+                    updateFormData({ kitchen_equipped: e.target.checked });
+                  }
+                }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
               <span className="font-medium">Kitchen Equipped</span>
@@ -256,9 +306,11 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
               <input
                 type="checkbox"
                 checked={formData.has_balcony || false}
-                onChange={(e) =>
-                  updateFormData({ has_balcony: e.target.checked })
-                }
+                onChange={(e) => {
+                  if (e.target.checked !== formData.has_balcony) {
+                    updateFormData({ has_balcony: e.target.checked });
+                  }
+                }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
               <span className="font-medium">Has Balcony</span>
@@ -268,9 +320,11 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
               <input
                 type="checkbox"
                 checked={formData.has_terrace || false}
-                onChange={(e) =>
-                  updateFormData({ has_terrace: e.target.checked })
-                }
+                onChange={(e) => {
+                  if (e.target.checked !== formData.has_terrace) {
+                    updateFormData({ has_terrace: e.target.checked });
+                  }
+                }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
               <span className="font-medium">Has Terrace</span>
@@ -286,11 +340,7 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
               max="10"
               placeholder="e.g., 1"
               value={formData.parking_spaces || ""}
-              onChange={(e) =>
-                updateFormData({
-                  parking_spaces: parseInt(e.target.value) || 0,
-                })
-              }
+              onChange={handleParkingSpacesChange}
             />
             <p className="text-xs text-gray-500">
               Number of parking spaces included (0 if none)
@@ -301,3 +351,6 @@ export default function Step1BasicInfo({ formData, updateFormData, errors }) {
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export default memo(Step1BasicInfo);

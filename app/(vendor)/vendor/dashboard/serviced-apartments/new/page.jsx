@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -20,21 +19,24 @@ import {
   Save,
   Loader2,
   AlertCircle,
+  WifiOff,
+  Wifi,
 } from "lucide-react";
 import { toast } from "sonner";
 import { createServicedApartment } from "@/app/actions/apartments";
-import Step1BasicInfo from "../../../../../../components/shared/dashboard/vendor/apartments/step1";
-import Step3Pricing from "../../../../../../components/shared/dashboard/vendor/apartments/step3";
-import Step2Location from "../../../../../../components/shared/dashboard/vendor/apartments/step2";
-import Step5Amenities from "../../../../../../components/shared/dashboard/vendor/apartments/step5";
-import Step4Utilities from "../../../../../../components/shared/dashboard/vendor/apartments/step4";
-import Step6Images from "../../../../../../components/shared/dashboard/vendor/apartments/step6";
-import Step8Review from "../../../../../../components/shared/dashboard/vendor/apartments/step8";
-import Step7Policies from "../../../../../../components/shared/dashboard/vendor/apartments/step7";
+import Step1BasicInfo from "@/components/shared/dashboard/vendor/apartments/step1";
+import Step3Pricing from "@/components/shared/dashboard/vendor/apartments/step3";
+import Step2Location from "@/components/shared/dashboard/vendor/apartments/step2";
+import Step5Amenities from "@/components/shared/dashboard/vendor/apartments/step5";
+import Step4Utilities from "@/components/shared/dashboard/vendor/apartments/step4";
+import Step6Images from "@/components/shared/dashboard/vendor/apartments/step6";
+import Step8Review from "@/components/shared/dashboard/vendor/apartments/step8";
+import Step7Policies from "@/components/shared/dashboard/vendor/apartments/step7";
 import { useAuth } from "@/hooks/use-auth";
 
 const STORAGE_KEY = "apartment_form_draft";
 const STEPS_TOTAL = 8;
+const AUTO_SAVE_DELAY = 1500;
 
 const STEP_COMPONENTS = {
   1: Step1BasicInfo,
@@ -123,26 +125,65 @@ export default function ApartmentCreationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [lastSaved, setLastSaved] = useState(null);
 
-  // Load from localStorage on mount
+  const autoSaveTimerRef = useRef(null);
+  const hasLoadedDraftRef = useRef(false);
+
+  // Network status monitoring
   useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success("Connection restored");
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.error("No internet connection");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Load from localStorage on mount (only once)
+  useEffect(() => {
+    if (hasLoadedDraftRef.current) return;
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         setFormData(parsed.data || INITIAL_FORM_DATA);
         setCurrentStep(parsed.step || 1);
-        toast.info("Draft restored from last session");
+        setLastSaved(new Date(parsed.lastSaved));
+        toast.info("Draft restored");
       } catch (error) {
         console.error("Failed to parse saved draft:", error);
         localStorage.removeItem(STORAGE_KEY);
       }
     }
+
+    hasLoadedDraftRef.current = true;
   }, []);
 
-  // Auto-save to localStorage with debounce
+  // Auto-save with debounce
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Skip if draft hasn't been loaded yet
+    if (!hasLoadedDraftRef.current) return;
+
+    // Clear existing timer
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    // Set new timer
+    autoSaveTimerRef.current = setTimeout(() => {
       try {
         localStorage.setItem(
           STORAGE_KEY,
@@ -152,22 +193,28 @@ export default function ApartmentCreationForm() {
             lastSaved: new Date().toISOString(),
           }),
         );
+        setLastSaved(new Date());
       } catch (error) {
         console.error("Failed to save draft:", error);
       }
-    }, 1000);
+    }, AUTO_SAVE_DELAY);
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
   }, [formData, currentStep]);
 
-  // Redirect if not authenticated or not a vendor
+  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       toast.error("Please log in to continue");
       router.push("/login");
     }
   }, [authLoading, user, router]);
-
+  console.log(vendor);
+  // Stable updateFormData reference
   const updateFormData = useCallback((updates) => {
     setFormData((prev) => ({ ...prev, ...updates }));
     setErrors((prev) => {
@@ -179,7 +226,7 @@ export default function ApartmentCreationForm() {
     });
   }, []);
 
-  const validateStep = () => {
+  const validateStep = useCallback(() => {
     const stepErrors = {};
 
     if (currentStep === 1) {
@@ -214,9 +261,9 @@ export default function ApartmentCreationForm() {
 
     setErrors(stepErrors);
     return Object.keys(stepErrors).length === 0;
-  };
+  }, [currentStep, formData]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (!validateStep()) {
       toast.error("Please fill in all required fields");
       return;
@@ -225,16 +272,16 @@ export default function ApartmentCreationForm() {
       setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  };
+  }, [currentStep, validateStep]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  };
+  }, [currentStep]);
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = useCallback(() => {
     setIsSaving(true);
     try {
       localStorage.setItem(
@@ -245,13 +292,14 @@ export default function ApartmentCreationForm() {
           lastSaved: new Date().toISOString(),
         }),
       );
+      setLastSaved(new Date());
       toast.success("Draft saved successfully");
     } catch (error) {
       toast.error("Failed to save draft");
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }
-  };
+  }, [formData, currentStep]);
 
   const handleSubmit = async () => {
     if (!validateStep()) {
@@ -261,6 +309,11 @@ export default function ApartmentCreationForm() {
 
     if (!vendor) {
       toast.error("Vendor information not found");
+      return;
+    }
+
+    if (!isOnline) {
+      toast.error("No internet connection. Please try again when online.");
       return;
     }
 
@@ -283,13 +336,14 @@ export default function ApartmentCreationForm() {
           submitData.append(key, value.toString());
         }
       });
-
+      // Replace your console.log(submitData) with this:
+      console.log("Submitting:", Object.fromEntries(submitData.entries()));
       const result = await createServicedApartment(submitData);
 
       if (result.success) {
         toast.success(result.message || "Apartment created successfully!");
         localStorage.removeItem(STORAGE_KEY);
-        router.push(`/vendor/serviced-apartments/${result.data.id}`);
+        router.push(`/vendor/dashboard/serviced-apartments/${result.data.id}`);
       } else {
         toast.error(result.error || "Failed to create apartment");
         if (result.errors) {
@@ -325,17 +379,13 @@ export default function ApartmentCreationForm() {
   };
 
   const handleExit = () => setShowExitDialog(true);
+
   const confirmExit = () => {
-    localStorage.removeItem(STORAGE_KEY);
     router.push("/vendor/dashboard");
   };
 
   const clearDraft = () => {
-    if (
-      confirm(
-        "Are you sure you want to clear this draft? This cannot be undone.",
-      )
-    ) {
+    if (confirm("Clear draft? This cannot be undone.")) {
       localStorage.removeItem(STORAGE_KEY);
       setFormData(INITIAL_FORM_DATA);
       setCurrentStep(1);
@@ -343,31 +393,24 @@ export default function ApartmentCreationForm() {
     }
   };
 
-  const navigateToStep = (step) => {
+  const navigateToStep = useCallback((step) => {
     if (step >= 1 && step <= STEPS_TOTAL) {
       setCurrentStep(step);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  };
+  }, []);
 
   // Loading state
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
       </div>
     );
   }
 
-  // Not authenticated
-  if (!user) {
-    return null; // Will redirect via useEffect
-  }
+  if (!user) return null;
 
-  // Not a vendor or vendor data not loaded
   if (!vendor) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -375,7 +418,7 @@ export default function ApartmentCreationForm() {
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
           <p className="text-gray-600 mb-4">
-            You need to complete vendor verification to access this page.
+            Complete vendor verification to access this page.
           </p>
           <Button
             onClick={() => router.push("/vendor/dashboard")}
@@ -404,7 +447,22 @@ export default function ApartmentCreationForm() {
                 Step {currentStep} of {STEPS_TOTAL}: {STEP_TITLES[currentStep]}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Network status */}
+              {!isOnline && (
+                <div className="flex items-center gap-2 text-sm text-red-600">
+                  <WifiOff className="h-4 w-4" />
+                  <span className="text-xs">Offline</span>
+                </div>
+              )}
+
+              {/* Last saved indicator */}
+              {lastSaved && (
+                <span className="text-xs text-gray-500">
+                  Saved {lastSaved.toLocaleTimeString()}
+                </span>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"
@@ -419,7 +477,7 @@ export default function ApartmentCreationForm() {
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
-                    Save Draft
+                    Save
                   </>
                 )}
               </Button>
@@ -465,7 +523,6 @@ export default function ApartmentCreationForm() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Step Under Construction
               </h3>
-              <p className="text-gray-600">This step is being built.</p>
             </div>
           )}
         </div>
@@ -501,7 +558,7 @@ export default function ApartmentCreationForm() {
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isOnline}
               className="bg-purple-600 hover:bg-purple-700"
             >
               {isSubmitting ? (
@@ -523,7 +580,7 @@ export default function ApartmentCreationForm() {
             <AlertDialogTitle>Leave without saving?</AlertDialogTitle>
             <AlertDialogDescription>
               Your progress has been auto-saved. You can return anytime to
-              continue from where you left off.
+              continue.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

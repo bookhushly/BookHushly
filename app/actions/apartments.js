@@ -148,7 +148,7 @@ export async function createServicedApartment(formData) {
       instant_booking: formData.get("instant_booking") === "true",
 
       // Vendor ID
-      vendor_id: user.id,
+      vendor_id: formData.get("vendor_id"),
     };
 
     // Validate data

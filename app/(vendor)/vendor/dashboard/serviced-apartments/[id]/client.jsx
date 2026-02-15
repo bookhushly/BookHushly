@@ -92,7 +92,7 @@ export default function ApartmentDetailsPage({
       if (result.success) {
         setApartment(result.data);
         toast.success(
-          `Apartment ${newStatus === "active" ? "activated" : "deactivated"} successfully`
+          `Apartment ${newStatus === "active" ? "activated" : "deactivated"} successfully`,
         );
       } else {
         toast.error(result.error || "Failed to update status");
@@ -140,15 +140,15 @@ export default function ApartmentDetailsPage({
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-4">
               <Button
                 variant="ghost"
                 size="sm"
                 asChild
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-600 text-lg hover:text-gray-900"
               >
                 <Link href="/vendor/dashboard">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="h-4 w-4 " />
                   Back to Dashboard
                 </Link>
               </Button>
