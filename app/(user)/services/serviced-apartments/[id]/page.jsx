@@ -1,16 +1,12 @@
 import { notFound } from "next/navigation";
 import ApartmentClient from "./content";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 
-// Generate metadata for SEO
 export async function generateMetadata({ params }) {
-  console.log("=== METADATA GENERATION START ===");
   const { id } = await params;
-  console.log("Params ID:", id);
 
   try {
-    const supabase = await createClient();
-    console.log("Supabase client created for metadata");
+    const supabase = createStaticClient();
 
     const { data: apartment, error } = await supabase
       .from("serviced_apartments")
@@ -21,27 +17,14 @@ export async function generateMetadata({ params }) {
       .eq("status", "active")
       .single();
 
-    console.log("Metadata fetch result:", {
-      hasData: !!apartment,
-      error: error?.message,
-      apartmentName: apartment?.name,
-    });
-
-    if (error) {
-      console.error("Metadata fetch error:", error);
-    }
-
     if (!apartment) {
-      console.log("No apartment found for metadata, returning 404 title");
-      return {
-        title: "Apartment Not Found",
-      };
+      return { title: "Apartment Not Found" };
     }
 
     const desc = apartment.description ? String(apartment.description) : "";
     const cleanDescription = desc.replace(/<[^>]*>/g, "").substring(0, 160);
 
-    const metadata = {
+    return {
       title: `${apartment.name} - ${apartment.city}, ${apartment.state}`,
       description:
         cleanDescription ||
@@ -53,114 +36,46 @@ export async function generateMetadata({ params }) {
         type: "website",
       },
     };
-
-    console.log("Generated metadata:", metadata.title);
-    console.log("=== METADATA GENERATION END ===");
-    return metadata;
   } catch (error) {
     console.error("Metadata generation error:", error);
-    console.log("=== METADATA GENERATION FAILED ===");
-    return {
-      title: "Apartment Not Found",
-    };
+    return { title: "Apartment Not Found" };
   }
 }
 
-// Fetch apartment data server-side
 async function getApartment(id) {
-  console.log("=== GET APARTMENT START ===");
-  console.log("Fetching apartment ID:", id);
-
   try {
     const supabase = await createClient();
-    console.log("Supabase client created for apartment fetch");
 
-    const query = supabase
+    const { data, error } = await supabase
       .from("serviced_apartments")
-      .select(
-        `
-          *,
-          vendors:vendor_id (
-            id,
-            business_name
-          )
-        `,
-      )
+      .select(`*, vendors:vendor_id (id, business_name)`)
       .eq("id", id)
-      .eq("status", "active");
-
-    console.log("Executing query...");
-
-    const { data, error } = await query.single();
-
-    console.log("Query result:", {
-      hasData: !!data,
-      error: error?.message,
-      errorDetails: error?.details,
-      errorHint: error?.hint,
-      errorCode: error?.code,
-    });
+      .eq("status", "active")
+      .single();
 
     if (error) {
       console.error("Apartment fetch error:", error);
-      console.error("Full error object:", JSON.stringify(error, null, 2));
       return null;
     }
-
-    if (!data) {
-      console.log("No apartment data returned");
-      return null;
-    }
-
-    console.log("Apartment fetched successfully:", {
-      id: data.id,
-      name: data.name,
-      vendor_id: data.vendor_id,
-      hasVendorData: !!data.vendors,
-      vendorBusinessName: data.vendors?.business_name,
-    });
 
     // Increment view count (fire-and-forget)
-    console.log("Incrementing view count...");
     supabase
       .rpc("increment_apartment_views", { apartment_id: id })
-      .then(() => {
-        console.log("View count incremented successfully");
-      })
-      .catch((err) => {
-        console.error("View increment failed:", err);
-        console.error(
-          "View increment error details:",
-          JSON.stringify(err, null, 2),
-        );
-      });
+      .catch((err) => console.error("View increment failed:", err));
 
-    console.log("=== GET APARTMENT END ===");
     return data;
   } catch (error) {
     console.error("Unexpected error in getApartment:", error);
-    console.error("Error stack:", error.stack);
-    console.log("=== GET APARTMENT FAILED ===");
     return null;
   }
 }
 
 export default async function ApartmentPage({ params }) {
-  console.log("=== APARTMENT PAGE RENDER START ===");
   const { id } = await params;
-  console.log("Page params ID:", id);
-
   const apartment = await getApartment(id);
 
-  if (!apartment) {
-    console.log("Apartment not found, calling notFound()");
-    console.log("=== APARTMENT PAGE RENDER FAILED ===");
-    notFound();
-  }
+  if (!apartment) notFound();
 
-  console.log("Building JSON-LD schema...");
-
-  // Structure data for rich snippets (JSON-LD)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Apartment",
@@ -184,30 +99,22 @@ export default async function ApartmentPage({ params }) {
     numberOfBathroomsTotal: apartment.bathrooms,
   };
 
-  console.log("JSON-LD schema created");
-  console.log("JSON-LD schema created");
-  console.log("Rendering ApartmentClient component...");
-  console.log("=== APARTMENT PAGE RENDER END ===");
-
-  const jsonLdString = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
-
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdString }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
       />
       <ApartmentClient apartment={apartment} />
     </>
   );
 }
-// Generate static params for common apartments
-export async function generateStaticParams() {
-  console.log("=== GENERATE STATIC PARAMS START ===");
 
+export async function generateStaticParams() {
   try {
-    const supabase = await createClient();
-    console.log("Supabase client created for static params");
+    const supabase = createStaticClient();
 
     const { data: apartments, error } = await supabase
       .from("serviced_apartments")
@@ -215,31 +122,16 @@ export async function generateStaticParams() {
       .eq("status", "active")
       .limit(50);
 
-    console.log("Static params query result:", {
-      count: apartments?.length || 0,
-      error: error?.message,
-    });
-
     if (error) {
       console.error("Error in generateStaticParams:", error);
-      console.log("=== GENERATE STATIC PARAMS FAILED ===");
       return [];
     }
 
-    const params = (apartments || []).map((apt) => ({ id: apt.id }));
-    console.log(`Generated ${params.length} static params`);
-    console.log("=== GENERATE STATIC PARAMS END ===");
-
-    return params;
+    return (apartments || []).map((apt) => ({ id: apt.id }));
   } catch (error) {
     console.error("Unexpected error in generateStaticParams:", error);
-    console.error("Error stack:", error.stack);
-    console.log("=== GENERATE STATIC PARAMS EXCEPTION ===");
     return [];
   }
 }
 
-// Revalidate every hour
 export const revalidate = 3600;
-
-console.log("Apartment page module loaded, revalidate:", 3600);
