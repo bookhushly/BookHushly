@@ -1,4 +1,3 @@
-// app/services/[...slug]/page.jsx
 import { Suspense } from "react";
 import ServiceDetailClient from "./service-detail-content";
 import { createClient } from "@/lib/supabase/server";
