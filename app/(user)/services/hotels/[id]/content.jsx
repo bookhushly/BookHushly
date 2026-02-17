@@ -38,8 +38,7 @@ import { AMENITY_ICONS } from "@/lib/constants/filters";
 
 const HotelDetails = ({ hotel, roomTypes }) => {
   const router = useRouter();
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [showAllImages, setShowAllImages] = useState(false);
+
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState(null);
   const [bookingData, setBookingData] = useState({
@@ -75,16 +74,6 @@ const HotelDetails = ({ hotel, roomTypes }) => {
       })
       .filter(Boolean);
   }, [hotel.amenities]);
-
-  const nextImage = useCallback(() => {
-    setSelectedImageIndex((prev) => (prev + 1) % allImages.length);
-  }, [allImages.length]);
-
-  const prevImage = useCallback(() => {
-    setSelectedImageIndex((prev) =>
-      prev === 0 ? allImages.length - 1 : prev - 1,
-    );
-  }, [allImages.length]);
 
   const handleBookNow = useCallback((roomType) => {
     setSelectedRoomType(roomType);
@@ -154,11 +143,13 @@ const HotelDetails = ({ hotel, roomTypes }) => {
       </header>
 
       {/* Image Gallery */}
-      <ImageGallery
-        images={allImages}
-        hotelName={hotel.name}
-        onShowAll={() => setShowAllImages(true)}
-      />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <ImageGallery
+          images={allImages}
+          altPrefix={hotel.name}
+          propertyType="hotel"
+        />
+      </div>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -304,126 +295,11 @@ const HotelDetails = ({ hotel, roomTypes }) => {
       />
 
       {/* Image Lightbox */}
-      <ImageLightbox
-        show={showAllImages}
-        images={allImages}
-        selectedIndex={selectedImageIndex}
-        onClose={() => setShowAllImages(false)}
-        onNext={nextImage}
-        onPrev={prevImage}
-        onSelectImage={setSelectedImageIndex}
-      />
     </div>
   );
 };
 
 // ==================== SUB-COMPONENTS ====================
-
-const ImageGallery = React.memo(({ images, hotelName, onShowAll }) => {
-  if (images.length === 1) {
-    return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div
-          className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden cursor-pointer"
-          onClick={onShowAll}
-        >
-          <Image
-            src={images[0]}
-            alt={hotelName}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (images.length === 2) {
-    return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-[400px] sm:h-[500px] lg:h-[600px]">
-          {images.slice(0, 2).map((image, index) => (
-            <div
-              key={index}
-              className="relative rounded-2xl overflow-hidden cursor-pointer group"
-              onClick={onShowAll}
-            >
-              <Image
-                src={image}
-                alt={`${hotelName} - ${index + 1}`}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                sizes="(max-width: 640px) 100vw, 50vw"
-                priority={index === 0}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="grid grid-cols-4 gap-3 h-[400px] sm:h-[500px] lg:h-[600px]">
-        <div
-          className="col-span-4 sm:col-span-2 row-span-2 relative rounded-2xl overflow-hidden cursor-pointer group"
-          onClick={onShowAll}
-        >
-          <Image
-            src={images[0]}
-            alt={hotelName}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 640px) 100vw, 50vw"
-            priority
-          />
-        </div>
-        {images.slice(1, 5).map((image, index) => (
-          <div
-            key={index}
-            className="relative rounded-2xl overflow-hidden cursor-pointer group col-span-2 sm:col-span-1"
-            onClick={onShowAll}
-          >
-            <Image
-              src={image}
-              alt={`${hotelName} - ${index + 2}`}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(max-width: 640px) 50vw, 25vw"
-            />
-            {index === 3 && images.length > 5 && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="text-white font-semibold text-lg">
-                  +{images.length - 5} more
-                </span>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {images.length > 1 && (
-        <button
-          onClick={onShowAll}
-          className="mt-4 px-6 py-2.5 border-2 border-gray-900 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center gap-2"
-        >
-          <div className="w-5 h-5 grid grid-cols-2 gap-0.5">
-            <div className="bg-gray-900 rounded-sm" />
-            <div className="bg-gray-900 rounded-sm" />
-            <div className="bg-gray-900 rounded-sm" />
-            <div className="bg-gray-900 rounded-sm" />
-          </div>
-          Show all {images.length} photos
-        </button>
-      )}
-    </div>
-  );
-});
-
-ImageGallery.displayName = "ImageGallery";
 
 const RoomTypeCard = React.memo(({ roomType, onBookNow }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -734,84 +610,5 @@ const BookingModal = React.memo(
 );
 
 BookingModal.displayName = "BookingModal";
-
-const ImageLightbox = React.memo(
-  ({ show, images, selectedIndex, onClose, onNext, onPrev, onSelectImage }) => {
-    if (!show) return null;
-
-    return (
-      <div className="fixed inset-0 z-50 bg-black">
-        <button
-          onClick={onClose}
-          className="fixed top-4 right-4 z-50 w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
-        <div className="fixed top-4 left-4 z-50 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
-          {selectedIndex + 1} / {images.length}
-        </div>
-
-        <div className="h-full flex items-center justify-center p-4 sm:p-12">
-          <div className="relative w-full h-full max-w-7xl">
-            <Image
-              src={images[selectedIndex]}
-              alt={`View ${selectedIndex + 1}`}
-              fill
-              className="object-contain"
-              sizes="100vw"
-              priority
-            />
-          </div>
-
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={onPrev}
-                className="fixed left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                onClick={onNext}
-                className="fixed right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-        </div>
-
-        <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => onSelectImage(index)}
-                  className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all ${
-                    index === selectedIndex
-                      ? "ring-2 ring-white scale-105"
-                      : "opacity-50 hover:opacity-100"
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
-
-ImageLightbox.displayName = "ImageLightbox";
 
 export default HotelDetails;

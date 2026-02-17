@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 import RichContentRenderer from "@/components/common/rich-text-renderer";
 import {
   MapPin,
@@ -12,28 +10,31 @@ import {
   Maximize2,
   Wifi,
   Car,
-  Wind,
   Zap,
   Droplet,
   Shield,
   Calendar,
   Clock,
-  Star,
   Share2,
-  Heart,
-  X,
-  ChevronLeft,
-  ChevronRight,
   Check,
+  Navigation,
+  Sun,
+  Wind,
+  DollarSign,
+  Home,
+  Waves,
+  Timer,
+  Info,
+  CheckCircle2,
+  PlayCircle,
+  Globe,
+  Sparkles,
 } from "lucide-react";
+import ImageGallery from "@/components/common/home/ImageGallery";
+import { getAmenityLabel } from "@/config/apartment-amenities";
+import ApartmentBookingCard from "../../../../../components/shared/apartment/booking-card";
 
 export default function ApartmentClient({ apartment }) {
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [showGallery, setShowGallery] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-
-  const images = apartment.image_urls || [];
-
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
@@ -48,6 +49,12 @@ export default function ApartmentClient({ apartment }) {
     "2_bedroom": "2 Bedroom",
     "3_bedroom": "3 Bedroom",
     penthouse: "Penthouse",
+  };
+
+  const waterSupplyLabel = {
+    borehole: "Borehole Water",
+    public_supply: "Public Water Supply",
+    both: "Borehole & Public Supply",
   };
 
   const handleShare = async () => {
@@ -67,187 +74,148 @@ export default function ApartmentClient({ apartment }) {
   const securityFeatures = apartment.security_features || {};
   const amenities = apartment.amenities || {};
 
+  // Get selected amenities for display
+  const selectedAmenities = Object.entries(amenities)
+    .filter(([_, value]) => value)
+    .map(([key]) => key);
+
+  const selectedSecurityFeatures = Object.entries(securityFeatures)
+    .filter(([_, value]) => value)
+    .map(([key]) => key);
+
+  const securityFeatureLabels = {
+    "24hr_security": "24-Hour Security",
+    cctv_surveillance: "CCTV Surveillance",
+    estate_gate: "Gated Estate",
+    access_control: "Access Control System",
+    intercom_system: "Intercom System",
+  };
+
+  // Calculate weekly/monthly savings if available
+  const weeklyNightlyTotal = apartment.price_per_night * 7;
+  const monthlightlyTotal = apartment.price_per_night * 30;
+  const weeklySavings = apartment.price_per_week
+    ? weeklyNightlyTotal - apartment.price_per_week
+    : 0;
+  const monthlySavings = apartment.price_per_month
+    ? monthlightlyTotal - apartment.price_per_month
+    : 0;
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Image Gallery Modal */}
-      <AnimatePresence>
-        {showGallery && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black"
-          >
-            <div className="relative h-full w-full">
-              <button
-                onClick={() => setShowGallery(false)}
-                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition"
-              >
-                <X className="w-6 h-6" />
-              </button>
-
-              <div className="absolute top-4 left-4 z-10 text-white font-medium bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm">
-                {selectedImage + 1} / {images.length}
-              </div>
-
-              <div className="h-full flex items-center justify-center">
-                <button
-                  onClick={() =>
-                    setSelectedImage(Math.max(0, selectedImage - 1))
-                  }
-                  className="absolute left-4 p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition disabled:opacity-50"
-                  disabled={selectedImage === 0}
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-
-                <img
-                  src={images[selectedImage]}
-                  alt={`${apartment.name} - Image ${selectedImage + 1}`}
-                  className="max-h-[90vh] max-w-[90vw] object-contain"
-                />
-
-                <button
-                  onClick={() =>
-                    setSelectedImage(
-                      Math.min(images.length - 1, selectedImage + 1)
-                    )
-                  }
-                  className="absolute right-4 p-3 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition disabled:opacity-50"
-                  disabled={selectedImage === images.length - 1}
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Hero Section */}
+    <div className="min-h-screen bg-white pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Header */}
+        {/* Header Section */}
         <div className="mb-6">
-          <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-3">
-            {apartment.name}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5 text-gray-700">
-              <MapPin className="w-4 h-4" />
-              <span>
-                {apartment.area}, {apartment.city}, {apartment.state}
-              </span>
-            </div>
-
-            {apartment.views_count > 0 && (
-              <div className="flex items-center gap-1.5 text-gray-500">
-                <Star className="w-4 h-4" />
-                <span>{apartment.views_count} views</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex items-start justify-between mb-3">
+            <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">
+              {apartment.name}
+            </h1>
             <button
               onClick={handleShare}
               className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition text-sm font-medium"
             >
               <Share2 className="w-4 h-4" />
-              Share
-            </button>
-
-            <button
-              onClick={() => setIsSaved(!isSaved)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition text-sm font-medium"
-            >
-              <Heart
-                className={`w-4 h-4 ${isSaved ? "fill-purple-600 text-purple-600" : ""}`}
-              />
-              Save
+              <span className="hidden sm:inline">Share</span>
             </button>
           </div>
-        </div>
 
-        {/* Images Grid */}
-        {images.length > 0 && (
-          <div className="grid grid-cols-4 gap-2 rounded-xl overflow-hidden mb-12 h-[400px]">
-            <div
-              className="col-span-4 sm:col-span-2 row-span-2 relative cursor-pointer group"
-              onClick={() => {
-                setSelectedImage(0);
-                setShowGallery(true);
-              }}
-            >
-              <Image
-                src={images[0]}
-                alt={apartment.name}
-                fill
-                className="object-cover group-hover:scale-105 transition duration-300"
-                priority
-              />
+          <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
+            <div className="flex items-center gap-1.5 text-gray-700">
+              <MapPin className="w-4 h-4" />
+              <span>
+                {apartment.area && `${apartment.area}, `}
+                {apartment.city}, {apartment.state}
+              </span>
             </div>
 
-            {images.slice(1, 5).map((img, idx) => (
-              <div
-                key={idx}
-                className={`relative cursor-pointer group ${idx === 3 ? "relative" : ""}`}
-                onClick={() => {
-                  setSelectedImage(idx + 1);
-                  setShowGallery(true);
-                }}
-              >
-                <Image
-                  src={img}
-                  alt={`${apartment.name} - ${idx + 2}`}
-                  fill
-                  className="object-cover group-hover:scale-105 transition duration-300"
-                />
-                {idx === 3 && images.length > 5 && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white font-medium">
-                      +{images.length - 5} more
-                    </span>
-                  </div>
-                )}
+            {apartment.views_count > 0 && (
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <span>{apartment.views_count} views</span>
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {apartment.instant_booking && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">
+                <Zap className="w-3 h-3" />
+                Instant Booking
+              </div>
+            )}
+
+            {apartment.is_verified && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+                <CheckCircle2 className="w-3 h-3" />
+                Verified
+              </div>
+            )}
+          </div>
+
+          {/* Landmark - Important for Nigerian context */}
+          {apartment.landmark && (
+            <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg text-sm">
+              <Navigation className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="font-medium text-blue-900">Landmark: </span>
+                <span className="text-blue-800">{apartment.landmark}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Image Gallery */}
+        <div className="mb-12">
+          <ImageGallery
+            images={apartment.image_urls}
+            altPrefix={apartment.name}
+          />
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left Column - Details */}
-          <div className="lg:col-span-2 space-y-10">
-            {/* Quick Info */}
-            <div className="border-b border-gray-200 pb-8">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Quick Overview */}
+            <div className="pb-8 border-b border-gray-200">
               <h2 className="text-2xl font-semibold mb-4">
                 {apartmentTypeLabel[apartment.apartment_type]} Apartment
               </h2>
 
-              <div className="flex flex-wrap gap-4 text-gray-700">
+              <div className="flex flex-wrap gap-6 text-gray-700">
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-purple-600" />
-                  <span>{apartment.max_guests} guests</span>
+                  <span className="font-medium">{apartment.max_guests}</span>
+                  <span className="text-gray-600">guests</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Bed className="w-5 h-5 text-purple-600" />
-                  <span>
-                    {apartment.bedrooms} bedroom
-                    {apartment.bedrooms > 1 ? "s" : ""}
+                  <span className="font-medium">{apartment.bedrooms}</span>
+                  <span className="text-gray-600">
+                    bedroom{apartment.bedrooms > 1 ? "s" : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Bath className="w-5 h-5 text-purple-600" />
-                  <span>
-                    {apartment.bathrooms} bath
-                    {apartment.bathrooms > 1 ? "s" : ""}
+                  <span className="font-medium">{apartment.bathrooms}</span>
+                  <span className="text-gray-600">
+                    bath{apartment.bathrooms > 1 ? "s" : ""}
                   </span>
                 </div>
                 {apartment.square_meters && (
                   <div className="flex items-center gap-2">
                     <Maximize2 className="w-5 h-5 text-purple-600" />
-                    <span>{apartment.square_meters} m²</span>
+                    <span className="font-medium">
+                      {apartment.square_meters}
+                    </span>
+                    <span className="text-gray-600">m²</span>
+                  </div>
+                )}
+                {apartment.floor_number !== null && (
+                  <div className="flex items-center gap-2">
+                    <Home className="w-5 h-5 text-purple-600" />
+                    <span className="font-medium">
+                      {apartment.floor_number === 0
+                        ? "Ground Floor"
+                        : `${apartment.floor_number}${apartment.floor_number === 1 ? "st" : apartment.floor_number === 2 ? "nd" : apartment.floor_number === 3 ? "rd" : "th"} Floor`}
+                    </span>
                   </div>
                 )}
               </div>
@@ -255,192 +223,291 @@ export default function ApartmentClient({ apartment }) {
 
             {/* Description */}
             {apartment.description && (
-              <div className="border-b border-gray-200 pb-8">
+              <div className="pb-8 border-b border-gray-200">
                 <h3 className="text-xl font-semibold mb-4">About this place</h3>
                 <RichContentRenderer
                   content={apartment.description}
-                  className="text-gray-700 leading-relaxed"
+                  className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
                 />
               </div>
             )}
 
-            {/* Amenities & Utilities */}
-            <div className="border-b border-gray-200 pb-8">
-              <h3 className="text-xl font-semibold mb-6">
-                What this place offers
-              </h3>
+            {/* Power & Utilities - Critical for Nigeria */}
+            <div className="pb-8 border-b border-gray-200">
+              <h3 className="text-xl font-semibold mb-6">Power & Utilities</h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {apartment.internet_included && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Wifi className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="font-medium">WiFi</p>
-                      {apartment.internet_speed && (
-                        <p className="text-sm text-gray-500">
-                          {apartment.internet_speed}
-                        </p>
-                      )}
+              <div className="space-y-4">
+                {/* Power Supply Section */}
+                <div className="bg-yellow-50 rounded-lg p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <Zap className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 mb-2">
+                        Power Supply
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        {apartment.electricity_included && (
+                          <div className="flex items-center gap-2 text-green-700">
+                            <Check className="w-4 h-4" />
+                            <span>Electricity cost included in price</span>
+                          </div>
+                        )}
+                        {!apartment.electricity_included && (
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <Info className="w-4 h-4" />
+                            <span>
+                              Prepaid meter - buy your own electricity units
+                            </span>
+                          </div>
+                        )}
+
+                        {apartment.generator_available && (
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <Check className="w-4 h-4" />
+                            <span>
+                              Generator backup
+                              {apartment.generator_hours &&
+                                ` - ${apartment.generator_hours}`}
+                            </span>
+                          </div>
+                        )}
+
+                        {apartment.inverter_available && (
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <Check className="w-4 h-4" />
+                            <span>Inverter backup system</span>
+                          </div>
+                        )}
+
+                        {apartment.solar_power && (
+                          <div className="flex items-center gap-2 text-green-700">
+                            <Sun className="w-4 h-4" />
+                            <span>Solar power system</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {apartment.parking_spaces > 0 && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Car className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="font-medium">Parking</p>
-                      <p className="text-sm text-gray-500">
-                        {apartment.parking_spaces} space
-                        {apartment.parking_spaces > 1 ? "s" : ""}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {apartment.generator_available && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Zap className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="font-medium">Generator</p>
-                      {apartment.generator_hours && (
-                        <p className="text-sm text-gray-500">
-                          {apartment.generator_hours}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {apartment.inverter_available && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Zap className="w-5 h-5 text-purple-600" />
-                    <p className="font-medium">Inverter available</p>
-                  </div>
-                )}
-
-                {apartment.solar_power && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Zap className="w-5 h-5 text-purple-600" />
-                    <p className="font-medium">Solar power</p>
-                  </div>
-                )}
-
+                {/* Water Supply */}
                 {apartment.water_supply && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Droplet className="w-5 h-5 text-purple-600" />
+                  <div className="flex items-start gap-3">
+                    <Droplet className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                     <div>
-                      <p className="font-medium">Water supply</p>
-                      <p className="text-sm text-gray-500 capitalize">
-                        {apartment.water_supply.replace("_", " ")}
+                      <p className="font-medium text-gray-900">Water Supply</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {waterSupplyLabel[apartment.water_supply]}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {apartment.has_balcony && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Check className="w-5 h-5 text-purple-600" />
-                    <p className="font-medium">Balcony</p>
+                {/* Internet */}
+                {apartment.internet_included && (
+                  <div className="flex items-start gap-3">
+                    <Wifi className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-medium text-gray-900">WiFi Internet</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {apartment.internet_speed
+                          ? `High-speed connection - ${apartment.internet_speed}`
+                          : "Included in price"}
+                      </p>
+                    </div>
                   </div>
                 )}
 
-                {apartment.has_terrace && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Check className="w-5 h-5 text-purple-600" />
-                    <p className="font-medium">Terrace</p>
-                  </div>
-                )}
-
-                {apartment.furnished && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Check className="w-5 h-5 text-purple-600" />
-                    <p className="font-medium">Fully furnished</p>
-                  </div>
-                )}
-
-                {apartment.kitchen_equipped && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Check className="w-5 h-5 text-purple-600" />
-                    <p className="font-medium">Equipped kitchen</p>
+                {/* All Utilities Included Badge */}
+                {apartment.utilities_included && (
+                  <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <span className="font-semibold text-green-900">
+                        All utilities included in price
+                      </span>
+                    </div>
+                    <p className="text-xs text-green-700 mt-1 ml-7">
+                      No additional costs for electricity, water, or internet
+                    </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Security Features */}
-            {Object.values(securityFeatures).some((v) => v) && (
-              <div className="border-b border-gray-200 pb-8">
+            {/* Features & Furnishing */}
+            <div className="pb-8 border-b border-gray-200">
+              <h3 className="text-xl font-semibold mb-6">
+                Features & Furnishing
+              </h3>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {apartment.furnished && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Check className="w-5 h-5 text-purple-600" />
+                    <span>Fully Furnished</span>
+                  </div>
+                )}
+                {apartment.kitchen_equipped && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Check className="w-5 h-5 text-purple-600" />
+                    <span>Equipped Kitchen</span>
+                  </div>
+                )}
+                {apartment.has_balcony && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Check className="w-5 h-5 text-purple-600" />
+                    <span>Balcony</span>
+                  </div>
+                )}
+                {apartment.has_terrace && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Check className="w-5 h-5 text-purple-600" />
+                    <span>Terrace</span>
+                  </div>
+                )}
+                {apartment.parking_spaces > 0 && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Car className="w-5 h-5 text-purple-600" />
+                    <span>
+                      {apartment.parking_spaces} Parking Space
+                      {apartment.parking_spaces > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Amenities */}
+            {selectedAmenities.length > 0 && (
+              <div className="pb-8 border-b border-gray-200">
                 <h3 className="text-xl font-semibold mb-6">
-                  Security features
+                  Amenities ({selectedAmenities.length})
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {selectedAmenities.map((amenityKey) => (
+                    <div
+                      key={amenityKey}
+                      className="flex items-center gap-3 text-gray-700"
+                    >
+                      <Check className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                      <span className="text-sm">
+                        {getAmenityLabel(amenityKey)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Security Features */}
+            {selectedSecurityFeatures.length > 0 && (
+              <div className="pb-8 border-b border-gray-200">
+                <h3 className="text-xl font-semibold mb-6">
+                  Security Features
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {securityFeatures.estate_gate && (
-                    <div className="flex items-center gap-3 text-gray-700">
+                  {selectedSecurityFeatures.map((featureKey) => (
+                    <div
+                      key={featureKey}
+                      className="flex items-center gap-3 text-gray-700"
+                    >
                       <Shield className="w-5 h-5 text-purple-600" />
-                      <p className="font-medium">Estate gate</p>
+                      <span>{securityFeatureLabels[featureKey]}</span>
                     </div>
-                  )}
-                  {securityFeatures["24hr_security"] && (
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <Shield className="w-5 h-5 text-purple-600" />
-                      <p className="font-medium">24-hour security</p>
-                    </div>
-                  )}
-                  {securityFeatures.access_control && (
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <Shield className="w-5 h-5 text-purple-600" />
-                      <p className="font-medium">Access control</p>
-                    </div>
-                  )}
-                  {securityFeatures.intercom_system && (
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <Shield className="w-5 h-5 text-purple-600" />
-                      <p className="font-medium">Intercom system</p>
-                    </div>
-                  )}
-                  {securityFeatures.cctv_surveillance && (
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <Shield className="w-5 h-5 text-purple-600" />
-                      <p className="font-medium">CCTV surveillance</p>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
 
             {/* House Rules */}
             {apartment.house_rules && (
-              <div className="border-b border-gray-200 pb-8">
-                <h3 className="text-xl font-semibold mb-4">House rules</h3>
+              <div className="pb-8 border-b border-gray-200">
+                <h3 className="text-xl font-semibold mb-4">House Rules</h3>
                 <RichContentRenderer
                   content={apartment.house_rules}
-                  className="text-gray-700"
+                  className="text-gray-700 prose prose-sm max-w-none"
                 />
               </div>
             )}
 
             {/* Cancellation Policy */}
             {apartment.cancellation_policy && (
-              <div>
+              <div className="pb-8 border-b border-gray-200">
                 <h3 className="text-xl font-semibold mb-4">
-                  Cancellation policy
+                  Cancellation Policy
                 </h3>
                 <RichContentRenderer
                   content={apartment.cancellation_policy}
-                  className="text-gray-700"
+                  className="text-gray-700 prose prose-sm max-w-none"
                 />
               </div>
             )}
+
+            {/* Video & Virtual Tour */}
+            {(apartment.video_url || apartment.virtual_tour_url) && (
+              <div className="pb-8 border-b border-gray-200">
+                <h3 className="text-xl font-semibold mb-4">
+                  Video & Virtual Tour
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {apartment.video_url && (
+                    <a
+                      href={apartment.video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      <PlayCircle className="w-5 h-5 text-purple-600" />
+                      <span className="font-medium">Watch Video Tour</span>
+                    </a>
+                  )}
+                  {apartment.virtual_tour_url && (
+                    <a
+                      href={apartment.virtual_tour_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      <Globe className="w-5 h-5 text-purple-600" />
+                      <span className="font-medium">View Virtual Tour</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Location Details */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Location</h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {apartment.area && `${apartment.area}, `}
+                      {apartment.city}, {apartment.state}
+                    </p>
+                    {apartment.address && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Full address shared after booking confirmation
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Booking Card */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <div className="border border-gray-300 rounded-2xl p-6 shadow-xl">
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
+                {/* Pricing */}
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-3xl font-semibold text-gray-900">
                       {formatPrice(apartment.price_per_night)}
                     </span>
@@ -448,18 +515,43 @@ export default function ApartmentClient({ apartment }) {
                   </div>
 
                   {apartment.price_per_week && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      {formatPrice(apartment.price_per_week)} / week
-                    </p>
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-baseline justify-between mb-1">
+                        <span className="text-sm text-gray-700">
+                          Weekly rate:
+                        </span>
+                        <span className="font-semibold text-gray-900">
+                          {formatPrice(apartment.price_per_week)}
+                        </span>
+                      </div>
+                      {weeklySavings > 0 && (
+                        <p className="text-xs text-green-700">
+                          Save {formatPrice(weeklySavings)} vs. nightly rate
+                        </p>
+                      )}
+                    </div>
                   )}
 
                   {apartment.price_per_month && (
-                    <p className="text-sm text-gray-600">
-                      {formatPrice(apartment.price_per_month)} / month
-                    </p>
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-baseline justify-between mb-1">
+                        <span className="text-sm text-gray-700">
+                          Monthly rate:
+                        </span>
+                        <span className="font-semibold text-gray-900">
+                          {formatPrice(apartment.price_per_month)}
+                        </span>
+                      </div>
+                      {monthlySavings > 0 && (
+                        <p className="text-xs text-green-700">
+                          Save {formatPrice(monthlySavings)} vs. nightly rate
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
 
+                {/* Booking Details */}
                 <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 text-gray-700">
@@ -494,7 +586,7 @@ export default function ApartmentClient({ apartment }) {
 
                   {apartment.caution_deposit && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700">Caution deposit</span>
+                      <span className="text-gray-700">Security deposit</span>
                       <span className="font-medium">
                         {formatPrice(apartment.caution_deposit)}
                       </span>
@@ -502,35 +594,53 @@ export default function ApartmentClient({ apartment }) {
                   )}
                 </div>
 
-                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3.5 rounded-lg transition mb-3">
-                  {apartment.instant_booking ? "Book now" : "Request to book"}
-                </button>
-
-                <button className="w-full border border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-3.5 rounded-lg transition">
-                  Contact host
-                </button>
-
+                {/* CTA Button */}
+                <ApartmentBookingCard apartment={apartment} />
                 {apartment.instant_booking && (
-                  <p className="text-xs text-center text-gray-500 mt-4">
-                    Instant booking available - You won't be charged yet
+                  <p className="text-xs text-center text-gray-500">
+                    Instant booking - You won't be charged yet
                   </p>
                 )}
               </div>
 
-              {/* Additional Info */}
-              <div className="mt-6 p-4 bg-purple-50 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium text-gray-900 mb-1">
-                      This is a verified property
-                    </p>
-                    <p className="text-gray-600">
-                      All details have been confirmed by our team
-                    </p>
+              {/* Trust Badge */}
+              {apartment.is_verified && (
+                <div className="mt-6 p-4 bg-purple-50 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium text-gray-900 mb-1">
+                        Verified Property
+                      </p>
+                      <p className="text-gray-600">
+                        All details confirmed by our team
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Availability Notice */}
+              {(apartment.available_from || apartment.available_until) && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium text-blue-900 mb-1">
+                        Availability Period
+                      </p>
+                      <p className="text-blue-800">
+                        {apartment.available_from &&
+                          `From: ${new Date(apartment.available_from).toLocaleDateString()}`}
+                        {apartment.available_from &&
+                          apartment.available_until && <br />}
+                        {apartment.available_until &&
+                          `Until: ${new Date(apartment.available_until).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

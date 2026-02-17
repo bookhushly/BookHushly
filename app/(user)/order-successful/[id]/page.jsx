@@ -40,19 +40,10 @@ const OrderSuccessful = () => {
 
   // Detect booking type from URL or data
   const detectBookingType = useCallback((bookingData) => {
-    // Check if it's an event booking (has ticket_details or guests field used for tickets)
-    if (bookingData?.ticket_details) {
-      return BOOKING_TYPES.EVENT;
-    }
-    // Check for hotel-specific fields
-    if (bookingData?.room_type_id || bookingData?.check_in_date) {
-      return BOOKING_TYPES.HOTEL;
-    }
-    // Check for apartment-specific fields
-    if (bookingData?.check_in_date && bookingData?.bedrooms) {
-      return BOOKING_TYPES.APARTMENT;
-    }
-    // Default to event if has listing_id (most listings are events)
+    if (bookingData?.ticket_details) return BOOKING_TYPES.EVENT;
+    if (bookingData?.room_type_id) return BOOKING_TYPES.HOTEL; // hotel has room_type_id
+    if (bookingData?.apartment_id) return BOOKING_TYPES.APARTMENT; // apartment has apartment_id
+    if (bookingData?.listing_id) return BOOKING_TYPES.EVENT;
     return BOOKING_TYPES.EVENT;
   }, []);
 
@@ -116,21 +107,24 @@ const OrderSuccessful = () => {
       }
 
       // Try apartment_bookings
-      let { data: apartmentBooking, error: apartmentError } = await supabase
+      // Try apartment_bookings
+      let { data: apartmentBooking } = await supabase
         .from("apartment_bookings")
         .select(
           `
-        *,
-        apartment:apartment_id (
-          id,
-          name,
-          location,
-          vendors:vendor_id (
-            business_name,
-            phone_number
-          )
-        )
-      `,
+    *,
+    apartment:apartment_id (
+      id,
+      name,
+      city,
+      state,
+      area,
+      address,
+      check_in_time,
+      check_out_time,
+      vendor_id
+    )
+  `,
         )
         .eq("id", bookingId)
         .single();
@@ -138,7 +132,6 @@ const OrderSuccessful = () => {
       if (apartmentBooking) {
         return { data: apartmentBooking, type: BOOKING_TYPES.APARTMENT };
       }
-
       throw new Error("Booking not found");
     },
     [supabase],
@@ -464,6 +457,14 @@ const OrderSuccessful = () => {
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-gray-600">Location</span>
+                  <span className="text-gray-900">
+                    {booking.apartment?.city && booking.apartment?.state
+                      ? `${booking.apartment.city}, ${booking.apartment.state}`
+                      : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-gray-600">Check-in</span>
                   <span className="text-gray-900">
                     {booking.check_in_date
@@ -480,8 +481,16 @@ const OrderSuccessful = () => {
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-gray-600">Nights</span>
+                  <span className="text-gray-900">
+                    {booking.number_of_nights}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-gray-600">Guests</span>
-                  <span className="text-gray-900">{getNumberOfGuests()}</span>
+                  <span className="text-gray-900">
+                    {booking.number_of_guests}
+                  </span>
                 </div>
               </>
             )}

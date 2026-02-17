@@ -38,9 +38,8 @@ export async function generateMetadata({ params }) {
       };
     }
 
-    const cleanDescription = apartment.description
-      ?.replace(/<[^>]*>/g, "")
-      .substring(0, 160);
+    const desc = apartment.description ? String(apartment.description) : "";
+    const cleanDescription = desc.replace(/<[^>]*>/g, "").substring(0, 160);
 
     const metadata = {
       title: `${apartment.name} - ${apartment.city}, ${apartment.state}`,
@@ -83,8 +82,7 @@ async function getApartment(id) {
           *,
           vendors:vendor_id (
             id,
-            business_name,
-            email
+            business_name
           )
         `,
       )
@@ -187,20 +185,22 @@ export default async function ApartmentPage({ params }) {
   };
 
   console.log("JSON-LD schema created");
+  console.log("JSON-LD schema created");
   console.log("Rendering ApartmentClient component...");
   console.log("=== APARTMENT PAGE RENDER END ===");
+
+  const jsonLdString = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString }}
       />
       <ApartmentClient apartment={apartment} />
     </>
   );
 }
-
 // Generate static params for common apartments
 export async function generateStaticParams() {
   console.log("=== GENERATE STATIC PARAMS START ===");

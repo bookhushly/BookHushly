@@ -29,7 +29,7 @@ const navSections = [
     label: "Overview",
     items: [
       { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-      { title: "Listings", href: "/admin/dashboard/listings", icon: List },
+      // { title: "Listings", href: "/admin/dashboard/listings", icon: List },
       { title: "Vendors", href: "/admin/dashboard/vendors", icon: Users2 },
       { title: "Customers", href: "/admin/dashboard/customers", icon: Users2 },
     ],
