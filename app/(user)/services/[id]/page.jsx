@@ -1,13 +1,14 @@
+// app/services/[...slug]/page.jsx
 import { Suspense } from "react";
 import ServiceDetailClient from "./service-detail-content";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   try {
     const { slug } = await params;
     const id = slug[slug.length - 1];
-    const supabase = await createClient();
+    const supabase = createStaticClient(); // no cookies needed for metadata
 
     const [listingsResult, hotelsResult, apartmentsResult] = await Promise.all([
       supabase
