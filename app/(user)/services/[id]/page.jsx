@@ -1,4 +1,4 @@
-// app/services/[id]/page.jsx
+// app/services/[...slug]/page.jsx
 import { Suspense } from "react";
 import ServiceDetailClient from "./service-detail-content";
 import { createClient } from "@/lib/supabase/server";
@@ -6,10 +6,10 @@ import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   try {
-    const { id } = await params;
+    const { slug } = await params;
+    const id = slug[slug.length - 1];
     const supabase = await createClient();
 
-    // Try fetching from all possible tables
     const [listingsResult, hotelsResult, apartmentsResult] = await Promise.all([
       supabase
         .from("listings")
@@ -75,19 +75,26 @@ export async function generateMetadata({ params }) {
 
 export default async function ServiceDetailPage({ params }) {
   try {
-    const { id } = await params;
+    const { slug } = await params;
+    const id = slug[slug.length - 1];
     const supabase = await createClient();
 
-    // Try fetching from listings first
-    let { data: service, error } = await supabase
+    let service = null;
+    let serviceType = null;
+
+    // Try listings first
+    const listingsResult = await supabase
       .from("listings")
       .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    let serviceType = "listings";
+    if (listingsResult.data) {
+      service = listingsResult.data;
+      serviceType = "listings";
+    }
 
-    // If not found in listings, try hotels
+    // Try hotels
     if (!service) {
       const hotelsResult = await supabase
         .from("hotels")
@@ -95,11 +102,13 @@ export default async function ServiceDetailPage({ params }) {
         .eq("id", id)
         .maybeSingle();
 
-      service = hotelsResult.data;
-      serviceType = "hotels";
+      if (hotelsResult.data) {
+        service = hotelsResult.data;
+        serviceType = "hotels";
+      }
     }
 
-    // If still not found, try serviced apartments
+    // Try serviced apartments
     if (!service) {
       const apartmentsResult = await supabase
         .from("serviced_apartments")
@@ -107,15 +116,16 @@ export default async function ServiceDetailPage({ params }) {
         .eq("id", id)
         .maybeSingle();
 
-      service = apartmentsResult.data;
-      serviceType = "serviced_apartments";
+      if (apartmentsResult.data) {
+        service = apartmentsResult.data;
+        serviceType = "serviced_apartments";
+      }
     }
 
     if (!service) {
       notFound();
     }
 
-    // Normalize service data based on source
     const normalizedService = normalizeServiceData(service, serviceType);
 
     return (
@@ -129,7 +139,6 @@ export default async function ServiceDetailPage({ params }) {
   }
 }
 
-// Normalize data from different tables
 function normalizeServiceData(service, type) {
   if (type === "hotels") {
     return {
@@ -138,7 +147,6 @@ function normalizeServiceData(service, type) {
       category: "hotels",
       location: `${service.city}, ${service.state}`,
       media_urls: service.image_urls || [],
-      // Hotels don't have a single price, will be handled in detail component
     };
   }
 
@@ -155,7 +163,6 @@ function normalizeServiceData(service, type) {
     };
   }
 
-  // Listings table data (already normalized)
   return {
     ...service,
     media_urls: service.media_urls || [],
@@ -164,7 +171,6 @@ function normalizeServiceData(service, type) {
   };
 }
 
-// Loading skeleton
 function ServiceDetailSkeleton() {
   return (
     <div className="min-h-screen bg-gray-50 animate-pulse">
