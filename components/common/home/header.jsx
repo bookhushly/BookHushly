@@ -318,8 +318,8 @@ export function Header() {
                   <div className="space-y-2 mt-4">
                     <Link
                       href={
-                        userRole === "vendor"
-                          ? "/vendor/dashboard"
+                        userRole === "customer"
+                          ? "/dashboard/customer"
                           : `/${userRole}/dashboard`
                       }
                       onClick={() => setIsMenuOpen(false)}
@@ -339,7 +339,7 @@ export function Header() {
                     )}
 
                     <Link
-                      href={`/${userRole}/profile`}
+                      href={`/${userRole}/dashboard/profile`}
                       onClick={() => setIsMenuOpen(false)}
                       className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
                     >
@@ -347,7 +347,7 @@ export function Header() {
                     </Link>
 
                     {/* <Link
-                      href={`/${userRole}/settings`}
+                      href={`/${userRole}/dashboard/settings`}
                       onClick={() => setIsMenuOpen(false)}
                       className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
                     >
