@@ -161,8 +161,8 @@ export default function ServicesPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleViewRequests = () => {
-    router.push("/dashboard/requests");
+  const handleViewRequests = (serviceType) => {
+    router.push(`/dashboard/customer/${serviceType}`);
   };
 
   const handleNewRequest = () => {

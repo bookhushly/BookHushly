@@ -133,7 +133,7 @@ export default function SubmissionSuccess({
           <>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                onClick={onViewRequests}
+                onClick={() => onViewRequests(serviceType)}
                 variant="outline"
                 className="flex-1 h-12"
               >
