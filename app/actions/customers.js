@@ -11,7 +11,7 @@ function getClient() {
 // ─── Dashboard Overview ───────────────────────────────────────────────────────
 
 export async function getDashboardStats(userId) {
-  const supabase = getClient();
+  const supabase = await getClient();
 
   const [
     eventBookings,
@@ -99,7 +99,7 @@ export async function getDashboardStats(userId) {
 }
 
 export async function getRecentActivity(userId) {
-  const supabase = getClient();
+  const supabase = await getClient();
 
   const [events, hotels, apartments, logistics, security] = await Promise.all([
     supabase
@@ -215,7 +215,7 @@ export async function getRecentActivity(userId) {
 // ─── Event Bookings ───────────────────────────────────────────────────────────
 
 export async function getEventBookings(userId, page = 1, pageSize = 10) {
-  const supabase = getClient();
+  const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
   const { data, error, count } = await supabase
@@ -235,7 +235,7 @@ export async function getEventBookings(userId, page = 1, pageSize = 10) {
 // ─── Hotel Bookings ───────────────────────────────────────────────────────────
 
 export async function getHotelBookings(userId, page = 1, pageSize = 10) {
-  const supabase = getClient();
+  const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
   const { data, error, count } = await supabase
@@ -257,7 +257,7 @@ export async function getHotelBookings(userId, page = 1, pageSize = 10) {
 // ─── Apartment Bookings ───────────────────────────────────────────────────────
 
 export async function getApartmentBookings(userId, page = 1, pageSize = 10) {
-  const supabase = getClient();
+  const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
   const { data, error, count } = await supabase
@@ -277,7 +277,7 @@ export async function getApartmentBookings(userId, page = 1, pageSize = 10) {
 // ─── Logistics Requests ───────────────────────────────────────────────────────
 
 export async function getLogisticsRequests(userId, page = 1, pageSize = 10) {
-  const supabase = getClient();
+  const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
   const { data, error, count } = await supabase
@@ -294,7 +294,7 @@ export async function getLogisticsRequests(userId, page = 1, pageSize = 10) {
 // ─── Security Requests ────────────────────────────────────────────────────────
 
 export async function getSecurityRequests(userId, page = 1, pageSize = 10) {
-  const supabase = getClient();
+  const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
   const { data, error, count } = await supabase
@@ -311,7 +311,7 @@ export async function getSecurityRequests(userId, page = 1, pageSize = 10) {
 // ─── User Profile ─────────────────────────────────────────────────────────────
 
 export async function getUserProfile(userId) {
-  const supabase = getClient();
+  const supabase = await getClient();
 
   const { data, error } = await supabase
     .from("users")
@@ -324,7 +324,7 @@ export async function getUserProfile(userId) {
 }
 
 export async function updateUserProfile(userId, updates) {
-  const supabase = getClient();
+  const supabase = await getClient();
 
   const { data, error } = await supabase
     .from("users")
@@ -346,7 +346,7 @@ export async function updateUserProfile(userId, updates) {
 // ─── Payments ─────────────────────────────────────────────────────────────────
 
 export async function getPaymentHistory(userId, page = 1, pageSize = 20) {
-  const supabase = getClient();
+  const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
   const { data, error, count } = await supabase
@@ -363,7 +363,7 @@ export async function getPaymentHistory(userId, page = 1, pageSize = 20) {
 // ─── Single Booking Details ───────────────────────────────────────────────────
 
 export async function getBookingDetails(type, bookingId, userId) {
-  const supabase = getClient();
+  const supabase = await getClient();
 
   const queries = {
     event: () =>
