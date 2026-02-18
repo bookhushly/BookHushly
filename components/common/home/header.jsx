@@ -129,8 +129,8 @@ export function Header() {
               <>
                 <Link
                   href={
-                    userRole === "vendor"
-                      ? "/vendor/dashboard"
+                    userRole === "customer"
+                      ? "/dashboard/customer"
                       : `/${userRole}/dashboard`
                   }
                   className="text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors"
@@ -177,7 +177,11 @@ export function Header() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link
-                        href={`/${userRole}/profile`}
+                        href={
+                          userRole === "customer"
+                            ? "/dashboard/customer/profile"
+                            : `/${userRole}/dashboard/profile`
+                        }
                         className="flex items-center cursor-pointer"
                       >
                         <User className="mr-2 h-4 w-4" />
@@ -186,7 +190,11 @@ export function Header() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href={`/${userRole}/settings`}
+                        href={
+                          userRole === "customer"
+                            ? "/dashboard/customer/settings"
+                            : `/${userRole}/dashboard/settings`
+                        }
                         className="flex items-center cursor-pointer"
                       >
                         <Settings className="mr-2 h-4 w-4" />
@@ -338,13 +346,13 @@ export function Header() {
                       Profile
                     </Link>
 
-                    <Link
+                    {/* <Link
                       href={`/${userRole}/settings`}
                       onClick={() => setIsMenuOpen(false)}
                       className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
                     >
                       Settings
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
               ) : (

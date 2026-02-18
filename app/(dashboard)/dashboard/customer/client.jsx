@@ -32,31 +32,31 @@ const SERVICE_LINKS = [
   {
     label: "Book Hotel",
     icon: Hotel,
-    href: "/hotels",
+    href: "/services?category=hotels",
     color: "text-blue-600 bg-blue-50",
   },
   {
     label: "Rent Apartment",
     icon: Building2,
-    href: "/apartments",
+    href: "/services?category=serviced_apartments",
     color: "text-purple-600 bg-purple-50",
   },
   {
     label: "Book Event",
     icon: Ticket,
-    href: "/events",
+    href: "/services?category=events",
     color: "text-pink-600 bg-pink-50",
   },
   {
     label: "Request Logistics",
     icon: Truck,
-    href: "/logistics",
+    href: "/quote-services?tab=logistics",
     color: "text-amber-600 bg-amber-50",
   },
   {
     label: "Hire Security",
     icon: Shield,
-    href: "/security",
+    href: "/quote-services?tab=security",
     color: "text-green-600 bg-green-50",
   },
 ];
