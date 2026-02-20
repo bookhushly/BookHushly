@@ -183,7 +183,7 @@ export default function KYCPage() {
     }
 
     if (currentStep === 3) {
-      const requiresCAC = [
+      const requiresDoc = [
         "hotels",
         "food_restaurants",
         "serviced_apartments",
@@ -192,19 +192,13 @@ export default function KYCPage() {
       ].includes(formData.business_category);
 
       if (
-        requiresCAC &&
+        requiresDoc &&
         !formData.business_registration_number &&
         !formData.nin
       ) {
-        setError("Either CAC Registration Number or NIN is required");
-        return false;
-      }
-
-      if (
-        formData.nin &&
-        (!formData.nin_first_name.trim() || !formData.nin_last_name.trim())
-      ) {
-        setError("First Name and Last Name are required for NIN verification");
+        setError(
+          "Please provide either your CAC Registration Number or NIN (at least one is required)",
+        );
         return false;
       }
 
@@ -212,8 +206,15 @@ export default function KYCPage() {
         setError("NIN must be an 11-digit number");
         return false;
       }
-    }
 
+      if (
+        formData.nin &&
+        (!formData.nin_first_name.trim() || !formData.nin_last_name.trim())
+      ) {
+        setError("First Name and Last Name are required when providing NIN");
+        return false;
+      }
+    }
     if (currentStep === 5) {
       if (
         (formData.business_registration_number ||
@@ -509,96 +510,183 @@ export default function KYCPage() {
                   Legal Information
                 </CardTitle>
                 <CardDescription>
-                  Provide {requiresCAC ? "CAC Registration Number" : "NIN"}
-                  {requiresDL
-                    ? " and Driver's License"
-                    : requiresCAC
-                      ? " or NIN"
-                      : ""}{" "}
-                  details
+                  {requiresCAC
+                    ? "Provide at least one of: CAC Registration Number or NIN"
+                    : requiresDL
+                      ? "Provide your Driver's License details"
+                      : "Provide your identification details"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 {requiresCAC && (
-                  <div className="space-y-2">
-                    <Label htmlFor="business_registration_number">
-                      CAC Registration Number{requiresCAC ? " *" : ""}
-                    </Label>
-                    <Input
-                      id="business_registration_number"
-                      name="business_registration_number"
-                      placeholder="Enter CAC Registration Number"
-                      value={formData.business_registration_number}
-                      onChange={handleChange}
-                      required={requiresCAC}
-                      className="border-gray-200 focus:ring-purple-400"
-                    />
-                  </div>
+                  <>
+                    {/* Either/Or notice */}
+                    <div className="rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-800">
+                      You only need to provide <strong>one</strong> of the
+                      following — CAC number <strong>or</strong> NIN. Providing
+                      both is optional but welcome.
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* CAC */}
+                      <div className="rounded-lg border border-gray-200 p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Label
+                            htmlFor="business_registration_number"
+                            className="text-sm font-semibold"
+                          >
+                            CAC Registration Number
+                          </Label>
+                          <span className="text-xs text-gray-400 font-normal">
+                            (optional if NIN provided)
+                          </span>
+                        </div>
+                        <Input
+                          id="business_registration_number"
+                          name="business_registration_number"
+                          placeholder="e.g. RC1234567"
+                          value={formData.business_registration_number}
+                          onChange={handleChange}
+                          className="border-gray-200 focus:ring-purple-400"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <div className="flex-1 h-px bg-gray-200" />
+                        <span>OR</span>
+                        <div className="flex-1 h-px bg-gray-200" />
+                      </div>
+
+                      {/* NIN */}
+                      <div className="rounded-lg border border-gray-200 p-4 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Label
+                            htmlFor="nin"
+                            className="text-sm font-semibold"
+                          >
+                            National Identification Number (NIN)
+                          </Label>
+                          <span className="text-xs text-gray-400 font-normal">
+                            (optional if CAC provided)
+                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-gray-400 cursor-help text-xs">
+                                ⓘ
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Enter your 11-digit NIN along with the name
+                              associated with it.
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <Input
+                          id="nin"
+                          name="nin"
+                          placeholder="Enter 11-digit NIN"
+                          value={formData.nin}
+                          onChange={handleChange}
+                          className="border-gray-200 focus:ring-purple-400"
+                        />
+                        {formData.nin && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                            <div className="space-y-2">
+                              <Label htmlFor="nin_first_name">
+                                First Name (as on NIN) *
+                              </Label>
+                              <Input
+                                id="nin_first_name"
+                                name="nin_first_name"
+                                placeholder="First name"
+                                value={formData.nin_first_name}
+                                onChange={handleChange}
+                                className="border-gray-200 focus:ring-purple-400"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="nin_last_name">
+                                Last Name (as on NIN) *
+                              </Label>
+                              <Input
+                                id="nin_last_name"
+                                name="nin_last_name"
+                                placeholder="Last name"
+                                value={formData.nin_last_name}
+                                onChange={handleChange}
+                                className="border-gray-200 focus:ring-purple-400"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
                 )}
 
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="nin">
-                      National Identification Number (NIN)
-                      {!requiresCAC ? " *" : ""}
-                    </Label>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-gray-500 cursor-help">ⓘ</span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Enter your 11-digit NIN. Provide the individual&apos;s
-                        first and last name associated with the NIN.
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <Input
-                    id="nin"
-                    name="nin"
-                    placeholder="Enter 11-digit NIN"
-                    value={formData.nin}
-                    onChange={handleChange}
-                    required={!requiresCAC}
-                    className="border-gray-200 focus:ring-purple-400"
-                  />
-                </div>
-
-                {formData.nin && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {!requiresCAC && !requiresDL && (
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="nin_first_name">
-                        First Name for NIN *
-                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="nin">NIN</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-gray-400 cursor-help text-xs">
+                              ⓘ
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Enter your 11-digit NIN.
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                       <Input
-                        id="nin_first_name"
-                        name="nin_first_name"
-                        placeholder="Enter first name"
-                        value={formData.nin_first_name}
+                        id="nin"
+                        name="nin"
+                        placeholder="Enter 11-digit NIN"
+                        value={formData.nin}
                         onChange={handleChange}
-                        required
                         className="border-gray-200 focus:ring-purple-400"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="nin_last_name">Last Name for NIN *</Label>
-                      <Input
-                        id="nin_last_name"
-                        name="nin_last_name"
-                        placeholder="Enter last name"
-                        value={formData.nin_last_name}
-                        onChange={handleChange}
-                        required
-                        className="border-gray-200 focus:ring-purple-400"
-                      />
-                    </div>
+                    {formData.nin && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="nin_first_name">
+                            First Name (as on NIN) *
+                          </Label>
+                          <Input
+                            id="nin_first_name"
+                            name="nin_first_name"
+                            placeholder="First name"
+                            value={formData.nin_first_name}
+                            onChange={handleChange}
+                            className="border-gray-200 focus:ring-purple-400"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="nin_last_name">
+                            Last Name (as on NIN) *
+                          </Label>
+                          <Input
+                            id="nin_last_name"
+                            name="nin_last_name"
+                            placeholder="Last name"
+                            value={formData.nin_last_name}
+                            onChange={handleChange}
+                            className="border-gray-200 focus:ring-purple-400"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {requiresDL && (
-                  <>
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="drivers_license">
-                        Driver&apos;s License Number *
+                        Driver's License Number *
                       </Label>
                       <Input
                         id="drivers_license"
@@ -606,7 +694,6 @@ export default function KYCPage() {
                         placeholder="Enter Driver's License Number"
                         value={formData.drivers_license}
                         onChange={handleChange}
-                        required
                         className="border-gray-200 focus:ring-purple-400"
                       />
                     </div>
@@ -623,7 +710,7 @@ export default function KYCPage() {
                         className="border-gray-200 focus:ring-purple-400"
                       />
                     </div>
-                  </>
+                  </div>
                 )}
               </CardContent>
             </Card>
