@@ -23,7 +23,7 @@ import MediaUpload from "@/components/shared/listings/create/MediaUpload";
 import ReviewListing from "@/components/shared/listings/create/ReviewListing";
 import NavigationButtons from "@/components/shared/listings/create/NavigationButtons";
 import HotelRegistration from "../../../../../../components/shared/dashboard/vendor/hotels/create/create";
-
+import { motion } from "framer-motion";
 const STEPS = [
   { id: 1, label: "Category" },
   { id: 2, label: "Details" },
