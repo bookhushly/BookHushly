@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -14,33 +14,28 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const EVENT_TYPES = [{ value: "event_organizer", label: "Event Organizer" }];
-
 export default function CategorySelection({
   selectedCategory,
   onCategoryChange,
-  eventType,
   onEventTypeChange,
   errors,
   vendorCategory,
 }) {
-  // Fetch categories with React Query
   const {
     data: categories = [],
     isLoading,
     error: fetchError,
   } = useVendorCategories(vendorCategory);
 
-  // Memoize whether to show event type selector
-  const showEventTypeSelector = useMemo(
-    () => selectedCategory === "events",
-    [selectedCategory],
-  );
+  // Auto-set event_organizer silently whenever events is selected
+  useEffect(() => {
+    if (selectedCategory === "events") {
+      onEventTypeChange("event_organizer");
+    }
+  }, [selectedCategory, onEventTypeChange]);
 
-  // Memoized category options for better performance
   const categoryOptions = useMemo(() => {
     if (!categories.length) return null;
-
     return categories.map((category) => (
       <SelectItem key={category.value} value={category.value}>
         <div className="flex items-center">
@@ -51,7 +46,6 @@ export default function CategorySelection({
     ));
   }, [categories]);
 
-  // Loading state
   if (isLoading) {
     return (
       <Card className="border-none shadow-lg rounded-2xl bg-white">
@@ -69,7 +63,6 @@ export default function CategorySelection({
     );
   }
 
-  // Error state
   if (fetchError) {
     return (
       <Card className="border-none shadow-lg rounded-2xl bg-white">
@@ -90,7 +83,6 @@ export default function CategorySelection({
     );
   }
 
-  // Empty state
   if (!categories.length) {
     return (
       <Card className="border-none shadow-lg rounded-2xl bg-white">
@@ -119,9 +111,7 @@ export default function CategorySelection({
           Select Category
         </CardTitle>
       </CardHeader>
-
       <CardContent className="space-y-6">
-        {/* Category Selection */}
         <div className="space-y-2">
           <label
             htmlFor="category-select"
@@ -138,12 +128,10 @@ export default function CategorySelection({
             >
               <SelectValue placeholder="Choose a category" />
             </SelectTrigger>
-
             <SelectContent className="rounded-xl max-h-[300px]">
               {categoryOptions}
             </SelectContent>
           </Select>
-
           {errors.global && (
             <p className="text-sm text-red-500 font-medium flex items-center gap-1.5">
               <AlertCircle className="h-3.5 w-3.5" />
@@ -151,43 +139,6 @@ export default function CategorySelection({
             </p>
           )}
         </div>
-
-        {/* Event Type Selection - Only shown for events category */}
-        {showEventTypeSelector && (
-          <div className="space-y-2">
-            <label
-              htmlFor="event-type-select"
-              className="text-sm font-medium text-gray-700"
-            >
-              Event Type <span className="text-red-500">*</span>
-            </label>
-            <Select value={eventType} onValueChange={onEventTypeChange}>
-              <SelectTrigger
-                id="event-type-select"
-                className={`w-full rounded-xl border-gray-300 focus:ring-2 focus:ring-purple-500 transition-colors ${
-                  errors.eventType ? "border-red-500 focus:ring-red-500" : ""
-                }`}
-              >
-                <SelectValue placeholder="Select event type" />
-              </SelectTrigger>
-
-              <SelectContent className="rounded-xl">
-                {EVENT_TYPES.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {errors.eventType && (
-              <p className="text-sm text-red-500 font-medium flex items-center gap-1.5">
-                <AlertCircle className="h-3.5 w-3.5" />
-                {errors.eventType}
-              </p>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
