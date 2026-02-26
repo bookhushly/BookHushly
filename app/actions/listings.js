@@ -144,7 +144,7 @@ export async function createListing(listingData) {
     const { data: vendor, error: vendorError } = await supabase
       .from("vendors")
       .select("id")
-      .eq("user_id", listingData.vendor_id)
+      .eq("id", listingData.vendor_id)
       .single();
     console.log(vendor);
 
