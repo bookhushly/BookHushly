@@ -149,7 +149,7 @@ export function CustomerMobileHeader({ user }) {
 
         <div className="flex items-center gap-2">
           <Image
-            src="/logos/logo.png"
+            src="/logos/Logo.png"
             alt="BookHushly"
             width={90}
             height={24}

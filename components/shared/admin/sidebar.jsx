@@ -258,7 +258,7 @@ export function AdminSidebar({ isOpen, onClose }) {
         <div className="h-20 flex items-center px-6 border-b border-purple-800 shrink-0">
           <Link href="/" className="flex items-center">
             <Image
-              src="/logos/logo.png"
+              src="/logos/Logo.png"
               alt="BookHushly"
               width={160}
               height={160}

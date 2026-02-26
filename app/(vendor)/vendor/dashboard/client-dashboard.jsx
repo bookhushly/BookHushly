@@ -728,7 +728,11 @@ export default function VendorDashboardClient({
                       <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                         <Image
                           src={booking.listings.media_urls[0]}
-                          alt={booking.listings?.title || "Listing"}
+                          alt={
+                            booking.listings?.title ||
+                            booking.apartment_name ||
+                            "Reservation"
+                          }
                           fill
                           className="object-cover"
                         />
@@ -736,14 +740,18 @@ export default function VendorDashboardClient({
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-medium text-gray-900 truncate group-hover:text-purple-600 transition-colors">
-                        {booking.listings?.title || "Listing"}
+                        {booking.listings?.title ||
+                          booking.apartment_name ||
+                          "Reservation"}
                       </p>
                       <p className="text-[13px] text-gray-500 mt-0.5">
                         ₦{booking.total_amount?.toLocaleString()} ·{" "}
-                        {new Date(booking.booking_date).toLocaleDateString(
-                          "en-US",
-                          { month: "short", day: "numeric" },
-                        )}
+                        {new Date(
+                          booking.check_in_date || booking.booking_date,
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </p>
                     </div>
                     <Badge

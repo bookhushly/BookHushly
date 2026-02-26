@@ -53,17 +53,28 @@ async function fetchVendorDashboardData(supabase, vendorId, businessCategory) {
       const { data: apartmentBookingsData } = await supabase
         .from("apartment_bookings")
         .select(
-          "id, total_amount, check_in_date, booking_status, payment_status, created_at, apartment_id",
+          "id, total_amount, check_in_date, booking_status, payment_status, created_at, apartment_id, serviced_apartments(name, image_urls)",
         )
         .in("apartment_id", apartmentIds)
         .order("created_at", { ascending: false })
         .limit(10);
 
-      bookings = apartmentBookingsData || [];
+      // Normalize to match the shape other booking types use
+      bookings = (apartmentBookingsData || []).map((b) => ({
+        ...b,
+        status: b.booking_status,
+        booking_date: b.check_in_date,
+        listings: b.serviced_apartments
+          ? {
+              title: b.serviced_apartments.name,
+              media_urls: b.serviced_apartments.image_urls,
+            }
+          : null,
+      }));
 
       // Calculate revenue
       const revenue = bookings
-        .filter((b) => b.payment_status === "paid")
+        .filter((b) => b.payment_status === "completed")
         .reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
 
       stats.totalRevenue = revenue;
