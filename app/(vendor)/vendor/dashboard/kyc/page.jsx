@@ -293,11 +293,11 @@ export default function KYCPage() {
 
   return (
     <TooltipProvider>
-      <div className="container max-w-4xl py-8 bg-white">
+      <div className="container max-w-4xl py-2 md:py-8 bg-white">
         <div className="mb-8">
           <Link
             href="/vendor/dashboard"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
+            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4 py-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -691,6 +691,7 @@ export default function KYCPage() {
                       <Input
                         id="drivers_license"
                         name="drivers_license"
+                        e
                         placeholder="Enter Driver's License Number"
                         value={formData.drivers_license}
                         onChange={handleChange}
@@ -824,53 +825,61 @@ export default function KYCPage() {
             </>
           )}
 
-          <div className="flex justify-between space-x-4">
-            {currentStep > 1 && (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Left Side */}
+            <div>
+              {currentStep > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePrevStep}
+                  className="border-gray-200 hover:bg-gray-50"
+                >
+                  Previous
+                </Button>
+              )}
+            </div>
+
+            {/* Right Side */}
+            <div className="flex flex-wrap items-center gap-3">
+              {currentStep < 5 ? (
+                <Button
+                  type="button"
+                  onClick={handleNextStep}
+                  disabled={isPending}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  disabled={isPending || !termsAccepted || !verificationConsent}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {isPending ? (
+                    <>
+                      <LoadingSpinner className="mr-2 h-4 w-4" />
+                      {authData?.vendor ? "Updating..." : "Submitting..."}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      {authData?.vendor ? "Update KYC" : "Submit for Review"}
+                    </>
+                  )}
+                </Button>
+              )}
+
               <Button
                 type="button"
                 variant="outline"
-                onClick={handlePrevStep}
+                asChild
                 className="border-gray-200 hover:bg-gray-50"
               >
-                Previous
+                <Link href="/vendor/dashboard">Cancel</Link>
               </Button>
-            )}
-            {currentStep < 5 ? (
-              <Button
-                type="button"
-                onClick={handleNextStep}
-                disabled={isPending}
-                className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
-              >
-                Next
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                disabled={isPending || !termsAccepted || !verificationConsent}
-                className="bg-purple-600 hover:bg-purple-700 text-white ml-auto"
-              >
-                {isPending ? (
-                  <>
-                    <LoadingSpinner className="mr-2 h-4 w-4" />
-                    {authData?.vendor ? "Updating..." : "Submitting..."}
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    {authData?.vendor ? "Update KYC" : "Submit for Review"}
-                  </>
-                )}
-              </Button>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              asChild
-              className="border-gray-200 hover:bg-gray-50"
-            >
-              <Link href="/vendor/dashboard">Cancel</Link>
-            </Button>
+            </div>
           </div>
         </form>
       </div>
