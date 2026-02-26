@@ -7,7 +7,6 @@ import { toast } from "sonner";
 
 const supabase = createClient();
 
-// Query keys
 export const vendorDashboardKeys = {
   all: ["vendor-dashboard"],
   listings: (vendorId, category) => [
@@ -22,19 +21,25 @@ export const vendorDashboardKeys = {
     vendorId,
     category,
   ],
-  stats: (vendorId) => [...vendorDashboardKeys.all, "stats", vendorId],
 };
 
-// Fetch listings based on vendor category
+// Map category → table name
+const LISTING_TABLE = {
+  hotels: "hotels",
+  serviced_apartments: "serviced_apartments",
+  events: "listings",
+  logistics: "listings",
+  security: "listings",
+};
+
 async function fetchListings(vendorId, category) {
   if (!vendorId || !category) return [];
-  console.log("id", vendorId);
 
   if (category === "hotels") {
     const { data, error } = await supabase
       .from("hotels")
       .select(
-        "id, name, description, address, city, state, image_urls, amenities, created_at",
+        "id, name, description, address, city, state, image_urls, amenities, status, created_at",
       )
       .eq("vendor_id", vendorId)
       .order("created_at", { ascending: false });
@@ -84,21 +89,20 @@ async function fetchListings(vendorId, category) {
     }));
   }
 
-  // For other categories (events, logistics, security, etc.)
+  // events, logistics, security, etc.
   const { data, error } = await supabase
     .from("listings")
     .select(
       "id, title, price, created_at, active, media_urls, category, description, location",
     )
     .eq("vendor_id", vendorId)
+    .eq("category", category)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-
   return data;
 }
 
-// Fetch bookings based on vendor category
 async function fetchBookings(vendorId, category, listingIds) {
   if (!vendorId || !category || listingIds.length === 0) return [];
 
@@ -106,15 +110,7 @@ async function fetchBookings(vendorId, category, listingIds) {
     const { data, error } = await supabase
       .from("event_bookings")
       .select(
-        `
-        id, 
-        total_amount, 
-        booking_date, 
-        status, 
-        created_at, 
-        listing_id,
-        listings(title, media_urls)
-      `,
+        "id, total_amount, booking_date, status, created_at, listing_id, listings(title, media_urls)",
       )
       .in("listing_id", listingIds)
       .order("created_at", { ascending: false });
@@ -127,15 +123,7 @@ async function fetchBookings(vendorId, category, listingIds) {
     const { data, error } = await supabase
       .from("apartment_bookings")
       .select(
-        `
-        id,
-        total_amount,
-        check_in_date,
-        booking_status,
-        created_at,
-        apartment_id,
-        serviced_apartments(name, image_urls)
-      `,
+        "id, total_amount, check_in_date, booking_status, created_at, apartment_id, serviced_apartments(name, image_urls)",
       )
       .in("apartment_id", listingIds)
       .order("created_at", { ascending: false });
@@ -156,19 +144,10 @@ async function fetchBookings(vendorId, category, listingIds) {
     }));
   }
 
-  // Regular bookings
   const { data, error } = await supabase
     .from("bookings")
     .select(
-      `
-      id, 
-      total_amount, 
-      booking_date, 
-      status, 
-      created_at, 
-      listing_id,
-      listings(title, media_urls)
-    `,
+      "id, total_amount, booking_date, status, created_at, listing_id, listings(title, media_urls)",
     )
     .in("listing_id", listingIds)
     .order("created_at", { ascending: false });
@@ -177,88 +156,58 @@ async function fetchBookings(vendorId, category, listingIds) {
   return data;
 }
 
-// Calculate stats from listings and bookings
 function calculateStats(listings, bookings) {
-  const totalListings = listings.length;
-  const activeBookings = bookings.filter(
-    (b) => b.status === "confirmed",
-  ).length;
-  const pendingRequests = bookings.filter((b) => b.status === "pending").length;
-  const totalRevenue = bookings
-    .filter((b) => b.status === "confirmed")
-    .reduce((sum, b) => sum + (b.total_amount || 0), 0);
-
   return {
-    totalListings,
-    activeBookings,
-    pendingRequests,
-    totalRevenue,
+    totalListings: listings.length,
+    activeBookings: bookings.filter((b) => b.status === "confirmed").length,
+    pendingRequests: bookings.filter((b) => b.status === "pending").length,
+    totalRevenue: bookings
+      .filter((b) => b.status === "confirmed")
+      .reduce((sum, b) => sum + (b.total_amount || 0), 0),
   };
 }
 
-// Hook: Fetch vendor listings
 export function useVendorListings(vendorId, category) {
   return useQuery({
     queryKey: vendorDashboardKeys.listings(vendorId, category),
     queryFn: () => fetchListings(vendorId, category),
     enabled: !!vendorId && !!category,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
-// Hook: Fetch vendor bookings
 export function useVendorBookings(vendorId, category, listingIds) {
   return useQuery({
     queryKey: vendorDashboardKeys.bookings(vendorId, category),
     queryFn: () => fetchBookings(vendorId, category, listingIds),
     enabled: !!vendorId && !!category && listingIds.length > 0,
-    staleTime: 1 * 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
-// Hook: Calculated stats
-export function useVendorStats(listings = [], bookings = []) {
-  return useQuery({
-    queryKey: [...vendorDashboardKeys.all, "calculated-stats"],
-    queryFn: () => calculateStats(listings, bookings),
-    enabled: true,
-    staleTime: 30 * 1000, // 30 seconds
-  });
-}
-
-// Hook: Delete listing mutation
 export function useDeleteListing(category) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (listingId) => {
-      const res = await fetch(`/api/listings/${listingId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
+      const table = LISTING_TABLE[category] ?? "listings";
 
-      const payload = await res.json().catch(() => ({}));
+      const { data, error } = await supabase
+        .from(table)
+        .delete()
+        .eq("id", listingId)
+        .select();
 
-      if (!res.ok) {
-        throw new Error(payload?.error || "Failed to delete listing");
-      }
+      if (error) throw new Error(error.message);
+      if (!data || data.length === 0)
+        throw new Error("Delete failed — RLS may be blocking this action.");
 
-      if (!payload?.data || payload.data.length === 0) {
-        throw new Error(
-          "Failed to delete listing. The database policy may be blocking this action.",
-        );
-      }
-
-      return payload.data;
+      return data;
     },
-    onSuccess: (_, listingId) => {
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({
-        queryKey: vendorDashboardKeys.all,
-      });
-
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: vendorDashboardKeys.all });
       toast.success("Listing deleted successfully");
     },
     onError: (error) => {
@@ -267,7 +216,6 @@ export function useDeleteListing(category) {
   });
 }
 
-// Hook: Complete dashboard data
 export function useVendorDashboard(vendorId, category) {
   const {
     data: listings = [],
@@ -283,12 +231,10 @@ export function useVendorDashboard(vendorId, category) {
     error: bookingsError,
   } = useVendorBookings(vendorId, category, listingIds);
 
-  const stats = calculateStats(listings, bookings);
-
   return {
     listings,
     bookings,
-    stats,
+    stats: calculateStats(listings, bookings),
     isLoading: listingsLoading || bookingsLoading,
     error: listingsError || bookingsError,
     recentListings: listings.slice(0, 5),
