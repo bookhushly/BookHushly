@@ -91,7 +91,10 @@ export default function VendorDashboardClient({
   const StatusIcon = approvalStatus.icon;
 
   // Use server-fetched data
-  const recentListings = listings.slice(0, 5);
+  // With this:
+  const [localListings, setLocalListings] = useState(listings);
+
+  const recentListings = localListings.slice(0, 5);
   const recentBookings = bookings.slice(0, 5);
 
   // Delete mutation (only client-side operation needed)
@@ -230,12 +233,15 @@ export default function VendorDashboardClient({
 
     deleteMutation.mutate(listingToDelete.id, {
       onSuccess: () => {
+        // Optimistically remove from local state — no refresh needed
+        setLocalListings((prev) =>
+          prev.filter((l) => l.id !== listingToDelete.id),
+        );
         setDeleteDialogOpen(false);
         setListingToDelete(null);
       },
     });
   };
-
   const openDeleteDialog = (listing) => {
     setListingToDelete(listing);
     setDeleteDialogOpen(true);
@@ -317,7 +323,7 @@ export default function VendorDashboardClient({
                 Total Listings
               </p>
               <p className="text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
-                {stats.totalListings}
+                {localListings.length}
               </p>
             </div>
           </CardContent>

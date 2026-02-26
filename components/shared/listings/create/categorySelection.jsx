@@ -14,10 +14,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const EVENT_TYPES = [
-  { value: "event_center", label: "Event Center" },
-  { value: "event_organizer", label: "Event Organizer" },
-];
+const EVENT_TYPES = [{ value: "event_organizer", label: "Event Organizer" }];
 
 export default function CategorySelection({
   selectedCategory,
