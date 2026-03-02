@@ -11,11 +11,17 @@ export default async function EventBookingsPage() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/auth/login");
-
+  // console.log(user);
   const initialData = await getEventBookings(user.id, 1, 10).catch(() => ({
     data: [],
     count: 0,
   }));
-
-  return <EventBookingsClient userId={user.id} initialData={initialData} />;
+  console.log("Initial event bookings data:", initialData);
+  return (
+    <EventBookingsClient
+      userId={user.id}
+      userEmail={user.email}
+      initialData={initialData}
+    />
+  );
 }

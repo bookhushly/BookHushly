@@ -159,26 +159,19 @@ export default function RegisterPage() {
         switch (result.code) {
           case "EMAIL_ALREADY_EXISTS":
             toast.error(
-              "This email is already registered. Please use a different email or sign in.",
-              {
-                position: "top-center",
-                style: {
-                  background: "#fee2e2",
-                  color: "#b91c1c",
-                  border: "1px solid #b91c1c",
-                },
-              },
+              "This email is already registered. Please sign in instead.",
             );
             break;
+          case "PROFILE_CREATION_FAILED":
+            toast.error(
+              "Account created but profile setup failed. Please contact support.",
+            );
+            break;
+          case "SIGNUP_FAILED":
+            toast.error(result.message || "Signup failed. Please try again.");
+            break;
           default:
-            toast.error("Something went wrong. Please try again.", {
-              position: "top-center",
-              style: {
-                background: "#fee2e2",
-                color: "#b91c1c",
-                border: "1px solid #b91c1c",
-              },
-            });
+            toast.error("Something went wrong. Please try again.");
         }
       }
     });

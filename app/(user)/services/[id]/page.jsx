@@ -6,8 +6,7 @@ import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }) {
   try {
-    const { slug } = await params;
-    const id = slug[slug.length - 1];
+    const { id } = await params;
     const supabase = createStaticClient(); // no cookies needed for metadata
 
     const [listingsResult, hotelsResult, apartmentsResult] = await Promise.all([
@@ -75,8 +74,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ServiceDetailPage({ params }) {
   try {
-    const { slug } = await params;
-    const id = slug[slug.length - 1];
+    const { id } = await params;
     const supabase = await createClient();
 
     let service = null;

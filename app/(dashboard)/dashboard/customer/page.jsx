@@ -13,7 +13,10 @@ export default async function CustomerDashboardPage() {
   if (!user) redirect("/auth/login");
 
   const [stats, activity, profileResult] = await Promise.all([
-    getDashboardStats(user.id).catch(() => null),
+    getDashboardStats(user.id, user.email).catch((e) => {
+      console.error("getDashboardStats error:", e);
+      return null;
+    }),
     getRecentActivity(user.id).catch(() => []),
     supabase
       .from("users")
@@ -21,12 +24,12 @@ export default async function CustomerDashboardPage() {
       .eq("id", user.id)
       .single(),
   ]);
-
   const profile = profileResult?.data;
 
   return (
     <DashboardOverviewClient
       userId={user.id}
+      userEmail={user.email}
       userName={profile?.name || user.user_metadata?.name || "there"}
       initialStats={stats}
       initialActivity={activity}

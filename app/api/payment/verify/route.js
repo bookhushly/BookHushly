@@ -6,10 +6,6 @@ import { nowpaymentsVerification } from "@/lib/nowpayments";
 /**
  * Verify Payment
  * POST /api/payment/verify
- *
- * Used for manual verification (callback verification, status checks)
- * Webhook is the primary source of truth, this is supplementary
- * Supports both Paystack and NOWPayments
  */
 export async function POST(request) {
   try {
@@ -24,7 +20,6 @@ export async function POST(request) {
 
     const supabase = await createClient();
 
-    // Get payment record
     const { data: payment, error: paymentError } = await supabase
       .from("payments")
       .select("*")
@@ -35,7 +30,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
-    // Route to appropriate verification based on provider
     if (provider === "paystack" || payment.provider === "paystack") {
       return await verifyPaystackPayment(supabase, payment);
     } else if (
@@ -53,13 +47,69 @@ export async function POST(request) {
   } catch (error) {
     console.error("Payment verification error:", error);
     return NextResponse.json(
-      {
-        verified: false,
-        error: "Verification failed",
-        details: error.message,
-      },
+      { verified: false, error: "Verification failed", details: error.message },
       { status: 500 },
     );
+  }
+}
+
+/**
+ * Update related booking/request after payment status change
+ */
+async function updateRelatedEntity(supabase, payment, status) {
+  try {
+    if (
+      payment.request_type === "logistics" ||
+      payment.request_type === "security"
+    ) {
+      await supabase
+        .from(`${payment.request_type}_requests`)
+        .update({
+          payment_status: status,
+          status: status === "completed" ? "confirmed" : payment.request_type,
+          confirmed_at:
+            status === "completed" ? new Date().toISOString() : null,
+        })
+        .eq("id", payment.request_id);
+    } else if (payment.hotel_booking_id) {
+      const updates = { payment_status: status };
+      if (status === "failed") {
+        updates.booking_status = "cancelled";
+        const { data: booking } = await supabase
+          .from("hotel_bookings")
+          .select("room_id")
+          .eq("id", payment.hotel_booking_id)
+          .single();
+        if (booking?.room_id) {
+          await supabase
+            .from("hotel_rooms")
+            .update({ status: "available" })
+            .eq("id", booking.room_id);
+        }
+      }
+      await supabase
+        .from("hotel_bookings")
+        .update(updates)
+        .eq("id", payment.hotel_booking_id);
+    } else if (payment.apartment_booking_id) {
+      await supabase
+        .from("apartment_bookings")
+        .update({
+          payment_status: status,
+          status: status === "completed" ? "confirmed" : "pending",
+        })
+        .eq("id", payment.apartment_booking_id);
+    } else if (payment.event_booking_id) {
+      await supabase
+        .from("event_bookings")
+        .update({
+          payment_status: status,
+          status: status === "completed" ? "confirmed" : "pending",
+        })
+        .eq("id", payment.event_booking_id);
+    }
+  } catch (error) {
+    console.error("Error updating related entity:", error);
   }
 }
 
@@ -67,31 +117,19 @@ export async function POST(request) {
  * Verify Paystack payment
  */
 async function verifyPaystackPayment(supabase, payment) {
-  // If already verified and fulfilled, return cached result
+  // Already verified and fulfilled — return cached
   if (payment.status === PAYMENT_STATUS.SUCCESS && payment.fulfilled) {
     return NextResponse.json({
       verified: true,
       status: PAYMENT_STATUS.SUCCESS,
-      payment: {
-        reference: payment.reference,
-        amount: payment.amount,
-        status: payment.status,
-        paid_at: payment.paid_at,
-        channel: payment.paystack_channel,
-        request_type: payment.request_type,
-        request_id: payment.request_id,
-        hotel_booking_id: payment.hotel_booking_id,
-        apartment_booking_id: payment.apartment_booking_id,
-        event_booking_id: payment.event_booking_id,
-      },
+      payment: buildPaymentResponse(payment),
       message: "Payment already verified and fulfilled",
     });
   }
 
-  // Verify with Paystack API
   const verificationResult = await paymentVerification.comprehensiveVerify(
     payment.reference,
-    Math.round(payment.amount * 100), // Convert to kobo
+    Math.round(payment.amount * 100),
   );
 
   if (!verificationResult.verified) {
@@ -103,7 +141,6 @@ async function verifyPaystackPayment(supabase, payment) {
     });
   }
 
-  // Update payment record (if not already updated by webhook)
   const { data: updatedPayment } = await supabase
     .from("payments")
     .update({
@@ -121,48 +158,44 @@ async function verifyPaystackPayment(supabase, payment) {
       updated_at: new Date().toISOString(),
     })
     .eq("reference", payment.reference)
-    .eq("status", PAYMENT_STATUS.PENDING) // Only update if still pending
+    .eq("status", PAYMENT_STATUS.PENDING)
     .select()
     .single();
 
-  // If webhook already processed, don't duplicate fulfillment
+  // Webhook already processed — still update related entity in case it was missed
   if (!updatedPayment) {
     console.log("Payment already processed by webhook:", payment.reference);
+
+    // Ensure related entity is updated even if webhook handled payments table
+    if (!payment.fulfilled) {
+      await updateRelatedEntity(supabase, payment, "completed");
+      await supabase
+        .from("payments")
+        .update({ fulfilled: true })
+        .eq("id", payment.id);
+    }
+
     return NextResponse.json({
       verified: true,
       status: PAYMENT_STATUS.SUCCESS,
-      payment: {
-        reference: payment.reference,
-        amount: payment.amount,
-        status: payment.status,
-        paid_at: payment.paid_at,
-        channel: payment.paystack_channel,
-        request_type: payment.request_type,
-        request_id: payment.request_id,
-        hotel_booking_id: payment.hotel_booking_id,
-        apartment_booking_id: payment.apartment_booking_id,
-        event_booking_id: payment.event_booking_id,
-      },
+      payment: buildPaymentResponse(payment),
       message: "Payment verified (processed by webhook)",
     });
   }
 
+  // Update related booking/request
+  await updateRelatedEntity(supabase, updatedPayment, "completed");
+
+  // Mark fulfilled
+  await supabase
+    .from("payments")
+    .update({ fulfilled: true })
+    .eq("id", updatedPayment.id);
+
   return NextResponse.json({
     verified: true,
     status: PAYMENT_STATUS.SUCCESS,
-    payment: {
-      reference: updatedPayment.reference,
-      amount: updatedPayment.amount,
-      status: updatedPayment.status,
-      paid_at: updatedPayment.paid_at,
-      channel: updatedPayment.paystack_channel,
-      transaction_id: updatedPayment.paystack_transaction_id,
-      request_type: updatedPayment.request_type,
-      request_id: updatedPayment.request_id,
-      hotel_booking_id: updatedPayment.hotel_booking_id,
-      apartment_booking_id: updatedPayment.apartment_booking_id,
-      event_booking_id: updatedPayment.event_booking_id,
-    },
+    payment: buildPaymentResponse(updatedPayment),
     message: "Payment verified successfully",
   });
 }
@@ -171,31 +204,17 @@ async function verifyPaystackPayment(supabase, payment) {
  * Verify NOWPayments crypto payment
  */
 async function verifyCryptoPayment(supabase, payment) {
-  // If already completed and fulfilled, return cached result
+  // Already completed and fulfilled — return cached
   if (payment.status === "completed" && payment.fulfilled) {
     return NextResponse.json({
       verified: true,
       status: "completed",
-      payment: {
-        reference: payment.reference,
-        crypto_order_id: payment.crypto_order_id,
-        amount: payment.amount,
-        status: payment.status,
-        paid_at: payment.paid_at,
-        crypto_pay_currency: payment.crypto_pay_currency,
-        request_type: payment.request_type,
-        request_id: payment.request_id,
-        hotel_booking_id: payment.hotel_booking_id,
-        apartment_booking_id: payment.apartment_booking_id,
-        event_booking_id: payment.event_booking_id,
-      },
+      payment: buildPaymentResponse(payment),
       message: "Crypto payment already verified and fulfilled",
     });
   }
 
-  // Verify with NOWPayments API using payment_id
   if (!payment.crypto_payment_id) {
-    // Payment not yet created on NOWPayments side
     return NextResponse.json({
       verified: false,
       status: payment.status || "pending",
@@ -229,7 +248,6 @@ async function verifyCryptoPayment(supabase, payment) {
       });
     }
 
-    // Check if payment is in pending state (waiting, confirming, sending)
     const pendingStatuses = ["waiting", "confirming", "sending"];
     if (pendingStatuses.includes(verificationResult.status)) {
       return NextResponse.json({
@@ -249,19 +267,16 @@ async function verifyCryptoPayment(supabase, payment) {
       });
     }
 
-    // Update payment record (if not already updated by webhook)
-    const updateData = {
-      status: "completed",
-      paid_at: new Date().toISOString(),
-      verified_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
     const { data: updatedPayment } = await supabase
       .from("payments")
-      .update(updateData)
+      .update({
+        status: "completed",
+        paid_at: new Date().toISOString(),
+        verified_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
       .eq("reference", payment.reference)
-      .in("status", ["pending", "waiting", "confirming", "sending"]) // Only update if not completed
+      .in("status", ["pending", "waiting", "confirming", "sending"])
       .select()
       .single();
 
@@ -270,49 +285,41 @@ async function verifyCryptoPayment(supabase, payment) {
         "Crypto payment already processed by webhook:",
         payment.crypto_order_id,
       );
+
+      // Ensure related entity is updated even if webhook handled payments table
+      if (!payment.fulfilled) {
+        await updateRelatedEntity(supabase, payment, "completed");
+        await supabase
+          .from("payments")
+          .update({ fulfilled: true })
+          .eq("id", payment.id);
+      }
+
       return NextResponse.json({
         verified: true,
         status: "completed",
-        payment: {
-          reference: payment.reference,
-          crypto_order_id: payment.crypto_order_id,
-          amount: payment.amount,
-          status: payment.status,
-          paid_at: payment.paid_at,
-          crypto_pay_currency: payment.crypto_pay_currency,
-          request_type: payment.request_type,
-          request_id: payment.request_id,
-          hotel_booking_id: payment.hotel_booking_id,
-          apartment_booking_id: payment.apartment_booking_id,
-          event_booking_id: payment.event_booking_id,
-        },
+        payment: buildPaymentResponse(payment),
         message: "Crypto payment verified (processed by webhook)",
       });
     }
 
+    // Update related booking/request
+    await updateRelatedEntity(supabase, updatedPayment, "completed");
+
+    // Mark fulfilled
+    await supabase
+      .from("payments")
+      .update({ fulfilled: true })
+      .eq("id", updatedPayment.id);
+
     return NextResponse.json({
       verified: true,
       status: "completed",
-      payment: {
-        reference: updatedPayment.reference,
-        crypto_order_id: updatedPayment.crypto_order_id,
-        crypto_payment_id: updatedPayment.crypto_payment_id,
-        amount: updatedPayment.amount,
-        status: updatedPayment.status,
-        paid_at: updatedPayment.paid_at,
-        crypto_pay_currency: updatedPayment.crypto_pay_currency,
-        request_type: updatedPayment.request_type,
-        request_id: updatedPayment.request_id,
-        hotel_booking_id: updatedPayment.hotel_booking_id,
-        apartment_booking_id: updatedPayment.apartment_booking_id,
-        event_booking_id: updatedPayment.event_booking_id,
-      },
+      payment: buildPaymentResponse(updatedPayment),
       message: "Crypto payment verified successfully",
     });
   } catch (error) {
     console.error("NOWPayments verification error:", error);
-
-    // Return current status if verification fails
     return NextResponse.json({
       verified: false,
       status: payment.status || "pending",
@@ -325,4 +332,26 @@ async function verifyCryptoPayment(supabase, payment) {
       message: "Please check back in a few moments",
     });
   }
+}
+
+/**
+ * Build consistent payment response object
+ */
+function buildPaymentResponse(payment) {
+  return {
+    reference: payment.reference,
+    amount: payment.amount,
+    status: payment.status,
+    paid_at: payment.paid_at,
+    channel: payment.paystack_channel,
+    transaction_id: payment.paystack_transaction_id,
+    crypto_order_id: payment.crypto_order_id,
+    crypto_payment_id: payment.crypto_payment_id,
+    crypto_pay_currency: payment.crypto_pay_currency,
+    request_type: payment.request_type,
+    request_id: payment.request_id,
+    hotel_booking_id: payment.hotel_booking_id,
+    apartment_booking_id: payment.apartment_booking_id,
+    event_booking_id: payment.event_booking_id,
+  };
 }

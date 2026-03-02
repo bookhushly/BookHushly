@@ -14,7 +14,7 @@ async function verifyCAC(registrationNumber) {
           type: "cac",
           value: registrationNumber,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -54,30 +54,43 @@ async function verifyNIN(nin, firstName, lastName) {
           firstname: firstName,
           lastname: lastName,
         }),
-      }
+      },
     );
 
+    const result = await response.json();
+
     if (!response.ok) {
-      const error = await response.json();
       return {
         success: false,
-        error: error.error || "NIN verification failed",
+        error:
+          result.error ||
+          result.message ||
+          `Verification service error (${response.status})`,
       };
     }
 
-    const result = await response.json();
+    // Log in dev to see exact shape
+    if (process.env.NODE_ENV === "development") {
+      console.log("NIN verify response:", JSON.stringify(result, null, 2));
+    }
 
     if (!result.valid) {
       return {
         success: false,
-        error: result.error || "NIN verification failed",
+        error:
+          result.error ||
+          result.message ||
+          "NIN could not be verified. Please check your details and try again.",
       };
     }
 
     return { success: true, data: result.data };
   } catch (error) {
     console.error("NIN verification error:", error);
-    return { success: false, error: error.message };
+    return {
+      success: false,
+      error: "Unable to reach verification service. Please try again.",
+    };
   }
 }
 
@@ -145,7 +158,7 @@ export async function submitKYC(formData, existingProfileId = null) {
       const ninResult = await verifyNIN(
         formData.nin,
         formData.nin_first_name,
-        formData.nin_last_name
+        formData.nin_last_name,
       );
 
       if (!ninResult.success) {
@@ -224,7 +237,7 @@ export async function submitKYC(formData, existingProfileId = null) {
 
     // Send notification email (non-blocking)
     sendKYCNotificationEmail(formData, user, verificationResults).catch(
-      console.error
+      console.error,
     );
 
     return {

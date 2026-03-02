@@ -85,12 +85,13 @@ export function DashboardOverviewClient({
   userId,
   userName,
   initialStats,
+  userEmail,
   initialActivity,
   memberSince,
 }) {
   const { data: stats } = useQuery({
     queryKey: ["dashboard-stats", userId],
-    queryFn: () => getDashboardStats(userId),
+    queryFn: () => getDashboardStats(userId, userEmail),
     initialData: initialStats,
     staleTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,

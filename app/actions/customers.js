@@ -10,7 +10,7 @@ function getClient() {
 
 // ─── Dashboard Overview ───────────────────────────────────────────────────────
 
-export async function getDashboardStats(userId) {
+export async function getDashboardStats(userId, userEmail) {
   const supabase = await getClient();
 
   const [
@@ -23,7 +23,7 @@ export async function getDashboardStats(userId) {
     supabase
       .from("event_bookings")
       .select("id, status, total_amount, created_at")
-      .eq("customer_id", userId),
+      .or(`customer_id.eq.${userId},contact_email.eq.${userEmail}`),
     supabase
       .from("hotel_bookings")
       .select("id, booking_status, payment_status, total_price, created_at")
@@ -106,7 +106,7 @@ export async function getRecentActivity(userId) {
       .from("event_bookings")
       .select(
         `id, status, total_amount, created_at, booking_date, booking_time,
-         listing:listing_id(id, title, location, images)`,
+     listing:listing_id(id, title, location, media_urls)`,
       )
       .eq("customer_id", userId)
       .order("created_at", { ascending: false })
@@ -158,7 +158,7 @@ export async function getRecentActivity(userId) {
       status: b.status,
       amount: b.total_amount,
       date: b.booking_date || b.created_at,
-      image: b.listing?.images?.[0] || null,
+      image: b.listing?.media_urls?.[0] || null, // ← was images?.[0]
       created_at: b.created_at,
     })),
     ...(hotels.data || []).map((b) => ({
@@ -214,22 +214,36 @@ export async function getRecentActivity(userId) {
 
 // ─── Event Bookings ───────────────────────────────────────────────────────────
 
-export async function getEventBookings(userId, page = 1, pageSize = 10) {
+export async function getEventBookings(
+  userId,
+  userEmail,
+  page = 1,
+  pageSize = 10,
+) {
   const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
   const { data, error, count } = await supabase
     .from("event_bookings")
     .select(
-      `*, listing:listing_id(id, title, location, images, category, vendor_name)`,
+      `*, listing:listing_id(id, title, location, media_urls, category, vendor_name)`,
       { count: "exact" },
     )
-    .eq("customer_id", userId)
+    .or(`customer_id.eq.${userId},contact_email.eq.${userEmail}`)
     .order("created_at", { ascending: false })
     .range(from, from + pageSize - 1);
 
   if (error) throw error;
-  return { data: data || [], count: count || 0 };
+
+  // Deduplicate in case a logged-in user also has guest bookings with same email
+  const seen = new Set();
+  const unique = (data || []).filter((b) => {
+    if (seen.has(b.id)) return false;
+    seen.add(b.id);
+    return true;
+  });
+
+  return { data: unique, count: count || 0 };
 }
 
 // ─── Hotel Bookings ───────────────────────────────────────────────────────────

@@ -16,13 +16,13 @@ import {
   Amount,
 } from "@/components/shared/customer/shared-ui";
 
-export function EventBookingsClient({ userId, initialData }) {
+export function EventBookingsClient({ userId, initialData, userEmail }) {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["event-bookings", userId, page],
-    queryFn: () => getEventBookings(userId, page, PAGE_SIZE),
+    queryFn: () => getEventBookings(userId, userEmail, page, PAGE_SIZE),
     initialData: page === 1 ? initialData : undefined,
     staleTime: 2 * 60 * 1000,
     keepPreviousData: true,
@@ -70,9 +70,9 @@ export function EventBookingsClient({ userId, initialData }) {
                 <div className="flex flex-col sm:flex-row">
                   {/* Image */}
                   <div className="sm:w-40 h-32 sm:h-auto bg-pink-50 flex-shrink-0 overflow-hidden relative">
-                    {booking.listing?.images?.[0] ? (
+                    {booking.listing?.media_urls?.[0] ? (
                       <img
-                        src={booking.listing.images[0]}
+                        src={booking.listing.media_urls[0]}
                         alt={booking.listing?.title}
                         className="w-full h-full object-cover"
                       />
