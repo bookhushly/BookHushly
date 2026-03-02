@@ -1,5 +1,6 @@
 import "./globals.css";
 import QueryProvider from "@/components/common/QueryProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: "Bookhushly - African Hospitality & Service Platform",
@@ -12,6 +13,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <QueryProvider>{children}</QueryProvider>
+        <Analytics />
       </body>
     </html>
   );
