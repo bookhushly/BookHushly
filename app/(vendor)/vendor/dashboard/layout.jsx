@@ -1,11 +1,11 @@
-import "../../../globals.css";
+// app/(vendor)/vendor/layout.jsx
+
 import { Toaster } from "@/components/ui/sonner";
 import { VendorLayoutClient } from "./client-layout";
 
 export const metadata = {
-  title: "Bookhushly Vendor Page - Manage your listings, bookings e.t.c",
-  description:
-    "Connecting Nigeria and Africa with quality hospitality, logistics, and security services.",
+  title: "Vendor Dashboard — BookHushly",
+  description: "Manage your listings, bookings, and revenue on BookHushly.",
 };
 
 export default function VendorLayout({ children }) {

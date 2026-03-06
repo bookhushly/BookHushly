@@ -1,17 +1,15 @@
-import "../../globals.css";
+// app/(admin)/admin/layout.jsx
 import { Toaster } from "@/components/ui/sonner";
 import { AdminLayoutClient } from "./client-layout";
 
 export const metadata = {
-  title: "Bookhushly Admin Page - Manage your listings, bookings e.t.c",
-  description:
-    "Connecting Nigeria and Africa with quality hospitality, logistics, and security services.",
+  title: "Admin Dashboard — BookHushly",
+  description: "Manage vendors, customers, bookings and operations.",
 };
 
 export default function AdminLayout({ children }) {
   return (
     <>
-      {" "}
       <AdminLayoutClient>{children}</AdminLayoutClient>
       <Toaster />
     </>

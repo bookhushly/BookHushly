@@ -5,20 +5,22 @@ import { AdminSidebar } from "@/components/shared/admin/sidebar";
 import { AdminHeader } from "@/components/shared/admin/header";
 
 export function AdminLayoutClient({ children }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-purple-50">
-      <AdminSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+    <div
+      className="min-h-screen flex"
+      style={{
+        background:
+          "linear-gradient(160deg, #f5f3ff 0%, #fdf8ff 45%, #faf5ff 100%)",
+      }}
+    >
+      <AdminSidebar isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
-      <div className="flex-1 flex flex-col lg:ml-60 overflow-hidden">
-        <AdminHeader onMenuClick={() => setIsSidebarOpen(true)} />
-
+      <div className="flex-1 flex flex-col min-w-0">
+        <AdminHeader onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-6 lg:p-8">{children}</div>
+          <div className="max-w-[1400px] mx-auto px-5 py-6">{children}</div>
         </main>
       </div>
     </div>

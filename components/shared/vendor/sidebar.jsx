@@ -1,343 +1,415 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   List,
   Calendar,
-  Settings,
-  X,
-  User,
-  ChevronUp,
-  LogOut,
   CreditCard,
   TrendingUp,
+  ShieldCheck,
+  Wallet,
+  Settings,
+  User,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  X,
   Bell,
   HelpCircle,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-// ─── Nav structure ───────────────────────────────────────────────────────────
-const navSections = [
+// ── Nav structure ────────────────────────────────────────────────────────────
+const NAV = [
   {
-    label: "Overview",
+    section: "Main",
     items: [
-      { title: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
-      { title: "Listings", href: "/vendor/dashboard/listings", icon: List },
+      { label: "Overview", href: "/vendor/dashboard", icon: LayoutDashboard },
+      { label: "Listings", href: "/vendor/dashboard/listings", icon: List },
+      { label: "Bookings", href: "/vendor/dashboard/bookings", icon: Calendar },
     ],
   },
   {
-    label: "Revenue",
+    section: "Finance",
     items: [
-      { title: "Bookings", href: "/vendor/dashboard/bookings", icon: Calendar },
       {
-        title: "Payments",
-        href: "/vendor/dashboard/payments",
-        icon: CreditCard,
-      },
-      {
-        title: "Analytics",
+        label: "Analytics",
         href: "/vendor/dashboard/analytics",
         icon: TrendingUp,
       },
+      { label: "Wallet", href: "/vendor/dashboard/wallet", icon: Wallet },
+      {
+        label: "Payments",
+        href: "/vendor/dashboard/payments",
+        icon: CreditCard,
+      },
     ],
   },
   {
-    label: "Support",
+    section: "Account",
     items: [
-      {
-        title: "Notifications",
-        href: "/vendor/dashboard/notifications",
-        icon: Bell,
-      },
-      { title: "Help", href: "/vendor/dashboard/help", icon: HelpCircle },
+      { label: "KYC", href: "/vendor/dashboard/kyc", icon: ShieldCheck },
+      { label: "Settings", href: "/vendor/dashboard/settings", icon: Settings },
     ],
   },
 ];
 
-// ─── Profile Popover ─────────────────────────────────────────────────────────
+// ── Tooltip (shown when collapsed) ──────────────────────────────────────────
+function Tooltip({ label, children }) {
+  return (
+    <div className="relative group/tip">
+      {children}
+      <div
+        className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50
+                      opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150"
+      >
+        <div className="bg-gray-900 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
+          {label}
+          <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Profile Popover ──────────────────────────────────────────────────────────
 function ProfilePopover({ vendor, onLogout, onClose, isLoggingOut }) {
-  const popoverRef = useRef(null);
+  const ref = useRef(null);
 
   useEffect(() => {
-    const handleClick = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
-        onClose();
-      }
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) onClose();
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
 
   return (
     <div
-      ref={popoverRef}
-      className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl border border-gray-200 shadow-lg shadow-black/10 overflow-hidden"
+      ref={ref}
+      className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-xl border border-gray-200
+                 shadow-xl shadow-black/10 overflow-hidden z-50"
     >
-      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-        <p className="text-sm font-semibold text-gray-900 truncate">
+      <div className="px-4 py-3 border-b border-gray-100 bg-violet-50/60">
+        <p className="text-[13px] font-semibold text-gray-900 truncate">
           {vendor?.business_name || "Vendor"}
         </p>
-        <p className="text-xs text-gray-500 truncate">
-          {vendor?.business_category || ""}
+        <p className="text-[11px] text-violet-600 font-medium truncate capitalize">
+          {vendor?.business_category?.replace(/_/g, " ") || "Vendor Account"}
         </p>
       </div>
-      <div className="p-1.5">
+      <div className="p-1.5 space-y-0.5">
         <Link
           href="/vendor/dashboard/settings"
           onClick={onClose}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-700
+                     hover:bg-violet-50 hover:text-violet-700 transition-colors"
         >
-          <Settings className="h-4 w-4" />
-          Settings
+          <Settings className="h-4 w-4" /> Settings
         </Link>
         <Link
           href="/vendor/dashboard/profile"
           onClick={onClose}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-700
+                     hover:bg-violet-50 hover:text-violet-700 transition-colors"
         >
-          <User className="h-4 w-4" />
-          Profile
+          <User className="h-4 w-4" /> Profile
         </Link>
-        <button
-          onClick={() => {
-            onClose();
-            onLogout?.();
-          }}
-          disabled={isLoggingOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors mt-1 border-t border-gray-100 pt-3 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoggingOut ? (
-            <>
-              <LoadingSpinner className="h-4 w-4" />
-              Logging out...
-            </>
-          ) : (
-            <>
-              <LogOut className="h-4 w-4" />
-              Log out
-            </>
-          )}
-        </button>
+        <div className="pt-1 mt-1 border-t border-gray-100">
+          <button
+            onClick={() => {
+              onClose();
+              onLogout?.();
+            }}
+            disabled={isLoggingOut}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px]
+                       text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+          >
+            {isLoggingOut ? (
+              <>
+                <LoadingSpinner className="h-4 w-4" /> Signing out…
+              </>
+            ) : (
+              <>
+                <LogOut className="h-4 w-4" /> Sign out
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Bottom Profile Strip ───────────────────────────────────────────────────
-function BottomProfile({ vendor, isDark, onLogout, isLoggingOut }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const initial = (vendor?.business_name || "V").charAt(0).toUpperCase();
-
-  return (
-    <div className="relative">
-      {isOpen && (
-        <ProfilePopover
-          vendor={vendor}
-          onLogout={onLogout}
-          onClose={() => setIsOpen(false)}
-          isLoggingOut={isLoggingOut}
-        />
-      )}
-      <button
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={cn(
-          "w-full flex items-center gap-3 px-4 py-3.5 transition-colors",
-          isDark ? "hover:bg-purple-800" : "hover:bg-gray-50",
-        )}
-      >
-        <div
-          className={cn(
-            "h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold shrink-0",
-            isDark
-              ? "bg-purple-700 text-white"
-              : "bg-purple-100 text-purple-700",
-          )}
-        >
-          {initial}
-        </div>
-        <div className="flex-1 min-w-0 text-left">
-          <p
-            className={cn(
-              "text-[13px] font-semibold truncate",
-              isDark ? "text-white" : "text-gray-900",
-            )}
-          >
-            {vendor?.business_name || "Vendor"}
-          </p>
-          <p
-            className={cn(
-              "text-[11px] truncate",
-              isDark ? "text-purple-300" : "text-gray-500",
-            )}
-          >
-            Vendor
-          </p>
-        </div>
-        <ChevronUp
-          className={cn(
-            "h-4 w-4 shrink-0 transition-transform duration-200",
-            isDark ? "text-purple-300" : "text-gray-400",
-            isOpen && "rotate-180",
-          )}
-        />
-      </button>
-    </div>
-  );
-}
-
-// ─── Sidebar ─────────────────────────────────────────────────────────────────
+// ── Main Sidebar ─────────────────────────────────────────────────────────────
 export function VendorSidebar({ isOpen, onClose }) {
   const pathname = usePathname();
   const { data: authData } = useAuth();
   const logoutMutation = useLogout();
-  const vendor = authData?.vendor;
+  const [collapsed, setCollapsed] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
+  const vendor = authData?.vendor;
+  const initial = (vendor?.business_name || "V").charAt(0).toUpperCase();
 
   const isActive = (href) =>
-    pathname === href || pathname.startsWith(href + "/vendor/dashboard");
+    href === "/vendor/dashboard"
+      ? pathname === href
+      : pathname === href || pathname.startsWith(href + "/");
 
-  // ── Sectioned nav (reused desktop & mobile) ─────────────────────────────
-  const NavLinks = ({ isDark }) => (
-    <div className={cn("space-y-5")}>
-      {navSections.map((section) => (
-        <div key={section.label}>
-          {/* Section label */}
-          <p
-            className={cn(
-              "text-[10px] font-semibold uppercase tracking-widest px-4 mb-1.5",
-              isDark ? "text-purple-400" : "text-gray-400",
-            )}
-          >
-            {section.label}
+  const w = collapsed ? "w-[68px]" : "w-[220px]";
+
+  // ── Shared nav renderer ────────────────────────────────────────────────
+  const renderNav = (isMobile = false) =>
+    NAV.map(({ section, items }) => (
+      <div key={section} className="space-y-0.5">
+        {/* Section label — hide when collapsed on desktop */}
+        {(!collapsed || isMobile) && (
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
+            {section}
           </p>
+        )}
+        {collapsed && !isMobile && <div className="h-3" />}
 
-          {/* Links */}
-          <div className="space-y-0.5">
-            {section.items.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.href);
+        {items.map(({ label, href, icon: Icon }) => {
+          const active = isActive(href);
+          const link = (
+            <Link
+              key={href}
+              href={href}
+              onClick={isMobile ? onClose : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-xl text-[13.5px] font-medium transition-all duration-150 group",
+                collapsed && !isMobile
+                  ? "justify-center h-10 w-10 mx-auto"
+                  : "h-9 px-3 w-full",
+                active
+                  ? "bg-violet-600 text-white shadow-sm shadow-violet-600/25"
+                  : "text-gray-600 hover:bg-violet-50 hover:text-violet-700",
+              )}
+            >
+              <Icon
+                className={cn(
+                  "shrink-0 transition-colors",
+                  collapsed && !isMobile ? "h-[18px] w-[18px]" : "h-4 w-4",
+                  active
+                    ? "text-white"
+                    : "text-gray-400 group-hover:text-violet-600",
+                )}
+                strokeWidth={2}
+              />
+              {(!collapsed || isMobile) && (
+                <span className="truncate">{label}</span>
+              )}
+            </Link>
+          );
 
-              return (
-                <Link key={item.href} href={item.href}>
-                  <div
-                    className={cn(
-                      "group flex items-center gap-3 px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-150",
-                      active
-                        ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
-                        : isDark
-                          ? "text-purple-200 hover:bg-purple-800 hover:text-white"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-                    )}
-                    onClick={!isDark ? onClose : undefined}
-                  >
-                    <Icon
-                      className={cn(
-                        "h-4.5 w-4.5 transition-colors",
-                        active
-                          ? "text-white"
-                          : isDark
-                            ? "text-purple-400 group-hover:text-purple-200"
-                            : "text-gray-400 group-hover:text-gray-600",
-                      )}
-                      strokeWidth={2}
-                    />
-                    <span className="tracking-tight">{item.title}</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+          return collapsed && !isMobile ? (
+            <Tooltip key={href} label={label}>
+              {link}
+            </Tooltip>
+          ) : (
+            <div key={href}>{link}</div>
+          );
+        })}
+      </div>
+    ));
 
   return (
     <>
-      {/* ── Desktop ─────────────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex flex-col w-56 bg-purple-900 fixed left-0 top-0 h-full z-40">
-        {/* Logo */}
-        <div className="h-20 flex items-center px-6 border-b border-purple-800 shrink-0">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/logos/Logo.png"
-              alt="BookHushly"
-              width={160}
-              height={160}
-              className="object-contain"
-            />
-          </Link>
-        </div>
-
-        {/* Nav — vertically centered in remaining space */}
-        <nav className="flex-1 flex flex-col justify-start pt-6 px-4 overflow-y-auto">
-          <NavLinks isDark={true} />
-        </nav>
-
-        {/* Profile pinned to bottom */}
-        <div className="border-t border-purple-800 shrink-0">
-          <BottomProfile
-            vendor={vendor}
-            isDark={true}
-            onLogout={handleLogout}
-            isLoggingOut={logoutMutation.isPending}
-          />
-        </div>
-      </aside>
-
-      {/* ── Mobile ──────────────────────────────────────────────────────── */}
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/20 z-40 lg:hidden backdrop-blur-sm"
-            onClick={onClose}
-          />
-          <aside className="fixed left-0 top-0 h-full w-64 bg-white z-50 lg:hidden flex flex-col shadow-xl">
-            {/* Header */}
-            <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
-              <Link href="/vendor" className="flex items-center">
+      {/* ── Desktop Sidebar ──────────────────────────────────────────── */}
+      <aside
+        className={cn(
+          "hidden lg:flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-200 ease-out",
+          "bg-white border-r border-gray-100",
+          w,
+        )}
+      >
+        {/* Logo + collapse toggle */}
+        <div
+          className={cn(
+            "h-16 flex items-center border-b border-gray-100 shrink-0 relative",
+            collapsed ? "justify-center px-0" : "px-4 justify-between",
+          )}
+        >
+          {!collapsed && (
+            <Link href="/" className="flex items-center">
+              <div className="relative w-28 h-8">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
-                  width={160}
-                  height={160}
-                  className="object-contain"
+                  fill
+                  className="object-contain object-left"
                 />
-              </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="h-9 w-9 hover:bg-gray-100"
+              </div>
+            </Link>
+          )}
+          <button
+            onClick={() => setCollapsed((p) => !p)}
+            className={cn(
+              "h-6 w-6 rounded-lg flex items-center justify-center text-gray-400",
+              "hover:bg-violet-50 hover:text-violet-600 transition-colors",
+              collapsed && "mx-auto",
+            )}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Nav */}
+        <nav
+          className={cn(
+            "flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-0",
+            collapsed ? "px-2" : "px-3",
+          )}
+        >
+          {renderNav(false)}
+        </nav>
+
+        {/* Profile strip */}
+        <div className="border-t border-gray-100 shrink-0 relative">
+          {profileOpen && (
+            <ProfilePopover
+              vendor={vendor}
+              onLogout={() => logoutMutation.mutate()}
+              onClose={() => setProfileOpen(false)}
+              isLoggingOut={logoutMutation.isPending}
+            />
+          )}
+
+          {collapsed ? (
+            <Tooltip label={vendor?.business_name || "Vendor"}>
+              <button
+                onClick={() => setProfileOpen((p) => !p)}
+                className="w-full flex justify-center py-3.5 hover:bg-violet-50 transition-colors"
               >
-                <X className="h-5 w-5 text-gray-500" />
-              </Button>
+                <div
+                  className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center
+                                  justify-center text-sm font-bold shrink-0"
+                >
+                  {initial}
+                </div>
+              </button>
+            </Tooltip>
+          ) : (
+            <button
+              onClick={() => setProfileOpen((p) => !p)}
+              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-violet-50/60 transition-colors"
+            >
+              <div
+                className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center
+                                justify-center text-sm font-bold shrink-0"
+              >
+                {initial}
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[13px] font-semibold text-gray-900 truncate">
+                  {vendor?.business_name || "Vendor"}
+                </p>
+                <p className="text-[11px] text-gray-400 truncate">
+                  Vendor account
+                </p>
+              </div>
+              <ChevronUp
+                className={cn(
+                  "h-3.5 w-3.5 text-gray-400 shrink-0 transition-transform duration-200",
+                  profileOpen && "rotate-180",
+                )}
+              />
+            </button>
+          )}
+        </div>
+      </aside>
+
+      {/* Spacer so content shifts right */}
+      <div
+        className={cn(
+          "hidden lg:block shrink-0 transition-all duration-200",
+          w,
+        )}
+      />
+
+      {/* ── Mobile Drawer ────────────────────────────────────────────── */}
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+            onClick={onClose}
+          />
+          <aside
+            className="fixed left-0 top-0 h-full w-[260px] bg-white z-50 lg:hidden
+                            flex flex-col shadow-2xl border-r border-gray-100"
+          >
+            {/* Header */}
+            <div className="h-16 flex items-center justify-between px-5 border-b border-gray-100 shrink-0">
+              <div className="relative w-28 h-8">
+                <Image
+                  src="/logo.png"
+                  alt="BookHushly"
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
+              <button
+                onClick={onClose}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400
+                           hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 pt-6 px-4 overflow-y-auto">
-              <NavLinks isDark={false} />
+            <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0">
+              {renderNav(true)}
             </nav>
 
-            {/* Profile pinned to bottom */}
-            <div className="border-t border-gray-100 shrink-0">
-              <BottomProfile
-                vendor={vendor}
-                isDark={false}
-                onLogout={handleLogout}
-                isLoggingOut={logoutMutation.isPending}
-              />
+            {/* Profile */}
+            <div className="border-t border-gray-100 shrink-0 relative">
+              {profileOpen && (
+                <ProfilePopover
+                  vendor={vendor}
+                  onLogout={() => logoutMutation.mutate()}
+                  onClose={() => setProfileOpen(false)}
+                  isLoggingOut={logoutMutation.isPending}
+                />
+              )}
+              <button
+                onClick={() => setProfileOpen((p) => !p)}
+                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-violet-50/60 transition-colors"
+              >
+                <div
+                  className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center
+                                justify-center text-sm font-bold shrink-0"
+                >
+                  {initial}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-[13px] font-semibold text-gray-900 truncate">
+                    {vendor?.business_name || "Vendor"}
+                  </p>
+                  <p className="text-[11px] text-gray-400 truncate">
+                    Vendor account
+                  </p>
+                </div>
+                <ChevronUp
+                  className={cn(
+                    "h-3.5 w-3.5 text-gray-400 shrink-0 transition-transform duration-200",
+                    profileOpen && "rotate-180",
+                  )}
+                />
+              </button>
             </div>
           </aside>
         </>

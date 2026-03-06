@@ -16,6 +16,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import ImageGallery from "@/components/common/home/ImageGallery";
+
 import { Separator } from "@/components/ui/separator";
 import {
   MapPin,
