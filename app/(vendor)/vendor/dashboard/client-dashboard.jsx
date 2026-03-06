@@ -429,7 +429,7 @@ export default function VendorDashboardClient({
                 <Link
                   href={
                     vendor?.business_category === "hotels"
-                      ? "/vendor/dashboard/hotels/new"
+                      ? "/vendor/dashboard/listings/create"
                       : vendor?.business_category === "serviced_apartments"
                         ? "/vendor/dashboard/serviced-apartments/new"
                         : "/vendor/dashboard/listings/create"
@@ -598,7 +598,7 @@ export default function VendorDashboardClient({
                     <Link
                       href={
                         vendor?.business_category === "hotels"
-                          ? "/vendor/dashboard/hotels/new"
+                          ? "/vendor/dashboard/listings/create"
                           : "/vendor/dashboard/listings/create"
                       }
                     >
