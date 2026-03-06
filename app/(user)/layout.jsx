@@ -1,8 +1,8 @@
 import "../globals.css";
 import { Header } from "@/components/common/home/header";
-import { FooterSidebar } from "@/components/common/home/footer";
 
 import { Toaster } from "@/components/ui/sonner";
+import Footer from "../../components/common/home/footer";
 
 export const metadata = {
   title: "Bookhushly - African Hospitality & Service Platform",
@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
     <>
       <Header />
       <main className="min-h-screen ">{children}</main>
-      <FooterSidebar />
+      <Footer />
       <Toaster />
     </>
   );

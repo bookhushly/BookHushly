@@ -1,171 +1,169 @@
+// components/shared/services/hotel-card.jsx
 "use client";
 
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  Wifi,
+  AirVent,
+  Waves,
+  Car,
+} from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
 const AMENITY_CONFIG = {
   wifi: { label: "WiFi", icon: "Wifi" },
-  "air-vent": { label: "Air Conditioning", icon: "AirVent" },
+  "air-vent": { label: "A/C", icon: "AirVent" },
   tv: { label: "TV", icon: "Tv" },
-  coffee: { label: "Coffee Maker", icon: "Coffee" },
+  coffee: { label: "Coffee", icon: "Coffee" },
   bath: { label: "Bathtub", icon: "Bath" },
-  refrigerator: { label: "Mini Fridge", icon: "Refrigerator" },
+  refrigerator: { label: "Fridge", icon: "Refrigerator" },
   utensils: { label: "Room Service", icon: "Utensils" },
-  dumbbell: { label: "Gym Access", icon: "Dumbbell" },
-  waves: { label: "Pool Access", icon: "Waves" },
+  dumbbell: { label: "Gym", icon: "Dumbbell" },
+  waves: { label: "Pool", icon: "Waves" },
   car: { label: "Parking", icon: "Car" },
   shirt: { label: "Laundry", icon: "Shirt" },
   briefcase: { label: "Work Desk", icon: "Briefcase" },
   "shield-check": { label: "Safe", icon: "ShieldCheck" },
-  phone: { label: "Phone", icon: "Phone" },
-  wind: { label: "Balcony", icon: "Wind" },
   droplet: { label: "Hot Water", icon: "Droplet" },
 };
 
 const HotelCard = ({ service }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [idx, setIdx] = useState(0);
   const images = service.media_urls?.length
     ? service.media_urls
     : ["/placeholder-hotel.jpg"];
 
-  const nextImage = (e) => {
+  const prev = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    setIdx((i) => (i === 0 ? images.length - 1 : i - 1));
   };
-
-  const prevImage = (e) => {
+  const next = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setIdx((i) => (i + 1) % images.length);
   };
 
-  const amenitiesList =
-    service.amenities?.items?.filter((item) => AMENITY_CONFIG[item]) || [];
-  const displayAmenities = amenitiesList.slice(0, 4);
+  const amenities = (service.amenities?.items || [])
+    .filter((k) => AMENITY_CONFIG[k])
+    .slice(0, 4);
 
   return (
-    <Link href={`/services/hotels/${service.id}`}>
-      <Card className="group overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 bg-white">
-        <div className="relative h-56 overflow-hidden">
+    <Link href={`/services/hotels/${service.id}`} className="block group">
+      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] transition-all duration-300">
+        {/* Image */}
+        <div className="relative h-52 overflow-hidden bg-gray-100">
           <Image
-            src={images[currentImageIndex]}
+            src={images[idx]}
             alt={service.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
+          {/* Image nav */}
           {images.length > 1 && (
             <>
               <button
-                onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
-                aria-label="Previous image"
+                onClick={prev}
+                className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-700" />
+                <ChevronLeft className="h-4 w-4 text-gray-700" />
               </button>
               <button
-                onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
-                aria-label="Next image"
+                onClick={next}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
               >
-                <ChevronRight className="w-5 h-5 text-gray-700" />
+                <ChevronRight className="h-4 w-4 text-gray-700" />
               </button>
-
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                {images.map((_, index) => (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                {images.map((_, i) => (
                   <div
-                    key={index}
-                    className={`h-1.5 rounded-full transition-all ${
-                      index === currentImageIndex
-                        ? "w-6 bg-white"
-                        : "w-1.5 bg-white/60"
-                    }`}
+                    key={i}
+                    className={`h-1 rounded-full transition-all duration-200 ${i === idx ? "w-5 bg-white" : "w-1 bg-white/50"}`}
                   />
                 ))}
               </div>
             </>
           )}
+
+          {/* Free cancellation */}
+          {service.checkout_policy && (
+            <div className="absolute top-3 left-3 z-10">
+              <span className="text-[10px] font-semibold bg-green-500 text-white px-2 py-1 rounded-lg">
+                Free cancellation
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className="p-4 space-y-3">
-          <div>
-            <h3 className="font-semibold text-lg text-gray-900 line-clamp-1 group-hover:text-purple-600 transition-colors">
-              {service.title}
-            </h3>
+        {/* Content */}
+        <div className="p-4">
+          {/* Location */}
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+            <span className="text-xs text-gray-500 line-clamp-1">
+              {service.location}
+            </span>
           </div>
 
-          <div className="flex items-start gap-1.5 text-sm text-gray-600">
-            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-purple-600" />
-            <span className="line-clamp-1">{service.location}</span>
-          </div>
+          {/* Title */}
+          <h3 className="font-semibold text-gray-900 text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
+            {service.title}
+          </h3>
 
-          {displayAmenities.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {displayAmenities.map((amenityKey) => {
-                const amenity = AMENITY_CONFIG[amenityKey];
-                const Icon = LucideIcons[amenity.icon];
+          {/* Amenities */}
+          {amenities.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {amenities.map((key) => {
+                const a = AMENITY_CONFIG[key];
+                const Icon = LucideIcons[a.icon];
                 return (
-                  <div
-                    key={amenityKey}
-                    className="flex items-center gap-1 text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded"
+                  <span
+                    key={key}
+                    className="flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded-lg"
                   >
-                    {Icon && <Icon className="w-3 h-3" />}
-                    <span>{amenity.label}</span>
-                  </div>
+                    {Icon && <Icon className="h-3 w-3" />}
+                    {a.label}
+                  </span>
                 );
               })}
-              {amenitiesList.length > 4 && (
-                <div className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded">
-                  +{amenitiesList.length - 4} more
-                </div>
+              {(service.amenities?.items || []).length > 4 && (
+                <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+                  +{service.amenities.items.length - 4}
+                </span>
               )}
             </div>
           )}
 
-          <div className="pt-3 border-t border-gray-100 flex items-end gap-3 justify-between">
+          {/* Price + CTA */}
+          <div className="flex items-end justify-between pt-3 border-t border-gray-100">
             <div>
-              <p className="text-xs text-gray-500 mb-1">Starting from</p>
+              <p className="text-[11px] text-gray-400 mb-0.5">Starting from</p>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="text-xl font-bold text-gray-900">
                   ₦{service.price?.toLocaleString()}
                 </span>
-                <span className="text-sm text-gray-600">/night</span>
+                <span className="text-xs text-gray-400">/night</span>
               </div>
               {service.max_price > service.price && (
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Up to ₦{service.max_price?.toLocaleString()}/night
+                <p className="text-[11px] text-gray-400">
+                  up to ₦{service.max_price?.toLocaleString()}
                 </p>
               )}
             </div>
-            <Button
-              size="sm"
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              See Availability
-            </Button>
+            <span className="h-9 px-4 inline-flex items-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
+              See rooms
+            </span>
           </div>
-
-          {service.checkout_policy && (
-            <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>Free cancellation available</span>
-            </div>
-          )}
         </div>
-      </Card>
+      </div>
     </Link>
   );
 };

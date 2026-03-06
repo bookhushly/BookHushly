@@ -2,262 +2,297 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Mail, ArrowLeft, CheckCircle, Lock } from "lucide-react";
+import { ArrowRight, MailCheck, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
   sendPasswordResetOtp,
   verifyPasswordResetOtp,
 } from "@/app/actions/auth";
 
+function Steps({ current }) {
+  const steps = ["Email", "Verify OTP"];
+  return (
+    <div className="flex items-center gap-2 mb-8">
+      {steps.map((label, i) => {
+        const idx = i + 1;
+        const done = idx < current;
+        const active = idx === current;
+        return (
+          <div key={label} className="flex items-center gap-2">
+            <div
+              className={`flex items-center gap-2 ${active || done ? "" : "opacity-40"}`}
+            >
+              <div
+                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                  done
+                    ? "bg-violet-600 text-white"
+                    : active
+                      ? "bg-violet-100 text-violet-700 ring-2 ring-violet-600"
+                      : "bg-gray-100 text-gray-400"
+                }`}
+              >
+                {done ? "✓" : idx}
+              </div>
+              <span
+                className={`text-xs font-medium ${active ? "text-gray-900" : done ? "text-gray-500" : "text-gray-400"}`}
+              >
+                {label}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className={`h-px w-8 transition-colors ${done ? "bg-violet-400" : "bg-gray-200"}`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState("email"); // 'email', 'otp', or 'success'
+  const [step, setStep] = useState(1);
 
   const sendOtpMutation = useMutation({
     mutationFn: async (email) => {
       const result = await sendPasswordResetOtp(email);
-      if (result.error) {
-        throw new Error(result.error);
-      }
+      if (result.error) throw new Error(result.error);
       return result;
     },
     onSuccess: () => {
-      setStep("otp");
-      toast.success("OTP sent!", {
-        description: `Check your email (${email}) for the OTP to reset your password`,
-        duration: 5000,
-      });
+      setStep(2);
+      toast.success(`OTP sent to ${email}`);
     },
-    onError: (error) => {
-      toast.error("Failed to send OTP", {
-        description: error.message,
-        duration: 5000,
-      });
-    },
+    onError: (error) => toast.error(error.message),
   });
 
   const verifyOtpMutation = useMutation({
     mutationFn: async ({ email, otp }) => {
       const result = await verifyPasswordResetOtp(email, otp);
-      if (result.error) {
-        throw new Error(result.error);
-      }
+      if (result.error) throw new Error(result.error);
       return result;
     },
     onSuccess: () => {
-      toast.success("OTP verified!", {
-        description: "Redirecting to password reset...",
-        duration: 3000,
-      });
+      toast.success("OTP verified — redirecting…");
       router.push("/reset-password");
     },
-    onError: (error) => {
-      toast.error("Verification failed", {
-        description: error.message,
-        duration: 5000,
-      });
-    },
+    onError: (error) => toast.error(error.message),
   });
 
-  const handleSubmitEmail = (e) => {
-    e.preventDefault();
+  const isPending = sendOtpMutation.isPending || verifyOtpMutation.isPending;
 
-    if (!email.trim()) {
-      toast.error("Email required", {
-        description: "Please enter your email address",
-      });
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email");
       return;
     }
-
     sendOtpMutation.mutate(email);
   };
 
-  const handleSubmitOtp = (e) => {
+  const handleOtpSubmit = (e) => {
     e.preventDefault();
-
-    if (!otp.trim()) {
-      toast.error("OTP required", {
-        description: "Please enter the OTP from your email",
-      });
+    if (otp.trim().length < 4) {
+      toast.error("Please enter the OTP from your email");
       return;
     }
-
     verifyOtpMutation.mutate({ email, otp });
   };
 
-  const handleResendOtp = () => {
-    setOtp("");
-    sendOtpMutation.mutate(email);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <Link
-            href="/login"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Login
-          </Link>
-          <h1 className="text-3xl font-bold text-purple-700 mb-2">
-            Reset Password
-          </h1>
-          <p className="text-gray-600">
-            {step === "email"
-              ? "Enter your email to receive an OTP"
-              : "Enter the OTP sent to your email"}
-          </p>
-        </div>
+    <div className="min-h-screen bg-white flex flex-col font-bricolage">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <Link href="/">
+          <Image
+            src="/logo.png"
+            alt="BookHushly"
+            width={120}
+            height={36}
+            className="h-8 w-auto object-contain"
+            priority
+          />
+        </Link>
+        <Link
+          href="/login"
+          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          Back to sign in
+        </Link>
+      </div>
 
-        <Card className="shadow-lg border-gray-200">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-gray-900">
-              {step === "email" ? "Forgot Password?" : "Verify OTP"}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {step === "email"
-                ? "We'll send you an OTP to reset your password"
-                : "Use the OTP from your email to proceed"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form
-              onSubmit={step === "email" ? handleSubmitEmail : handleSubmitOtp}
-              className="space-y-4"
-            >
-              {(sendOtpMutation.error || verifyOtpMutation.error) && (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    {sendOtpMutation.error?.message ||
-                      verifyOtpMutation.error?.message}
+      <div className="flex-1 flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm">
+          <Steps current={step} />
+
+          {step === 1 ? (
+            <>
+              <div className="mb-7">
+                <div className="mb-5 h-12 w-12 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
+                  <MailCheck className="h-5 w-5 text-violet-600" />
+                </div>
+                <h1 className="font-fraunces text-2xl font-semibold text-gray-900 mb-1.5">
+                  Forgot your password?
+                </h1>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Enter your email and we&apos;ll send you a one-time code.
+                </p>
+              </div>
+
+              {sendOtpMutation.isError && (
+                <Alert variant="destructive" className="mb-5">
+                  <AlertDescription className="text-sm">
+                    {sendOtpMutation.error.message}
                   </AlertDescription>
                 </Alert>
               )}
 
-              {step === "email" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (sendOtpMutation.error) {
-                          sendOtpMutation.reset();
-                        }
-                      }}
-                      className="pl-10 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                      required
-                      disabled={sendOtpMutation.isPending}
-                    />
-                  </div>
+              <form onSubmit={handleEmailSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="email"
+                    className="text-gray-700 text-sm font-medium"
+                  >
+                    Email address
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isPending}
+                    className="h-11 border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-violet-500/20 transition-all text-gray-900 placeholder:text-gray-400"
+                    required
+                  />
                 </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="otp">OTP</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="otp"
-                        name="otp"
-                        type="text"
-                        placeholder="Enter 6-digit OTP"
-                        value={otp}
-                        onChange={(e) => {
-                          setOtp(e.target.value);
-                          if (verifyOtpMutation.error) {
-                            verifyOtpMutation.reset();
-                          }
-                        }}
-                        className="pl-10 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                        maxLength={6}
-                        required
-                        disabled={verifyOtpMutation.isPending}
-                      />
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Sent to: <span className="font-medium">{email}</span>
-                  </div>
-                </>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full bg-purple-700 hover:bg-purple-600 text-white transition-colors"
-                disabled={
-                  sendOtpMutation.isPending || verifyOtpMutation.isPending
-                }
-              >
-                {sendOtpMutation.isPending || verifyOtpMutation.isPending ? (
-                  <>
-                    <LoadingSpinner className="mr-2 h-4 w-4" />
-                    {step === "email" ? "Sending OTP..." : "Verifying..."}
-                  </>
-                ) : step === "email" ? (
-                  "Send OTP"
-                ) : (
-                  "Verify OTP"
-                )}
-              </Button>
-
-              {step === "otp" && (
                 <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border-gray-300 text-purple-700 hover:bg-purple-50 transition-colors"
-                  onClick={handleResendOtp}
-                  disabled={sendOtpMutation.isPending}
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
                 >
-                  {sendOtpMutation.isPending ? (
+                  {isPending ? (
                     <>
-                      <LoadingSpinner className="mr-2 h-4 w-4" />
-                      Resending...
+                      <LoadingSpinner className="h-4 w-4" /> Sending…
                     </>
                   ) : (
-                    "Resend OTP"
+                    <>
+                      Send OTP <ArrowRight className="h-4 w-4" />
+                    </>
                   )}
                 </Button>
-              )}
-            </form>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="mb-7">
+                <div className="mb-5 h-12 w-12 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
+                  <ShieldCheck className="h-5 w-5 text-violet-600" />
+                </div>
+                <h1 className="font-fraunces text-2xl font-semibold text-gray-900 mb-1.5">
+                  Enter your OTP
+                </h1>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  We sent a code to{" "}
+                  <span className="font-medium text-gray-700">{email}</span>. It
+                  expires shortly.
+                </p>
+              </div>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Remember your password?{" "}
-                <Link
-                  href="/login"
-                  className="text-purple-600 hover:text-purple-700 hover:underline font-medium transition-colors"
+              {verifyOtpMutation.isError && (
+                <Alert variant="destructive" className="mb-5">
+                  <AlertDescription className="text-sm">
+                    {verifyOtpMutation.error.message}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <form onSubmit={handleOtpSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="otp"
+                    className="text-gray-700 text-sm font-medium"
+                  >
+                    One-time code
+                  </Label>
+                  <Input
+                    id="otp"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="000000"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                    disabled={isPending}
+                    className="h-11 border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-violet-500/20 transition-all text-gray-900 tracking-[0.3em] text-center font-mono text-lg placeholder:tracking-normal placeholder:font-sans placeholder:text-sm placeholder:text-gray-400"
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
                 >
-                  Sign in here
-                </Link>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+                  {isPending ? (
+                    <>
+                      <LoadingSpinner className="h-4 w-4" /> Verifying…
+                    </>
+                  ) : (
+                    <>
+                      Verify OTP <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+                <p className="text-center text-xs text-gray-400">
+                  Didn&apos;t receive it?{" "}
+                  <button
+                    type="button"
+                    onClick={() => sendOtpMutation.mutate(email)}
+                    disabled={isPending}
+                    className="text-violet-600 hover:text-violet-700 underline underline-offset-2 transition-colors disabled:opacity-50"
+                  >
+                    Resend code
+                  </button>{" "}
+                  or{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep(1);
+                      setOtp("");
+                    }}
+                    className="text-violet-600 hover:text-violet-700 underline underline-offset-2 transition-colors"
+                  >
+                    change email
+                  </button>
+                </p>
+              </form>
+            </>
+          )}
+
+          <p className="mt-8 text-center text-sm text-gray-500">
+            Remembered it?{" "}
+            <Link
+              href="/login"
+              className="text-violet-600 hover:text-violet-700 font-medium transition-colors"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -4,205 +4,198 @@ import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Users,
-  Star,
-  Globe,
-  Award,
-  ArrowRight,
-  Sparkles,
-  CheckCircle2,
-  Zap,
-  Shield,
-  Calendar,
-  Ticket,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, Calendar } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 
-const Button = ({
-  children,
-  variant = "primary",
-  size = "md",
-  className = "",
-  ...props
-}) => {
-  const base =
-    "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-4";
-  const variants = {
-    primary:
-      "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl focus:ring-purple-300",
-    outline:
-      "border border-purple-400/30 text-purple-200 hover:bg-purple-900/30 backdrop-blur-sm focus:ring-purple-300",
-  };
-  const sizes = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-6 py-3 text-base",
-    lg: "px-8 py-4 text-lg",
-  };
-  return (
-    <button
-      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
+// ── Animation variants ──────────────────────────────────────────────────────
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1], delay },
+});
 
-const Badge = ({ children }) => (
-  <div className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-full bg-purple-500/10 text-purple-200 border border-purple-400/20 backdrop-blur-sm">
-    {children}
-  </div>
-);
+const fadeIn = (delay = 0) => ({
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.9, ease: "easeOut", delay },
+});
 
-const Hero = () => {
-  const heroRef = useRef(null);
+// ── Trust strip ──────────────────────────────────────────────────────────────
+const TRUST = [
+  { icon: CheckCircle2, label: "Verified vendors" },
+  { icon: Calendar, label: "Instant confirmation" },
+  { icon: Shield, label: "Secure payments" },
+];
+
+// ── Hero ─────────────────────────────────────────────────────────────────────
+export default function Hero() {
+  const containerRef = useRef(null);
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
-  const springConfig = { damping: 20, stiffness: 100 };
-  const smoothX = useSpring(mouseX, springConfig);
-  const smoothY = useSpring(mouseY, springConfig);
-  const glow1X = useTransform(smoothX, [0, 1], ["-10%", "10%"]);
-  const glow1Y = useTransform(smoothY, [0, 1], ["-10%", "10%"]);
+  const spring = { damping: 30, stiffness: 80 };
+  const smoothX = useSpring(mouseX, spring);
+  const smoothY = useSpring(mouseY, spring);
+
+  // Parallax — applied only to the bg image layer, subtle depth
+  const bgX = useTransform(smoothX, [0, 1], ["-2%", "2%"]);
+  const bgY = useTransform(smoothY, [0, 1], ["-2%", "2%"]);
 
   const handleMouseMove = useCallback(
     (e) => {
-      const { innerWidth, innerHeight } = window;
-      mouseX.set(e.clientX / innerWidth);
-      mouseY.set(e.clientY / innerHeight);
+      mouseX.set(e.clientX / window.innerWidth);
+      mouseY.set(e.clientY / window.innerHeight);
     },
     [mouseX, mouseY],
   );
 
   useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [handleMouseMove]);
-
-  const features = [
-    { icon: CheckCircle2, text: "Verified & Trusted Vendors" },
-    { icon: Calendar, text: "Instant Booking Confirmation" },
-    { icon: Shield, text: "Secure Payment Processing" },
-  ];
 
   const featuredCategories = CATEGORIES.slice(0, 5);
 
   return (
     <section
-      ref={heroRef}
-      className="relative min-h-screen text-white flex items-center overflow-hidden bg-gradient-to-br from-purple-950 via-black to-indigo-950"
+      ref={containerRef}
+      className="relative min-h-screen flex flex-col justify-end overflow-hidden bg-gray-950"
     >
-      {/* Subtle glow animation */}
-      <motion.div
-        className="absolute top-1/3 left-1/4 w-[28rem] h-[28rem] bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full blur-3xl"
-        style={{ x: glow1X, y: glow1Y }}
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 10, repeat: Infinity }}
-      />
+      {/* ── Background image with parallax ── */}
+      <motion.div className="absolute inset-[-4%]" style={{ x: bgX, y: bgY }}>
+        <Image
+          src="/book2.jpg"
+          alt=""
+          fill
+          priority
+          quality={90}
+          className="object-cover"
+        />
+        {/* Layered overlays for depth */}
+        <div className="absolute inset-0 bg-gray-950/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/60 via-transparent to-transparent" />
+      </motion.div>
 
-      {/* Background Image */}
-      <Image
-        src="/book2.jpg"
-        alt="Hospitality background"
-        fill
-        priority
-        quality={90}
-        className="object-cover opacity-20"
-      />
+      {/* ── Noise grain overlay ── */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-[0.035] pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <filter id="hero-noise">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.75"
+            numOctaves="4"
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#hero-noise)" />
+      </svg>
 
-      <div className="relative z-10 container mx-auto px-6 py-24 md:py-32 grid lg:grid-cols-3 gap-10">
-        {/* Left Section */}
-        <div className="lg:col-span-2 space-y-8">
-          <Badge>
-            <Calendar className="w-4 h-4 mr-2" />
-            Your Journey, Seamlessly Booked
-          </Badge>
-
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-            Experience{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
-              Premium
-            </span>{" "}
-            Services at{" "}
-            <span className="underline decoration-purple-400/50 decoration-4 underline-offset-4">
-              One Platform
+      {/* ── Main content ── */}
+      <div className="relative z-10 container mx-auto px-6 lg:px-10 pb-20 pt-32 md:pt-40">
+        <div className="max-w-4xl">
+          {/* Eyebrow */}
+          <motion.div {...fadeUp(0.1)} className="mb-6">
+            <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase text-violet-400">
+              <span className="h-px w-8 bg-violet-500" />
+              Nigeria&apos;s booking platform
             </span>
-          </h1>
+          </motion.div>
 
-          <p className="text-base md:text-lg text-purple-100/90 max-w-2xl leading-relaxed">
-            Book hotels, events, food, logistics and more — with trusted vendors
-            across Africa.{" "}
-            <span className="text-purple-300 font-medium">
-              Hospitality, simplified.
+          {/* Headline — mixed Fraunces + Bricolage */}
+          <motion.h1
+            {...fadeUp(0.25)}
+            className="text-[clamp(2.75rem,7vw,5.5rem)] leading-[1.05] font-bold text-white mb-6"
+          >
+            <span className="font-fraunces font-semibold italic">
+              Everything
             </span>
-          </p>
+            <span className="font-bricolage"> you need,</span>
+            <br />
+            <span className="font-bricolage text-white/60">booked in </span>
+            <span className="font-fraunces font-semibold italic text-violet-400">
+              seconds.
+            </span>
+          </motion.h1>
 
-          {/* Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {features.map((f, i) => (
+          {/* Subline */}
+          <motion.p
+            {...fadeUp(0.4)}
+            className="text-lg md:text-xl text-white/60 max-w-xl leading-relaxed mb-10"
+          >
+            Hotels, serviced apartments, events, logistics, and security — all
+            in one place. Built for Nigeria.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            {...fadeUp(0.52)}
+            className="flex flex-wrap items-center gap-4 mb-16"
+          >
+            <Link
+              href="/services"
+              className="group inline-flex items-center gap-2 h-12 px-6 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-violet-900/40"
+            >
+              Explore services
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+            </Link>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 h-12 px-6 border border-white/20 hover:border-white/40 text-white/80 hover:text-white text-sm font-semibold rounded-xl transition-all duration-200 backdrop-blur-sm"
+            >
+              Create free account
+            </Link>
+          </motion.div>
+
+          {/* Trust strip */}
+          <motion.div
+            {...fadeIn(0.65)}
+            className="flex flex-wrap items-center gap-6"
+          >
+            {TRUST.map(({ icon: Icon, label }) => (
               <div
-                key={i}
-                className="flex items-center gap-3 bg-purple-900/20 border border-purple-500/20 rounded-xl p-3"
+                key={label}
+                className="flex items-center gap-2 text-white/50"
               >
-                <div className="p-2 bg-purple-700/40 rounded-lg">
-                  <f.icon className="w-5 h-5 text-purple-200" />
-                </div>
-                <span className="text-sm text-purple-100">{f.text}</span>
+                <Icon className="h-3.5 w-3.5 text-violet-500 shrink-0" />
+                <span className="text-xs font-medium">{label}</span>
               </div>
             ))}
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-wrap gap-4 pt-4">
-            <Link href="/services">
-              <Button variant="primary" size="lg" className="group">
-                Explore Services
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-            <Link href="/about">
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Right Section (Categories Grid) */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-5">
-          {featuredCategories.map((cat, i) => (
-            <Link
-              key={cat.value}
-              href={
-                cat.value === "logistics"
-                  ? "/quote-services?tab=logistics"
-                  : cat.value === "security"
-                    ? "/quote-services?tab=security"
-                    : `/services?category=${cat.value}`
-              }
-              className={`relative block rounded-2xl overflow-hidden group shadow-lg h-40 sm:h-48 ${
-                i === 0 ? "col-span-2" : ""
-              }`}
-            >
-              <Image
-                src={cat.image}
-                alt={cat.alt}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-950/70 via-black/50 to-indigo-900/60 group-hover:from-purple-800/50 transition-all" />
-              <div className="absolute bottom-3 left-3">
-                <div className="text-3xl mb-1">{cat.icon}</div>
-                <h3 className="text-base md:text-lg font-semibold group-hover:text-purple-300 transition-colors">
-                  {cat.label}
-                </h3>
-              </div>
-            </Link>
-          ))}
+          </motion.div>
         </div>
       </div>
+
+      {/* ── Category strip — bottom of screen ── */}
+      <motion.div
+        {...fadeIn(0.8)}
+        className="relative z-10 border-t border-white/10 bg-gray-950/60 backdrop-blur-md"
+      >
+        <div className="container mx-auto px-6 lg:px-10">
+          <div className="flex items-stretch divide-x divide-white/10 overflow-x-auto scrollbar-none">
+            {featuredCategories.map((cat) => (
+              <Link
+                key={cat.value}
+                href={
+                  cat.value === "logistics"
+                    ? "/quote-services?tab=logistics"
+                    : cat.value === "security"
+                      ? "/quote-services?tab=security"
+                      : `/services?category=${cat.value}`
+                }
+                className="group flex items-center gap-3 px-6 py-4 min-w-max hover:bg-white/5 transition-colors duration-200"
+              >
+                <span className="text-xl">{cat.icon}</span>
+                <span className="text-sm font-medium text-white/60 group-hover:text-white transition-colors duration-200 whitespace-nowrap">
+                  {cat.label}
+                </span>
+                <ArrowRight className="h-3 w-3 text-white/20 group-hover:text-violet-400 group-hover:translate-x-0.5 transition-all duration-200" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
-};
-
-export default Hero;
+}

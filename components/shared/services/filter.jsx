@@ -13,22 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   SlidersHorizontal,
   X,
-  DollarSign,
-  Bed,
-  Bath,
-  Users,
   MapPin,
   RotateCcw,
   Zap,
   Shield,
   ChevronDown,
   ChevronUp,
+  Bed,
+  Bath,
+  Users,
+  Car,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { NIGERIAN_STATES } from "@/lib/constants";
@@ -42,11 +40,235 @@ import {
   BED_SIZES,
 } from "@/lib/constants/filters";
 
+// ── Atomic sub-components ──────────────────────────────────────────────────
+
+const SectionLabel = ({ children }) => (
+  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400 mb-3">
+    {children}
+  </p>
+);
+
+const PriceFilter = memo(
+  ({ filters, onChange, min, max, step, label = "Price Range" }) => {
+    const fmt = (v) => new Intl.NumberFormat("en-NG").format(v);
+    return (
+      <div className="space-y-3">
+        <SectionLabel>{label}</SectionLabel>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            ["price_min", "Min", min],
+            ["price_max", "Max", max],
+          ].map(([key, lbl, placeholder]) => (
+            <div key={key}>
+              <p className="text-[11px] text-gray-400 mb-1">{lbl}</p>
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                  ₦
+                </span>
+                <Input
+                  type="number"
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={filters[key] || (key === "price_min" ? min : max)}
+                  onChange={(e) =>
+                    onChange(
+                      key,
+                      parseInt(e.target.value) ||
+                        (key === "price_min" ? min : max),
+                    )
+                  }
+                  className="pl-6 h-9 text-sm"
+                  placeholder={fmt(placeholder)}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  },
+);
+
+const NumberSelect = memo(
+  ({ label, icon, value, onChange, min, max, step = 1, suffix = "" }) => {
+    const opts = Array.from(
+      { length: Math.floor((max - min) / step) + 1 },
+      (_, i) => min + i * step,
+    );
+    return (
+      <div>
+        <div className="flex items-center gap-1.5 mb-1.5">
+          {icon && <span className="text-gray-400">{icon}</span>}
+          <p className="text-xs font-medium text-gray-700">{label}</p>
+        </div>
+        <Select
+          value={value?.toString() || "all"}
+          onValueChange={(v) => onChange(v === "all" ? null : parseInt(v))}
+        >
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue placeholder={`Any ${suffix}`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any</SelectItem>
+            {opts.map((o) => (
+              <SelectItem key={o} value={o.toString()}>
+                {o}+ {suffix}
+                {o > 1 ? "s" : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  },
+);
+
+const LocationFilter = memo(({ filters, onChange }) => (
+  <div className="space-y-2">
+    <SectionLabel>
+      <MapPin className="h-3 w-3 inline mr-1" />
+      Location
+    </SectionLabel>
+    <Select
+      value={filters.state || "all"}
+      onValueChange={(v) => {
+        onChange("state", v === "all" ? null : v);
+        if (filters.city) onChange("city", null);
+      }}
+    >
+      <SelectTrigger className="h-9 text-sm">
+        <SelectValue placeholder="All States" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All States</SelectItem>
+        {NIGERIAN_STATES.map((s) => (
+          <SelectItem key={s} value={s}>
+            {s}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    <Input
+      className="h-9 text-sm"
+      type="text"
+      placeholder="City (e.g., Lagos)"
+      value={filters.city || ""}
+      onChange={(e) => onChange("city", e.target.value || null)}
+    />
+  </div>
+));
+
+const BooleanSelect = memo(({ label, checked, onChange }) => (
+  <div>
+    <p className="text-xs font-medium text-gray-700 mb-1.5">{label}</p>
+    <Select
+      value={checked === true ? "true" : checked === false ? "false" : "all"}
+      onValueChange={(v) => onChange(v === "all" ? null : v === "true")}
+    >
+      <SelectTrigger className="h-9 text-sm">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">Any</SelectItem>
+        <SelectItem value="true">Yes</SelectItem>
+        <SelectItem value="false">No</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+));
+
+const CheckItem = memo(({ label, checked, onChange }) => (
+  <div className="flex items-center gap-2">
+    <Checkbox
+      id={label}
+      checked={checked}
+      onCheckedChange={onChange}
+      className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600 h-4 w-4"
+    />
+    <Label
+      htmlFor={label}
+      className="text-sm text-gray-600 font-normal cursor-pointer"
+    >
+      {label}
+    </Label>
+  </div>
+));
+
+const Collapsible = memo(
+  ({ title, icon, expanded, onToggle, count, children }) => (
+    <div>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between py-2 px-1 hover:bg-gray-50 rounded-lg transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          {icon}
+          <span className="text-xs font-semibold text-gray-700">{title}</span>
+          {count > 0 && (
+            <span className="text-[10px] font-bold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
+              {count}
+            </span>
+          )}
+        </div>
+        {expanded ? (
+          <ChevronUp className="h-3.5 w-3.5 text-gray-400" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+        )}
+      </button>
+      {expanded && <div className="mt-2 pl-1">{children}</div>}
+    </div>
+  ),
+);
+
+const AmenitiesSection = memo(
+  ({ filters, onToggle, expanded, onToggleExpand }) => {
+    const selected = filters.amenities || [];
+    return (
+      <Collapsible
+        title="Amenities"
+        expanded={expanded}
+        onToggle={onToggleExpand}
+        count={selected.length}
+        icon={
+          LucideIcons.Sparkles ? (
+            <LucideIcons.Sparkles className="h-3.5 w-3.5 text-violet-500" />
+          ) : null
+        }
+      >
+        <div className="grid grid-cols-2 gap-1.5 pt-1">
+          {AMENITY_ICONS.map((a) => {
+            const Icon = LucideIcons[a.icon];
+            const isOn = selected.includes(a.value);
+            return (
+              <button
+                key={a.value}
+                onClick={() => onToggle("amenities", a.value)}
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all ${
+                  isOn
+                    ? "bg-violet-50 border-violet-300 text-violet-800"
+                    : "bg-white border-gray-200 text-gray-600 hover:border-violet-200"
+                }`}
+              >
+                {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                <span className="truncate">{a.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Collapsible>
+    );
+  },
+);
+
+// ── Main panel ─────────────────────────────────────────────────────────────
+
 const FilterPanel = memo(
   ({ category, filters, onFiltersChange, isOpen, onToggle, isMobile }) => {
-    const [localFilters, setLocalFilters] = useState(filters);
-    const [hasChanges, setHasChanges] = useState(false);
-    const [expandedSections, setExpandedSections] = useState({
+    const [local, setLocal] = useState(filters);
+    const [changed, setChanged] = useState(false);
+    const [sections, setSections] = useState({
       amenities: true,
       bedSizes: false,
       power: false,
@@ -54,509 +276,351 @@ const FilterPanel = memo(
     });
 
     useEffect(() => {
-      setLocalFilters(filters);
-      setHasChanges(false);
+      setLocal(filters);
+      setChanged(false);
     }, [filters]);
 
-    const handleLocalChange = useCallback((key, value) => {
-      setLocalFilters((prev) => {
-        const updated = { ...prev };
-        if (value === "all" || value === null || value === undefined) {
-          delete updated[key];
-        } else {
-          updated[key] = value;
-        }
-        return updated;
+    const set = useCallback((key, value) => {
+      setLocal((prev) => {
+        const next = { ...prev };
+        if (value === "all" || value === null || value === undefined)
+          delete next[key];
+        else next[key] = value;
+        return next;
       });
-      setHasChanges(true);
+      setChanged(true);
     }, []);
 
-    const handleArrayToggle = useCallback((key, value) => {
-      setLocalFilters((prev) => {
-        const current = prev[key] || [];
-        const updated = { ...prev };
-        if (current.includes(value)) {
-          updated[key] = current.filter((item) => item !== value);
-          if (updated[key].length === 0) delete updated[key];
+    const toggle = useCallback((key, value) => {
+      setLocal((prev) => {
+        const cur = prev[key] || [];
+        const next = { ...prev };
+        if (cur.includes(value)) {
+          next[key] = cur.filter((v) => v !== value);
+          if (!next[key].length) delete next[key];
         } else {
-          updated[key] = [...current, value];
+          next[key] = [...cur, value];
         }
-        return updated;
+        return next;
       });
-      setHasChanges(true);
+      setChanged(true);
     }, []);
 
-    const applyFilters = useCallback(() => {
-      onFiltersChange(localFilters);
-      setHasChanges(false);
+    const apply = useCallback(() => {
+      onFiltersChange(local);
+      setChanged(false);
       if (isMobile) onToggle();
-    }, [localFilters, onFiltersChange, isMobile, onToggle]);
+    }, [local, onFiltersChange, isMobile, onToggle]);
 
-    const clearFilters = useCallback(() => {
-      setLocalFilters({});
+    const clear = useCallback(() => {
+      setLocal({});
       onFiltersChange({});
-      setHasChanges(false);
+      setChanged(false);
     }, [onFiltersChange]);
 
-    const toggleSection = useCallback((section) => {
-      setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
-    }, []);
-
-    const activeFilterCount = Object.keys(localFilters).filter(
-      (key) => key !== "state" && key !== "city",
+    const toggleSection = (s) => setSections((p) => ({ ...p, [s]: !p[s] }));
+    const pr = PRICE_RANGES[category] || PRICE_RANGES.events;
+    const activeCount = Object.keys(local).filter(
+      (k) => k !== "state" && k !== "city",
     ).length;
 
-    const priceRange = PRICE_RANGES[category] || PRICE_RANGES.events;
+    const body = (
+      <div className="space-y-5">
+        {/* Price */}
+        <PriceFilter
+          filters={local}
+          onChange={set}
+          {...pr}
+          label="Price Range"
+        />
 
-    const renderFilters = () => {
-      switch (category) {
-        case "hotels":
-          return (
-            <>
-              <PriceFilter
-                filters={localFilters}
-                onChange={handleLocalChange}
-                {...priceRange}
-                label="Price per Night"
-              />
-              <Separator />
-              <LocationFilters
-                filters={localFilters}
-                onChange={handleLocalChange}
-              />
-              <Separator />
+        {/* Location */}
+        <Separator />
+        <LocationFilter filters={local} onChange={set} />
 
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Room Preferences</Label>
-
-                <NumberSelectFilter
-                  label="Max Occupancy"
-                  icon={<Users className="h-4 w-4" />}
-                  value={localFilters.max_occupancy}
-                  onChange={(value) =>
-                    handleLocalChange("max_occupancy", value)
-                  }
-                  {...NUMBER_RANGES.max_occupancy}
-                  suffix="guest"
-                />
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Floor Preference
-                  </Label>
-                  <Select
-                    value={localFilters.floor?.toString() || "all"}
-                    onValueChange={(value) =>
-                      handleLocalChange(
-                        "floor",
-                        value === "all" ? null : parseInt(value),
-                      )
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Any Floor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Any Floor</SelectItem>
-                      {Array.from({ length: 20 }, (_, i) => i + 1).map(
-                        (floor) => (
-                          <SelectItem key={floor} value={floor.toString()}>
-                            Floor {floor}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+        {/* Category-specific */}
+        {category === "hotels" && (
+          <>
+            <Separator />
+            <SectionLabel>Room</SectionLabel>
+            <NumberSelect
+              label="Occupancy"
+              icon={<Users className="h-3.5 w-3.5" />}
+              value={local.max_occupancy}
+              onChange={(v) => set("max_occupancy", v)}
+              {...NUMBER_RANGES.max_occupancy}
+              suffix="guest"
+            />
+            <Separator />
+            <Collapsible
+              title="Bed Sizes"
+              icon={<Bed className="h-3.5 w-3.5 text-violet-500" />}
+              expanded={sections.bedSizes}
+              onToggle={() => toggleSection("bedSizes")}
+              count={(local.bed_sizes || []).length}
+            >
+              <div className="grid grid-cols-2 gap-1.5">
+                {BED_SIZES.map((b) => {
+                  const on = (local.bed_sizes || []).includes(b.value);
+                  return (
+                    <button
+                      key={b.value}
+                      onClick={() => toggle("bed_sizes", b.value)}
+                      className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all ${on ? "bg-violet-50 border-violet-300 text-violet-800" : "bg-white border-gray-200 text-gray-600 hover:border-violet-200"}`}
+                    >
+                      <Bed className="h-3.5 w-3.5" />
+                      {b.label}
+                    </button>
+                  );
+                })}
               </div>
+            </Collapsible>
+            <Separator />
+            <AmenitiesSection
+              filters={local}
+              onToggle={toggle}
+              expanded={sections.amenities}
+              onToggleExpand={() => toggleSection("amenities")}
+            />
+          </>
+        )}
 
-              <Separator />
-
-              <CollapsibleSection
-                title="Bed Sizes"
-                icon={<Bed className="h-4 w-4 text-purple-600" />}
-                expanded={expandedSections.bedSizes || false}
-                onToggle={() => toggleSection("bedSizes")}
-                count={(localFilters.bed_sizes || []).length}
+        {category === "serviced_apartments" && (
+          <>
+            <Separator />
+            <SectionLabel>Apartment</SectionLabel>
+            <Select
+              value={local.apartment_type || "all"}
+              onValueChange={(v) =>
+                set("apartment_type", v === "all" ? null : v)
+              }
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                {APARTMENT_TYPES.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <NumberSelect
+              label="Bedrooms"
+              icon={<Bed className="h-3.5 w-3.5" />}
+              value={local.bedrooms}
+              onChange={(v) => set("bedrooms", v)}
+              {...NUMBER_RANGES.bedrooms}
+              suffix="bed"
+            />
+            <NumberSelect
+              label="Bathrooms"
+              icon={<Bath className="h-3.5 w-3.5" />}
+              value={local.bathrooms}
+              onChange={(v) => set("bathrooms", v)}
+              {...NUMBER_RANGES.bathrooms}
+              suffix="bath"
+            />
+            <NumberSelect
+              label="Max Guests"
+              icon={<Users className="h-3.5 w-3.5" />}
+              value={local.max_guests}
+              onChange={(v) => set("max_guests", v)}
+              {...NUMBER_RANGES.max_guests}
+              suffix="guest"
+            />
+            <Separator />
+            <SectionLabel>Features</SectionLabel>
+            <BooleanSelect
+              label="Furnished"
+              checked={local.furnished}
+              onChange={(v) => set("furnished", v)}
+            />
+            <BooleanSelect
+              label="Utilities Included"
+              checked={local.utilities_included}
+              onChange={(v) => set("utilities_included", v)}
+            />
+            <BooleanSelect
+              label="Internet Included"
+              checked={local.internet_included}
+              onChange={(v) => set("internet_included", v)}
+            />
+            <div>
+              <p className="text-xs font-medium text-gray-700 mb-1.5">
+                Water Supply
+              </p>
+              <Select
+                value={local.water_supply || "all"}
+                onValueChange={(v) =>
+                  set("water_supply", v === "all" ? null : v)
+                }
               >
-                <div className="grid grid-cols-2 gap-2 pt-2">
-                  {BED_SIZES.map((bedSize) => {
-                    const isSelected = (localFilters.bed_sizes || []).includes(
-                      bedSize.value,
-                    );
-                    return (
-                      <button
-                        key={bedSize.value}
-                        onClick={() =>
-                          handleArrayToggle("bed_sizes", bedSize.value)
-                        }
-                        className={`flex items-center justify-center gap-2 p-2 rounded-lg border transition-all ${
-                          isSelected
-                            ? "bg-purple-50 border-purple-600 text-purple-900"
-                            : "bg-white border-gray-200 hover:border-purple-300"
-                        }`}
-                      >
-                        <Bed className="h-4 w-4 flex-shrink-0" />
-                        <span className="text-xs font-medium">
-                          {bedSize.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </CollapsibleSection>
-
-              <Separator />
-
-              <AmenitiesFilter
-                filters={localFilters}
-                onToggle={handleArrayToggle}
-                expanded={expandedSections.amenities}
-                onToggleExpand={() => toggleSection("amenities")}
-              />
-            </>
-          );
-
-        case "serviced_apartments":
-          return (
-            <>
-              <PriceFilter
-                filters={localFilters}
-                onChange={handleLocalChange}
-                {...priceRange}
-                label="Price per Night"
-              />
-              <Separator />
-              <LocationFilters
-                filters={localFilters}
-                onChange={handleLocalChange}
-              />
-              <Separator />
-
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Apartment Details</Label>
-
-                <Select
-                  value={localFilters.apartment_type || "all"}
-                  onValueChange={(value) =>
-                    handleLocalChange(
-                      "apartment_type",
-                      value === "all" ? null : value,
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Apartment Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    {APARTMENT_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <NumberSelectFilter
-                  label="Bedrooms"
-                  icon={<Bed className="h-4 w-4" />}
-                  value={localFilters.bedrooms}
-                  onChange={(value) => handleLocalChange("bedrooms", value)}
-                  {...NUMBER_RANGES.bedrooms}
-                  suffix="bed"
-                />
-
-                <NumberSelectFilter
-                  label="Bathrooms"
-                  icon={<Bath className="h-4 w-4" />}
-                  value={localFilters.bathrooms}
-                  onChange={(value) => handleLocalChange("bathrooms", value)}
-                  {...NUMBER_RANGES.bathrooms}
-                  suffix="bath"
-                />
-
-                <NumberSelectFilter
-                  label="Max Guests"
-                  icon={<Users className="h-4 w-4" />}
-                  value={localFilters.max_guests}
-                  onChange={(value) => handleLocalChange("max_guests", value)}
-                  {...NUMBER_RANGES.max_guests}
-                  suffix="guest"
-                />
-
-                <NumberSelectFilter
-                  label="Parking Spaces"
-                  icon={
-                    LucideIcons.Car && <LucideIcons.Car className="h-4 w-4" />
-                  }
-                  value={localFilters.parking_spaces}
-                  onChange={(value) =>
-                    handleLocalChange("parking_spaces", value)
-                  }
-                  {...NUMBER_RANGES.parking_spaces}
-                  suffix="space"
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Property Features</Label>
-
-                <BooleanFilter
-                  label="Furnished"
-                  checked={localFilters.furnished}
-                  onChange={(value) => handleLocalChange("furnished", value)}
-                />
-
-                <BooleanFilter
-                  label="Utilities Included"
-                  checked={localFilters.utilities_included}
-                  onChange={(value) =>
-                    handleLocalChange("utilities_included", value)
-                  }
-                />
-
-                <BooleanFilter
-                  label="Internet Included"
-                  checked={localFilters.internet_included}
-                  onChange={(value) =>
-                    handleLocalChange("internet_included", value)
-                  }
-                />
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">
-                    Water Supply
-                  </Label>
-                  <Select
-                    value={localFilters.water_supply || "all"}
-                    onValueChange={(value) =>
-                      handleLocalChange(
-                        "water_supply",
-                        value === "all" ? null : value,
-                      )
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Any" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Any</SelectItem>
-                      {WATER_SUPPLY_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <Separator />
-
-              <CollapsibleSection
-                title="Power Supply"
-                icon={<Zap className="h-4 w-4 text-purple-600" />}
-                expanded={expandedSections.power}
-                onToggle={() => toggleSection("power")}
-              >
-                <div className="space-y-2 pt-2">
-                  <CheckboxItem
-                    label="Generator"
-                    checked={localFilters.generator_available || false}
-                    onChange={(checked) =>
-                      handleLocalChange("generator_available", checked || null)
-                    }
-                  />
-                  <CheckboxItem
-                    label="Inverter"
-                    checked={localFilters.inverter_available || false}
-                    onChange={(checked) =>
-                      handleLocalChange("inverter_available", checked || null)
-                    }
-                  />
-                  <CheckboxItem
-                    label="Solar Power"
-                    checked={localFilters.solar_power || false}
-                    onChange={(checked) =>
-                      handleLocalChange("solar_power", checked || null)
-                    }
-                  />
-                </div>
-              </CollapsibleSection>
-
-              <Separator />
-
-              <CollapsibleSection
-                title="Security Features"
-                icon={<Shield className="h-4 w-4 text-purple-600" />}
-                expanded={expandedSections.security}
-                onToggle={() => toggleSection("security")}
-              >
-                <div className="space-y-2 pt-2">
-                  {SECURITY_FEATURES.map((feature) => (
-                    <CheckboxItem
-                      key={feature.value}
-                      label={feature.label}
-                      checked={
-                        (localFilters.security_features || []).includes(
-                          feature.value,
-                        ) || false
-                      }
-                      onChange={(checked) => {
-                        if (checked) {
-                          handleArrayToggle("security_features", feature.value);
-                        } else {
-                          handleArrayToggle("security_features", feature.value);
-                        }
-                      }}
-                    />
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any</SelectItem>
+                  {WATER_SUPPLY_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
                   ))}
-                </div>
-              </CollapsibleSection>
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+            <Collapsible
+              title="Power Supply"
+              icon={<Zap className="h-3.5 w-3.5 text-amber-500" />}
+              expanded={sections.power}
+              onToggle={() => toggleSection("power")}
+            >
+              <div className="space-y-2">
+                <CheckItem
+                  label="Generator"
+                  checked={local.generator_available || false}
+                  onChange={(c) => set("generator_available", c || null)}
+                />
+                <CheckItem
+                  label="Inverter"
+                  checked={local.inverter_available || false}
+                  onChange={(c) => set("inverter_available", c || null)}
+                />
+                <CheckItem
+                  label="Solar"
+                  checked={local.solar_power || false}
+                  onChange={(c) => set("solar_power", c || null)}
+                />
+              </div>
+            </Collapsible>
+            <Separator />
+            <Collapsible
+              title="Security Features"
+              icon={<Shield className="h-3.5 w-3.5 text-violet-500" />}
+              expanded={sections.security}
+              onToggle={() => toggleSection("security")}
+              count={(local.security_features || []).length}
+            >
+              <div className="space-y-2">
+                {SECURITY_FEATURES.map((f) => (
+                  <CheckItem
+                    key={f.value}
+                    label={f.label}
+                    checked={(local.security_features || []).includes(f.value)}
+                    onChange={() => toggle("security_features", f.value)}
+                  />
+                ))}
+              </div>
+            </Collapsible>
+            <Separator />
+            <AmenitiesSection
+              filters={local}
+              onToggle={toggle}
+              expanded={sections.amenities}
+              onToggleExpand={() => toggleSection("amenities")}
+            />
+          </>
+        )}
 
-              <Separator />
+        {category === "events" && (
+          <>
+            <Separator />
+            <NumberSelect
+              label="Minimum Capacity"
+              icon={<Users className="h-3.5 w-3.5" />}
+              value={local.capacity}
+              onChange={(v) => set("capacity", v)}
+              {...NUMBER_RANGES.capacity}
+              suffix="people"
+            />
+          </>
+        )}
 
-              <AmenitiesFilter
-                filters={localFilters}
-                onToggle={handleArrayToggle}
-                expanded={expandedSections.amenities}
-                onToggleExpand={() => toggleSection("amenities")}
-              />
-            </>
-          );
+        {/* Actions */}
+        <div className="space-y-2 pt-4 border-t border-gray-100">
+          {changed && (
+            <Button
+              onClick={apply}
+              className="w-full h-9 bg-violet-600 hover:bg-violet-700 text-sm"
+            >
+              Apply Filters
+            </Button>
+          )}
+          {activeCount > 0 && (
+            <Button
+              onClick={clear}
+              variant="outline"
+              className="w-full h-9 text-sm gap-2"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Clear all
+            </Button>
+          )}
+        </div>
+      </div>
+    );
 
-        case "events":
-          return (
-            <>
-              <PriceFilter
-                filters={localFilters}
-                onChange={handleLocalChange}
-                {...priceRange}
-                label="Price"
-              />
-              <Separator />
-              <NumberSelectFilter
-                label="Minimum Capacity"
-                icon={<Users className="h-4 w-4" />}
-                value={localFilters.capacity}
-                onChange={(value) => handleLocalChange("capacity", value)}
-                {...NUMBER_RANGES.capacity}
-                suffix="people"
-              />
-              <Separator />
-              <LocationFilters
-                filters={localFilters}
-                onChange={handleLocalChange}
-              />
-            </>
-          );
+    // Mobile trigger button
+    const trigger = isMobile && (
+      <div className="mb-4">
+        <button
+          onClick={onToggle}
+          className="flex items-center gap-2 h-9 px-4 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:border-violet-300 hover:text-violet-700 transition-colors"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          Filters
+          {activeCount > 0 && (
+            <span className="ml-1 text-[10px] font-bold bg-violet-600 text-white px-1.5 py-0.5 rounded-full">
+              {activeCount}
+            </span>
+          )}
+        </button>
+      </div>
+    );
 
-        default:
-          return (
-            <>
-              <PriceFilter
-                filters={localFilters}
-                onChange={handleLocalChange}
-                min={1000}
-                max={1000000}
-                step={1000}
-              />
-              <Separator />
-              <LocationFilters
-                filters={localFilters}
-                onChange={handleLocalChange}
-              />
-            </>
-          );
-      }
-    };
+    if (!isMobile) {
+      return (
+        <div className="sticky top-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-violet-100/60 p-5">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-semibold text-gray-900">
+                Filters
+              </span>
+              {activeCount > 0 && (
+                <span className="text-[10px] font-bold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
+                  {activeCount}
+                </span>
+              )}
+            </div>
+          </div>
+          {body}
+        </div>
+      );
+    }
 
     return (
       <>
-        {isMobile && (
-          <div className="sticky top-0 z-10 bg-white border-b p-4 mb-4">
-            <Button
-              onClick={onToggle}
-              variant="outline"
-              className="w-full justify-between"
-            >
-              <span className="flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4" />
-                Filters
-                {activeFilterCount > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </span>
-            </Button>
-          </div>
-        )}
-
-        {(isOpen || !isMobile) && (
+        {trigger}
+        {isOpen && (
           <>
-            {isMobile && (
-              <div
-                className="fixed inset-0 bg-black/50 z-40"
-                onClick={onToggle}
-              />
-            )}
-
             <div
-              className={
-                isMobile
-                  ? "fixed inset-y-0 left-0 z-50 w-full max-w-sm bg-white shadow-2xl overflow-y-auto"
-                  : "sticky top-4"
-              }
-            >
-              <Card className={isMobile ? "border-0 rounded-none h-full" : ""}>
-                <CardHeader className="border-b">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                      <SlidersHorizontal className="h-5 w-5 text-purple-600" />
-                      Filters
-                      {activeFilterCount > 0 && (
-                        <Badge variant="secondary" className="ml-2">
-                          {activeFilterCount}
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    {isMobile && (
-                      <Button onClick={onToggle} variant="ghost" size="sm">
-                        <X className="h-5 w-5" />
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-6 p-4 md:p-6">
-                  {renderFilters()}
-
-                  <div className="pt-4 border-t space-y-3">
-                    {hasChanges && (
-                      <Button
-                        onClick={applyFilters}
-                        className="w-full bg-purple-600 hover:bg-purple-700"
-                      >
-                        Apply Filters
-                      </Button>
-                    )}
-                    {activeFilterCount > 0 && (
-                      <Button
-                        onClick={clearFilters}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <RotateCcw className="h-4 w-4 mr-2" />
-                        Clear All
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              className="fixed inset-0 bg-black/40 z-40"
+              onClick={onToggle}
+            />
+            <div className="fixed inset-y-0 left-0 z-50 w-full max-w-sm bg-white shadow-2xl overflow-y-auto">
+              <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                <span className="font-semibold text-gray-900">Filters</span>
+                <button
+                  onClick={onToggle}
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="p-5">{body}</div>
             </div>
           </>
         )}
@@ -565,281 +629,5 @@ const FilterPanel = memo(
   },
 );
 
-// ==================== SUB-COMPONENTS ====================
-
-const PriceFilter = memo(
-  ({ filters, onChange, min, max, step, label = "Price Range" }) => {
-    const minPrice = filters.price_min || min;
-    const maxPrice = filters.price_max || max;
-
-    const formatPrice = (value) => {
-      return new Intl.NumberFormat("en-NG").format(value);
-    };
-
-    return (
-      <div className="space-y-3">
-        <Label className="text-sm font-medium flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-purple-600" />
-          {label}
-        </Label>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label
-              htmlFor="min-price"
-              className="text-xs text-gray-600 mb-1 block"
-            >
-              Minimum
-            </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                ₦
-              </span>
-              <Input
-                id="min-price"
-                type="number"
-                min={min}
-                max={maxPrice}
-                step={step}
-                value={minPrice}
-                onChange={(e) =>
-                  onChange("price_min", parseInt(e.target.value) || min)
-                }
-                className="pl-7"
-                placeholder={formatPrice(min)}
-              />
-            </div>
-          </div>
-          <div>
-            <Label
-              htmlFor="max-price"
-              className="text-xs text-gray-600 mb-1 block"
-            >
-              Maximum
-            </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                ₦
-              </span>
-              <Input
-                id="max-price"
-                type="number"
-                min={minPrice}
-                max={max}
-                step={step}
-                value={maxPrice}
-                onChange={(e) =>
-                  onChange("price_max", parseInt(e.target.value) || max)
-                }
-                className="pl-7"
-                placeholder={formatPrice(max)}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>₦{formatPrice(minPrice)}</span>
-          <span>₦{formatPrice(maxPrice)}</span>
-        </div>
-      </div>
-    );
-  },
-);
-
-const NumberSelectFilter = memo(
-  ({ label, icon, value, onChange, min, max, step = 1, suffix = "" }) => {
-    const options = [];
-    for (let i = min; i <= max; i += step) {
-      options.push(i);
-    }
-
-    return (
-      <div>
-        <Label className="text-sm font-medium mb-2 flex items-center gap-2">
-          {icon}
-          {label}
-        </Label>
-        <Select
-          value={value?.toString() || "all"}
-          onValueChange={(val) =>
-            onChange(val === "all" ? null : parseInt(val))
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={`Any ${suffix}`} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Any {suffix}</SelectItem>
-            {options.map((opt) => (
-              <SelectItem key={opt} value={opt.toString()}>
-                {opt}+ {suffix}
-                {opt > 1 && suffix ? "s" : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  },
-);
-
-const LocationFilters = memo(({ filters, onChange }) => {
-  return (
-    <div className="space-y-4">
-      <Label className="text-sm font-medium flex items-center gap-2">
-        <MapPin className="h-4 w-4 text-purple-600" />
-        Location
-      </Label>
-      <div className="space-y-3">
-        <Select
-          value={filters.state || "all"}
-          onValueChange={(value) => {
-            onChange("state", value === "all" ? null : value);
-            if (filters.city) onChange("city", null);
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select State" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All States</SelectItem>
-            {NIGERIAN_STATES.map((state) => (
-              <SelectItem key={state} value={state}>
-                {state}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Input
-          type="text"
-          placeholder="City (e.g., Lagos, Abuja)"
-          value={filters.city || ""}
-          onChange={(e) => onChange("city", e.target.value || null)}
-        />
-      </div>
-    </div>
-  );
-});
-
-const AmenitiesFilter = memo(
-  ({ filters, onToggle, expanded, onToggleExpand }) => {
-    const selectedAmenities = filters.amenities || [];
-
-    return (
-      <CollapsibleSection
-        title="Amenities"
-        icon={
-          LucideIcons.Sparkles && (
-            <LucideIcons.Sparkles className="h-4 w-4 text-purple-600" />
-          )
-        }
-        expanded={expanded}
-        onToggle={onToggleExpand}
-        count={selectedAmenities.length}
-      >
-        <div className="grid grid-cols-2 gap-2 pt-2">
-          {AMENITY_ICONS.map((amenity) => {
-            const Icon = LucideIcons[amenity.icon];
-            const isSelected = selectedAmenities.includes(amenity.value);
-            return (
-              <button
-                key={amenity.value}
-                onClick={() => onToggle("amenities", amenity.value)}
-                className={`flex items-center gap-2 p-2 rounded-lg border transition-all text-left ${
-                  isSelected
-                    ? "bg-purple-50 border-purple-600 text-purple-900"
-                    : "bg-white border-gray-200 hover:border-purple-300"
-                }`}
-              >
-                {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
-                <span className="text-xs font-medium truncate">
-                  {amenity.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </CollapsibleSection>
-    );
-  },
-);
-
-const CollapsibleSection = memo(
-  ({ title, icon, expanded, onToggle, count, children }) => {
-    return (
-      <div>
-        <button
-          onClick={onToggle}
-          className="w-full flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            {icon}
-            <span className="text-sm font-medium">{title}</span>
-            {count > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {count}
-              </Badge>
-            )}
-          </div>
-          {expanded ? (
-            <ChevronUp className="h-4 w-4 text-gray-500" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-500" />
-          )}
-        </button>
-        {expanded && <div className="mt-2">{children}</div>}
-      </div>
-    );
-  },
-);
-
-const CheckboxItem = memo(({ label, checked, onChange }) => {
-  return (
-    <div className="flex items-center space-x-2">
-      <Checkbox
-        id={label}
-        checked={checked}
-        onCheckedChange={onChange}
-        className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-      />
-      <Label
-        htmlFor={label}
-        className="text-sm font-normal cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        {label}
-      </Label>
-    </div>
-  );
-});
-
-const BooleanFilter = memo(({ label, checked, onChange }) => {
-  return (
-    <Select
-      value={checked === true ? "true" : checked === false ? "false" : "all"}
-      onValueChange={(value) => {
-        if (value === "all") onChange(null);
-        else onChange(value === "true");
-      }}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder={label} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="all">Any</SelectItem>
-        <SelectItem value="true">Yes</SelectItem>
-        <SelectItem value="false">No</SelectItem>
-      </SelectContent>
-    </Select>
-  );
-});
-
-PriceFilter.displayName = "PriceFilter";
-NumberSelectFilter.displayName = "NumberSelectFilter";
-LocationFilters.displayName = "LocationFilters";
-AmenitiesFilter.displayName = "AmenitiesFilter";
-CollapsibleSection.displayName = "CollapsibleSection";
-CheckboxItem.displayName = "CheckboxItem";
-BooleanFilter.displayName = "BooleanFilter";
 FilterPanel.displayName = "FilterPanel";
-
 export default FilterPanel;

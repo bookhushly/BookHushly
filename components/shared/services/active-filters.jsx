@@ -2,8 +2,6 @@
 "use client";
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import {
   AMENITY_ICONS,
@@ -12,184 +10,123 @@ import {
   SECURITY_FEATURES,
 } from "@/lib/constants/filters";
 
-const ActiveFilters = ({ filters, onRemoveFilter }) => {
-  const filterLabels = [];
+const buildFilterLabels = (filters) => {
+  const labels = [];
 
-  // Price filters
   if (filters.price_min || filters.price_max) {
-    const priceLabel = [];
+    const parts = [];
     if (filters.price_min)
-      priceLabel.push(`From ₦${filters.price_min.toLocaleString()}`);
+      parts.push(`From ₦${filters.price_min.toLocaleString()}`);
     if (filters.price_max)
-      priceLabel.push(`To ₦${filters.price_max.toLocaleString()}`);
-    filterLabels.push({
-      key: "price",
-      label: priceLabel.join(" - "),
-    });
+      parts.push(`To ₦${filters.price_max.toLocaleString()}`);
+    labels.push({ key: "price", label: parts.join(" – ") });
   }
-
-  // Location filters
-  if (filters.state) {
-    filterLabels.push({ key: "state", label: filters.state });
-  }
-  if (filters.city) {
-    filterLabels.push({ key: "city", label: filters.city });
-  }
-
-  // Apartment type
+  if (filters.state) labels.push({ key: "state", label: filters.state });
+  if (filters.city) labels.push({ key: "city", label: filters.city });
   if (filters.apartment_type) {
-    const type = APARTMENT_TYPES.find(
-      (t) => t.value === filters.apartment_type,
-    );
-    filterLabels.push({
+    const t = APARTMENT_TYPES.find((t) => t.value === filters.apartment_type);
+    labels.push({
       key: "apartment_type",
-      label: type?.label || filters.apartment_type,
+      label: t?.label || filters.apartment_type,
     });
   }
-
-  // Number filters
-  if (filters.bedrooms) {
-    filterLabels.push({
-      key: "bedrooms",
-      label: `${filters.bedrooms}+ Bedrooms`,
-    });
-  }
-  if (filters.bathrooms) {
-    filterLabels.push({
-      key: "bathrooms",
-      label: `${filters.bathrooms}+ Bathrooms`,
-    });
-  }
-  if (filters.max_guests) {
-    filterLabels.push({
-      key: "max_guests",
-      label: `${filters.max_guests}+ Guests`,
-    });
-  }
-  if (filters.parking_spaces) {
-    filterLabels.push({
+  if (filters.bedrooms)
+    labels.push({ key: "bedrooms", label: `${filters.bedrooms}+ Beds` });
+  if (filters.bathrooms)
+    labels.push({ key: "bathrooms", label: `${filters.bathrooms}+ Baths` });
+  if (filters.max_guests)
+    labels.push({ key: "max_guests", label: `${filters.max_guests}+ Guests` });
+  if (filters.parking_spaces)
+    labels.push({
       key: "parking_spaces",
       label: `${filters.parking_spaces}+ Parking`,
     });
-  }
-  if (filters.capacity) {
-    filterLabels.push({
-      key: "capacity",
-      label: `${filters.capacity}+ Capacity`,
-    });
-  }
+  if (filters.capacity)
+    labels.push({ key: "capacity", label: `${filters.capacity}+ Capacity` });
 
-  // Boolean filters
-  if (filters.furnished === true) {
-    filterLabels.push({ key: "furnished", label: "Furnished" });
-  } else if (filters.furnished === false) {
-    filterLabels.push({ key: "furnished", label: "Unfurnished" });
-  }
+  if (filters.furnished === true)
+    labels.push({ key: "furnished", label: "Furnished" });
+  if (filters.furnished === false)
+    labels.push({ key: "furnished", label: "Unfurnished" });
+  if (filters.utilities_included === true)
+    labels.push({ key: "utilities_included", label: "Utilities Incl." });
+  if (filters.utilities_included === false)
+    labels.push({ key: "utilities_included", label: "No Utilities" });
+  if (filters.internet_included === true)
+    labels.push({ key: "internet_included", label: "WiFi Incl." });
+  if (filters.internet_included === false)
+    labels.push({ key: "internet_included", label: "No WiFi" });
 
-  if (filters.utilities_included === true) {
-    filterLabels.push({
-      key: "utilities_included",
-      label: "Utilities Included",
-    });
-  } else if (filters.utilities_included === false) {
-    filterLabels.push({
-      key: "utilities_included",
-      label: "Utilities Not Included",
-    });
-  }
+  if (filters.generator_available)
+    labels.push({ key: "generator_available", label: "Generator" });
+  if (filters.inverter_available)
+    labels.push({ key: "inverter_available", label: "Inverter" });
+  if (filters.solar_power)
+    labels.push({ key: "solar_power", label: "Solar Power" });
 
-  if (filters.internet_included === true) {
-    filterLabels.push({ key: "internet_included", label: "Internet Included" });
-  } else if (filters.internet_included === false) {
-    filterLabels.push({ key: "internet_included", label: "No Internet" });
-  }
-
-  // Power supply
-  if (filters.generator_available) {
-    filterLabels.push({ key: "generator_available", label: "Generator" });
-  }
-  if (filters.inverter_available) {
-    filterLabels.push({ key: "inverter_available", label: "Inverter" });
-  }
-  if (filters.solar_power) {
-    filterLabels.push({ key: "solar_power", label: "Solar Power" });
-  }
-
-  // Water supply
   if (filters.water_supply) {
-    const water = WATER_SUPPLY_OPTIONS.find(
+    const w = WATER_SUPPLY_OPTIONS.find(
       (w) => w.value === filters.water_supply,
     );
-    filterLabels.push({
+    labels.push({
       key: "water_supply",
-      label: water?.label || filters.water_supply,
+      label: w?.label || filters.water_supply,
     });
   }
 
-  // Amenities
-  if (filters.amenities && filters.amenities.length > 0) {
-    filters.amenities.forEach((amenityValue) => {
-      const amenity = AMENITY_ICONS.find((a) => a.value === amenityValue);
-      if (amenity) {
-        filterLabels.push({
-          key: `amenity_${amenityValue}`,
-          label: amenity.label,
-          removeKey: "amenities",
-          removeValue: amenityValue,
-        });
-      }
-    });
-  }
+  (filters.amenities || []).forEach((val) => {
+    const a = AMENITY_ICONS.find((a) => a.value === val);
+    if (a)
+      labels.push({
+        key: `amenity_${val}`,
+        label: a.label,
+        removeKey: "amenities",
+        removeValue: val,
+      });
+  });
 
-  // Security features
-  if (filters.security_features && filters.security_features.length > 0) {
-    filters.security_features.forEach((featureValue) => {
-      const feature = SECURITY_FEATURES.find((f) => f.value === featureValue);
-      if (feature) {
-        filterLabels.push({
-          key: `security_${featureValue}`,
-          label: feature.label,
-          removeKey: "security_features",
-          removeValue: featureValue,
-        });
-      }
-    });
-  }
+  (filters.security_features || []).forEach((val) => {
+    const f = SECURITY_FEATURES.find((f) => f.value === val);
+    if (f)
+      labels.push({
+        key: `security_${val}`,
+        label: f.label,
+        removeKey: "security_features",
+        removeValue: val,
+      });
+  });
 
-  if (filterLabels.length === 0) return null;
+  return labels;
+};
+
+const ActiveFilters = ({ filters, onRemoveFilter }) => {
+  const labels = buildFilterLabels(filters);
+  if (!labels.length) return null;
 
   return (
     <div className="flex flex-wrap gap-2 mb-6">
-      {filterLabels.map((filter) => (
-        <Badge
-          key={filter.key}
-          variant="secondary"
-          className="px-3 py-1.5 bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100"
+      {labels.map((f) => (
+        <span
+          key={f.key}
+          className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-full"
         >
-          <span className="text-sm">{filter.label}</span>
-          <Button
-            variant="ghost"
-            size="sm"
+          {f.label}
+          <button
             onClick={() => {
-              if (filter.removeKey && filter.removeValue) {
-                // For array filters, remove specific item
-                const current = filters[filter.removeKey] || [];
-                const updated = current.filter(
-                  (item) => item !== filter.removeValue,
+              if (f.removeKey && f.removeValue) {
+                const updated = (filters[f.removeKey] || []).filter(
+                  (v) => v !== f.removeValue,
                 );
-                onRemoveFilter(
-                  filter.removeKey,
-                  updated.length > 0 ? updated : null,
-                );
+                onRemoveFilter(f.removeKey, updated.length ? updated : null);
               } else {
-                onRemoveFilter(filter.key);
+                onRemoveFilter(f.key);
               }
             }}
-            className="ml-2 h-4 w-4 p-0 hover:bg-transparent"
+            className="h-4 w-4 flex items-center justify-center rounded-full hover:bg-violet-200 transition-colors"
           >
-            <X className="h-3 w-3" />
-          </Button>
-        </Badge>
+            <X className="h-2.5 w-2.5" />
+          </button>
+        </span>
       ))}
     </div>
   );

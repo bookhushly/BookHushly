@@ -9,8 +9,7 @@ import React, {
   startTransition,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Toaster } from "react-hot-toast";
-import { SCATEGORIES, isBookHushlyService } from "@/lib/constants";
+import { SCATEGORIES } from "@/lib/constants";
 import { useListingsData } from "@/hooks/useListingsData";
 import CategoryTabs from "@/components/shared/services/category-tab";
 import FilterPanel from "@/components/shared/services/filter";
@@ -23,79 +22,30 @@ const BOOKHUSHLY_SERVICES = ["logistics", "security"];
 export default function ServicesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-  const initialCategory = searchParams.get("category") || SCATEGORIES[0].value;
-  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const initial = searchParams.get("category") || SCATEGORIES[0].value;
+  const [activeCategory, setActiveCategory] = useState(initial);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const isBookHushlyServiceCategory =
-    BOOKHUSHLY_SERVICES.includes(activeCategory);
+  const isBookHushly = BOOKHUSHLY_SERVICES.includes(activeCategory);
 
-  // SEO: Update document title and meta description dynamically
+  // Redirect BookHushly services
   useEffect(() => {
-    const category = SCATEGORIES.find((c) => c.value === activeCategory);
-    if (!category) return;
+    if (isBookHushly) router.push(`/quote-services?tab=${activeCategory}`);
+  }, [isBookHushly, activeCategory, router]);
 
-    const title = `${category.label} in Nigeria | BookHushly`;
-    const description = `Find the best ${category.label.toLowerCase()} services in Nigeria. Browse verified providers, compare prices, and book instantly on BookHushly.`;
-
-    document.title = title;
-
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement("meta");
-      metaDescription.name = "description";
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.content = description;
-
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) {
-      ogTitle = document.createElement("meta");
-      ogTitle.setAttribute("property", "og:title");
-      document.head.appendChild(ogTitle);
-    }
-    ogTitle.content = title;
-
-    let ogDescription = document.querySelector(
-      'meta[property="og:description"]',
-    );
-    if (!ogDescription) {
-      ogDescription = document.createElement("meta");
-      ogDescription.setAttribute("property", "og:description");
-      document.head.appendChild(ogDescription);
-    }
-    ogDescription.content = description;
-
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
-    }
-    canonical.href = `https://bookhushly.com/services?category=${activeCategory}`;
-  }, [activeCategory]);
-
-  // Redirect to quote page for BookHushly services
+  // Sync URL → state
   useEffect(() => {
-    if (isBookHushlyServiceCategory) {
-      router.push(`/quote-services?tab=${activeCategory}`);
-    }
-  }, [isBookHushlyServiceCategory, activeCategory, router]);
-
-  // Sync URL with category
-  useEffect(() => {
-    const urlCategory = searchParams.get("category");
+    const urlCat = searchParams.get("category");
     if (
-      urlCategory &&
-      urlCategory !== activeCategory &&
-      !BOOKHUSHLY_SERVICES.includes(urlCategory)
+      urlCat &&
+      urlCat !== activeCategory &&
+      !BOOKHUSHLY_SERVICES.includes(urlCat)
     ) {
       startTransition(() => {
-        setActiveCategory(urlCategory);
+        setActiveCategory(urlCat);
         setFilters({});
       });
     }
@@ -118,96 +68,74 @@ export default function ServicesPage() {
   } = useListingsData(activeCategory, searchQuery, filters);
 
   const handleCategoryChange = useCallback(
-    (category) => {
-      if (BOOKHUSHLY_SERVICES.includes(category)) {
-        router.push(`/quote-services?tab=${category}`);
+    (cat) => {
+      if (BOOKHUSHLY_SERVICES.includes(cat)) {
+        router.push(`/quote-services?tab=${cat}`);
         return;
       }
-
       startTransition(() => {
-        setActiveCategory(category);
+        setActiveCategory(cat);
         setFilters({});
         setSearchQuery("");
-        router.push(`/services?category=${category}`, { scroll: false });
+        router.push(`/services?category=${cat}`, { scroll: false });
       });
     },
     [router],
   );
 
-  const handleRemoveFilter = useCallback((filterKey, newValue) => {
+  const handleRemoveFilter = useCallback((key, newValue) => {
     setFilters((prev) => {
-      const newFilters = { ...prev };
-      if (filterKey === "price") {
-        delete newFilters.price_min;
-        delete newFilters.price_max;
+      const next = { ...prev };
+      if (key === "price") {
+        delete next.price_min;
+        delete next.price_max;
       } else if (newValue !== undefined) {
-        // For array filters, set the new value
-        if (newValue === null) {
-          delete newFilters[filterKey];
-        } else {
-          newFilters[filterKey] = newValue;
-        }
-      } else {
-        delete newFilters[filterKey];
-      }
-      return newFilters;
+        if (newValue === null) delete next[key];
+        else next[key] = newValue;
+      } else delete next[key];
+      return next;
     });
   }, []);
 
-  const handleFiltersChange = useCallback((newFilters) => {
-    startTransition(() => {
-      setFilters(newFilters);
-    });
+  const handleFiltersChange = useCallback((f) => {
+    startTransition(() => setFilters(f));
   }, []);
 
-  if (isBookHushlyServiceCategory) {
+  // Redirect spinner
+  if (isBookHushly) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-purple-600 border-r-transparent"></div>
-          <p className="mt-4 text-gray-600">Redirecting...</p>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "#f5f3ff" }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 border-[3px] border-violet-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-500">Redirecting…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Toaster position="top-center" />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            name: `${categoryLabel} Services in Nigeria`,
-            description: `Browse and book ${categoryLabel.toLowerCase()} services across Nigeria. Verified providers, instant booking, secure payments.`,
-            url: `https://bookhushly.com/services?category=${activeCategory}`,
-            provider: {
-              "@type": "Organization",
-              name: "BookHushly",
-              url: "https://bookhushly.com",
-              logo: "https://bookhushly.com/logo.png",
-            },
-            offers: {
-              "@type": "AggregateOffer",
-              priceCurrency: "NGN",
-              offerCount: totalCount || 0,
-            },
-          }),
-        }}
-      />
-
+    <div
+      className="min-h-screen"
+      style={{
+        background:
+          "linear-gradient(160deg, #f5f3ff 0%, #fdf8ff 45%, #faf5ff 100%)",
+      }}
+    >
+      {/* Category header */}
       <CategoryTabs
         activeCategory={activeCategory}
         categoryLabel={categoryLabel}
         setActiveCategory={handleCategoryChange}
       />
 
-      <div className="container mx-auto px-4 py-6 md:py-8">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <aside className="hidden lg:block lg:w-80 xl:w-96 flex-shrink-0">
+      {/* Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Desktop sidebar filter */}
+          <aside className="hidden lg:block lg:w-72 xl:w-80 shrink-0">
             <FilterPanel
               category={activeCategory}
               filters={filters}
@@ -218,14 +146,16 @@ export default function ServicesPage() {
             />
           </aside>
 
+          {/* Main content */}
           <main className="flex-1 min-w-0">
-            <div className="lg:hidden">
+            {/* Mobile filter */}
+            <div className="lg:hidden mb-4">
               <FilterPanel
                 category={activeCategory}
                 filters={filters}
                 onFiltersChange={handleFiltersChange}
                 isOpen={isFilterOpen}
-                onToggle={() => setIsFilterOpen(!isFilterOpen)}
+                onToggle={() => setIsFilterOpen((p) => !p)}
                 isMobile={true}
               />
             </div>
@@ -235,22 +165,20 @@ export default function ServicesPage() {
               onRemoveFilter={handleRemoveFilter}
             />
 
-            <h1 className="sr-only">
-              {categoryLabel} Services in Nigeria - Book Online
-            </h1>
-
+            {/* Results count */}
             {!loading && listings.length > 0 && (
-              <div className="mb-6 flex items-center justify-between">
-                <p className="text-gray-600 text-sm md:text-base">
-                  <span itemProp="numberOfItems">{totalCount}</span>{" "}
-                  {totalCount === 1 ? "service" : "services"} available
-                </p>
-              </div>
+              <p className="text-sm text-gray-500 mb-6">
+                <span className="font-semibold text-gray-900">
+                  {totalCount}
+                </span>{" "}
+                {totalCount === 1 ? "service" : "services"} available
+              </p>
             )}
 
+            {/* Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
-                {[...Array(20)].map((_, i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {Array.from({ length: 12 }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
               </div>
@@ -265,37 +193,6 @@ export default function ServicesPage() {
           </main>
         </div>
       </div>
-
-      <footer className="bg-white border-t mt-16 py-8">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-sm text-gray-600 max-w-4xl mx-auto">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              About {categoryLabel} Services on BookHushly
-            </h2>
-            <p className="mb-4">
-              BookHushly connects you with verified{" "}
-              {categoryLabel.toLowerCase()} providers across Nigeria. Whether
-              you're in Lagos, Abuja, Port Harcourt, or any other Nigerian city,
-              find quality services with transparent pricing, instant booking,
-              and secure payment options.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3 text-xs">
-              <span className="bg-gray-100 px-3 py-1 rounded-full">
-                Verified Providers
-              </span>
-              <span className="bg-gray-100 px-3 py-1 rounded-full">
-                Instant Booking
-              </span>
-              <span className="bg-gray-100 px-3 py-1 rounded-full">
-                Secure Payments
-              </span>
-              <span className="bg-gray-100 px-3 py-1 rounded-full">
-                24/7 Support
-              </span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

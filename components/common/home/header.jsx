@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, User, LogOut, ChevronDown, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu, X, User, LogOut, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,208 +13,172 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useRouter } from "next/navigation";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { CATEGORIES } from "@/lib/constants";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
+const NAV_LINKS = [
+  { name: "Home", href: "/" },
+  { name: "Services", href: "/services?category=hotels" },
+  { name: "About", href: "/about" },
+  { name: "Contact", href: "/contact" },
+];
+
+const getInitials = (name) => {
+  if (!name) return "U";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
+
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const router = useRouter();
+  const sheetRef = useRef(null);
   const { data: authData, isLoading } = useAuth();
   const logoutMutation = useLogout();
-  const menuRef = useRef(null);
 
   const user = authData?.user;
   const vendor = authData?.vendor;
+  const userRole = user?.role || "customer";
+  const displayName = user?.name || user?.email?.split("@")[0] || "User";
 
-  // Detect scroll
+  const dashboardHref =
+    userRole === "customer" ? "/dashboard/customer" : `/${userRole}/dashboard`;
+  const profileHref =
+    userRole === "customer"
+      ? "/dashboard/customer/profile"
+      : `/${userRole}/dashboard/profile`;
+
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close menu on outside click
   useEffect(() => {
-    if (!isMenuOpen) return;
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setIsMenuOpen(false);
-      }
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
-  // Prevent body scroll when menu open
-  useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? "hidden" : "unset";
-  }, [isMenuOpen]);
-
-  const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Services", href: "/services?category=hotels" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
-  ];
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
-
-  const getInitials = (name) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const displayName = user?.name || user?.email?.split("@")[0] || "User";
-  const userRole = user?.role || "customer";
+  const close = () => setIsMenuOpen(false);
 
   return (
     <>
-      {/* Header */}
+      {/* ── Floating navbar ── */}
       <header
-        className={`fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[85%] sm:w-[94%] max-w-6xl transition-all duration-300 ease-out rounded-xl sm:rounded-2xl backdrop-blur-lg ${
+        className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-6xl transition-all duration-300 ease-out rounded-2xl backdrop-blur-xl ${
           scrolled
-            ? "bg-white/90 border border-white/50 scale-[0.985]"
-            : "bg-white/75 border border-white/60"
+            ? "bg-white/95 border border-gray-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.1)]"
+            : "bg-white/80 border border-white/60 shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
         }`}
-        style={{
-          boxShadow: scrolled
-            ? "0 8px 30px rgba(0,0,0,0.12), 0 0 1px rgba(255,255,255,0.5)"
-            : "0 8px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(255,255,255,0.2)",
-        }}
       >
-        <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4 md:px-8">
+        <div className="flex items-center justify-between h-14 px-4 md:px-6">
           {/* Logo */}
-          <Link href="/" className="flex items-center group" aria-label="Home">
+          <Link
+            href="/"
+            className="flex items-center shrink-0"
+            aria-label="BookHushly home"
+          >
             <div className="relative w-32 h-32 sm:w-40 sm:h-40">
               <Image
                 src="/logo.png"
-                alt="Bookhushly Logo"
+                alt="BookHushly"
                 fill
-                className="object-contain drop-shadow-sm"
+                className="object-contain"
                 priority
               />
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-7">
+            {NAV_LINKS.map(({ name, href }) => (
               <Link
-                key={item.name}
-                href={item.href}
-                className="relative text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors duration-200 group"
+                key={name}
+                href={href}
+                className="relative text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-150 group"
               >
-                {item.name}
-                <span className="absolute left-0 bottom-[-2px] w-0 h-[2px] bg-purple-700 transition-all duration-300 group-hover:w-full"></span>
+                {name}
+                <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-violet-600 transition-all duration-200 group-hover:w-full" />
               </Link>
             ))}
           </nav>
 
-          {/* Desktop Auth Section */}
-          <div className="hidden md:flex items-center space-x-3">
+          {/* Desktop auth */}
+          <div className="hidden md:flex items-center gap-3">
             {isLoading ? (
-              <LoadingSpinner className="h-5 w-5" />
+              <LoadingSpinner className="h-4 w-4 text-gray-400" />
             ) : user ? (
               <>
                 <Link
-                  href={
-                    userRole === "customer"
-                      ? "/dashboard/customer"
-                      : `/${userRole}/dashboard`
-                  }
-                  className="text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors"
+                  href={dashboardHref}
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Dashboard
                 </Link>
-
                 {userRole === "vendor" && vendor && (
                   <Link
                     href="/vendor/dashboard/listings"
-                    className="text-sm font-medium text-gray-700 hover:text-purple-700 transition-colors"
+                    className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     My Listings
                   </Link>
                 )}
-
-                {/* User Dropdown Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="flex items-center space-x-2 hover:bg-gray-100"
-                    >
-                      <Avatar className="h-8 w-8">
+                    <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors duration-150 outline-none">
+                      <Avatar className="h-7 w-7">
                         <AvatarImage src={user.avatar_url} alt={displayName} />
-                        <AvatarFallback className="bg-purple-600 text-white">
+                        <AvatarFallback className="bg-violet-600 text-white text-xs font-semibold">
                           {getInitials(displayName)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium">{displayName}</span>
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
+                      <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
+                        {displayName}
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                    </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-52">
                     <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium">{displayName}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                        <p className="text-xs text-purple-600 capitalize">
-                          {userRole}
-                        </p>
-                      </div>
+                      <p className="text-sm font-medium truncate">
+                        {displayName}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {user.email}
+                      </p>
+                      <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
+                        {userRole}
+                      </span>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link
-                        href={
-                          userRole === "customer"
-                            ? "/dashboard/customer/profile"
-                            : `/${userRole}/dashboard/profile`
-                        }
-                        className="flex items-center cursor-pointer"
+                        href={profileHref}
+                        className="flex items-center gap-2 cursor-pointer"
                       >
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href={
-                          userRole === "customer"
-                            ? "/dashboard/customer/settings"
-                            : `/${userRole}/dashboard/settings`
-                        }
-                        className="flex items-center cursor-pointer"
-                      >
-                        <Settings className="mr-2 h-4 w-4" />
-                        Settings
+                        <User className="h-4 w-4" /> Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={handleLogout}
+                      onClick={() => logoutMutation.mutate()}
                       disabled={logoutMutation.isPending}
-                      className="cursor-pointer text-red-600 focus:text-red-600"
+                      className="cursor-pointer text-red-600 focus:text-red-600 gap-2"
                     >
                       {logoutMutation.isPending ? (
                         <>
-                          <LoadingSpinner className="mr-2 h-4 w-4" />
-                          Logging out...
+                          <LoadingSpinner className="h-4 w-4" /> Logging out…
                         </>
                       ) : (
                         <>
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Logout
+                          <LogOut className="h-4 w-4" /> Log out
                         </>
                       )}
                     </DropdownMenuItem>
@@ -226,205 +189,224 @@ export function Header() {
               <>
                 <Link
                   href="/login"
-                  className="text-gray-700 hover:text-purple-700 font-medium transition-colors"
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                 >
-                  Login
+                  Sign in
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-purple-700 text-white px-4 py-2 rounded-xl hover:bg-purple-600 transition-all"
+                  className="h-9 px-4 inline-flex items-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150"
                 >
-                  Register
+                  Get started
                 </Link>
               </>
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-gray-700 h-9 w-9"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            aria-label="Toggle Menu"
+          {/* Mobile toggle */}
+          <button
+            onClick={() => setIsMenuOpen((p) => !p)}
+            className="md:hidden h-9 w-9 flex items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Toggle menu"
           >
             {isMenuOpen ? (
-              <X className="h-5 w-5 sm:h-6 sm:w-6" />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
+              <Menu className="h-5 w-5" />
             )}
-          </Button>
+          </button>
         </div>
       </header>
 
-      {/* Mobile Sidebar */}
+      {/* ── Mobile bottom sheet ── */}
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-all duration-500 ease-out ${
+        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${
           isMenuOpen
-            ? "opacity-100 pointer-events-auto backdrop-blur-sm bg-black/40"
+            ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
         }`}
       >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-gray-950/75 backdrop-blur-sm"
+          onClick={close}
+        />
+
+        {/* Sheet */}
         <aside
-          ref={menuRef}
-          className={`absolute top-0 right-0 h-full w-[85%] sm:w-[70%] max-w-sm bg-white/95 backdrop-blur-xl rounded-l-2xl shadow-2xl transform transition-transform duration-500 ease-out overflow-y-auto ${
-            isMenuOpen ? "translate-x-0" : "translate-x-full"
+          ref={sheetRef}
+          className={`absolute bottom-0 left-0 right-0 bg-[#1e1b2e] rounded-t-[2rem] flex flex-col max-h-[88vh] transition-transform duration-300 ease-out ${
+            isMenuOpen ? "translate-y-0" : "translate-y-full"
           }`}
         >
-          <div className="p-4 sm:p-6 flex flex-col min-h-full justify-between pt-20">
-            <div className="flex-1">
-              {/* User Info */}
-              {isLoading ? (
-                <div className="flex justify-center mb-6">
-                  <LoadingSpinner className="h-5 w-5" />
+          {/* Handle */}
+          <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-10 h-1 rounded-full bg-white/20" />
+          </div>
+
+          {/* Sheet header */}
+          <div className="flex items-center justify-between px-6 py-0.5 border-b border-white/8 shrink-0">
+            {/* Wide shallow container — logo renders at full width, natural height */}
+            <div className="relative w-44 h-28">
+              <Image
+                src="/logo.png"
+                alt="BookHushly"
+                fill
+                className="object-contain object-left brightness-0 invert"
+              />
+            </div>
+            <button
+              onClick={close}
+              className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/15 hover:text-white transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] space-y-5 pt-5">
+            {/* Auth */}
+            {isLoading ? (
+              <div className="flex justify-center py-4">
+                <LoadingSpinner className="h-5 w-5 text-white/30" />
+              </div>
+            ) : user ? (
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/8">
+                <Avatar className="h-10 w-10 shrink-0">
+                  <AvatarImage src={user.avatar_url} alt={displayName} />
+                  <AvatarFallback className="bg-violet-600 text-white text-xs font-semibold">
+                    {getInitials(displayName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {displayName}
+                  </p>
+                  <p className="text-xs text-white/40 truncate">{user.email}</p>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-400">
+                    {userRole}
+                  </span>
                 </div>
-              ) : user ? (
-                <div className="mb-4 sm:mb-6">
-                  <div className="flex items-center space-x-3 pb-4 border-b">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.avatar_url} alt={displayName} />
-                      <AvatarFallback className="bg-purple-600 text-white">
-                        {getInitials(displayName)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-800 truncate">
-                        Hi, {displayName}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        {user.email}
-                      </p>
-                      <p className="text-xs text-purple-600 capitalize">
-                        {userRole}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-600 hover:text-red-600 flex-shrink-0"
-                      onClick={handleLogout}
-                      disabled={logoutMutation.isPending}
-                      aria-label="Logout"
-                    >
-                      {logoutMutation.isPending ? (
-                        <LoadingSpinner className="h-4 w-4" />
-                      ) : (
-                        <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-                      )}
-                    </Button>
-                  </div>
+                <button
+                  onClick={() => {
+                    logoutMutation.mutate();
+                    close();
+                  }}
+                  disabled={logoutMutation.isPending}
+                  className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                  aria-label="Log out"
+                >
+                  {logoutMutation.isPending ? (
+                    <LoadingSpinner className="h-3.5 w-3.5" />
+                  ) : (
+                    <LogOut className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2.5">
+                <Link
+                  href="/login"
+                  onClick={close}
+                  className="flex items-center justify-center h-11 rounded-xl border border-white/15 text-sm font-semibold text-white/80 hover:bg-white/5 transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={close}
+                  className="flex items-center justify-center h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-semibold text-white transition-colors"
+                >
+                  Get started
+                </Link>
+              </div>
+            )}
 
-                  {/* Dashboard Links */}
-                  <div className="space-y-2 mt-4">
-                    <Link
-                      href={
-                        userRole === "customer"
-                          ? "/dashboard/customer"
-                          : `/${userRole}/dashboard`
-                      }
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
-                    >
-                      Dashboard
-                    </Link>
+            {/* Divider */}
+            <div className="h-px bg-white/8" />
 
-                    {userRole === "vendor" && vendor && (
-                      <Link
-                        href="/vendor/dashboard/listings"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
-                      >
-                        My Listings
-                      </Link>
-                    )}
-
-                    <Link
-                      href={`/${userRole}/dashboard/profile`}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
-                    >
-                      Profile
-                    </Link>
-
-                    {/* <Link
-                      href={`/${userRole}/dashboard/settings`}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-colors"
-                    >
-                      Settings
-                    </Link> */}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex space-x-2 sm:space-x-3 mb-4 sm:mb-6">
+            {/* Nav links */}
+            <nav className="space-y-0.5">
+              {NAV_LINKS.map(({ name, href }) => (
+                <Link
+                  key={name}
+                  href={href}
+                  onClick={close}
+                  className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
+                >
+                  {name}
+                </Link>
+              ))}
+              {user && (
+                <>
                   <Link
-                    href="/login"
-                    className="flex-1 text-center py-2 text-sm rounded-xl bg-purple-700 text-white font-medium"
-                    onClick={() => setIsMenuOpen(false)}
+                    href={dashboardHref}
+                    onClick={close}
+                    className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
                   >
-                    Login
+                    Dashboard
                   </Link>
                   <Link
-                    href="/register"
-                    className="flex-1 text-center py-2 text-sm rounded-xl border border-purple-700 text-purple-700 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
+                    href={profileHref}
+                    onClick={close}
+                    className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
                   >
-                    Sign Up
+                    Profile
                   </Link>
-                </div>
+                  {userRole === "vendor" && vendor && (
+                    <Link
+                      href="/vendor/dashboard/listings"
+                      onClick={close}
+                      className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
+                    >
+                      My Listings
+                    </Link>
+                  )}
+                </>
               )}
+            </nav>
 
-              {/* Navigation Links */}
-              <nav className="space-y-1 sm:space-y-2">
-                {navigation.map((item) => (
+            {/* Divider */}
+            <div className="h-px bg-white/8" />
+
+            {/* Services grid */}
+            <div>
+              <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[0.15em] mb-3 px-1">
+                Explore Services
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {CATEGORIES.slice(0, 6).map((cat) => (
                   <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base text-gray-700 hover:bg-purple-50 hover:text-purple-700 font-medium transition-all duration-200 ease-out"
+                    key={cat.value}
+                    href={
+                      cat.value === "logistics"
+                        ? "/quote-services?tab=logistics"
+                        : cat.value === "security"
+                          ? "/quote-services?tab=security"
+                          : `/services?category=${cat.value}`
+                    }
+                    onClick={close}
+                    className="group relative overflow-hidden rounded-2xl h-[4.5rem] border border-white/5"
                   >
-                    {item.name}
+                    <Image
+                      src={cat.image}
+                      alt={cat.alt}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-1.5 left-2 right-1">
+                      <span className="text-sm block leading-none mb-0.5">
+                        {cat.icon}
+                      </span>
+                      <span className="text-[9px] font-semibold text-white leading-tight line-clamp-1 uppercase tracking-wide">
+                        {cat.label}
+                      </span>
+                    </div>
                   </Link>
                 ))}
-              </nav>
-
-              {/* Category Showcase */}
-              <div className="mt-6 sm:mt-8">
-                <h3 className="text-xs sm:text-sm font-semibold text-gray-500 mb-2 sm:mb-3 px-1">
-                  Explore Services
-                </h3>
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  {CATEGORIES.slice(0, 6).map((cat) => (
-                    <Link
-                      key={cat.value}
-                      href={`/services/${cat.value}`}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="group relative overflow-hidden rounded-lg sm:rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300 ease-out"
-                    >
-                      <div className="relative h-20 sm:h-24 w-full">
-                        <Image
-                          src={cat.image}
-                          alt={cat.alt}
-                          fill
-                          className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div className="absolute bottom-1.5 sm:bottom-2 left-1.5 sm:left-2 text-white text-xs sm:text-sm font-medium flex items-center gap-1">
-                          <span className="text-sm sm:text-base">
-                            {cat.icon}
-                          </span>
-                          <span className="line-clamp-1">{cat.label}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
               </div>
             </div>
-
-            <p className="text-[10px] sm:text-xs text-center text-gray-400 mt-6 sm:mt-8 pt-4 border-t border-gray-100">
-              © {new Date().getFullYear()} Bookhushly. All rights reserved.
-            </p>
           </div>
         </aside>
       </div>

@@ -1,169 +1,142 @@
+// components/shared/services/apartment-card.jsx
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Bed, Bath, Zap, Wifi, Home } from "lucide-react";
+import Link from "next/link";
+import { MapPin, Bed, Bath, Users, Zap, Wifi } from "lucide-react";
 
-const ApartmentCard = React.memo(({ service, lastListingRef, isMobile }) => {
-  const apartment = service;
-
-  // Get first image or fallback
-  const imageUrl = apartment.media_urls?.[0] || "/placeholder-apartment.jpg";
-  const apartmentType =
-    apartment.apartment_type?.replace("_", " ").toUpperCase() || "APARTMENT";
+const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
+  const imageUrl = apt.media_urls?.[0] || "/placeholder-apartment.jpg";
+  const typeLabel = apt.apartment_type?.replace(/_/g, " ") || "Apartment";
 
   return (
     <Link
-      href={`/services/serviced-apartments/${apartment.id}`}
+      href={`/services/serviced-apartments/${apt.id}`}
       ref={lastListingRef}
+      className="block group"
     >
-      <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full border-gray-200 hover:border-purple-300">
-        {/* Image Section */}
-        <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-100">
+      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
+        {/* Image */}
+        <div className="relative h-52 overflow-hidden bg-gray-100">
           <Image
             src={imageUrl}
-            alt={apartment.title}
+            alt={apt.title}
             fill
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
+            className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            priority={false}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
-          {/* Type Badge */}
+          {/* Type label */}
           <div className="absolute top-3 left-3">
-            <Badge className="bg-purple-600 text-white font-semibold px-3 py-1">
-              <Home className="h-3 w-3 mr-1" />
-              {apartmentType}
-            </Badge>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-950/70 text-white backdrop-blur-sm px-2.5 py-1 rounded-lg">
+              {typeLabel}
+            </span>
           </div>
 
-          {/* Status Badge */}
-          {apartment.status === "active" && (
-            <div className="absolute top-3 right-3">
-              <Badge className="bg-green-600 text-white font-semibold px-2 py-1">
-                Available
-              </Badge>
-            </div>
-          )}
-
-          {/* Price Badge */}
-          <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-            <p className="text-xs text-gray-600">From</p>
-            <p className="text-lg font-bold text-purple-600">
-              ₦{apartment.price?.toLocaleString()}
-              <span className="text-xs font-normal text-gray-600">/night</span>
+          {/* Price badge */}
+          <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg">
+            <p className="text-[10px] text-gray-400">From</p>
+            <p className="text-base font-bold text-gray-900">
+              ₦{apt.price?.toLocaleString()}
+              <span className="text-xs font-normal text-gray-400">/night</span>
             </p>
           </div>
         </div>
 
-        {/* Content Section */}
-        <CardContent className="p-4 space-y-3">
+        {/* Content */}
+        <div className="p-4">
+          {/* Location */}
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+            <span className="text-xs text-gray-500 line-clamp-1">
+              {apt.area ? `${apt.area}, ` : ""}
+              {apt.location}
+            </span>
+          </div>
+
           {/* Title */}
-          <h3 className="font-semibold text-gray-900 text-lg line-clamp-1 group-hover:text-purple-600 transition-colors">
-            {apartment.title}
+          <h3 className="font-semibold text-gray-900 text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
+            {apt.title}
           </h3>
 
-          {/* Location */}
-          <div className="flex items-start gap-2 text-sm text-gray-600">
-            <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-purple-600" />
-            <p className="line-clamp-1">
-              {apartment.area && `${apartment.area}, `}
-              {apartment.location}
-            </p>
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-2 mb-4 py-3 border-y border-gray-100">
+            <div className="flex flex-col items-center gap-1">
+              <Bed className="h-4 w-4 text-violet-500" />
+              <span className="text-xs font-medium text-gray-700">
+                {apt.bedrooms || 0} Bed
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <Bath className="h-4 w-4 text-violet-500" />
+              <span className="text-xs font-medium text-gray-700">
+                {apt.bathrooms || 0} Bath
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <Users className="h-4 w-4 text-violet-500" />
+              <span className="text-xs font-medium text-gray-700">
+                {apt.max_guests || 0} Guests
+              </span>
+            </div>
           </div>
 
-          {/* Features Grid */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-            <div className="flex items-center gap-2 text-sm text-gray-700">
-              <Bed className="h-4 w-4 text-purple-600" />
-              <span>{apartment.bedrooms || 0} Bed</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm text-gray-700">
-              <Bath className="h-4 w-4 text-purple-600" />
-              <span>{apartment.bathrooms || 0} Bath</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm text-gray-700">
-              <Users className="h-4 w-4 text-purple-600" />
-              <span>{apartment.max_guests || 0} Guests</span>
-            </div>
-
-            {apartment.square_meters && (
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Home className="h-4 w-4 text-purple-600" />
-                <span>{apartment.square_meters}m²</span>
-              </div>
-            )}
-          </div>
-
-          {/* Amenities Highlights */}
-          {(apartment.generator_available ||
-            apartment.internet_included ||
-            apartment.furnished) && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {apartment.generator_available && (
-                <Badge
-                  variant="outline"
-                  className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
-                >
-                  <Zap className="h-3 w-3 mr-1" />
-                  Generator
-                </Badge>
+          {/* Feature tags */}
+          {(apt.generator_available ||
+            apt.internet_included ||
+            apt.furnished) && (
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {apt.generator_available && (
+                <span className="flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-1 rounded-lg font-medium">
+                  <Zap className="h-3 w-3" /> Generator
+                </span>
               )}
-              {apartment.internet_included && (
-                <Badge
-                  variant="outline"
-                  className="text-xs bg-blue-50 text-blue-700 border-blue-200"
-                >
-                  <Wifi className="h-3 w-3 mr-1" />
-                  WiFi
-                </Badge>
+              {apt.internet_included && (
+                <span className="flex items-center gap-1 text-[11px] text-blue-700 bg-blue-50 px-2 py-1 rounded-lg font-medium">
+                  <Wifi className="h-3 w-3" /> WiFi
+                </span>
               )}
-              {apartment.furnished && (
-                <Badge
-                  variant="outline"
-                  className="text-xs bg-purple-50 text-purple-700 border-purple-200"
-                >
+              {apt.furnished && (
+                <span className="text-[11px] text-violet-700 bg-violet-50 px-2 py-1 rounded-lg font-medium">
                   Furnished
-                </Badge>
+                </span>
               )}
             </div>
           )}
 
-          {/* Weekly/Monthly Pricing */}
-          {(apartment.price_per_week || apartment.price_per_month) && (
-            <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs text-gray-600">
-                {apartment.price_per_week && (
-                  <span className="mr-3">
-                    Weekly: ₦{apartment.price_per_week.toLocaleString()}
-                  </span>
-                )}
-                {apartment.price_per_month && (
-                  <span>
-                    Monthly: ₦{apartment.price_per_month.toLocaleString()}
-                  </span>
-                )}
-              </p>
+          {/* Weekly/monthly pricing */}
+          {(apt.price_per_week || apt.price_per_month) && (
+            <div className="flex gap-3 mb-3 text-[11px] text-gray-400">
+              {apt.price_per_week && (
+                <span>
+                  Weekly:{" "}
+                  <b className="text-gray-600">
+                    ₦{apt.price_per_week.toLocaleString()}
+                  </b>
+                </span>
+              )}
+              {apt.price_per_month && (
+                <span>
+                  Monthly:{" "}
+                  <b className="text-gray-600">
+                    ₦{apt.price_per_month.toLocaleString()}
+                  </b>
+                </span>
+              )}
             </div>
           )}
 
-          {/* View Details Button */}
-          <div className="pt-3">
-            <div className="w-full bg-purple-600 group-hover:bg-purple-700 text-white text-center py-2 rounded-lg font-medium transition-colors text-sm">
-              View Details
-            </div>
+          {/* CTA */}
+          <div className="w-full h-10 flex items-center justify-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 cursor-pointer">
+            View details
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Link>
   );
 });
 
 ApartmentCard.displayName = "ApartmentCard";
-
 export default ApartmentCard;
