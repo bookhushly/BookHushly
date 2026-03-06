@@ -326,11 +326,20 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                    <RadioGroupItem value="courier" id="courier" />
-                    <Label htmlFor="courier" className="cursor-pointer flex-1">
-                      <div className="font-medium">Courier Service</div>
+                    <RadioGroupItem value="pickup" id="pickup" />
+                    <Label htmlFor="pickup" className="cursor-pointer flex-1">
+                      <div className="font-medium">Pickup Service</div>
                       <div className="text-sm text-gray-600">
-                        Express document and small package delivery
+                        We come to you — scheduled collection from your location
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <RadioGroupItem value="dropoff" id="dropoff" />
+                    <Label htmlFor="dropoff" className="cursor-pointer flex-1">
+                      <div className="font-medium">Drop-off Service</div>
+                      <div className="text-sm text-gray-600">
+                        Drop your items at our nearest location for delivery
                       </div>
                     </Label>
                   </div>
