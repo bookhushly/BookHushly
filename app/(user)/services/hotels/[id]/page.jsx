@@ -1,13 +1,76 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import HotelDetails from "./content";
 import { Loader2 } from "lucide-react";
 
+// Use admin client throughout — this page is public and runs in ISR context
+// where cookie-based createClient() has no request context and will fail on revalidation
+async function getHotelData(id) {
+  const supabase = createAdminClient();
+
+  try {
+    const { data: hotel, error: hotelError } = await supabase
+      .from("hotels")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (hotelError || !hotel) {
+      return null;
+    }
+
+    const { data: roomTypes } = await supabase
+      .from("hotel_room_types")
+      .select("*")
+      .eq("hotel_id", id)
+      .order("base_price", { ascending: true });
+
+    if (!roomTypes || roomTypes.length === 0) {
+      return { hotel, roomTypes: [] };
+    }
+
+    const roomTypeIds = roomTypes.map((rt) => rt.id);
+
+    const { data: allRooms } = await supabase
+      .from("hotel_rooms")
+      .select("id, room_type_id, status, price_per_night")
+      .in("room_type_id", roomTypeIds)
+      .eq("status", "available");
+
+    const roomsByType = (allRooms || []).reduce((acc, room) => {
+      if (!acc[room.room_type_id]) acc[room.room_type_id] = [];
+      acc[room.room_type_id].push(room);
+      return acc;
+    }, {});
+
+    const enrichedRoomTypes = roomTypes
+      .map((roomType) => {
+        const rooms = roomsByType[roomType.id] || [];
+        const prices = rooms.map((r) => parseFloat(r.price_per_night));
+        const minPrice =
+          prices.length > 0 ? Math.min(...prices) : roomType.base_price;
+        return {
+          ...roomType,
+          available_rooms: rooms.length,
+          min_price: minPrice,
+          has_availability: rooms.length > 0,
+        };
+      })
+      .filter((rt) => rt.has_availability);
+
+    return { hotel, roomTypes: enrichedRoomTypes };
+  } catch (error) {
+    console.error("Error fetching hotel data:", error);
+    return null;
+  }
+}
+
 export async function generateMetadata({ params }) {
-  const supabase = await createClient();
   const { id } = await params;
+
+  // Also use admin client here — generateMetadata runs at build/revalidation time
+  const supabase = createAdminClient();
 
   const { data: hotel } = await supabase
     .from("hotels")
@@ -16,9 +79,7 @@ export async function generateMetadata({ params }) {
     .single();
 
   if (!hotel) {
-    return {
-      title: "Hotel Not Found",
-    };
+    return { title: "Hotel Not Found" };
   }
 
   const location = `${hotel.city}, ${hotel.state}`;
@@ -57,82 +118,6 @@ export async function generateMetadata({ params }) {
   };
 }
 
-async function getHotelData(id) {
-  const supabase = await createClient();
-
-  try {
-    // Fetch hotel data
-    const { data: hotel, error: hotelError } = await supabase
-      .from("hotels")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (hotelError || !hotel) {
-      return null;
-    }
-
-    // Fetch room types with availability in a single optimized query
-    const { data: roomTypes } = await supabase
-      .from("hotel_room_types")
-      .select("*")
-      .eq("hotel_id", id)
-      .order("base_price", { ascending: true });
-
-    if (!roomTypes || roomTypes.length === 0) {
-      return {
-        hotel,
-        roomTypes: [],
-      };
-    }
-
-    // Get room type IDs for batch query
-    const roomTypeIds = roomTypes.map((rt) => rt.id);
-
-    // Batch fetch all available rooms for all room types
-    const { data: allRooms } = await supabase
-      .from("hotel_rooms")
-      .select("id, room_type_id, status, price_per_night")
-      .in("room_type_id", roomTypeIds)
-      .eq("status", "available");
-
-    // Group rooms by room type ID
-    const roomsByType = (allRooms || []).reduce((acc, room) => {
-      if (!acc[room.room_type_id]) {
-        acc[room.room_type_id] = [];
-      }
-      acc[room.room_type_id].push(room);
-      return acc;
-    }, {});
-
-    // Enrich room types with availability data
-    const enrichedRoomTypes = roomTypes
-      .map((roomType) => {
-        const rooms = roomsByType[roomType.id] || [];
-        const availableCount = rooms.length;
-        const prices = rooms.map((r) => parseFloat(r.price_per_night));
-        const minPrice =
-          prices.length > 0 ? Math.min(...prices) : roomType.base_price;
-
-        return {
-          ...roomType,
-          available_rooms: availableCount,
-          min_price: minPrice,
-          has_availability: availableCount > 0,
-        };
-      })
-      .filter((rt) => rt.has_availability); // Only return room types with available rooms
-
-    return {
-      hotel,
-      roomTypes: enrichedRoomTypes,
-    };
-  } catch (error) {
-    console.error("Error fetching hotel data:", error);
-    return null;
-  }
-}
-
 export default async function HotelPage({ params }) {
   const { id } = await params;
   const data = await getHotelData(id);
@@ -157,12 +142,9 @@ export default async function HotelPage({ params }) {
   );
 }
 
-// Generate static params for popular hotels at build time
 export async function generateStaticParams() {
   try {
-    // Use public client that doesn't require cookies
     const supabase = createAdminClient();
-
     const { data: hotels, error } = await supabase
       .from("hotels")
       .select("id")
@@ -173,14 +155,11 @@ export async function generateStaticParams() {
       return [];
     }
 
-    return (hotels || []).map((hotel) => ({
-      id: hotel.id,
-    }));
+    return (hotels || []).map((hotel) => ({ id: hotel.id }));
   } catch (error) {
     console.error("Error in generateStaticParams:", error);
     return [];
   }
 }
 
-// Revalidate every hour (ISR)
 export const revalidate = 3600;
