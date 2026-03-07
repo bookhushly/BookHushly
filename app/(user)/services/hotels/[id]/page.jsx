@@ -26,9 +26,13 @@ export const dynamic = "force-dynamic";
 
 export default async function HotelPage({ params }) {
   const { id } = await params;
-  const data = await getHotelData(id);
 
-  if (!data) notFound();
-
-  return <HotelDetails hotel={data.hotel} roomTypes={data.roomTypes} />;
+  try {
+    const data = await getHotelData(id);
+    if (!data) notFound();
+    return <HotelDetails hotel={data.hotel} roomTypes={data.roomTypes} />;
+  } catch (err) {
+    console.error("HotelPage error:", err.message, err.stack);
+    throw err;
+  }
 }
