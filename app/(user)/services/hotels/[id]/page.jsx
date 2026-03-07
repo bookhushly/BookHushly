@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+
 import HotelDetails from "./content";
+import { createStaticClient } from "../../../../../lib/supabase/server";
 
 async function getHotelData(id) {
-  const supabase = createAdminClient();
+  const supabase = createStaticClient();
 
   const { data: hotel, error } = await supabase
     .from("hotels")
