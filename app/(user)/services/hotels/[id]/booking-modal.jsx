@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Minus, Plus } from "lucide-react";
 
 export default function BookingModal({
   open,
@@ -29,6 +30,16 @@ export default function BookingModal({
   }, [bookingData.checkIn, bookingData.checkOut]);
 
   const estimatedTotal = nights * (roomType?.base_price || 0);
+  const maxOccupancy = roomType?.max_occupancy || 4;
+
+  const adjustGuests = (field, delta) => {
+    setBookingData((prev) => {
+      const min = field === "adults" ? 1 : 0;
+      const max = field === "adults" ? maxOccupancy : 10;
+      const next = Math.min(max, Math.max(min, prev[field] + delta));
+      return { ...prev, [field]: next };
+    });
+  };
 
   const handleProceed = () => {
     if (!bookingData.checkIn || !bookingData.checkOut || !roomType) return;
@@ -44,7 +55,6 @@ export default function BookingModal({
   if (!open || !roomType) return null;
 
   return (
-    // Full-screen fixed overlay — no Radix, no portal issues, always on top
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={(e) => {
@@ -83,7 +93,7 @@ export default function BookingModal({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-5">
           {/* Dates */}
           <div className="grid grid-cols-2 gap-3">
             {[
@@ -112,29 +122,49 @@ export default function BookingModal({
             ))}
           </div>
 
-          {/* Guests */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Guests — stepper pattern, no number inputs */}
+          <div className="rounded-xl border border-gray-100 overflow-hidden">
             {[
-              ["adults", "Adults", 1, roomType.max_occupancy || 4],
-              ["children", "Children", 0, 10],
-            ].map(([field, label, min, max]) => (
-              <div key={field} className="space-y-1.5">
-                <Label className="text-[12px] font-medium text-gray-600">
-                  {label}
-                </Label>
-                <Input
-                  type="number"
-                  min={min}
-                  max={max}
-                  value={bookingData[field]}
-                  onChange={(e) =>
-                    setBookingData({
-                      ...bookingData,
-                      [field]: parseInt(e.target.value) || min,
-                    })
-                  }
-                  className="h-9 text-sm focus-visible:ring-violet-500"
-                />
+              ["adults", "Adults", `Up to ${maxOccupancy}`, 1, maxOccupancy],
+              ["children", "Children", "Ages 0–12", 0, 10],
+            ].map(([field, label, hint, min, max], idx, arr) => (
+              <div
+                key={field}
+                className={`flex items-center justify-between px-4 py-3.5 ${
+                  idx < arr.length - 1 ? "border-b border-gray-100" : ""
+                }`}
+              >
+                <div>
+                  <p className="text-[14px] font-medium text-gray-900">
+                    {label}
+                  </p>
+                  <p className="text-[12px] text-gray-400 mt-0.5">{hint}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => adjustGuests(field, -1)}
+                    disabled={bookingData[field] <= min}
+                    className="h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center
+                               text-gray-600 hover:border-violet-400 hover:text-violet-600
+                               disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Minus className="h-3.5 w-3.5" />
+                  </button>
+                  <span className="w-6 text-center text-[15px] font-semibold text-gray-900 tabular-nums select-none">
+                    {bookingData[field]}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => adjustGuests(field, 1)}
+                    disabled={bookingData[field] >= max}
+                    className="h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center
+                               text-gray-600 hover:border-violet-400 hover:text-violet-600
+                               disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
