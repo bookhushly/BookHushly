@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -36,108 +36,61 @@ const OrderSuccessful = () => {
   const [bookingType, setBookingType] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
 
-  // Detect booking type from URL or data
-  const detectBookingType = useCallback((bookingData) => {
-    if (bookingData?.ticket_details) return BOOKING_TYPES.EVENT;
-    if (bookingData?.room_type_id) return BOOKING_TYPES.HOTEL; // hotel has room_type_id
-    if (bookingData?.apartment_id) return BOOKING_TYPES.APARTMENT; // apartment has apartment_id
-    if (bookingData?.listing_id) return BOOKING_TYPES.EVENT;
-    return BOOKING_TYPES.EVENT;
-  }, []);
+  // Ref-based guard — survives re-renders without triggering effect re-runs
+  const emailSentRef = useRef(false);
 
-  // Fetch booking data
   const fetchBookingData = useCallback(
     async (bookingId) => {
-      // Try event_bookings first
-      let { data: eventBooking, error: eventError } = await supabase
+      const { data: eventBooking } = await supabase
         .from("event_bookings")
         .select(
-          `
-        *,
-        listing:listing_id (
-          id,
-          title,
-          description,
-          location,
-          event_date,
-          event_time,
-          ticket_packages,
-          vendors:vendor_id (
-            business_name,
-            phone_number
-          )
-        )
-      `,
+          `*,
+          listing:listing_id (
+            id, title, description, location,
+            event_date, event_time, ticket_packages,
+            vendors:vendor_id ( business_name, phone_number )
+          )`,
         )
         .eq("id", bookingId)
         .single();
 
-      if (eventBooking) {
+      if (eventBooking)
         return { data: eventBooking, type: BOOKING_TYPES.EVENT };
-      }
 
-      // Try hotel_bookings - FIXED with correct field names
-      let { data: hotelBooking, error: hotelError } = await supabase
+      const { data: hotelBooking } = await supabase
         .from("hotel_bookings")
         .select(
-          `
-        *,
-        hotels:hotel_id (
-          id,
-          name,
-          city,
-          state,
-          address
-        ),
-        room_types:room_type_id (
-          id,
-          name,
-          base_price,
-          max_occupancy
-        )
-      `,
+          `*,
+          hotels:hotel_id ( id, name, city, state, address ),
+          room_types:room_type_id ( id, name, base_price, max_occupancy )`,
         )
         .eq("id", bookingId)
         .single();
 
-      if (hotelBooking) {
+      if (hotelBooking)
         return { data: hotelBooking, type: BOOKING_TYPES.HOTEL };
-      }
 
-      // Try apartment_bookings
-      // Try apartment_bookings
-      let { data: apartmentBooking } = await supabase
+      const { data: apartmentBooking } = await supabase
         .from("apartment_bookings")
         .select(
-          `
-    *,
-    apartment:apartment_id (
-      id,
-      name,
-      city,
-      state,
-      area,
-      address,
-      check_in_time,
-      check_out_time,
-      vendor_id
-    )
-  `,
+          `*,
+          apartment:apartment_id (
+            id, name, city, state, area, address,
+            check_in_time, check_out_time, vendor_id
+          )`,
         )
         .eq("id", bookingId)
         .single();
 
-      if (apartmentBooking) {
+      if (apartmentBooking)
         return { data: apartmentBooking, type: BOOKING_TYPES.APARTMENT };
-      }
+
       throw new Error("Booking not found");
     },
     [supabase],
   );
 
-  // Fetch payment record
   const fetchPaymentData = useCallback(
     async (bookingId, type) => {
       const column =
@@ -153,16 +106,12 @@ const OrderSuccessful = () => {
         .eq(column, bookingId)
         .single();
 
-      if (error || !data) {
-        throw new Error("Payment record not found");
-      }
-
+      if (error || !data) throw new Error("Payment record not found");
       return data;
     },
     [supabase],
   );
 
-  // Verify and process order
   useEffect(() => {
     if (!params?.id) return;
 
@@ -174,58 +123,52 @@ const OrderSuccessful = () => {
 
         const bookingId = String(params.id).trim().toLowerCase();
 
-        // Validate UUID format
         const uuidRegex =
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(bookingId)) {
           throw new Error("Invalid booking ID format");
         }
 
-        // Fetch booking data
         const { data: bookingData, type } = await fetchBookingData(bookingId);
-
         if (isCancelled) return;
 
         setBooking(bookingData);
         setBookingType(type);
 
-        // Fetch payment record
         const paymentData = await fetchPaymentData(bookingId, type);
-
         if (isCancelled) return;
 
         setPayment(paymentData);
 
-        // Check if payment is already verified
         if (
           paymentData.status === "completed" ||
           paymentData.status === "success"
         ) {
-          // Payment already verified, show success
           toast.success("Order confirmed! Your booking is ready.");
 
-          // Send confirmation email (only if not already sent)
-          if (!emailSent && bookingData.payment_status !== "completed") {
-            setEmailSent(true);
+          // Use ref so this fires exactly once regardless of re-renders
+          if (!emailSentRef.current) {
+            emailSentRef.current = true;
             try {
               const emailResponse = await fetch("/api/send-payment-email", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  bookingId: bookingId,
-                  bookingType: type,
-                }),
+                body: JSON.stringify({ bookingId, bookingType: type }),
               });
 
               if (emailResponse.ok) {
                 toast.success("Confirmation sent to your email!");
+              } else {
+                const body = await emailResponse.json().catch(() => ({}));
+                console.error("Email API error:", body);
+                // Don't surface this to user — booking is confirmed regardless
               }
             } catch (emailErr) {
               console.error("Email send failed:", emailErr);
+              emailSentRef.current = false; // allow retry on hard network failure
             }
           }
         } else {
-          // Payment not verified yet
           throw new Error(
             "Payment verification pending. Please wait a moment.",
           );
@@ -239,9 +182,7 @@ const OrderSuccessful = () => {
           toast.error(message);
         }
       } finally {
-        if (!isCancelled) {
-          setLoading(false);
-        }
+        if (!isCancelled) setLoading(false);
       }
     };
 
@@ -250,37 +191,31 @@ const OrderSuccessful = () => {
     return () => {
       isCancelled = true;
     };
-  }, [params?.id, fetchBookingData, fetchPaymentData, emailSent]);
+    // emailSentRef intentionally excluded — refs don't need to be deps
+  }, [params?.id, fetchBookingData, fetchPaymentData]);
 
-  // Download event tickets
   const handleDownloadEventTickets = useCallback(async () => {
     if (!booking) return;
-
     try {
       const totalTickets = await generateEventTicketsZip(booking);
       toast.success(
         `Successfully generated ${totalTickets} ticket${totalTickets > 1 ? "s" : ""}`,
       );
     } catch (err) {
-      console.error("Error generating tickets:", err);
       toast.error(err.message || "Failed to generate tickets");
     }
   }, [booking]);
 
-  // Download booking confirmation
   const handleDownloadConfirmation = useCallback(async () => {
     if (!booking || !payment) return;
-
     try {
       await generateBookingConfirmationPDF(booking, payment, bookingType);
       toast.success("Confirmation downloaded successfully");
     } catch (err) {
-      console.error("Error generating confirmation:", err);
       toast.error(err.message || "Failed to generate confirmation");
     }
   }, [booking, payment, bookingType]);
 
-  // Get contact details based on booking type
   const getContactEmail = useCallback(() => {
     if (!booking) return "N/A";
     return booking.contact_email || booking.guest_email || "N/A";
@@ -296,20 +231,6 @@ const OrderSuccessful = () => {
     return booking.total_amount || booking.total_price || 0;
   }, [booking]);
 
-  // Get number of guests - FIXED for hotel bookings
-  const getNumberOfGuests = useCallback(() => {
-    if (!booking) return 0;
-
-    // Hotel bookings: adults + children
-    if (bookingType === BOOKING_TYPES.HOTEL) {
-      return (booking.adults || 0) + (booking.children || 0);
-    }
-
-    // Events and apartments use number_of_guests or guests
-    return booking.number_of_guests || booking.guests || 0;
-  }, [booking, bookingType]);
-
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -323,7 +244,6 @@ const OrderSuccessful = () => {
     );
   }
 
-  // Error state
   if (error || !booking || !payment) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -568,22 +488,17 @@ const OrderSuccessful = () => {
               Before You Go
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Bring your ticket (digital or printed)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Arrive 30 minutes early</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Valid ID required for entry</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Check your email for updates</span>
-              </li>
+              {[
+                "Bring your ticket (digital or printed)",
+                "Arrive 30 minutes early",
+                "Valid ID required for entry",
+                "Check your email for updates",
+              ].map((note) => (
+                <li key={note} className="flex items-start gap-2">
+                  <span className="text-purple-600 font-bold">•</span>
+                  <span>{note}</span>
+                </li>
+              ))}
             </ul>
           </div>
         )}
@@ -595,22 +510,17 @@ const OrderSuccessful = () => {
               Important Information
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Check-in time is typically 2:00 PM</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Check-out time is typically 12:00 PM</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Valid ID required at check-in</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 font-bold">•</span>
-                <span>Contact property for early check-in/late check-out</span>
-              </li>
+              {[
+                "Check-in time is typically 2:00 PM",
+                "Check-out time is typically 12:00 PM",
+                "Valid ID required at check-in",
+                "Contact property for early check-in/late check-out",
+              ].map((note) => (
+                <li key={note} className="flex items-start gap-2">
+                  <span className="text-purple-600 font-bold">•</span>
+                  <span>{note}</span>
+                </li>
+              ))}
             </ul>
           </div>
         )}

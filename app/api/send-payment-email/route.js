@@ -226,7 +226,7 @@ function generateEventEmailTemplate(
 
     <p>
       View your booking:
-      <a href="${process.env.NEXT_PUBLIC_BASE_URL}/order-successful/${bookingId}?type=event">
+      <a href="${process.env.NEXT_PUBLIC_BASE_URL}order-successful/${bookingId}?type=event">
         View Booking
       </a>
     </p>
