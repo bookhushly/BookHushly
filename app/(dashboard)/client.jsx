@@ -8,7 +8,6 @@ import { Menu, Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CustomerSidebar } from "@/components/shared/customer/sidebar";
 
-// ── Page title map ───────────────────────────────────────────────────────────
 const PAGE_TITLES = {
   "/dashboard/customer": "Overview",
   "/dashboard/customer/hotels": "Hotel Bookings",
@@ -39,28 +38,24 @@ function CustomerHeader({ user, onMenuClick }) {
       )?.[1] || "Dashboard";
 
   return (
-    <header
-      className="h-14 bg-white border-b border-gray-100 flex items-center justify-between
-                       px-5 sticky top-0 z-30 shrink-0"
-    >
+    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-5 sticky top-0 z-30 shrink-0">
       {/* Left */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg
-                     text-gray-500 hover:bg-gray-100 transition-colors"
+          className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
         >
           <Menu className="h-4 w-4" />
         </button>
 
         {/* Mobile: logo + current page */}
         <div className="lg:hidden flex items-center gap-2">
-          <div className="relative w-20 h-6">
+          <div className="relative w-32 h-32">
             <Image
               src="/logo.png"
               alt="BookHushly"
               fill
-              className="object-contain object-left"
+              className="object-contain object-left scale-150"
             />
           </div>
           <span className="text-gray-300 text-sm">·</span>
@@ -77,10 +72,7 @@ function CustomerHeader({ user, onMenuClick }) {
 
       {/* Right */}
       <div className="flex items-center gap-1.5">
-        <button
-          className="relative h-8 w-8 flex items-center justify-center rounded-lg
-                           text-gray-500 hover:bg-gray-100 transition-colors"
-        >
+        <button className="relative h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
           <Bell className="h-4 w-4" strokeWidth={2} />
           <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-violet-600" />
         </button>
@@ -120,7 +112,6 @@ export function CustomerLayoutClient({ user, children }) {
         isOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
       />
-
       <div className="flex-1 flex flex-col min-w-0">
         <CustomerHeader user={user} onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-y-auto">
