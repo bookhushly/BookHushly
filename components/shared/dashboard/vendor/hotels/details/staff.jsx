@@ -17,30 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -64,6 +40,7 @@ export function HotelStaffTab({ hotelId, hotelName }) {
   const [deletingStaff, setDeletingStaff] = useState(null);
   const [resettingPassword, setResettingPassword] = useState(null);
   const [sending, setSending] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -244,41 +221,61 @@ export function HotelStaffTab({ hotelId, hotelName }) {
                         {member.users?.email}
                       </CardDescription>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleResetPassword(member)}
-                          disabled={resettingPassword === member.user_id}
-                        >
-                          {resettingPassword === member.user_id ? (
-                            <>
-                              <LoadingSpinner className="h-4 w-4 mr-2" />
-                              Resetting...
-                            </>
-                          ) : (
-                            <>
-                              <RotateCw className="h-4 w-4 mr-2" />
-                              Reset Password
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setDeletingStaff(member);
-                            setDeleteDialogOpen(true);
-                          }}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Remove
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="relative">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() =>
+                          setOpenMenuId(
+                            openMenuId === member.id ? null : member.id
+                          )
+                        }
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                      {openMenuId === member.id && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setOpenMenuId(null)}
+                          />
+                          <div className="absolute right-0 top-8 z-20 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-1">
+                            <button
+                              className="flex w-full items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                handleResetPassword(member);
+                              }}
+                              disabled={resettingPassword === member.user_id}
+                            >
+                              {resettingPassword === member.user_id ? (
+                                <>
+                                  <LoadingSpinner className="h-4 w-4 mr-2" />
+                                  Resetting...
+                                </>
+                              ) : (
+                                <>
+                                  <RotateCw className="h-4 w-4 mr-2" />
+                                  Reset Password
+                                </>
+                              )}
+                            </button>
+                            <button
+                              className="flex w-full items-center px-3 py-2 text-sm text-red-600 hover:bg-gray-100"
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                setDeletingStaff(member);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Remove
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -297,172 +294,206 @@ export function HotelStaffTab({ hotelId, hotelName }) {
         )}
       </div>
 
-      {/* Add Receptionist Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Receptionist</DialogTitle>
-            <DialogDescription>
-              Create a new receptionist account. A secure password will be
-              auto-generated.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="e.g., John Doe"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
+      {/* Add Receptionist Modal */}
+      {dialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setDialogOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Add Receptionist
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Create a new receptionist account. A secure password will be
+                auto-generated.
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="e.g., receptionist@hotel.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="e.g., John Doe"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="e.g., receptionist@hotel.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <Alert>
+                <CheckCircle2 className="h-4 w-4" />
+                <AlertDescription>
+                  A secure password will be automatically generated and
+                  displayed after account creation. Make sure to save it
+                  securely.
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={sending}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {sending ? (
+                    <>
+                      <LoadingSpinner className="mr-2 h-4 w-4" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Credentials Modal */}
+      {!!credentialsDialog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setCredentialsDialog(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Account Credentials
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Save these credentials securely. The password cannot be
+                recovered.
+              </p>
             </div>
 
-            <Alert>
-              <CheckCircle2 className="h-4 w-4" />
-              <AlertDescription>
-                A secure password will be automatically generated and displayed
-                after account creation. Make sure to save it securely.
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <div className="flex gap-2">
+                  <Input value={credentialsDialog?.email || ""} readOnly />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      copyToClipboard(credentialsDialog?.email, "Email")
+                    }
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
 
-            <DialogFooter>
+              <div className="space-y-2">
+                <Label>Password</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={credentialsDialog?.password || ""}
+                    readOnly
+                    type="text"
+                    className="font-mono"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      copyToClipboard(credentialsDialog?.password, "Password")
+                    }
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertDescription className="text-amber-900">
+                  The receptionist should change this password after first
+                  login. This password will not be shown again.
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <Button
+                onClick={() => setCredentialsDialog(null)}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setDeleteDialogOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              Remove Staff Member
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to remove this staff member? They will lose
+              access to the receptionist portal immediately. This action cannot
+              be undone.
+            </p>
+            <div className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setDialogOpen(false)}
+                onClick={() => setDeleteDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                type="submit"
-                disabled={sending}
-                className="bg-purple-600 hover:bg-purple-700"
+                type="button"
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
               >
-                {sending ? (
-                  <>
-                    <LoadingSpinner className="mr-2 h-4 w-4" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
+                Remove
               </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Credentials Dialog */}
-      <Dialog
-        open={!!credentialsDialog}
-        onOpenChange={() => setCredentialsDialog(null)}
-      >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Account Credentials</DialogTitle>
-            <DialogDescription>
-              Save these credentials securely. The password cannot be recovered.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <div className="flex gap-2">
-                <Input value={credentialsDialog?.email || ""} readOnly />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() =>
-                    copyToClipboard(credentialsDialog?.email, "Email")
-                  }
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Password</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={credentialsDialog?.password || ""}
-                  readOnly
-                  type="text"
-                  className="font-mono"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() =>
-                    copyToClipboard(credentialsDialog?.password, "Password")
-                  }
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            <Alert className="bg-amber-50 border-amber-200">
-              <AlertDescription className="text-amber-900">
-                The receptionist should change this password after first login.
-                This password will not be shown again.
-              </AlertDescription>
-            </Alert>
           </div>
-
-          <DialogFooter>
-            <Button
-              onClick={() => setCredentialsDialog(null)}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Staff Member</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove this staff member? They will lose
-              access to the receptionist portal immediately. This action cannot
-              be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </div>
+      )}
     </>
   );
 }

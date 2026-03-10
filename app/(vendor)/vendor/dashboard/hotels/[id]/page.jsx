@@ -20,7 +20,6 @@ export default function HotelManagementPage() {
 
   const [loading, setLoading] = useState(true);
   const [hotel, setHotel] = useState(null);
-  const [activeTab, setActiveTab] = useState("details");
 
   const user = authData?.user;
   const vendor = authData?.vendor;
@@ -100,7 +99,7 @@ export default function HotelManagementPage() {
 
       {/* Tabs */}
       <div className="container max-w-7xl py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue="details">
           <TabsList className="mb-8">
             <TabsTrigger value="details">Hotel Details</TabsTrigger>
             <TabsTrigger value="rooms">Rooms & Types</TabsTrigger>

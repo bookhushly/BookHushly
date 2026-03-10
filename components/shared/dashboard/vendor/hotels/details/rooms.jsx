@@ -1,10 +1,9 @@
+// HotelRoomsTab — replace Tabs with manual sub-tab state
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
 import { RoomTypesSection } from "./room-types";
 import { IndividualRoomsSection } from "./individual-room";
 
@@ -23,7 +22,6 @@ export function HotelRoomsTab({ hotelId }) {
     try {
       setLoading(true);
 
-      // Load room types
       const { data: typesData, error: typesError } = await supabase
         .from("hotel_room_types")
         .select("*")
@@ -32,17 +30,9 @@ export function HotelRoomsTab({ hotelId }) {
 
       if (typesError) throw typesError;
 
-      // Load individual rooms
       const { data: roomsData, error: roomsError } = await supabase
         .from("hotel_rooms")
-        .select(
-          `
-          *,
-          hotel_room_types (
-            name
-          )
-        `
-        )
+        .select(`*, hotel_room_types (name)`)
         .eq("hotel_id", hotelId)
         .order("room_number", { ascending: true });
 
@@ -59,31 +49,41 @@ export function HotelRoomsTab({ hotelId }) {
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
-        <TabsList>
-          <TabsTrigger value="types">Room Types</TabsTrigger>
-          <TabsTrigger value="rooms">Individual Rooms</TabsTrigger>
-        </TabsList>
+      {/* Manual sub-tab buttons — no nested Tabs context */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+        {["types", "rooms"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveSubTab(tab)}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              activeSubTab === tab
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {tab === "types" ? "Room Types" : "Individual Rooms"}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="types" className="mt-6">
-          <RoomTypesSection
-            hotelId={hotelId}
-            roomTypes={roomTypes}
-            onUpdate={loadData}
-            loading={loading}
-          />
-        </TabsContent>
+      {activeSubTab === "types" && (
+        <RoomTypesSection
+          hotelId={hotelId}
+          roomTypes={roomTypes}
+          onUpdate={loadData}
+          loading={loading}
+        />
+      )}
 
-        <TabsContent value="rooms" className="mt-6">
-          <IndividualRoomsSection
-            hotelId={hotelId}
-            rooms={rooms}
-            roomTypes={roomTypes}
-            onUpdate={loadData}
-            loading={loading}
-          />
-        </TabsContent>
-      </Tabs>
+      {activeSubTab === "rooms" && (
+        <IndividualRoomsSection
+          hotelId={hotelId}
+          rooms={rooms}
+          roomTypes={roomTypes}
+          onUpdate={loadData}
+          loading={loading}
+        />
+      )}
     </div>
   );
 }

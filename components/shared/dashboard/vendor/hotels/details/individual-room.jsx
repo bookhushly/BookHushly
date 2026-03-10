@@ -20,24 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Plus, Pencil, Trash2, Bed, Hash, Building } from "lucide-react";
 import { toast } from "sonner";
@@ -369,234 +351,261 @@ export function IndividualRoomsSection({
         )}
       </div>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingRoom ? "Edit Room" : "Add New Room"}
-            </DialogTitle>
-            <DialogDescription>
-              Configure the details for this specific room
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="room_type_id">Room Type *</Label>
-                <Select
-                  value={formData.room_type_id}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, room_type_id: value }))
-                  }
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a room type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roomTypes.map((type) => (
-                      <SelectItem key={type.id} value={type.id}>
-                        {type.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="room_number">Room Number *</Label>
-                  <Input
-                    id="room_number"
-                    name="room_number"
-                    type="number"
-                    placeholder="e.g., 101"
-                    value={formData.room_number}
-                    onChange={handleChange}
-                    min="1"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="floor">Floor *</Label>
-                  <Input
-                    id="floor"
-                    name="floor"
-                    type="number"
-                    placeholder="e.g., 1"
-                    value={formData.floor}
-                    onChange={handleChange}
-                    min="0"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="price_per_night">Price (₦/night) *</Label>
-                  <Input
-                    id="price_per_night"
-                    name="price_per_night"
-                    type="number"
-                    placeholder="e.g., 25000"
-                    value={formData.price_per_night}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Room Status *</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, status: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="occupied">Occupied</SelectItem>
-                    <SelectItem value="reserved">Reserved</SelectItem>
-                    <SelectItem value="dirty">Needs Cleaning</SelectItem>
-                    <SelectItem value="out_of_service">
-                      Out of Service
-                    </SelectItem>
-                    <SelectItem value="under_maintenance">
-                      Under Maintenance
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Bed Configuration *</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="single" className="text-xs">
-                      Single Beds
-                    </Label>
-                    <Input
-                      id="single"
-                      type="number"
-                      value={beds.single}
-                      onChange={(e) =>
-                        handleBedChange("single", e.target.value)
-                      }
-                      min="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="double" className="text-xs">
-                      Double Beds
-                    </Label>
-                    <Input
-                      id="double"
-                      type="number"
-                      value={beds.double}
-                      onChange={(e) =>
-                        handleBedChange("double", e.target.value)
-                      }
-                      min="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="queen" className="text-xs">
-                      Queen Beds
-                    </Label>
-                    <Input
-                      id="queen"
-                      type="number"
-                      value={beds.queen}
-                      onChange={(e) => handleBedChange("queen", e.target.value)}
-                      min="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="king" className="text-xs">
-                      King Beds
-                    </Label>
-                    <Input
-                      id="king"
-                      type="number"
-                      value={beds.king}
-                      onChange={(e) => handleBedChange("king", e.target.value)}
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  placeholder="Any special notes about this room..."
-                  value={formData.notes}
-                  onChange={handleChange}
-                  rows={2}
-                />
-              </div>
+      {/* Add/Edit Modal */}
+      {dialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setDialogOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editingRoom ? "Edit Room" : "Add New Room"}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Configure the details for this specific room
+              </p>
             </div>
 
-            <DialogFooter>
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="room_type_id">Room Type *</Label>
+                  <Select
+                    value={formData.room_type_id}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, room_type_id: value }))
+                    }
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a room type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roomTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="room_number">Room Number *</Label>
+                    <Input
+                      id="room_number"
+                      name="room_number"
+                      type="number"
+                      placeholder="e.g., 101"
+                      value={formData.room_number}
+                      onChange={handleChange}
+                      min="1"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="floor">Floor *</Label>
+                    <Input
+                      id="floor"
+                      name="floor"
+                      type="number"
+                      placeholder="e.g., 1"
+                      value={formData.floor}
+                      onChange={handleChange}
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="price_per_night">Price (₦/night) *</Label>
+                    <Input
+                      id="price_per_night"
+                      name="price_per_night"
+                      type="number"
+                      placeholder="e.g., 25000"
+                      value={formData.price_per_night}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Room Status *</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, status: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="available">Available</SelectItem>
+                      <SelectItem value="occupied">Occupied</SelectItem>
+                      <SelectItem value="reserved">Reserved</SelectItem>
+                      <SelectItem value="dirty">Needs Cleaning</SelectItem>
+                      <SelectItem value="out_of_service">
+                        Out of Service
+                      </SelectItem>
+                      <SelectItem value="under_maintenance">
+                        Under Maintenance
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Bed Configuration *</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="single" className="text-xs">
+                        Single Beds
+                      </Label>
+                      <Input
+                        id="single"
+                        type="number"
+                        value={beds.single}
+                        onChange={(e) =>
+                          handleBedChange("single", e.target.value)
+                        }
+                        min="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="double" className="text-xs">
+                        Double Beds
+                      </Label>
+                      <Input
+                        id="double"
+                        type="number"
+                        value={beds.double}
+                        onChange={(e) =>
+                          handleBedChange("double", e.target.value)
+                        }
+                        min="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="queen" className="text-xs">
+                        Queen Beds
+                      </Label>
+                      <Input
+                        id="queen"
+                        type="number"
+                        value={beds.queen}
+                        onChange={(e) =>
+                          handleBedChange("queen", e.target.value)
+                        }
+                        min="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="king" className="text-xs">
+                        King Beds
+                      </Label>
+                      <Input
+                        id="king"
+                        type="number"
+                        value={beds.king}
+                        onChange={(e) =>
+                          handleBedChange("king", e.target.value)
+                        }
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    placeholder="Any special notes about this room..."
+                    value={formData.notes}
+                    onChange={handleChange}
+                    rows={2}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {saving ? (
+                    <>
+                      <LoadingSpinner className="mr-2 h-4 w-4" />
+                      Saving...
+                    </>
+                  ) : editingRoom ? (
+                    "Update Room"
+                  ) : (
+                    "Create Room"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setDeleteDialogOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              Delete Room
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this room? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setDialogOpen(false)}
+                onClick={() => setDeleteDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                type="submit"
-                disabled={saving}
-                className="bg-purple-600 hover:bg-purple-700"
+                type="button"
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
               >
-                {saving ? (
-                  <>
-                    <LoadingSpinner className="mr-2 h-4 w-4" />
-                    Saving...
-                  </>
-                ) : editingRoom ? (
-                  "Update Room"
-                ) : (
-                  "Create Room"
-                )}
+                Delete
               </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Room</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this room? This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

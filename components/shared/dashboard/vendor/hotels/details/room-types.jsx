@@ -13,24 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
   Plus,
@@ -364,163 +346,186 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
         )}
       </div>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingType ? "Edit Room Type" : "Create Room Type"}
-            </DialogTitle>
-            <DialogDescription>
-              Define the characteristics and pricing for this room type
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Room Type Name *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="e.g., Deluxe Suite, Standard Room"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="Describe this room type..."
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="max_occupancy">Max Occupancy *</Label>
-                  <Input
-                    id="max_occupancy"
-                    name="max_occupancy"
-                    type="number"
-                    placeholder="e.g., 2"
-                    value={formData.max_occupancy}
-                    onChange={handleChange}
-                    min="1"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="base_price">Base Price (₦) *</Label>
-                  <Input
-                    id="base_price"
-                    name="base_price"
-                    type="number"
-                    placeholder="e.g., 25000"
-                    value={formData.base_price}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="size_sqm">Size (m²)</Label>
-                  <Input
-                    id="size_sqm"
-                    name="size_sqm"
-                    type="number"
-                    placeholder="e.g., 30"
-                    value={formData.size_sqm}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Room Amenities</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-2">
-                  {Object.keys(amenities).map((amenity) => (
-                    <label
-                      key={amenity}
-                      className="flex items-center space-x-2 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={amenities[amenity]}
-                        onChange={() => handleAmenityChange(amenity)}
-                        className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600"
-                      />
-                      <span className="text-sm text-gray-700">
-                        {amenityLabels[amenity]}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+      {/* Add/Edit Modal */}
+      {dialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setDialogOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editingType ? "Edit Room Type" : "Create Room Type"}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Define the characteristics and pricing for this room type
+              </p>
             </div>
 
-            <DialogFooter>
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Room Type Name *</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="e.g., Deluxe Suite, Standard Room"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    placeholder="Describe this room type..."
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="max_occupancy">Max Occupancy *</Label>
+                    <Input
+                      id="max_occupancy"
+                      name="max_occupancy"
+                      type="number"
+                      placeholder="e.g., 2"
+                      value={formData.max_occupancy}
+                      onChange={handleChange}
+                      min="1"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="base_price">Base Price (₦) *</Label>
+                    <Input
+                      id="base_price"
+                      name="base_price"
+                      type="number"
+                      placeholder="e.g., 25000"
+                      value={formData.base_price}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="size_sqm">Size (m²)</Label>
+                    <Input
+                      id="size_sqm"
+                      name="size_sqm"
+                      type="number"
+                      placeholder="e.g., 30"
+                      value={formData.size_sqm}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Room Amenities</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+                    {Object.keys(amenities).map((amenity) => (
+                      <label
+                        key={amenity}
+                        className="flex items-center space-x-2 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={amenities[amenity]}
+                          onChange={() => handleAmenityChange(amenity)}
+                          className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600"
+                        />
+                        <span className="text-sm text-gray-700">
+                          {amenityLabels[amenity]}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {saving ? (
+                    <>
+                      <LoadingSpinner className="mr-2 h-4 w-4" />
+                      Saving...
+                    </>
+                  ) : editingType ? (
+                    "Update Room Type"
+                  ) : (
+                    "Create Room Type"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setDeleteDialogOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              Delete Room Type
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this room type? This will also
+              delete all individual rooms of this type. This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setDialogOpen(false)}
+                onClick={() => setDeleteDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                type="submit"
-                disabled={saving}
-                className="bg-purple-600 hover:bg-purple-700"
+                type="button"
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
               >
-                {saving ? (
-                  <>
-                    <LoadingSpinner className="mr-2 h-4 w-4" />
-                    Saving...
-                  </>
-                ) : editingType ? (
-                  "Update Room Type"
-                ) : (
-                  "Create Room Type"
-                )}
+                Delete
               </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Room Type</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this room type? This will also
-              delete all individual rooms of this type. This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
