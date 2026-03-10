@@ -47,6 +47,28 @@ const passwordRules = [
   },
 ];
 
+const TopBar = () => (
+  <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+    <Link href="/">
+      <div className="relative w-32 h-32">
+        <Image
+          src="/logo.png"
+          alt="BookHushly"
+          fill
+          className="object-contain object-left scale-150"
+          priority
+        />
+      </div>
+    </Link>
+    <Link
+      href="/login"
+      className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+    >
+      Back to sign in
+    </Link>
+  </div>
+);
+
 export default function ResetPasswordPage() {
   const router = useRouter();
   const { invalidateAuth } = useAuthActions();
@@ -96,27 +118,6 @@ export default function ResetPasswordPage() {
     }
     mutation.mutate(formData.password);
   };
-
-  const TopBar = () => (
-    <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-      <Link href="/">
-        <Image
-          src="/logo.png"
-          alt="BookHushly"
-          width={120}
-          height={36}
-          className="h-20 w-auto object-contain"
-          priority
-        />
-      </Link>
-      <Link
-        href="/login"
-        className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-      >
-        Back to sign in
-      </Link>
-    </div>
-  );
 
   // ── Success ──
   if (success) {

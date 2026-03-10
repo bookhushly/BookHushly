@@ -206,7 +206,7 @@ export function AdminSidebar({ isOpen, onClose }) {
     ));
 
   const profileStrip = (isMobile = false) => (
-    <div className={cn("border-t border-violet-100 shrink-0 relative")}>
+    <div className="border-t border-violet-100 shrink-0 relative">
       {profileOpen && (
         <ProfilePopover
           admin={admin}
@@ -276,12 +276,12 @@ export function AdminSidebar({ isOpen, onClose }) {
         >
           {!collapsed && (
             <Link href="/">
-              <div className="relative w-28 h-8">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
                   fill
-                  className="object-contain object-left"
+                  className="object-contain object-left scale-150"
                 />
               </div>
             </Link>
@@ -307,7 +307,6 @@ export function AdminSidebar({ isOpen, onClose }) {
         {profileStrip(false)}
       </aside>
 
-      {/* Spacer */}
       <div
         className={cn(
           "hidden lg:block shrink-0 transition-all duration-200",
@@ -329,12 +328,12 @@ export function AdminSidebar({ isOpen, onClose }) {
             }}
           >
             <div className="h-16 flex items-center justify-between px-5 border-b border-violet-100 shrink-0">
-              <div className="relative w-28 h-8">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
                   fill
-                  className="object-contain object-left"
+                  className="object-contain object-left scale-150"
                 />
               </div>
               <button

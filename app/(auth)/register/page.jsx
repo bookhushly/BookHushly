@@ -114,14 +114,15 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col font-bricolage">
         <div className="flex items-center p-6 border-b border-gray-100">
-          <Image
-            src="/logo.png"
-            alt="BookHushly"
-            width={120}
-            height={36}
-            className="h-8 w-auto object-contain"
-            priority
-          />
+          <div className="relative w-32 h-32">
+            <Image
+              src="/logo.png"
+              alt="BookHushly"
+              fill
+              className="object-contain object-left scale-150"
+              priority
+            />
+          </div>
         </div>
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="w-full max-w-sm text-center">
@@ -190,14 +191,16 @@ export default function RegisterPage() {
         </div>
 
         <div className="relative z-10 flex flex-col h-full p-10">
-          <Image
-            src="/logo.png"
-            alt="BookHushly"
-            width={160}
-            height={44}
-            className="h-9 w-auto object-contain brightness-0 invert"
-            priority
-          />
+          {/* Left panel logo */}
+          <div className="relative w-32 h-32">
+            <Image
+              src="/logo.png"
+              alt="BookHushly"
+              fill
+              className="object-contain object-left scale-150 brightness-0 invert"
+              priority
+            />
+          </div>
 
           <div className="flex-1 flex flex-col justify-center max-w-sm">
             <p className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-5">
@@ -227,15 +230,17 @@ export default function RegisterPage() {
 
       {/* Right panel */}
       <div className="flex-1 flex flex-col bg-white overflow-y-auto">
+        {/* Mobile logo */}
         <div className="lg:hidden flex items-center p-6 border-b border-gray-100">
-          <Image
-            src="/logo.png"
-            alt="BookHushly"
-            width={120}
-            height={36}
-            className="h-8 w-auto object-contain"
-            priority
-          />
+          <div className="relative w-32 h-32">
+            <Image
+              src="/logo.png"
+              alt="BookHushly"
+              fill
+              className="object-contain object-left scale-150"
+              priority
+            />
+          </div>
         </div>
 
         <div className="flex-1 flex flex-col justify-center px-6 py-10 sm:px-10 lg:px-16 xl:px-24 max-w-lg lg:max-w-none mx-auto w-full lg:mx-0">

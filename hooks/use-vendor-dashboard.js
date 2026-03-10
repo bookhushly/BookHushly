@@ -39,7 +39,7 @@ async function fetchListings(vendorId, category) {
     const { data, error } = await supabase
       .from("hotels")
       .select(
-        "id, name, description, address, city, state, image_urls, amenities, status, created_at",
+        "id, name, description, address, city, state, image_urls, amenities, checkout_policy, policies, created_at",
       )
       .eq("vendor_id", vendorId)
       .order("created_at", { ascending: false });

@@ -117,14 +117,15 @@ export default function ForgotPasswordPage() {
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
         <Link href="/">
-          <Image
-            src="/logo.png"
-            alt="BookHushly"
-            width={120}
-            height={36}
-            className="h-8 w-auto object-contain"
-            priority
-          />
+          <div className="relative w-32 h-32">
+            <Image
+              src="/logo.png"
+              alt="BookHushly"
+              fill
+              className="object-contain object-left scale-150"
+              priority
+            />
+          </div>
         </Link>
         <Link
           href="/login"

@@ -26,7 +26,6 @@ import { cn } from "@/lib/utils";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-// ── Nav structure ────────────────────────────────────────────────────────────
 const NAV = [
   {
     section: "Main",
@@ -61,15 +60,11 @@ const NAV = [
   },
 ];
 
-// ── Tooltip (shown when collapsed) ──────────────────────────────────────────
 function Tooltip({ label, children }) {
   return (
     <div className="relative group/tip">
       {children}
-      <div
-        className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50
-                      opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150"
-      >
+      <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150">
         <div className="bg-gray-900 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
           {label}
           <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
@@ -79,7 +74,6 @@ function Tooltip({ label, children }) {
   );
 }
 
-// ── Profile Popover ──────────────────────────────────────────────────────────
 function ProfilePopover({ vendor, onLogout, onClose, isLoggingOut }) {
   const ref = useRef(null);
 
@@ -148,7 +142,6 @@ function ProfilePopover({ vendor, onLogout, onClose, isLoggingOut }) {
   );
 }
 
-// ── Main Sidebar ─────────────────────────────────────────────────────────────
 export function VendorSidebar({ isOpen, onClose }) {
   const pathname = usePathname();
   const { data: authData } = useAuth();
@@ -166,18 +159,15 @@ export function VendorSidebar({ isOpen, onClose }) {
 
   const w = collapsed ? "w-[68px]" : "w-[220px]";
 
-  // ── Shared nav renderer ────────────────────────────────────────────────
   const renderNav = (isMobile = false) =>
     NAV.map(({ section, items }) => (
       <div key={section} className="space-y-0.5">
-        {/* Section label — hide when collapsed on desktop */}
         {(!collapsed || isMobile) && (
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
             {section}
           </p>
         )}
         {collapsed && !isMobile && <div className="h-3" />}
-
         {items.map(({ label, href, icon: Icon }) => {
           const active = isActive(href);
           const link = (
@@ -210,7 +200,6 @@ export function VendorSidebar({ isOpen, onClose }) {
               )}
             </Link>
           );
-
           return collapsed && !isMobile ? (
             <Tooltip key={href} label={label}>
               {link}
@@ -224,7 +213,7 @@ export function VendorSidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* ── Desktop Sidebar ──────────────────────────────────────────── */}
+      {/* ── Desktop Sidebar ── */}
       <aside
         className={cn(
           "hidden lg:flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-200 ease-out",
@@ -232,7 +221,6 @@ export function VendorSidebar({ isOpen, onClose }) {
           w,
         )}
       >
-        {/* Logo + collapse toggle */}
         <div
           className={cn(
             "h-16 flex items-center border-b border-gray-100 shrink-0 relative",
@@ -241,12 +229,12 @@ export function VendorSidebar({ isOpen, onClose }) {
         >
           {!collapsed && (
             <Link href="/" className="flex items-center">
-              <div className="relative w-28 h-8">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
                   fill
-                  className="object-contain object-left"
+                  className="object-contain object-left scale-150"
                 />
               </div>
             </Link>
@@ -267,17 +255,15 @@ export function VendorSidebar({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Nav */}
         <nav
           className={cn(
-            "flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-0",
+            "flex-1 overflow-y-auto overflow-x-hidden py-3",
             collapsed ? "px-2" : "px-3",
           )}
         >
           {renderNav(false)}
         </nav>
 
-        {/* Profile strip */}
         <div className="border-t border-gray-100 shrink-0 relative">
           {profileOpen && (
             <ProfilePopover
@@ -287,17 +273,13 @@ export function VendorSidebar({ isOpen, onClose }) {
               isLoggingOut={logoutMutation.isPending}
             />
           )}
-
           {collapsed ? (
             <Tooltip label={vendor?.business_name || "Vendor"}>
               <button
                 onClick={() => setProfileOpen((p) => !p)}
                 className="w-full flex justify-center py-3.5 hover:bg-violet-50 transition-colors"
               >
-                <div
-                  className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center
-                                  justify-center text-sm font-bold shrink-0"
-                >
+                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold shrink-0">
                   {initial}
                 </div>
               </button>
@@ -307,10 +289,7 @@ export function VendorSidebar({ isOpen, onClose }) {
               onClick={() => setProfileOpen((p) => !p)}
               className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-violet-50/60 transition-colors"
             >
-              <div
-                className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center
-                                justify-center text-sm font-bold shrink-0"
-              >
+              <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold shrink-0">
                 {initial}
               </div>
               <div className="flex-1 min-w-0 text-left">
@@ -332,7 +311,6 @@ export function VendorSidebar({ isOpen, onClose }) {
         </div>
       </aside>
 
-      {/* Spacer so content shifts right */}
       <div
         className={cn(
           "hidden lg:block shrink-0 transition-all duration-200",
@@ -340,42 +318,33 @@ export function VendorSidebar({ isOpen, onClose }) {
         )}
       />
 
-      {/* ── Mobile Drawer ────────────────────────────────────────────── */}
+      {/* ── Mobile Drawer ── */}
       {isOpen && (
         <>
           <div
             className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
             onClick={onClose}
           />
-          <aside
-            className="fixed left-0 top-0 h-full w-[260px] bg-white z-50 lg:hidden
-                            flex flex-col shadow-2xl border-r border-gray-100"
-          >
-            {/* Header */}
+          <aside className="fixed left-0 top-0 h-full w-[260px] bg-white z-50 lg:hidden flex flex-col shadow-2xl border-r border-gray-100">
             <div className="h-16 flex items-center justify-between px-5 border-b border-gray-100 shrink-0">
-              <div className="relative w-28 h-8">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
                   fill
-                  className="object-contain object-left"
+                  className="object-contain object-left scale-150"
                 />
               </div>
               <button
                 onClick={onClose}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400
-                           hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-
-            {/* Nav */}
             <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0">
               {renderNav(true)}
             </nav>
-
-            {/* Profile */}
             <div className="border-t border-gray-100 shrink-0 relative">
               {profileOpen && (
                 <ProfilePopover
@@ -389,10 +358,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                 onClick={() => setProfileOpen((p) => !p)}
                 className="w-full flex items-center gap-3 px-5 py-4 hover:bg-violet-50/60 transition-colors"
               >
-                <div
-                  className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center
-                                justify-center text-sm font-bold shrink-0"
-                >
+                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold shrink-0">
                   {initial}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
