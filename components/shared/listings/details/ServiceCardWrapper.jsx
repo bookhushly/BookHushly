@@ -7,67 +7,42 @@ import ApartmentCard from "./ApartmentServiceCard";
 
 const ServiceCardWrapper = React.memo(
   ({ service, lastListingRef, isMobile }) => {
-    // SEO: Add structured data for each service
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "Service",
-      name: service.title,
-      description: service.description,
-      provider: {
-        "@type": "Organization",
-        name: service.vendor_name || "BookHushly",
-      },
-      areaServed: {
-        "@type": "Country",
-        name: "Nigeria",
-      },
-      offers: {
-        "@type": "Offer",
-        price: service.price,
-        priceCurrency: "NGN",
-        availability: "https://schema.org/InStock",
-      },
-    };
-
-    return (
-      <div itemScope itemType="https://schema.org/Service">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData),
-          }}
+    if (service.category === "hotels") {
+      return (
+        <HotelCard
+          service={service}
+          lastListingRef={lastListingRef}
+          isMobile={isMobile}
         />
-
-        {service.category === "hotels" ? (
-          <HotelCard
-            service={service}
-            lastListingRef={lastListingRef}
-            isMobile={isMobile}
-          />
-        ) : service.category === "serviced_apartments" ? (
-          <ApartmentCard
-            service={service}
-            lastListingRef={lastListingRef}
-            isMobile={isMobile}
-          />
-        ) : service.category === "events" ? (
-          <EventServiceCard
-            service={service}
-            lastListingRef={lastListingRef}
-            isMobile={isMobile}
-          />
-        ) : (
-          <GeneralServiceCard
-            service={service}
-            lastListingRef={lastListingRef}
-            isMobile={isMobile}
-          />
-        )}
-      </div>
+      );
+    }
+    if (service.category === "serviced_apartments") {
+      return (
+        <ApartmentCard
+          service={service}
+          lastListingRef={lastListingRef}
+          isMobile={isMobile}
+        />
+      );
+    }
+    if (service.category === "events") {
+      return (
+        <EventServiceCard
+          service={service}
+          lastListingRef={lastListingRef}
+          isMobile={isMobile}
+        />
+      );
+    }
+    return (
+      <GeneralServiceCard
+        service={service}
+        lastListingRef={lastListingRef}
+        isMobile={isMobile}
+      />
     );
   },
 );
 
 ServiceCardWrapper.displayName = "ServiceCardWrapper";
-
 export default ServiceCardWrapper;

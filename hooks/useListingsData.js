@@ -439,9 +439,7 @@ async function fetchListingsPage({
     // Enrich and normalize
     if (category === "hotels") {
       items = await enrichHotelsWithRoomData(items);
-      items = items
-        .map(normalizeHotelData)
-        .filter((hotel) => hotel.available_rooms > 0);
+      items = items.map(normalizeHotelData);
 
       // Apply price filters after enrichment
       if (filters.price_min) {
