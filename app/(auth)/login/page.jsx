@@ -114,12 +114,12 @@ export default function LoginPage() {
             <p className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-5">
               Nigeria&apos;s booking platform
             </p>
-            <h2 className="font-fraunces text-white text-[2.75rem] font-semibold leading-[1.1] mb-6">
+            <h2 className="font-fraunces text-white text-[3.2rem] font-semibold leading-[1.1] mb-6">
               Every booking,
               <br />
               effortlessly done.
             </h2>
-            <p className="text-gray-400 text-base leading-relaxed">
+            <p className="text-gray-400 text-lg leading-relaxed">
               Hotels, serviced apartments, events, logistics, and security — all
               in one place. Built for Nigeria.
             </p>

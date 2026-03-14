@@ -206,12 +206,12 @@ export default function RegisterPage() {
             <p className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-5">
               Join thousands of users
             </p>
-            <h2 className="font-fraunces text-white text-[2.75rem] font-semibold leading-[1.1] mb-6">
+            <h2 className="font-fraunces text-white text-[3.2rem] font-semibold leading-[1.1] mb-6">
               List, book, and
               <br />
               get things done.
             </h2>
-            <p className="text-gray-400 text-base leading-relaxed">
+            <p className="text-gray-400 text-xl leading-relaxed">
               Whether you&apos;re finding the perfect venue or growing your
               business — BookHushly is your platform.
             </p>
@@ -221,7 +221,7 @@ export default function RegisterPage() {
             {PERKS.map((perk) => (
               <div key={perk} className="flex items-center gap-3">
                 <CheckCircle2 className="h-4 w-4 text-violet-400 shrink-0" />
-                <span className="text-gray-300 text-sm">{perk}</span>
+                <span className="text-gray-300 text-base">{perk}</span>
               </div>
             ))}
           </div>
