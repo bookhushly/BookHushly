@@ -73,7 +73,21 @@ export async function signup({ formData }) {
     }
 
     console.error("Signup failed:", error);
-    return { ok: false, code: "SIGNUP_FAILED", message: error.message };
+
+    const authFriendlyMessages = {
+      "Password should be at least": "Your password is too short. Use at least 8 characters.",
+      "Password should contain": "Your password is too weak. Add uppercase, numbers, or special characters.",
+      "invalid email": "Please enter a valid email address.",
+      "Invalid email": "Please enter a valid email address.",
+      "signup is disabled": "Sign-ups are currently disabled. Please try again later.",
+      "email rate limit": "Too many attempts. Please wait a few minutes before trying again.",
+    };
+
+    const friendlyMessage = Object.entries(authFriendlyMessages).find(([key]) =>
+      error.message.includes(key)
+    )?.[1] || "Something went wrong during sign up. Please try again.";
+
+    return { ok: false, code: "SIGNUP_FAILED", message: friendlyMessage };
   }
 
   // Insert user into users table
@@ -91,10 +105,20 @@ export async function signup({ formData }) {
       // Rollback: Delete the auth user if users table insert fails
       await supabase.auth.admin.deleteUser(data.user.id);
 
+      const friendlyMessages = {
+        "23505": "An account with this email already exists. Please sign in.",
+        "23502": "Some required information is missing. Please fill in all fields.",
+        "23503": "Account setup failed due to a data conflict. Please try again.",
+        "23514": "One or more fields contain invalid values. Please check your details.",
+        "42501": "Account creation is temporarily unavailable. Please try again later.",
+      };
+
       return {
         ok: false,
         code: "USER_INSERT_FAILED",
-        message: "Failed to create user profile",
+        message:
+          friendlyMessages[insertError.code] ||
+          "We couldn't finish setting up your account. Please try again.",
       };
     }
   }
