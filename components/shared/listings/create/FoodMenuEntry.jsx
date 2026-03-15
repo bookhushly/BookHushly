@@ -38,7 +38,7 @@ export default function FoodMenuEntry({
             Price (₦) *
           </Label>
           <Input
-            type="number"
+            type="text" inputMode="decimal"
             name="price"
             value={tempMeal.price}
             onChange={handleTempMealChange}

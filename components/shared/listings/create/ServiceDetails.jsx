@@ -340,7 +340,7 @@ const ServiceDetails = ({
               <Input
                 id={field.name}
                 name={field.name}
-                type="number"
+                type="text" inputMode="decimal"
                 value={value}
                 onChange={handleChange}
                 placeholder={field.placeholder}
@@ -615,7 +615,7 @@ const ServiceDetails = ({
                 <Input
                   id="meal-price"
                   name="price"
-                  type="number"
+                  type="text" inputMode="decimal"
                   value={tempMeal.price}
                   onChange={handleTempMealChange}
                   placeholder="0.00"
@@ -775,7 +775,7 @@ const ServiceDetails = ({
                     <Input
                       id="ticket-price"
                       name="price"
-                      type="number"
+                      type="text" inputMode="decimal"
                       value={tempTicket.price}
                       onChange={handleTempTicketChange}
                       placeholder="0.00"
@@ -793,7 +793,7 @@ const ServiceDetails = ({
                     <Input
                       id="ticket-quantity"
                       name="quantity"
-                      type="number"
+                      type="text" inputMode="decimal"
                       value={tempTicket.quantity}
                       onChange={handleTempTicketChange}
                       placeholder="100"

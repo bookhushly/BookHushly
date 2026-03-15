@@ -615,7 +615,13 @@ export default function CreateListingPage() {
       // Cleanup
       localStorage.removeItem(`listing-draft-${user?.id}`);
 
-      toast.success("Listing created successfully!");
+      toast.success("Listing created successfully!", {
+        description: "Your listing is now live and visible to customers",
+        action: {
+          label: "View Listings",
+          onClick: () => { window.location.href = "/vendor/dashboard/listings"; },
+        },
+      });
       console.log("[Client] Navigating to dashboard");
       router.push("/vendor/dashboard");
       console.log("[Client] ===== FORM SUBMIT SUCCESS =====");

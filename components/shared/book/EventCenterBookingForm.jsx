@@ -295,7 +295,7 @@ export default function EventCentersBookingForm({
                   <Input
                     id="guests"
                     name="guests"
-                    type="number"
+                    type="text" inputMode="decimal"
                     min="1"
                     max={service.maximum_capacity || 1000}
                     value={formData.guests}

@@ -34,6 +34,7 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Event Bookings" }]}
         title="Event Bookings"
         description={`${data?.count || 0} total`}
         action={

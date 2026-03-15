@@ -170,7 +170,7 @@ export default function ApartmentBookingCard({ apartment }) {
                   Guests
                 </label>
                 <input
-                  type="number"
+                  type="text" inputMode="decimal"
                   value={guests}
                   onChange={(e) => setGuests(parseInt(e.target.value) || 1)}
                   min="1"

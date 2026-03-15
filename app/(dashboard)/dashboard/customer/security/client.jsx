@@ -56,6 +56,7 @@ export function SecurityClient({ userId, initialData }) {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Security Requests" }]}
         title="Security Requests"
         description={`${data?.count || 0} total requests`}
         action={

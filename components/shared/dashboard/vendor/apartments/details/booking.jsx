@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState, StatusBadge } from "@/components/shared/customer/shared-ui";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,9 +17,6 @@ import {
   Calendar,
   Search,
   Filter,
-  CheckCircle2,
-  Clock,
-  XCircle,
   User,
   Mail,
   Phone,
@@ -29,49 +27,6 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-const STATUS_CONFIG = {
-  pending: {
-    label: "Pending",
-    color: "bg-yellow-100 text-yellow-700",
-    icon: Clock,
-  },
-  confirmed: {
-    label: "Confirmed",
-    color: "bg-blue-100 text-blue-700",
-    icon: CheckCircle2,
-  },
-  checked_in: {
-    label: "Checked In",
-    color: "bg-green-100 text-green-700",
-    icon: CheckCircle2,
-  },
-  checked_out: {
-    label: "Checked Out",
-    color: "bg-gray-100 text-gray-700",
-    icon: CheckCircle2,
-  },
-  cancelled: {
-    label: "Cancelled",
-    color: "bg-red-100 text-red-700",
-    icon: XCircle,
-  },
-  no_show: {
-    label: "No Show",
-    color: "bg-red-100 text-red-700",
-    icon: XCircle,
-  },
-};
-
-const PAYMENT_STATUS_CONFIG = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-700" },
-  paid: { label: "Paid", color: "bg-green-100 text-green-700" },
-  failed: { label: "Failed", color: "bg-red-100 text-red-700" },
-  refunded: { label: "Refunded", color: "bg-gray-100 text-gray-700" },
-  partially_refunded: {
-    label: "Partially Refunded",
-    color: "bg-orange-100 text-orange-700",
-  },
-};
 
 export default function BookingsTab({ apartmentId }) {
   const [bookings, setBookings] = useState([]);
@@ -325,27 +280,20 @@ export default function BookingsTab({ apartmentId }) {
 
         <CardContent>
           {filteredBookings.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No bookings found
-              </h3>
-              <p className="text-gray-600">
-                {searchQuery
+            <EmptyState
+              icon={Calendar}
+              title="No bookings found"
+              description={
+                searchQuery
                   ? "Try adjusting your search"
                   : filter === "all"
                     ? "You don't have any bookings yet"
-                    : `No ${filter} bookings`}
-              </p>
-            </div>
+                    : `No ${filter} bookings`
+              }
+            />
           ) : (
             <div className="space-y-4">
               {filteredBookings.map((booking) => {
-                const statusConfig = STATUS_CONFIG[booking.booking_status];
-                const paymentConfig =
-                  PAYMENT_STATUS_CONFIG[booking.payment_status];
-                const StatusIcon = statusConfig?.icon || Clock;
-
                 return (
                   <Card key={booking.id} className="overflow-hidden">
                     <CardContent className="p-6">
@@ -358,19 +306,8 @@ export default function BookingsTab({ apartmentId }) {
                                 <h4 className="font-semibold text-lg text-gray-900">
                                   {booking.guest_name}
                                 </h4>
-                                <Badge
-                                  variant="secondary"
-                                  className={statusConfig?.color}
-                                >
-                                  <StatusIcon className="h-3 w-3 mr-1" />
-                                  {statusConfig?.label}
-                                </Badge>
-                                <Badge
-                                  variant="secondary"
-                                  className={paymentConfig?.color}
-                                >
-                                  {paymentConfig?.label}
-                                </Badge>
+                                <StatusBadge status={booking.booking_status} />
+                                <StatusBadge status={booking.payment_status} />
                               </div>
                               <p className="text-xs text-gray-500 font-mono">
                                 ID: {booking.id.slice(0, 8)}...

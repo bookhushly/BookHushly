@@ -133,7 +133,7 @@ function TicketEditor({ current, onSave, onCancel, isSaving, error }) {
           <Minus className="w-3 h-3 text-gray-700" />
         </button>
         <input
-          type="number"
+          type="text" inputMode="decimal"
           value={count}
           disabled={isSaving}
           onChange={(e) => setCount(Math.max(0, parseInt(e.target.value) || 0))}

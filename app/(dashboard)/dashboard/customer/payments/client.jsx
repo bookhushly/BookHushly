@@ -87,6 +87,7 @@ export function PaymentsClient({ userId, initialData }) {
   return (
     <div className="space-y-6">
       <PageHeader
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Payment History" }]}
         title="Payment History"
         description={`${data?.count || 0} transactions`}
       />

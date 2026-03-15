@@ -884,7 +884,7 @@ const BookingModal = React.memo(
                 <Label htmlFor="adults">Adults</Label>
                 <Input
                   id="adults"
-                  type="number"
+                  type="text" inputMode="decimal"
                   min="1"
                   max={roomType.max_occupancy || 4}
                   value={bookingData.adults}
@@ -900,7 +900,7 @@ const BookingModal = React.memo(
                 <Label htmlFor="children">Children</Label>
                 <Input
                   id="children"
-                  type="number"
+                  type="text" inputMode="decimal"
                   min="0"
                   value={bookingData.children}
                   onChange={(e) =>

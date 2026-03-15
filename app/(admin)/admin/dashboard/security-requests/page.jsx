@@ -472,7 +472,7 @@ export default function SecurityRequestsAdmin() {
                                   </Label>
                                   <Input
                                     id="base_amount"
-                                    type="number"
+                                    type="text" inputMode="decimal"
                                     value={quoteForm.base_amount}
                                     onChange={(e) =>
                                       setQuoteForm((prev) => ({
@@ -495,7 +495,7 @@ export default function SecurityRequestsAdmin() {
                                             className="flex-1"
                                           />
                                           <Input
-                                            type="number"
+                                            type="text" inputMode="decimal"
                                             value={value}
                                             onChange={(e) =>
                                               handleAddQuoteItem(
@@ -524,7 +524,7 @@ export default function SecurityRequestsAdmin() {
                                         id="new-item-key"
                                       />
                                       <Input
-                                        type="number"
+                                        type="text" inputMode="decimal"
                                         placeholder="Amount"
                                         id="new-item-value"
                                         className="w-32"

@@ -172,7 +172,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               </Label>
               <Input
                 id="bedrooms"
-                type="number"
+                type="text" inputMode="decimal"
                 min="1"
                 max="10"
                 placeholder="e.g., 2"
@@ -192,7 +192,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               </Label>
               <Input
                 id="bathrooms"
-                type="number"
+                type="text" inputMode="decimal"
                 min="1"
                 max="10"
                 step="0.5"
@@ -216,7 +216,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               </Label>
               <Input
                 id="max_guests"
-                type="number"
+                type="text" inputMode="decimal"
                 min="1"
                 max="20"
                 placeholder="e.g., 4"
@@ -239,7 +239,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               </Label>
               <Input
                 id="square_meters"
-                type="number"
+                type="text" inputMode="decimal"
                 min="10"
                 placeholder="e.g., 85"
                 value={formData.square_meters || ""}
@@ -253,7 +253,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
             <Label htmlFor="floor_number">Floor Number</Label>
             <Input
               id="floor_number"
-              type="number"
+              type="text" inputMode="decimal"
               min="0"
               max="100"
               placeholder="e.g., 3 (Ground floor = 0)"
@@ -335,7 +335,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
             <Label htmlFor="parking_spaces">Parking Spaces Available</Label>
             <Input
               id="parking_spaces"
-              type="number"
+              type="text" inputMode="decimal"
               min="0"
               max="10"
               placeholder="e.g., 1"

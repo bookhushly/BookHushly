@@ -67,7 +67,7 @@ export default function Step2SuiteTypes({
               Base Price (₦) *
             </label>
             <input
-              type="number"
+              type="text" inputMode="decimal"
               value={currentSuite.base_price}
               onChange={(e) =>
                 setCurrentSuite((prev) => ({
@@ -85,7 +85,7 @@ export default function Step2SuiteTypes({
               Max Occupancy
             </label>
             <input
-              type="number"
+              type="text" inputMode="decimal"
               value={currentSuite.max_occupancy}
               onChange={(e) =>
                 setCurrentSuite((prev) => ({
@@ -103,7 +103,7 @@ export default function Step2SuiteTypes({
               Size (m²)
             </label>
             <input
-              type="number"
+              type="text" inputMode="decimal"
               value={currentSuite.size_sqm}
               onChange={(e) =>
                 setCurrentSuite((prev) => ({

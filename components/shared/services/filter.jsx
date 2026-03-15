@@ -66,7 +66,7 @@ const PriceFilter = memo(
                   ₦
                 </span>
                 <Input
-                  type="number"
+                  type="text" inputMode="decimal"
                   min={min}
                   max={max}
                   step={step}

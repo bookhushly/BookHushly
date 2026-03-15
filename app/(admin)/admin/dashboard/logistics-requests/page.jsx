@@ -434,7 +434,7 @@ export default function LogisticsRequestsAdmin() {
                                       </Label>
                                       <Input
                                         id="base_amount"
-                                        type="number"
+                                        type="text" inputMode="decimal"
                                         value={quoteForm.base_amount}
                                         onChange={(e) =>
                                           setQuoteForm((prev) => ({
@@ -458,7 +458,7 @@ export default function LogisticsRequestsAdmin() {
                                               className="flex-1"
                                             />
                                             <Input
-                                              type="number"
+                                              type="text" inputMode="decimal"
                                               value={value}
                                               onChange={(e) =>
                                                 handleAddQuoteItem(
@@ -486,7 +486,7 @@ export default function LogisticsRequestsAdmin() {
                                             id="new-item-key"
                                           />
                                           <Input
-                                            type="number"
+                                            type="text" inputMode="decimal"
                                             placeholder="Amount"
                                             id="new-item-value"
                                             className="w-32"

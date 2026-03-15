@@ -35,6 +35,7 @@ export function ApartmentBookingsClient({ userId, initialData }) {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Apartment Bookings" }]}
         title="Apartment Bookings"
         description={`${data?.count || 0} total`}
         action={

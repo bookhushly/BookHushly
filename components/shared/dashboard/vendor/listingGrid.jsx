@@ -18,6 +18,7 @@ import {
   MapPin,
   LayoutDashboard,
 } from "lucide-react";
+import { EmptyState } from "@/components/shared/customer/shared-ui";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -360,27 +361,14 @@ export function VendorListingsGrid() {
         </Link>
       </div>
 
-      {/* Empty state */}
       {listings.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-lg border border-gray-100">
-          <div className="max-w-md mx-auto">
-            <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No {labels.plural?.toLowerCase()} yet
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Get started by creating your first {labels.singular.toLowerCase()}
-            </p>
-            <Link href={createRoute}>
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First {labels.singular}
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <EmptyState
+          icon={Plus}
+          title={`No ${labels.plural?.toLowerCase()} yet`}
+          description={`Get started by creating your first ${labels.singular.toLowerCase()}`}
+          actionLabel={`Create Your First ${labels.singular}`}
+          actionHref={createRoute}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {listings.map((listing) => (

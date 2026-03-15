@@ -55,6 +55,7 @@ export function HotelBookingsClient({ userId, initialData }) {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Hotel Bookings" }]}
         title="Hotel Bookings"
         description={`${data?.count || 0} total booking${data?.count !== 1 ? "s" : ""}`}
         action={

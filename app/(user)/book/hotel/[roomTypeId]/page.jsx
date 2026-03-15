@@ -427,7 +427,7 @@ export default function HotelBookingPage() {
                         <Label htmlFor="adults">Adults</Label>
                         <Input
                           id="adults"
-                          type="number"
+                          type="text" inputMode="decimal"
                           min="1"
                           max={roomType.max_occupancy}
                           value={bookingDetails.adults}
@@ -444,7 +444,7 @@ export default function HotelBookingPage() {
                         <Label htmlFor="children">Children</Label>
                         <Input
                           id="children"
-                          type="number"
+                          type="text" inputMode="decimal"
                           min="0"
                           value={bookingDetails.children}
                           onChange={(e) =>

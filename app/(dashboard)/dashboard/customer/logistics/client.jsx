@@ -55,6 +55,7 @@ export function LogisticsClient({ userId, initialData }) {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Logistics Requests" }]}
         title="Logistics Requests"
         description={`${data?.count || 0} total requests`}
         action={

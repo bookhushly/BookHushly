@@ -436,7 +436,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                   </Label>
                   <Input
                     id="number_of_guards"
-                    type="number"
+                    type="text" inputMode="decimal"
                     min="1"
                     value={formData.number_of_guards}
                     onChange={(e) =>
@@ -514,7 +514,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                       </Label>
                       <Input
                         id="expected_attendance"
-                        type="number"
+                        type="text" inputMode="decimal"
                         placeholder="Number of guests"
                         value={formData.expected_attendance}
                         onChange={(e) =>
@@ -529,7 +529,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                       </Label>
                       <Input
                         id="event_duration_hours"
-                        type="number"
+                        type="text" inputMode="decimal"
                         placeholder="e.g., 6"
                         value={formData.event_duration_hours}
                         onChange={(e) =>
@@ -609,7 +609,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
                     </Label>
                     <Input
                       id="number_of_entrances"
-                      type="number"
+                      type="text" inputMode="decimal"
                       min="1"
                       value={formData.number_of_entrances}
                       onChange={(e) =>

@@ -660,7 +660,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
                   <Label htmlFor="item_value">Item Value (₦)</Label>
                   <Input
                     id="item_value"
-                    type="number"
+                    type="text" inputMode="decimal"
                     placeholder="For insurance purposes"
                     value={formData.item_value}
                     onChange={(e) => updateField("item_value", e.target.value)}
@@ -672,7 +672,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
                 <Label htmlFor="quantity">Number of Items</Label>
                 <Input
                   id="quantity"
-                  type="number"
+                  type="text" inputMode="decimal"
                   min="1"
                   value={formData.quantity}
                   onChange={(e) => updateField("quantity", e.target.value)}

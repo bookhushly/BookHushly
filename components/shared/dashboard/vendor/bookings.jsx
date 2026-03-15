@@ -1,6 +1,7 @@
 import { Badge, Calendar, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { EmptyState } from "@/components/shared/customer/shared-ui";
 
 const BookingsTab = ({filteredBookings}) => {
   return (
@@ -15,20 +16,11 @@ const BookingsTab = ({filteredBookings}) => {
       </div>
 
       {filteredBookings.length === 0 ? (
-        <Card className="bg-white/60 backdrop-blur-md border-slate-200/50 shadow-xl">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-20 h-20 rounded-2xl bg-blue-100 flex items-center justify-center mb-5">
-              <Calendar className="h-10 w-10 text-blue-600" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2 text-slate-900">
-              No bookings yet
-            </h3>
-            <p className="text-slate-500 max-w-md">
-              Booking requests will appear here once customers start reserving
-              your services
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Calendar}
+          title="No bookings yet"
+          description="Booking requests will appear here once customers start reserving your services"
+        />
       ) : (
         <Card className="bg-white/60 backdrop-blur-md border-slate-200/50 shadow-xl overflow-hidden">
           <ScrollArea className="h-[600px]">

@@ -29,6 +29,7 @@ const SOCIAL_PROOF = [
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const { invalidateAuth } = useAuthActions();
 
@@ -46,25 +47,31 @@ export default function LoginPage() {
       toast.success("Welcome back!");
       if (data?.redirectPath) window.location.href = data.redirectPath;
     },
-    onError: (error) => toast.error(error.message),
+    onError: () => {},
   });
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear the field error as the user types
+    if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     if (loginMutation.error) loginMutation.reset();
+  };
+
+  const validate = () => {
+    const errors = { email: "", password: "" };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email))
+      errors.email = "Please enter a valid email address";
+    if (formData.password.length < 6)
+      errors.password = "Password must be at least 6 characters";
+    setFieldErrors(errors);
+    return !errors.email && !errors.password;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
+    if (!validate()) return;
     loginMutation.mutate(formData);
   };
 
@@ -192,9 +199,12 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={loginMutation.isPending}
-                className="h-11 border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-violet-500/20 transition-all text-gray-900 placeholder:text-gray-400"
+                className={`h-11 border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-violet-500/20 transition-all text-gray-900 placeholder:text-gray-400 ${fieldErrors.email ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}`}
                 required
               />
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -222,7 +232,7 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   disabled={loginMutation.isPending}
-                  className="h-11 pr-11 border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-violet-500/20 transition-all text-gray-900 placeholder:text-gray-400"
+                  className={`h-11 pr-11 border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-violet-500/20 transition-all text-gray-900 placeholder:text-gray-400 ${fieldErrors.password ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""}`}
                   required
                 />
                 <button
@@ -238,6 +248,9 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              {fieldErrors.password && (
+                <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
+              )}
             </div>
 
             <Button

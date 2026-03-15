@@ -267,7 +267,7 @@ export default function Step3RoomGeneration({
                 <div className="flex items-center gap-4">
                   <div>
                     <input
-                      type="number"
+                      type="text" inputMode="decimal"
                       value={floor.floor}
                       onChange={(e) =>
                         setRoomConfig((prev) => ({
@@ -389,7 +389,7 @@ export default function Step3RoomGeneration({
                               Number of Rooms *
                             </label>
                             <input
-                              type="number"
+                              type="text" inputMode="decimal"
                               value={roomGroup.count}
                               onChange={(e) =>
                                 updateRoomGroup(
@@ -409,7 +409,7 @@ export default function Step3RoomGeneration({
                               Start Room # *
                             </label>
                             <input
-                              type="number"
+                              type="text" inputMode="decimal"
                               value={roomGroup.startNumber}
                               onChange={(e) =>
                                 updateRoomGroup(
@@ -465,7 +465,7 @@ export default function Step3RoomGeneration({
                                   ))}
                                 </select>
                                 <input
-                                  type="number"
+                                  type="text" inputMode="decimal"
                                   value={bed.count}
                                   onChange={(e) =>
                                     updateBedConfig(
@@ -504,7 +504,7 @@ export default function Step3RoomGeneration({
                             Price Adjustment (₦)
                           </label>
                           <input
-                            type="number"
+                            type="text" inputMode="decimal"
                             value={roomGroup.priceAdjustment}
                             onChange={(e) =>
                               updateRoomGroup(

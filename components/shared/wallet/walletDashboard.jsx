@@ -283,7 +283,7 @@ const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
               Amount in Naira
             </label>
             <input
-              type="number"
+              type="text" inputMode="decimal"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount"

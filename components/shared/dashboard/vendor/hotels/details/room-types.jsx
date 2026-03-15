@@ -397,7 +397,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                     <Input
                       id="max_occupancy"
                       name="max_occupancy"
-                      type="number"
+                      type="text" inputMode="decimal"
                       placeholder="e.g., 2"
                       value={formData.max_occupancy}
                       onChange={handleChange}
@@ -411,7 +411,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                     <Input
                       id="base_price"
                       name="base_price"
-                      type="number"
+                      type="text" inputMode="decimal"
                       placeholder="e.g., 25000"
                       value={formData.base_price}
                       onChange={handleChange}
@@ -426,7 +426,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                     <Input
                       id="size_sqm"
                       name="size_sqm"
-                      type="number"
+                      type="text" inputMode="decimal"
                       placeholder="e.g., 30"
                       value={formData.size_sqm}
                       onChange={handleChange}

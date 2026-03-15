@@ -341,7 +341,13 @@ export default function ApartmentCreationForm() {
       const result = await createServicedApartment(submitData);
 
       if (result.success) {
-        toast.success(result.message || "Apartment created successfully!");
+        toast.success(result.message || "Apartment created successfully!", {
+          description: "Your apartment is now live",
+          action: {
+            label: "View Apartment",
+            onClick: () => { window.location.href = `/vendor/dashboard/serviced-apartments/${result.data.id}`; },
+          },
+        });
         localStorage.removeItem(STORAGE_KEY);
         router.push(`/vendor/dashboard/serviced-apartments/${result.data.id}`);
       } else {

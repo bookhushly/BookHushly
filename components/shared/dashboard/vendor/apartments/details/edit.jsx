@@ -55,7 +55,7 @@ export default function EditBasicInfo({ formData, updateFormData }) {
           <Label htmlFor="bedrooms">Bedrooms</Label>
           <Input
             id="bedrooms"
-            type="number"
+            type="text" inputMode="decimal"
             min="1"
             value={formData.bedrooms || ""}
             onChange={(e) =>
@@ -68,7 +68,7 @@ export default function EditBasicInfo({ formData, updateFormData }) {
           <Label htmlFor="bathrooms">Bathrooms</Label>
           <Input
             id="bathrooms"
-            type="number"
+            type="text" inputMode="decimal"
             min="1"
             step="0.5"
             value={formData.bathrooms || ""}
@@ -82,7 +82,7 @@ export default function EditBasicInfo({ formData, updateFormData }) {
           <Label htmlFor="max_guests">Max Guests</Label>
           <Input
             id="max_guests"
-            type="number"
+            type="text" inputMode="decimal"
             min="1"
             value={formData.max_guests || ""}
             onChange={(e) =>
@@ -95,7 +95,7 @@ export default function EditBasicInfo({ formData, updateFormData }) {
           <Label htmlFor="square_meters">Size (m²)</Label>
           <Input
             id="square_meters"
-            type="number"
+            type="text" inputMode="decimal"
             value={formData.square_meters || ""}
             onChange={(e) =>
               updateFormData({
@@ -154,7 +154,7 @@ export default function EditBasicInfo({ formData, updateFormData }) {
         <Label htmlFor="parking_spaces">Parking Spaces</Label>
         <Input
           id="parking_spaces"
-          type="number"
+          type="text" inputMode="decimal"
           min="0"
           value={formData.parking_spaces || 0}
           onChange={(e) =>

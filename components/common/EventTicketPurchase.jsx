@@ -417,7 +417,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                               </Button>
 
                               <Input
-                                type="number"
+                                type="text" inputMode="decimal"
                                 min="0"
                                 max={ticket.remaining}
                                 value={selectedTickets[ticket.name] || 0}

@@ -400,7 +400,7 @@ export function IndividualRoomsSection({
                     <Input
                       id="room_number"
                       name="room_number"
-                      type="number"
+                      type="text" inputMode="decimal"
                       placeholder="e.g., 101"
                       value={formData.room_number}
                       onChange={handleChange}
@@ -414,7 +414,7 @@ export function IndividualRoomsSection({
                     <Input
                       id="floor"
                       name="floor"
-                      type="number"
+                      type="text" inputMode="decimal"
                       placeholder="e.g., 1"
                       value={formData.floor}
                       onChange={handleChange}
@@ -428,7 +428,7 @@ export function IndividualRoomsSection({
                     <Input
                       id="price_per_night"
                       name="price_per_night"
-                      type="number"
+                      type="text" inputMode="decimal"
                       placeholder="e.g., 25000"
                       value={formData.price_per_night}
                       onChange={handleChange}
@@ -474,7 +474,7 @@ export function IndividualRoomsSection({
                       </Label>
                       <Input
                         id="single"
-                        type="number"
+                        type="text" inputMode="decimal"
                         value={beds.single}
                         onChange={(e) =>
                           handleBedChange("single", e.target.value)
@@ -488,7 +488,7 @@ export function IndividualRoomsSection({
                       </Label>
                       <Input
                         id="double"
-                        type="number"
+                        type="text" inputMode="decimal"
                         value={beds.double}
                         onChange={(e) =>
                           handleBedChange("double", e.target.value)
@@ -502,7 +502,7 @@ export function IndividualRoomsSection({
                       </Label>
                       <Input
                         id="queen"
-                        type="number"
+                        type="text" inputMode="decimal"
                         value={beds.queen}
                         onChange={(e) =>
                           handleBedChange("queen", e.target.value)
@@ -516,7 +516,7 @@ export function IndividualRoomsSection({
                       </Label>
                       <Input
                         id="king"
-                        type="number"
+                        type="text" inputMode="decimal"
                         value={beds.king}
                         onChange={(e) =>
                           handleBedChange("king", e.target.value)

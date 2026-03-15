@@ -334,7 +334,7 @@ export default function EditListingPage() {
                   <Input
                     id="price"
                     name="price"
-                    type="number"
+                    type="text" inputMode="decimal"
                     placeholder="0.00"
                     value={formData.price}
                     onChange={handleChange}
@@ -384,7 +384,7 @@ export default function EditListingPage() {
                   <Input
                     id="capacity"
                     name="capacity"
-                    type="number"
+                    type="text" inputMode="decimal"
                     placeholder="e.g., 50 guests"
                     value={formData.capacity}
                     onChange={handleChange}

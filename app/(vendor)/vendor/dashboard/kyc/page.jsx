@@ -437,7 +437,7 @@ export default function KYCPage() {
                     <Input
                       id="years_in_operation"
                       name="years_in_operation"
-                      type="number"
+                      type="text" inputMode="decimal"
                       placeholder="e.g., 5"
                       value={formData.years_in_operation}
                       onChange={handleChange}

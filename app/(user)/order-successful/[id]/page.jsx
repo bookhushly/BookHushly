@@ -144,7 +144,12 @@ const OrderSuccessful = () => {
           paymentData.status === "completed" ||
           paymentData.status === "success"
         ) {
-          toast.success("Order confirmed! Your booking is ready.");
+          toast.success("Order confirmed! Your booking is ready.", {
+            action: {
+              label: "My Bookings",
+              onClick: () => { window.location.href = "/dashboard/customer"; },
+            },
+          });
 
           // Use ref so this fires exactly once regardless of re-renders
           if (!emailSentRef.current) {

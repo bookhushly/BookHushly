@@ -63,7 +63,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               </span>
               <Input
                 id="price_per_night"
-                type="number"
+                type="text" inputMode="decimal"
                 min="1000"
                 step="1000"
                 placeholder="e.g., 35000"
@@ -88,7 +88,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
             <Label htmlFor="minimum_stay">Minimum Stay (Nights)</Label>
             <Input
               id="minimum_stay"
-              type="number"
+              type="text" inputMode="decimal"
               min="1"
               max="30"
               placeholder="e.g., 1"
@@ -126,7 +126,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               </span>
               <Input
                 id="price_per_week"
-                type="number"
+                type="text" inputMode="decimal"
                 min="1000"
                 step="1000"
                 placeholder={
@@ -172,7 +172,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               </span>
               <Input
                 id="price_per_month"
-                type="number"
+                type="text" inputMode="decimal"
                 min="1000"
                 step="1000"
                 placeholder={
@@ -231,7 +231,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               </span>
               <Input
                 id="caution_deposit"
-                type="number"
+                type="text" inputMode="decimal"
                 min="0"
                 step="10000"
                 placeholder="e.g., 100000"

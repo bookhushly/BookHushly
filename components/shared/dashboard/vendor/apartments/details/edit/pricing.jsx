@@ -19,7 +19,7 @@ export default function EditPricing({ formData, updateFormData }) {
           </span>
           <Input
             id="edit-price-night"
-            type="number"
+            type="text" inputMode="decimal"
             min="1000"
             step="1000"
             placeholder="e.g., 35000"
@@ -43,7 +43,7 @@ export default function EditPricing({ formData, updateFormData }) {
           </span>
           <Input
             id="edit-price-week"
-            type="number"
+            type="text" inputMode="decimal"
             min="1000"
             step="1000"
             placeholder={
@@ -87,7 +87,7 @@ export default function EditPricing({ formData, updateFormData }) {
           </span>
           <Input
             id="edit-price-month"
-            type="number"
+            type="text" inputMode="decimal"
             min="1000"
             step="1000"
             placeholder={
@@ -127,7 +127,7 @@ export default function EditPricing({ formData, updateFormData }) {
         <Label htmlFor="edit-min-stay">Minimum Stay (Nights)</Label>
         <Input
           id="edit-min-stay"
-          type="number"
+          type="text" inputMode="decimal"
           min="1"
           max="30"
           placeholder="e.g., 1"
@@ -149,7 +149,7 @@ export default function EditPricing({ formData, updateFormData }) {
           </span>
           <Input
             id="edit-deposit"
-            type="number"
+            type="text" inputMode="decimal"
             min="0"
             step="10000"
             placeholder="e.g., 100000"
