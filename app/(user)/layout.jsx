@@ -3,6 +3,7 @@ import { Header } from "@/components/common/home/header";
 
 import { Toaster } from "@/components/ui/sonner";
 import Footer from "../../components/common/home/footer";
+import ChatWidget from "@/components/support/ChatWidget";
 
 export const metadata = {
   title: "Bookhushly - African Hospitality & Service Platform",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
       <main className="min-h-screen ">{children}</main>
       <Footer />
       <Toaster />
+      <ChatWidget />
     </>
   );
 }
