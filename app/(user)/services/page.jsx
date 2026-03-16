@@ -104,10 +104,7 @@ export default function ServicesPage() {
   // Redirect spinner
   if (isBookHushly) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ background: "#f5f3ff" }}
-      >
+      <div className="min-h-screen flex items-center justify-center bg-violet-50">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 border-[3px] border-violet-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-gray-500">Redirecting…</p>
@@ -117,13 +114,7 @@ export default function ServicesPage() {
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background:
-          "linear-gradient(160deg, #f5f3ff 0%, #fdf8ff 45%, #faf5ff 100%)",
-      }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50/60">
       {/* Category header */}
       <CategoryTabs
         activeCategory={activeCategory}

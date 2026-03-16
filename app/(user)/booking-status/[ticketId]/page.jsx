@@ -33,14 +33,11 @@ export default function BookingStatusPage() {
         )
         .eq("id", ticketId)
         .single();
-      console.log(data);
       if (error) {
         console.error("Error fetching booking:", error);
       } else {
         setBooking(data);
         setRemainingTickets(data.listing?.remaining_tickets || 0);
-        console.log("Fetched booking:", data);
-        console.log("Listing ID:", data.listing?.id);
       }
       setLoading(false);
     }
@@ -69,7 +66,6 @@ export default function BookingStatusPage() {
           .single();
         if (error) {
           if (error.code === "PGRST116" && error.details.includes("0 rows")) {
-            console.log("No existing scan found, proceeding with scan.");
           } else {
             console.error("Error checking ticket usage:", error);
             setScanAttempted(true);
@@ -103,12 +99,10 @@ export default function BookingStatusPage() {
           listing_id_param: listingId,
           booking_id_param: ticketIdParam,
         };
-        console.log("RPC Parameters:", params);
         const { data, error } = await supabase.rpc(
           "decrement_ticket_count",
           params
         );
-        console.log("RPC Response:", { data, error });
         if (error) {
           console.error("Error updating ticket count:", error);
           setRemainingTickets((prev) => prev + 1);
@@ -117,7 +111,6 @@ export default function BookingStatusPage() {
           setRemainingTickets(data);
           setScanProcessed(true);
         } else {
-          console.log("No data returned, rolling back");
           setRemainingTickets((prev) => prev + 1);
           setScanAttempted(true);
         }

@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import EventCenterDetail from "@/components/shared/listings/details/EventCenterDetaill";
+import EventCenterDetail from "@/components/shared/listings/details/EventCenterDetail";
 import EventOrganizerDetail from "@/components/shared/listings/details/EventOrganizer";
 import HotelServiceDetail from "@/components/shared/listings/details/HotelServiceDetail";
 import ApartmentServiceDetail from "@/components/shared/listings/details/ApartmentServiceDetail";

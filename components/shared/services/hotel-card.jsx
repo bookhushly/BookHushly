@@ -57,7 +57,7 @@ const HotelCard = ({ service }) => {
     <Link href={`/services/hotels/${service.id}`} className="block group">
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] transition-all duration-300">
         {/* Image */}
-        <div className="relative h-52 overflow-hidden bg-gray-100">
+        <div className="relative h-44 sm:h-52 overflow-hidden bg-gray-100">
           <Image
             src={images[idx]}
             alt={service.title}

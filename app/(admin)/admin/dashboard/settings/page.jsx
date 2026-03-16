@@ -61,15 +61,9 @@ export default function StillBuildingPage() {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden"
-      style={{
-        background: "#faf9f7",
-        fontFamily: "'Bricolage Grotesque', sans-serif",
-      }}
+      className="relative min-h-screen overflow-hidden bg-[#faf9f7] font-bricolage"
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300;1,9..144,400&family=Bricolage+Grotesque:wght@300;400;500;600&display=swap');
-
         @keyframes fadeSlideUp {
           from { opacity: 0; transform: translateY(28px); }
           to   { opacity: 1; transform: translateY(0); }

@@ -65,8 +65,8 @@ export default function ApartmentClient({ apartment }) {
           text: `Check out ${apartment.name} in ${apartment.city}`,
           url: window.location.href,
         });
-      } catch (err) {
-        console.log("Share cancelled");
+      } catch {
+        // share cancelled or not supported
       }
     }
   };

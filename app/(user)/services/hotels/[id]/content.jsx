@@ -281,8 +281,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                   <span className="text-[13px] text-gray-500">{location}</span>
                 </div>
                 <h1
-                  className="text-[2.2rem] sm:text-[2.8rem] font-bold text-gray-900 leading-tight tracking-tight"
-                  style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
+                  className="font-fraunces text-[2.2rem] sm:text-[2.8rem] font-semibold text-gray-900 leading-tight tracking-tight"
                 >
                   {hotel.name}
                 </h1>

@@ -27,7 +27,6 @@ export function useFormPersistence({
         savedAt: new Date().toISOString(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-      console.log("✅ Draft saved to localStorage");
     } catch (error) {
       console.error("Failed to save draft:", error);
     }
@@ -69,7 +68,6 @@ export function useFormPersistence({
     setRoomConfig(saved.roomConfig || {});
     setCurrentStep(saved.currentStep || 1);
 
-    console.log("✅ Draft restored from localStorage");
     return true;
   }, [
     loadFromStorage,
@@ -84,7 +82,6 @@ export function useFormPersistence({
   const clearDraft = useCallback(() => {
     try {
       localStorage.removeItem(STORAGE_KEY);
-      console.log("✅ Draft cleared from localStorage");
     } catch (error) {
       console.error("Failed to clear draft:", error);
     }

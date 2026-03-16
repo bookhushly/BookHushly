@@ -106,9 +106,7 @@ export function usePaymentInitialization() {
           window.location.href = verifyUrl.toString();
         },
 
-        onCancel: () => {
-          console.log("Payment modal closed by user");
-        },
+        onCancel: () => {},
 
         onError: (error) => {
           console.error("Paystack popup error:", error);

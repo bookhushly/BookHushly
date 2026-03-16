@@ -91,7 +91,6 @@ export default function PaymentPage() {
           setError("Failed to load booking details");
           return;
         }
-        console.log(data);
         setBooking(data);
 
         // Check if payment was successful from URL params
@@ -229,7 +228,6 @@ export default function PaymentPage() {
         "usd",
         currency
       );
-      console.log("Minimum payment data:", minData.min_amount);
       if (minError || !minData) {
         setError("Failed to get minimum payment amount for this currency");
         return;
@@ -260,13 +258,10 @@ export default function PaymentPage() {
 
       setEstimatedAmount(estimateData);
 
-      console.log(minAmountUSD, "Minimum amount in USD:");
-      console.log(currency, "Selected currency:", currency);
       const {
         data: minimumAmountinSelectedCurrency,
         error: minimumAmountError,
       } = await getEstimatedCryptoPrice(minAmountUSD, "usd", currency);
-      console.log(estimateData, "Estimated amount data:");
       if (
         minimumAmountError ||
         !minimumAmountinSelectedCurrency?.estimated_amount
@@ -280,8 +275,7 @@ export default function PaymentPage() {
       // All validations passed
       setCryptoStep(3);
 
-      console.log(
-        `Payment setup successful: ${estimateData.estimated_amount} ${currency.toUpperCase()}`
+      // payment setup complete
       );
     } catch (err) {
       console.error("Currency selection error:", err);
@@ -399,11 +393,8 @@ export default function PaymentPage() {
             return;
           }
         }
-      } catch (clientError) {
-        console.log(
-          "Client-side payment failed, trying server-side:",
-          clientError
-        );
+      } catch {
+        // fall through to server-side payment
       }
 
       // Fallback to server-side payment

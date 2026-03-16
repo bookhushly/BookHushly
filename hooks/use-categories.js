@@ -15,7 +15,6 @@ export const categoryKeys = {
 // Fetch categories by vendor category
 async function fetchCategories(vendorCategory) {
   if (!vendorCategory) return [];
-  console.log("Fetching categories for vendor category:", vendorCategory);
   const { data, error } = await supabase
     .from("categories")
     .select("*")
