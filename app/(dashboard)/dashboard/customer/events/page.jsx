@@ -10,7 +10,7 @@ export default async function EventBookingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/login");
   // console.log(user);
   const initialData = await getEventBookings(user.id, 1, 10).catch(() => ({
     data: [],

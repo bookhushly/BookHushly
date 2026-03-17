@@ -122,7 +122,7 @@ export default function BetaAccessPage({
           <p className="mt-10 text-xs text-gray-400">
             Already a beta user?{" "}
             <button
-              onClick={() => router.push("/auth/login")}
+              onClick={() => router.push("/login")}
               className="text-purple-600 hover:underline font-medium"
             >
               Sign in here

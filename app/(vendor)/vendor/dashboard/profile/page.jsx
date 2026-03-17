@@ -19,7 +19,7 @@ async function getVendorProfile(userId) {
     supabase
       .from("vendors")
       .select(
-        "id, business_name, business_description, business_address, business_category, phone_number, website_url, years_in_operation, bank_account_name, bank_account_number, bank_name, approved, status, created_at"
+        "id, business_name, business_description, business_address, business_category, phone_number, website_url, years_in_operation, bank_account_name, bank_account_number, bank_name, approved, status, created_at",
       )
       .eq("user_id", userId)
       .maybeSingle(),
@@ -34,7 +34,7 @@ export default async function VendorProfilePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/login");
 
   const { userRow, vendor } = await getVendorProfile(user.id);
 

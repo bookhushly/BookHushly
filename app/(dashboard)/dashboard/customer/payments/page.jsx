@@ -10,7 +10,7 @@ export default async function PaymentsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/login");
 
   const initialData = await getPaymentHistory(user.id, 1, 20).catch(() => ({
     data: [],

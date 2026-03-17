@@ -31,7 +31,9 @@ function Card({ title, action, children }) {
     <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
       {(title || action) && (
         <div className="flex items-center justify-between">
-          {title && <h3 className="text-sm font-semibold text-gray-900">{title}</h3>}
+          {title && (
+            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+          )}
           {action}
         </div>
       )}
@@ -63,8 +65,13 @@ export default function AdminProfilePage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/auth/login"); return; }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
 
       const { data: row } = await supabase
         .from("users")
@@ -85,12 +92,13 @@ export default function AdminProfilePage() {
     })();
   }, []);
 
-  const initials = profile?.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) || "AD";
+  const initials =
+    profile?.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "AD";
 
   const handleSave = () => {
     startTransition(async () => {
@@ -124,7 +132,10 @@ export default function AdminProfilePage() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse h-32" />
+          <div
+            key={i}
+            className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse h-32"
+          />
         ))}
       </div>
     );
@@ -135,7 +146,9 @@ export default function AdminProfilePage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Admin Profile</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Manage your account information and security</p>
+        <p className="text-sm text-gray-500 mt-0.5">
+          Manage your account information and security
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -149,7 +162,9 @@ export default function AdminProfilePage() {
             </Avatar>
 
             <div>
-              <h2 className="text-base font-semibold text-gray-900">{profile.name || "—"}</h2>
+              <h2 className="text-base font-semibold text-gray-900">
+                {profile.name || "—"}
+              </h2>
               <p className="text-xs text-gray-400">{profile.email}</p>
             </div>
 
@@ -222,19 +237,27 @@ export default function AdminProfilePage() {
             {editing ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Full Name</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Full Name
+                  </Label>
                   <Input
                     value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, name: e.target.value }))
+                    }
                     className="mt-1.5 rounded-xl"
                     placeholder="Your full name"
                   />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Phone</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Phone
+                  </Label>
                   <Input
                     value={form.phone}
-                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, phone: e.target.value }))
+                    }
                     className="mt-1.5 rounded-xl"
                     placeholder="+234..."
                   />
@@ -243,8 +266,16 @@ export default function AdminProfilePage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InfoRow icon={User} label="Full Name" value={profile.name} />
-                <InfoRow icon={Mail} label="Email Address" value={profile.email} />
-                <InfoRow icon={Phone} label="Phone" value={profile.phone || "Not set"} />
+                <InfoRow
+                  icon={Mail}
+                  label="Email Address"
+                  value={profile.email}
+                />
+                <InfoRow
+                  icon={Phone}
+                  label="Phone"
+                  value={profile.phone || "Not set"}
+                />
                 <InfoRow icon={Shield} label="Role" value="Administrator" />
               </div>
             )}
@@ -254,18 +285,38 @@ export default function AdminProfilePage() {
           <Card title="Admin Permissions">
             <div className="space-y-2">
               {[
-                { label: "Manage Vendors", desc: "Approve, suspend or remove vendor accounts" },
-                { label: "Manage Customers", desc: "View and manage customer accounts" },
-                { label: "Manage Bookings", desc: "View and override all bookings" },
-                { label: "AI Settings", desc: "Enable or disable AI features platform-wide" },
-                { label: "Quote Drafting", desc: "Generate AI-assisted quotes for service requests" },
+                {
+                  label: "Manage Vendors",
+                  desc: "Approve, suspend or remove vendor accounts",
+                },
+                {
+                  label: "Manage Customers",
+                  desc: "View and manage customer accounts",
+                },
+                {
+                  label: "Manage Bookings",
+                  desc: "View and override all bookings",
+                },
+                {
+                  label: "AI Settings",
+                  desc: "Enable or disable AI features platform-wide",
+                },
+                {
+                  label: "Quote Drafting",
+                  desc: "Generate AI-assisted quotes for service requests",
+                },
               ].map((p) => (
-                <div key={p.label} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                <div
+                  key={p.label}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+                >
                   <div className="p-1.5 bg-violet-50 rounded-lg shrink-0">
                     <KeyRound className="h-3.5 w-3.5 text-violet-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{p.label}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {p.label}
+                    </p>
                     <p className="text-xs text-gray-400">{p.desc}</p>
                   </div>
                   <CheckCircle2 className="h-4 w-4 text-green-400 ml-auto shrink-0" />
@@ -283,7 +334,9 @@ export default function AdminProfilePage() {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Email Verified</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      Email Verified
+                    </p>
                     <p className="text-xs text-gray-500">{profile.email}</p>
                   </div>
                 </div>
@@ -294,8 +347,12 @@ export default function AdminProfilePage() {
                     <Lock className="h-4 w-4 text-violet-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Password</p>
-                    <p className="text-xs text-gray-500">Keep your account secure</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      Password
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Keep your account secure
+                    </p>
                   </div>
                 </div>
                 <Button

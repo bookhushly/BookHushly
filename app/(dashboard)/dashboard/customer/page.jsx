@@ -10,7 +10,7 @@ export default async function CustomerDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/login");
 
   const [stats, activity, profileResult] = await Promise.all([
     getDashboardStats(user.id, user.email).catch((e) => {

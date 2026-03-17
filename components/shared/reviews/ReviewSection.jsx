@@ -46,10 +46,17 @@ export function ReviewSection({ listingId, listingType, listingTitle }) {
       {/* Review form — only for logged-in users */}
       {user === null && (
         <div className="bg-gray-50 rounded-2xl border border-gray-100 p-5 text-center space-y-2">
-          <p className="text-sm text-gray-600 font-medium">Want to leave a review?</p>
+          <p className="text-sm text-gray-600 font-medium">
+            Want to leave a review?
+          </p>
           <p className="text-xs text-gray-400">
-            <a href="/auth/login" className="text-violet-600 hover:underline font-medium">Sign in</a>
-            {" "}to share your experience
+            <a
+              href="/login"
+              className="text-violet-600 hover:underline font-medium"
+            >
+              Sign in
+            </a>{" "}
+            to share your experience
           </p>
         </div>
       )}
@@ -65,8 +72,12 @@ export function ReviewSection({ listingId, listingType, listingTitle }) {
 
       {user && submitted && (
         <div className="bg-green-50 rounded-2xl border border-green-100 p-5 text-center">
-          <p className="text-sm text-green-700 font-medium">Thank you for your review!</p>
-          <p className="text-xs text-green-500 mt-1">Your feedback helps other guests.</p>
+          <p className="text-sm text-green-700 font-medium">
+            Thank you for your review!
+          </p>
+          <p className="text-xs text-green-500 mt-1">
+            Your feedback helps other guests.
+          </p>
         </div>
       )}
     </div>

@@ -10,7 +10,7 @@ export default async function HotelBookingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/login");
 
   const initialData = await getHotelBookings(user.id, 1, 10).catch(() => ({
     data: [],
