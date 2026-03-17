@@ -1,11 +1,56 @@
 import { notFound } from "next/navigation";
 import ApartmentClient from "./content";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 
-export const metadata = {
-  title: "Serviced Apartment | BookHushly",
-  description: "Book quality serviced apartments across Nigeria on BookHushly.",
-};
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const supabase = createStaticClient();
+
+  const { data: apt } = await supabase
+    .from("serviced_apartments")
+    .select("id, name, city, state, description, image_urls, price_per_night, bedrooms")
+    .eq("id", id)
+    .single();
+
+  if (!apt) return { title: "Apartment Not Found" };
+
+  const location = `${apt.city}, ${apt.state}`;
+  const description =
+    apt.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
+    `Book ${apt.name} — a ${apt.bedrooms}-bedroom serviced apartment in ${location}. Instant booking on BookHushly.`;
+
+  return {
+    title: `${apt.name} — ${location}`,
+    description,
+    keywords: [
+      apt.name,
+      apt.city,
+      apt.state,
+      "serviced apartment Nigeria",
+      "short let",
+      `short let ${apt.city}`,
+      "apartment booking Nigeria",
+      "BookHushly",
+    ],
+    alternates: { canonical: `https://bookhushly.com/services/serviced-apartments/${id}` },
+    openGraph: {
+      title: `${apt.name} — ${location}`,
+      description,
+      type: "website",
+      locale: "en_NG",
+      url: `https://bookhushly.com/services/serviced-apartments/${id}`,
+      images: apt.image_urls?.[0]
+        ? [{ url: apt.image_urls[0], alt: apt.name }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: apt.name,
+      description,
+      images: apt.image_urls?.[0] ? [apt.image_urls[0]] : [],
+    },
+  };
+}
 
 async function getApartment(id) {
   try {

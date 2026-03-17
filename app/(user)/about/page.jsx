@@ -1,3 +1,16 @@
+export const metadata = {
+  title: "About Us",
+  description:
+    "Learn about BookHushly — Nigeria's leading hospitality and services booking platform. Our mission, team, and the story behind connecting Nigerians with quality verified service providers.",
+  alternates: { canonical: "https://bookhushly.com/about" },
+  openGraph: {
+    title: "About BookHushly",
+    description:
+      "The story behind Nigeria's leading hospitality and services booking platform.",
+    url: "https://bookhushly.com/about",
+  },
+};
+
 import Image from "next/image";
 import {
   Card,

@@ -1,3 +1,15 @@
+export const metadata = {
+  title: "Careers — Join the BookHushly Team",
+  description:
+    "Join BookHushly and help build Nigeria's leading hospitality platform. View open roles in engineering, product, operations and more.",
+  alternates: { canonical: "https://bookhushly.com/careers" },
+  openGraph: {
+    title: "Careers at BookHushly",
+    description: "Join the team building Nigeria's #1 hospitality platform.",
+    url: "https://bookhushly.com/careers",
+  },
+};
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

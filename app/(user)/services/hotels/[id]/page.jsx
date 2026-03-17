@@ -100,11 +100,13 @@ export async function generateMetadata({ params }) {
       "lodging",
       "BookHushly",
     ],
+    alternates: { canonical: `https://bookhushly.com/services/hotels/${id}` },
     openGraph: {
       title: `${hotel.name} - ${location}`,
       description,
       type: "website",
       locale: "en_NG",
+      url: `https://bookhushly.com/services/hotels/${id}`,
       images: hotel.image_urls?.[0]
         ? [{ url: hotel.image_urls[0], alt: hotel.name }]
         : [],
@@ -126,19 +128,61 @@ export default async function HotelPage({ params }) {
     notFound();
   }
 
+  const { hotel, roomTypes } = data;
+  const minPrice = roomTypes.length > 0
+    ? Math.min(...roomTypes.map((r) => r.min_price || r.base_price))
+    : undefined;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Hotel",
+    name: hotel.name,
+    description: hotel.description?.replace(/<[^>]*>/g, "").slice(0, 300) || "",
+    url: `https://bookhushly.com/services/hotels/${id}`,
+    image: hotel.image_urls?.[0] || undefined,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: hotel.city,
+      addressRegion: hotel.state,
+      addressCountry: "NG",
+    },
+    ...(minPrice && {
+      priceRange: `From ₦${minPrice.toLocaleString("en-NG")} per night`,
+      offers: {
+        "@type": "Offer",
+        price: minPrice,
+        priceCurrency: "NGN",
+        availability: "https://schema.org/InStock",
+      },
+    }),
+    amenityFeature: (hotel.amenities?.items || []).map((a) => ({
+      "@type": "LocationFeatureSpecification",
+      name: a,
+      value: true,
+    })),
+  };
+
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-screen bg-white">
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
-            <p className="text-gray-600">Loading hotel details...</p>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen bg-white">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+              <p className="text-gray-600">Loading hotel details...</p>
+            </div>
           </div>
-        </div>
-      }
-    >
-      <HotelDetails hotel={data.hotel} roomTypes={data.roomTypes} />
-    </Suspense>
+        }
+      >
+        <HotelDetails hotel={hotel} roomTypes={roomTypes} />
+      </Suspense>
+    </>
   );
 }
 

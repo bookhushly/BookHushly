@@ -59,34 +59,30 @@ export function ReviewList({ listingId, showTitle = true }) {
   ]
 
   useEffect(() => {
+    if (!listingId) return
     const loadReviews = async () => {
       setLoading(true)
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setReviews(mockReviews)
-      
-      // Calculate stats
-      const totalReviews = mockReviews.length
-      const averageRating = totalReviews > 0 
-        ? mockReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
-        : 0
-      
-      const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-      mockReviews.forEach(review => {
-        ratingDistribution[review.rating]++
-      })
-      
-      setStats({
-        averageRating: Math.round(averageRating * 10) / 10,
-        totalReviews,
-        ratingDistribution
-      })
-      
-      setLoading(false)
+      try {
+        const listingType = typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('type') || 'hotel'
+          : 'hotel'
+        const res = await fetch(`/api/reviews/${listingId}?type=${listingType}`)
+        const json = await res.json()
+        const data = json.data
+        if (data) {
+          setReviews(data.reviews ?? [])
+          setStats({
+            averageRating: data.stats?.average ?? 0,
+            totalReviews: data.stats?.total ?? 0,
+            ratingDistribution: data.stats?.distribution ?? { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+          })
+        }
+      } catch (err) {
+        console.error('ReviewList fetch error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-
     loadReviews()
   }, [listingId])
 

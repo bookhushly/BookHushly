@@ -20,9 +20,12 @@ import { submitSecurityRequest } from "../../../app/actions/security";
 import { NIGERIAN_STATES } from "@/lib/constants";
 
 import { Card } from "@/components/ui/card";
+import { Sparkles } from "lucide-react";
+import { QuoteAssistant } from "./QuoteAssistant";
 
 export default function SecurityQuestionnaire({ onSuccess }) {
   const [step, setStep] = useState(1);
+  const [aiMode, setAiMode] = useState(false);
   const [formData, setFormData] = useState({
     service_type: "residential",
     full_name: "",
@@ -121,8 +124,41 @@ export default function SecurityQuestionnaire({ onSuccess }) {
     );
   }
 
+  if (aiMode) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <QuoteAssistant
+          serviceType="security"
+          onCancel={() => setAiMode(false)}
+          onFormData={(data) => {
+            setFormData((prev) => ({ ...prev, ...data }));
+            setAiMode(false);
+            setStep(5);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
+      {/* AI Assistant toggle */}
+      <div className="mb-6 flex items-center justify-between px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-violet-600" />
+          <span className="text-sm font-medium text-violet-700">
+            Prefer to just describe your needs?
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAiMode(true)}
+          className="text-xs font-semibold text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+        >
+          Use AI Assistant instead
+        </button>
+      </div>
+
       {/* Progress Indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">

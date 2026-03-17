@@ -16,6 +16,7 @@ import {
   Calendar,
   Clock,
   Share2,
+  Heart,
   Check,
   Navigation,
   Sun,
@@ -32,7 +33,9 @@ import {
 } from "lucide-react";
 import ImageGallery from "@/components/common/home/ImageGallery";
 import { getAmenityLabel } from "@/config/apartment-amenities";
+import { ReviewSection } from "@/components/shared/reviews/ReviewSection";
 import ApartmentBookingCard from "../../../../../components/shared/apartment/booking-card";
+import { useSavedListing } from "@/hooks/use-saved-listing";
 
 export default function ApartmentClient({ apartment }) {
   const formatPrice = (price) => {
@@ -56,6 +59,11 @@ export default function ApartmentClient({ apartment }) {
     public_supply: "Public Water Supply",
     both: "Borehole & Public Supply",
   };
+
+  const { saved: isSaved, toggle: toggleSave } = useSavedListing(
+    apartment.id, "apartment",
+    { title: apartment.name, image: apartment.image_urls?.[0], location: apartment.city || apartment.state }
+  );
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -110,13 +118,21 @@ export default function ApartmentClient({ apartment }) {
             <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">
               {apartment.name}
             </h1>
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition text-sm font-medium"
-            >
-              <Share2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Share</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition text-sm font-medium"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+              <button
+                onClick={toggleSave}
+                className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+              >
+                <Heart className={`w-4 h-4 transition-colors ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
@@ -619,6 +635,14 @@ export default function ApartmentClient({ apartment }) {
                   </div>
                 </div>
               )}
+
+              {/* Reviews */}
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Guest Reviews
+                </h2>
+                <ReviewSection listingId={apartment.id} listingType="apartment" listingTitle={apartment.name} />
+              </div>
 
               {/* Availability Notice */}
               {(apartment.available_from || apartment.available_until) && (

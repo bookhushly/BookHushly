@@ -26,6 +26,8 @@ import { AMENITY_ICONS } from "@/lib/constants/filters";
 import { cn } from "@/lib/utils";
 import ImageGallery from "./image-gallery";
 import BookingModal from "./booking-modal";
+import { ReviewSection } from "@/components/shared/reviews/ReviewSection";
+import { useSavedListing } from "@/hooks/use-saved-listing";
 
 // ─── Room Type Card ───────────────────────────────────────────────────────────
 const RoomTypeCard = React.memo(({ roomType, onBookNow }) => {
@@ -193,6 +195,10 @@ RoomTypeCard.displayName = "RoomTypeCard";
 const HotelDetails = ({ hotel, roomTypes }) => {
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState(null);
+  const { saved: isSaved, toggle: toggleSave } = useSavedListing(
+    hotel.id, "hotel",
+    { title: hotel.name, image: hotel.image_urls?.[0], location: hotel.city || hotel.state }
+  );
   const [sidebarDates, setSidebarDates] = useState({
     checkIn: "",
     checkOut: "",
@@ -263,8 +269,11 @@ const HotelDetails = ({ hotel, roomTypes }) => {
             <button className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
               <Share2 className="h-4 w-4" />
             </button>
-            <button className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
-              <Heart className="h-4 w-4" />
+            <button
+              onClick={toggleSave}
+              className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+            >
+              <Heart className={`h-4 w-4 transition-colors ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
             </button>
           </div>
         </header>
@@ -392,6 +401,14 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                     ))}
                   </div>
                 )}
+              </section>
+
+              {/* Reviews */}
+              <section className="mt-10">
+                <h2 className="text-[18px] font-semibold text-gray-900 mb-5">
+                  Guest Reviews
+                </h2>
+                <ReviewSection listingId={hotel.id} listingType="hotel" listingTitle={hotel.name} />
               </section>
             </div>
 

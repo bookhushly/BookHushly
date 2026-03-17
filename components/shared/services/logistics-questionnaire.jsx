@@ -18,7 +18,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { submitLogisticsRequest } from "../../../app/actions/logistics";
 import { NIGERIAN_STATES } from "@/lib/constants";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Sparkles } from "lucide-react";
+import { QuoteAssistant } from "./QuoteAssistant";
 
 const STORAGE_KEY = "logistics_form_data";
 
@@ -26,6 +27,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
   const [isPending, startTransition] = useTransition();
+  const [aiMode, setAiMode] = useState(false);
   const [formData, setFormData] = useState({
     service_type: "delivery",
     full_name: "",
@@ -249,8 +251,41 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
     );
   };
 
+  if (aiMode) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <QuoteAssistant
+          serviceType="logistics"
+          onCancel={() => setAiMode(false)}
+          onFormData={(data) => {
+            setFormData((prev) => ({ ...prev, ...data }));
+            setAiMode(false);
+            setStep(5);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
+      {/* AI Assistant toggle */}
+      <div className="mb-6 flex items-center justify-between px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-violet-600" />
+          <span className="text-sm font-medium text-violet-700">
+            Prefer to just describe your needs?
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAiMode(true)}
+          className="text-xs font-semibold text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+        >
+          Use AI Assistant instead
+        </button>
+      </div>
+
       {/* Progress Indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">

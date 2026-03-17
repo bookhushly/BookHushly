@@ -22,6 +22,7 @@ import {
 import { TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 import { useVendorAnalytics } from "@/hooks/use-vendor-analytics";
 import { useAuth } from "@/hooks/use-auth";
+import { VendorInsightsPanel } from "@/components/shared/dashboard/vendor/VendorInsightsPanel";
 
 // ─── constants ───────────────────────────────────────────────────────────────
 const RANGE_OPTIONS = [
@@ -329,6 +330,9 @@ export default function VendorAnalyticsPage() {
                 />
               </StaggerIn>
             </div>
+
+            {/* ── AI Insights ──────────────────────────────────────── */}
+            <VendorInsightsPanel analytics={analytics} range={range} />
 
             {/* ── Revenue Over Time + Bookings vs Revenue ───────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

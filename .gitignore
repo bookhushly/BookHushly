@@ -400,3 +400,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+supabase/migrations/ai_feature_settings.sql
+.gitignore
+supabase/migrations/reviews.sql
+supabase/migrations/saved_listings.sql
+supabase/migrations/ai_feature_usage.sql

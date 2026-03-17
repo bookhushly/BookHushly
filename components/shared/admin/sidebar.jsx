@@ -15,6 +15,8 @@ import {
   LogOut,
   ChevronUp,
   X,
+  Brain,
+  BarChart2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -49,7 +51,8 @@ const NAV = [
   {
     section: "System",
     items: [
-      { label: "Settings", href: "/admin/dashboard/settings", icon: Settings },
+      { label: "AI Settings",   href: "/admin/dashboard/settings",      icon: Brain     },
+      { label: "AI Analytics",  href: "/admin/dashboard/ai-analytics",  icon: BarChart2 },
     ],
   },
 ];
@@ -107,7 +110,7 @@ function ProfilePopover({ admin, onLogout, onClose, isLoggingOut }) {
           onClick={onClose}
           className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
         >
-          <Settings className="h-4 w-4" /> Settings
+          <Brain className="h-4 w-4" /> AI Settings
         </Link>
         <div className="pt-1 mt-1 border-t border-violet-100">
           <button

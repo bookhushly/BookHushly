@@ -37,6 +37,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { AIGenerateButton } from "@/components/shared/listings/AIGenerateButton";
 import { toast } from "sonner";
 
 export default function EditListingPage() {
@@ -294,6 +295,17 @@ export default function EditListingPage() {
                 rows={4}
                 required
                 disabled={isPending}
+              />
+              <AIGenerateButton
+                category={formData.category}
+                formData={formData}
+                onGenerated={({ title, description }) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    ...(title ? { title } : {}),
+                    description,
+                  }));
+                }}
               />
             </div>
 

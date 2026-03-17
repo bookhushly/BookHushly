@@ -1,3 +1,15 @@
+export const metadata = {
+  title: "Help Centre",
+  description:
+    "Find answers to frequently asked questions about booking hotels, apartments, events and services on BookHushly. Get support for payments, cancellations and vendor queries.",
+  alternates: { canonical: "https://bookhushly.com/help" },
+  openGraph: {
+    title: "BookHushly Help Centre",
+    description: "Answers to your questions about BookHushly bookings and services.",
+    url: "https://bookhushly.com/help",
+  },
+};
+
 import {
   Card,
   CardContent,

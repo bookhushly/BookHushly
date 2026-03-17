@@ -2,6 +2,12 @@
 import { supabase } from "@/lib/supabase";
 import EventTicketPurchase from "@/components/common/EventTicketPurchase";
 
+export const metadata = {
+  title: "Event Tickets",
+  description: "Book event tickets in Nigeria on BookHushly. Discover and attend the best events across Lagos, Abuja, Port Harcourt and more.",
+  robots: { index: true, follow: true },
+};
+
 export async function generateStaticParams() {
   try {
     const { data: services, error } = await supabase

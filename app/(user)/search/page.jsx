@@ -9,15 +9,17 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { 
-  Search, 
-  MapPin, 
-  Star, 
-  Users, 
+import {
+  Search,
+  MapPin,
+  Star,
+  Users,
   Clock,
   Filter,
   SlidersHorizontal,
-  X
+  X,
+  Sparkles,
+  Loader2
 } from 'lucide-react'
 import { CATEGORIES } from '@/lib/constants'
 
@@ -35,6 +37,8 @@ function SearchContent() {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [nlParsing, setNlParsing] = useState(false)
+  const [nlSummary, setNlSummary] = useState('')
 
   // Mock search results - in real app, this would be an API call
   const mockResults = [
@@ -143,12 +147,37 @@ function SearchContent() {
   }
 
   const clearFilters = () => {
-    setFilters({
-      category: 'all',
-      location: 'all',
-      priceRange: 'all',
-      rating: 'all'
-    })
+    setFilters({ category: 'all', location: 'all', priceRange: 'all', rating: 'all' })
+    setNlSummary('')
+  }
+
+  const parseNaturalLanguage = async () => {
+    const q = searchQuery.trim()
+    if (!q || q.split(' ').length < 2) return
+    setNlParsing(true)
+    try {
+      const res = await fetch('/api/search/parse-query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.data) return
+      const { query: cleanQuery, category, location, priceRange, rating, summary } = json.data
+      if (cleanQuery !== undefined) setSearchQuery(cleanQuery)
+      setFilters(prev => ({
+        ...prev,
+        ...(category && category !== 'all' ? { category } : {}),
+        ...(location && location !== 'all' ? { location } : {}),
+        ...(priceRange && priceRange !== 'all' ? { priceRange } : {}),
+        ...(rating && rating !== 'all' ? { rating } : {}),
+      }))
+      if (summary) setNlSummary(summary)
+    } catch {
+      // silent fail — user can still use manual filters
+    } finally {
+      setNlParsing(false)
+    }
   }
 
   const activeFiltersCount = Object.values(filters).filter(value => value !== 'all').length
@@ -169,11 +198,22 @@ function SearchContent() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search services, vendors, or locations..."
+              placeholder='Try "luxury hotel in Lagos under ₦50k" or just "event space Abuja"'
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              onChange={(e) => { setSearchQuery(e.target.value); setNlSummary('') }}
+              onKeyDown={(e) => e.key === 'Enter' && parseNaturalLanguage()}
+              className="pl-10 pr-28"
             />
+            <button
+              onClick={parseNaturalLanguage}
+              disabled={nlParsing || !searchQuery.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white text-[11px] font-semibold transition-colors"
+            >
+              {nlParsing
+                ? <Loader2 className="h-3 w-3 animate-spin" />
+                : <Sparkles className="h-3 w-3" />}
+              AI Search
+            </button>
           </div>
           <Button
             variant="outline"
@@ -190,6 +230,19 @@ function SearchContent() {
           </Button>
         </div>
       </div>
+
+      {/* NL parsed summary chip */}
+      {nlSummary && (
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-100 text-[12px] text-violet-700">
+            <Sparkles className="h-3 w-3" />
+            <span>AI parsed: <strong>{nlSummary}</strong></span>
+            <button onClick={clearFilters} className="ml-1 text-violet-400 hover:text-violet-700">
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       {showFilters && (

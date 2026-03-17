@@ -16,6 +16,7 @@ import {
 import { getFeatureIcon } from "@/lib/featureIcons";
 import { Trash2, Plus, Upload, Calendar, Clock } from "lucide-react";
 import OperatingHoursComponent from "./OperatingHours";
+import { AIGenerateButton } from "@/components/shared/listings/AIGenerateButton";
 
 // Fixed AmenityMultiSelect Component
 const AmenityMultiSelect = React.memo(
@@ -324,6 +325,19 @@ const ServiceDetails = ({
                 rows={4}
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
+              {field.name === "description" && (
+                <AIGenerateButton
+                  category={selectedCategory}
+                  formData={formData}
+                  onGenerated={({ title, description }) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      ...(title && !prev.title ? { title } : {}),
+                      description,
+                    }));
+                  }}
+                />
+              )}
             </div>
           );
 

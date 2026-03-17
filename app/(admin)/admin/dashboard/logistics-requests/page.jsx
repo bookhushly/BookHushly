@@ -27,12 +27,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Mail, X } from "lucide-react";
+import { CheckCircle2, Mail, X, Sparkles, Loader2 } from "lucide-react";
 
 export default function LogisticsRequestsAdmin() {
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [aiDrafting, setAiDrafting] = useState(false);
   const [quoteForm, setQuoteForm] = useState({
     base_amount: "",
     breakdown: {},
@@ -423,9 +424,42 @@ export default function LogisticsRequestsAdmin() {
                               {/* Quote Form - Only show for pending requests */}
                               {request.status === "pending" && (
                                 <div className="border-t pt-6">
-                                  <h3 className="text-lg font-semibold mb-4">
-                                    Create Quote
-                                  </h3>
+                                  <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold">
+                                      Create Quote
+                                    </h3>
+                                    <button
+                                      type="button"
+                                      disabled={aiDrafting}
+                                      onClick={async () => {
+                                        setAiDrafting(true);
+                                        try {
+                                          const res = await fetch("/api/admin/draft-quote", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ serviceType: "logistics", requestData: request }),
+                                          });
+                                          const json = await res.json();
+                                          if (res.ok && json.data) {
+                                            const d = json.data;
+                                            setQuoteForm((prev) => ({
+                                              ...prev,
+                                              base_amount: String(d.base_amount ?? ""),
+                                              breakdown: d.breakdown ?? {},
+                                              admin_notes: d.admin_notes ?? "",
+                                              valid_until: d.valid_until ?? "",
+                                            }));
+                                          }
+                                        } finally {
+                                          setAiDrafting(false);
+                                        }
+                                      }}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold hover:bg-violet-100 disabled:opacity-50 transition-colors"
+                                    >
+                                      {aiDrafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                                      AI Draft
+                                    </button>
+                                  </div>
 
                                   <div className="space-y-4">
                                     <div>

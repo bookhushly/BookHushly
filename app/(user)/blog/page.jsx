@@ -1,3 +1,16 @@
+export const metadata = {
+  title: "Blog — Travel Tips & Hospitality Insights",
+  description:
+    "Read the latest travel tips, hospitality guides, and insider insights for booking hotels, apartments and services across Nigeria from the BookHushly blog.",
+  alternates: { canonical: "https://bookhushly.com/blog" },
+  openGraph: {
+    title: "BookHushly Blog — Travel Tips & Hospitality Insights",
+    description:
+      "Travel tips, hospitality guides and insider insights for Nigeria.",
+    url: "https://bookhushly.com/blog",
+  },
+};
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { trackAIUsage } from "@/lib/track-ai-usage";
 
 // In-memory rate limiting: sessionId/userId → { count, resetAt }
 const rateLimitStore = new Map();
@@ -222,6 +223,7 @@ export async function POST(request) {
       }
     }
 
+    trackAIUsage("support_chat", userId ?? null);
     return NextResponse.json({ reply, conversationId: convId });
   } catch (err) {
     console.error("Support chat route error:", err);

@@ -1,8 +1,21 @@
-# public/robots.txt
 User-agent: *
 Allow: /
+
+# Private areas — never index
 Disallow: /api/
 Disallow: /admin/
-Disallow: /vendor/dashboard/
+Disallow: /vendor/
+Disallow: /dashboard/
+Disallow: /support/
+Disallow: /receptionist/
+Disallow: /auth/
+Disallow: /unauthorized/
+Disallow: /wallet/
+Disallow: /payment/
+Disallow: /order-successful/
+Disallow: /booking-status/
+
+# Crawl-delay for polite bots
+Crawl-delay: 10
 
 Sitemap: https://bookhushly.com/sitemap.xml
