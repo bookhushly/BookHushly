@@ -276,7 +276,6 @@ export default function PaymentPage() {
       setCryptoStep(3);
 
       // payment setup complete
-      );
     } catch (err) {
       console.error("Currency selection error:", err);
       setError("An error occurred while processing currency selection");
