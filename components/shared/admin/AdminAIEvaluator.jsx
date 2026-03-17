@@ -180,11 +180,14 @@ export function AdminAIEvaluator() {
                 <div className="flex flex-wrap gap-3 mt-3">
                   <span className="text-[11px] text-gray-500">
                     <span className="font-semibold text-gray-800">{meta.totalVendors}</span> vendors
-                    ({meta.verifiedVendors} verified)
+                    ({meta.approvedVendors} approved)
+                  </span>
+                  <span className="text-[11px] text-gray-500">
+                    <span className="font-semibold text-gray-800">{meta.totalListings}</span> active listings
                   </span>
                   <span className="text-[11px] text-gray-500">
                     <span className="font-semibold text-gray-800">
-                      ₦{(meta.totalRevenueLast30d || 0).toLocaleString()}
+                      ₦{(meta.totalRevenue30d || 0).toLocaleString()}
                     </span> revenue (30d)
                   </span>
                   <span className="text-[11px] text-gray-500 flex items-center gap-1">
@@ -192,7 +195,13 @@ export function AdminAIEvaluator() {
                     <span className={`font-semibold ${meta.revenueGrowth >= 0 ? "text-emerald-700" : "text-red-700"}`}>
                       {meta.revenueGrowth >= 0 ? "+" : ""}{meta.revenueGrowth}%
                     </span>
-                    <span>7d revenue change</span>
+                    <span>7d change</span>
+                  </span>
+                  <span className="text-[11px] text-gray-500">
+                    <span className="font-semibold text-gray-800">{meta.paymentSuccessRate ?? "—"}%</span> payment success
+                  </span>
+                  <span className="text-[11px] text-gray-500">
+                    <span className="font-semibold text-gray-800">{meta.confirmedCount}/{meta.totalBookings}</span> bookings confirmed
                   </span>
                   <span className="text-[11px] text-gray-500">
                     <span className="font-semibold text-gray-800">{meta.totalViews}</span> listing views (30d)
