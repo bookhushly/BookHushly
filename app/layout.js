@@ -25,6 +25,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${bricolage.variable} ${fraunces.variable}`}>
+      <head>
+        <meta
+          name="google-site-verification"
+          content="uANXuzlLeRmlzRWo1cKSGdPQKpS80dSIHWImy2hQ9rM"
+        />
+      </head>
       <body className="font-bricolage antialiased">
         <QueryProvider>{children}</QueryProvider>
         <Analytics />
