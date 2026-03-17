@@ -19,10 +19,11 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Loader2, Eye } from "lucide-react";
 import { useVendorAnalytics } from "@/hooks/use-vendor-analytics";
 import { useAuth } from "@/hooks/use-auth";
 import { VendorInsightsPanel } from "@/components/shared/dashboard/vendor/VendorInsightsPanel";
+import { useVendorViews } from "@/hooks/use-vendor-views";
 
 // ─── constants ───────────────────────────────────────────────────────────────
 const RANGE_OPTIONS = [
@@ -247,6 +248,7 @@ export default function VendorAnalyticsPage() {
   const [range, setRange] = useState("30d");
 
   const { analytics, isLoading } = useVendorAnalytics(vendorId, range);
+  const { data: viewStats } = useVendorViews();
 
   // ── render ───────────────────────────────────────────────────────────────
   return (
@@ -323,16 +325,52 @@ export default function VendorAnalyticsPage() {
                   sub="per transaction"
                 />
                 <KpiCard
-                  label="Successful Payments"
-                  value={analytics.byService.reduce((s, d) => s + d.value, 0)}
-                  isCurrency
-                  sub="completed"
+                  label="Listing Views (30d)"
+                  value={viewStats?.last30d ?? 0}
+                  sub={`${viewStats?.last7d ?? 0} in last 7 days`}
                 />
               </StaggerIn>
             </div>
 
             {/* ── AI Insights ──────────────────────────────────────── */}
             <VendorInsightsPanel analytics={analytics} range={range} />
+
+            {/* ── Listing Views Breakdown ───────────────────────────── */}
+            {viewStats?.perListing?.length > 0 && (
+              <ChartCard
+                title="Views per Listing (Last 30 Days)"
+                sub="How many times each listing was viewed"
+              >
+                <div className="space-y-2.5 mt-1">
+                  {viewStats.perListing.map((item) => {
+                    const maxViews = viewStats.perListing[0].views;
+                    const pct = maxViews > 0 ? (item.views / maxViews) * 100 : 0;
+                    return (
+                      <div key={`${item.listing_id}-${item.listing_type}`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[12px] text-gray-600 font-medium capitalize">
+                            {item.listing_type} · {item.listing_id.slice(0, 8)}…
+                          </span>
+                          <span className="flex items-center gap-1 text-[12px] font-semibold text-gray-900">
+                            <Eye className="h-3.5 w-3.5 text-violet-500" />
+                            {item.views.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-violet-500 transition-all duration-700"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-4 text-right">
+                  Total all-time: {(viewStats.total ?? 0).toLocaleString()} views
+                </p>
+              </ChartCard>
+            )}
 
             {/* ── Revenue Over Time + Bookings vs Revenue ───────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

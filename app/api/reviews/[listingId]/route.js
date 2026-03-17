@@ -99,21 +99,25 @@ export async function POST(request, { params }) {
   }
 }
 
-// GET /api/reviews/[listingId]?type=hotel
+// GET /api/reviews/[listingId]?type=hotel&page=1&limit=10
 export async function GET(request, { params }) {
   try {
     const { listingId } = await params;
     const { searchParams } = new URL(request.url);
     const listingType = searchParams.get("type") || "hotel";
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10")));
+    const offset = (page - 1) * limit;
 
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from("reviews")
-      .select("id, customer_name, rating, comment, verified_booking, created_at, user_id")
+      .select("id, customer_name, rating, comment, verified_booking, created_at", { count: "exact" })
       .eq("listing_id", listingId)
       .eq("listing_type", listingType)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 
@@ -129,7 +133,14 @@ export async function GET(request, { params }) {
     return NextResponse.json({
       data: {
         reviews: data,
-        stats: { average: avg, total, distribution: dist },
+        stats: { average: avg, total: count ?? total, distribution: dist },
+        pagination: {
+          page,
+          limit,
+          total: count ?? total,
+          totalPages: Math.ceil((count ?? total) / limit),
+          hasMore: offset + limit < (count ?? total),
+        },
       },
     });
   } catch (error) {

@@ -173,11 +173,15 @@ export default function AdminSettingsPage() {
         )}
 
         {error && !loading && (
-          <div className="flex items-center gap-3 px-4 py-4 rounded-xl bg-red-50 border border-red-100">
-            <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
-            <p className="text-sm text-red-700">
-              Failed to load AI settings. Please refresh the page.
-            </p>
+          <div className="flex items-start gap-3 px-4 py-4 rounded-xl bg-red-50 border border-red-100">
+            <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-red-700">Failed to load AI settings</p>
+              <p className="text-xs text-red-600 mt-0.5">
+                The <code className="bg-red-100 px-1 rounded">ai_feature_settings</code> table may not exist yet.
+                Run <code className="bg-red-100 px-1 rounded">supabase/migrations/ai_feature_settings.sql</code> in your Supabase SQL Editor, then refresh.
+              </p>
+            </div>
           </div>
         )}
 
@@ -196,8 +200,16 @@ export default function AdminSettingsPage() {
         )}
 
         {!loading && !error && settings.length === 0 && (
-          <div className="text-center py-20 text-gray-400 text-sm">
-            No AI features found. Make sure you have run the database migration.
+          <div className="flex flex-col items-center py-16 gap-4 text-center">
+            <div className="h-14 w-14 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center">
+              <Brain className="h-7 w-7 text-violet-400" strokeWidth={1.5} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-700">No AI settings found</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Run <code className="bg-gray-100 px-1 rounded">supabase/migrations/ai_feature_settings.sql</code> in Supabase SQL Editor to create the table, then refresh this page.
+              </p>
+            </div>
           </div>
         )}
       </div>

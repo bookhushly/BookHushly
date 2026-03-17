@@ -32,11 +32,12 @@ import {
   LayoutDashboard,
   BarChart3,
   FileText,
+  Eye,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAdminDashboardData } from "@/hooks/useAdminDashboardData";
 import { useCurrentUser } from "@/hooks/use-auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const TABS = [
   { value: "overview", label: "Overview", icon: LayoutDashboard },
@@ -50,6 +51,14 @@ const TABS = [
 export default function AdminDashboard() {
   const { data: user, isLoading: userLoading } = useCurrentUser();
   const [activeTab, setActiveTab] = useState("overview");
+  const [viewStats, setViewStats] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/admin/views")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => d && setViewStats(d))
+      .catch(() => {});
+  }, []);
 
   const {
     loading,
@@ -81,7 +90,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
             <CardTitle className="text-xs md:text-sm font-medium">
@@ -146,6 +155,23 @@ export default function AdminDashboard() {
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">
               This month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
+            <CardTitle className="text-xs md:text-sm font-medium">
+              Listing Views
+            </CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="text-xl md:text-2xl font-bold">
+              {(viewStats?.total ?? 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              {(viewStats?.last7d ?? 0).toLocaleString()} in last 7 days
             </p>
           </CardContent>
         </Card>

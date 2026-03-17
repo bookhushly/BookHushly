@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import { useDebounce } from 'use-debounce'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +29,7 @@ function SearchContent() {
   const initialQuery = searchParams.get('q') || ''
   
   const [searchQuery, setSearchQuery] = useState(initialQuery)
+  const [debouncedQuery] = useDebounce(searchQuery, 350)
   const [filters, setFilters] = useState({
     category: 'all',
     location: 'all',
@@ -99,9 +101,10 @@ function SearchContent() {
     }
   ]
 
+  // Use debounced query so search only fires 350ms after the user stops typing
   useEffect(() => {
     performSearch()
-  }, [searchQuery, filters])
+  }, [debouncedQuery, filters])
 
   const performSearch = async () => {
     setLoading(true)
@@ -111,12 +114,12 @@ function SearchContent() {
     
     // Filter mock results based on search criteria
     let filteredResults = mockResults
-    
-    if (searchQuery) {
+
+    if (debouncedQuery) {
       filteredResults = filteredResults.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.vendor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.location.toLowerCase().includes(searchQuery.toLowerCase())
+        item.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        item.vendor.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        item.location.toLowerCase().includes(debouncedQuery.toLowerCase())
       )
     }
     

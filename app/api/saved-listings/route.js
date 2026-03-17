@@ -10,9 +10,10 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("saved_listings")
-      .select("*")
+      .select("id, listing_id, listing_type, listing_title, listing_image, listing_location, created_at")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(500);
 
     if (error) throw error;
     return NextResponse.json({ data });

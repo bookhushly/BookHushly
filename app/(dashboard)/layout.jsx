@@ -4,12 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CustomerLayoutClient } from "./client";
 
 export const metadata = {
-  robots: { index: false, follow: false },
-};
-
-export const metadata = {
   title: "My Dashboard — BookHushly",
   description: "Manage your bookings, payments, and favourites on BookHushly.",
+  robots: { index: false, follow: false },
 };
 
 export default async function CustomerDashboardLayout({ children }) {

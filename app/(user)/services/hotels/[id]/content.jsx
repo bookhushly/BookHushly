@@ -28,6 +28,7 @@ import ImageGallery from "./image-gallery";
 import BookingModal from "./booking-modal";
 import { ReviewSection } from "@/components/shared/reviews/ReviewSection";
 import { useSavedListing } from "@/hooks/use-saved-listing";
+import { useViewTracker } from "@/hooks/use-view-tracker";
 
 // ─── Room Type Card ───────────────────────────────────────────────────────────
 const RoomTypeCard = React.memo(({ roomType, onBookNow }) => {
@@ -193,6 +194,7 @@ RoomTypeCard.displayName = "RoomTypeCard";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const HotelDetails = ({ hotel, roomTypes }) => {
+  useViewTracker(hotel.id, "hotel", hotel.vendor_id);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState(null);
   const { saved: isSaved, toggle: toggleSave } = useSavedListing(

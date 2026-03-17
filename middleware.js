@@ -1,108 +1,108 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-const PROTECTED_ROUTES = [
-  "/dashboard",
-  "/api/wallet",
-  "/api/webhooks",
-  "/vendor/dashboard",
-  "/profile",
-  "/settings",
-];
+// Only instantiate if env vars are present (skips during local dev without Upstash)
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
 
-function isProtectedRoute(pathname) {
-  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+// Tier definitions: [requests, window]
+const TIERS = {
+  ai: [10, "60 s"],      // Claude API — expensive, strict
+  admin: [120, "60 s"],  // Admin routes — trusted but protected
+  user: [30, "60 s"],    // Auth-required user actions
+  public: [60, "60 s"],  // Public reads
+};
+
+// Build limiters only if Redis is available
+const limiters = redis
+  ? Object.fromEntries(
+      Object.entries(TIERS).map(([tier, [reqs, window]]) => [
+        tier,
+        new Ratelimit({
+          redis,
+          limiter: Ratelimit.slidingWindow(reqs, window),
+          prefix: `rl:${tier}`,
+          analytics: true,
+        }),
+      ])
+    )
+  : null;
+
+function getTier(pathname) {
+  // AI feature routes — most restrictive
+  if (
+    pathname.includes("/api/vendor/generate-listing") ||
+    pathname.includes("/api/reviews/summarize") ||
+    pathname.includes("/api/quotes/ai-assistant") ||
+    pathname.includes("/api/vendor/ai-insights") ||
+    pathname.includes("/api/search/parse-query") ||
+    pathname.includes("/api/admin/draft-quote") ||
+    pathname.includes("/api/support/chat")
+  )
+    return "ai";
+
+  // Admin routes
+  if (pathname.startsWith("/api/admin/")) return "admin";
+
+  // Auth-required user write actions
+  if (
+    pathname.startsWith("/api/saved-listings") ||
+    pathname.startsWith("/api/reviews/")
+  )
+    return "user";
+
+  // Everything else public
+  return "public";
+}
+
+function getIP(req) {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "127.0.0.1"
+  );
 }
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  // Only rate-limit API routes
+  if (!pathname.startsWith("/api/")) return NextResponse.next();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
-        },
-      },
-    },
-  );
+  // Skip if Redis not configured (graceful dev fallback)
+  if (!limiters) return NextResponse.next();
 
-  // CRITICAL: Use getUser() not getSession() in middleware
-  // getUser() validates the JWT and refreshes if needed
-  // getSession() only reads from storage without validation
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const tier = getTier(pathname);
+  const ip = getIP(request);
 
-  // 1. Protect routes that require authentication
-  if (isProtectedRoute(pathname) && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("redirectedFrom", pathname);
-    return NextResponse.redirect(url);
+  try {
+    const { success, limit, remaining, reset } = await limiters[tier].limit(ip);
+
+    const res = success
+      ? NextResponse.next()
+      : new NextResponse(
+          JSON.stringify({ error: "Too many requests. Please slow down." }),
+          { status: 429, headers: { "Content-Type": "application/json" } }
+        );
+
+    // Always expose rate limit headers so clients can back off gracefully
+    res.headers.set("X-RateLimit-Limit", String(limit));
+    res.headers.set("X-RateLimit-Remaining", String(remaining));
+    res.headers.set("X-RateLimit-Reset", String(reset));
+
+    return res;
+  } catch {
+    // Fail open on Redis error — never block real users
+    return NextResponse.next();
   }
-
-  // 2. Role-based protection for authenticated users
-  if (user) {
-    const role = user.user_metadata?.role || "customer";
-
-    // Redirect from auth pages if already logged in
-    if (pathname === "/login" || pathname === "/register") {
-      const url = request.nextUrl.clone();
-      url.pathname =
-        role === "vendor" ? "/vendor/dashboard" : `/dashboard/${role}`;
-      return NextResponse.redirect(url);
-    }
-
-    // Vendor routes protection
-    if (pathname.startsWith("/vendor/dashboard") && role !== "vendor") {
-      const url = request.nextUrl.clone();
-      url.pathname = `/dashboard/${role}`;
-      return NextResponse.redirect(url);
-    }
-
-    // Admin routes protection
-    if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = `/dashboard/${role}`;
-      return NextResponse.redirect(url);
-    }
-
-    // Receptionist routes protection
-    if (
-      pathname.startsWith("/receptionist/dashboard") &&
-      role !== "receptionist"
-    ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-  }
-
-  return supabaseResponse;
 }
 
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/vendor/dashboard/:path*",
-    "/receptionist/dashboard/:path*",
-  ],
+  matcher: "/api/:path*",
 };

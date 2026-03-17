@@ -36,8 +36,10 @@ import { getAmenityLabel } from "@/config/apartment-amenities";
 import { ReviewSection } from "@/components/shared/reviews/ReviewSection";
 import ApartmentBookingCard from "../../../../../components/shared/apartment/booking-card";
 import { useSavedListing } from "@/hooks/use-saved-listing";
+import { useViewTracker } from "@/hooks/use-view-tracker";
 
 export default function ApartmentClient({ apartment }) {
+  useViewTracker(apartment.id, "apartment", apartment.vendor_id);
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",

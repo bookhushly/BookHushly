@@ -87,37 +87,42 @@ export async function GET(request) {
       );
     }
 
-    // Calculate stats (optimized - single query)
-    const { data: statsData } = await supabase
-      .from("payments")
-      .select("status, amount, currency")
-      .in("status", [
-        ...STATUS_CATEGORIES.SUCCESS,
-        ...STATUS_CATEGORIES.IN_PROGRESS,
-        ...STATUS_CATEGORIES.FAILED,
-      ]);
+    // Calculate stats using COUNT queries — no row data transferred
+    const [
+      { count: successCount },
+      { count: pendingCount },
+      { count: failedCount },
+      { data: revenueData },
+    ] = await Promise.all([
+      supabase
+        .from("payments")
+        .select("*", { count: "exact", head: true })
+        .in("status", STATUS_CATEGORIES.SUCCESS),
+      supabase
+        .from("payments")
+        .select("*", { count: "exact", head: true })
+        .in("status", STATUS_CATEGORIES.IN_PROGRESS),
+      supabase
+        .from("payments")
+        .select("*", { count: "exact", head: true })
+        .in("status", STATUS_CATEGORIES.FAILED),
+      // Revenue only fetches amount column, filtered to success NGN payments
+      supabase
+        .from("payments")
+        .select("amount")
+        .in("status", STATUS_CATEGORIES.SUCCESS)
+        .eq("currency", "NGN"),
+    ]);
 
     const stats = {
-      totalRevenue: 0,
-      successCount: 0,
-      pendingCount: 0,
-      failedCount: 0,
+      totalRevenue: (revenueData ?? []).reduce(
+        (sum, p) => sum + parseFloat(p.amount || 0),
+        0
+      ),
+      successCount: successCount ?? 0,
+      pendingCount: pendingCount ?? 0,
+      failedCount: failedCount ?? 0,
     };
-
-    if (statsData) {
-      statsData.forEach((payment) => {
-        if (STATUS_CATEGORIES.SUCCESS.includes(payment.status)) {
-          stats.successCount++;
-          if (payment.currency === "NGN") {
-            stats.totalRevenue += parseFloat(payment.amount || 0);
-          }
-        } else if (STATUS_CATEGORIES.IN_PROGRESS.includes(payment.status)) {
-          stats.pendingCount++;
-        } else if (STATUS_CATEGORIES.FAILED.includes(payment.status)) {
-          stats.failedCount++;
-        }
-      });
-    }
 
     return NextResponse.json({
       payments,

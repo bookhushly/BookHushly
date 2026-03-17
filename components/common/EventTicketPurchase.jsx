@@ -20,8 +20,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { useViewTracker } from "@/hooks/use-view-tracker";
 
 export default function EventsTicketPurchase({ service, onSubmit }) {
+  useViewTracker(service?.id, "event", service?.vendor_id);
   const supabase = createClient();
   const router = useRouter();
 

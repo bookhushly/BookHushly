@@ -38,6 +38,7 @@ import {
   Search,
   FileText,
 } from "lucide-react";
+import { AdminAIEvaluator } from "@/components/shared/admin/AdminAIEvaluator";
 
 const FEATURE_META = {
   support_chat:            { icon: MessageCircle, color: "#3b82f6", label: "Support Chat" },
@@ -188,6 +189,9 @@ export default function AIAnalyticsPage() {
             </p>
           </div>
         )}
+
+        {/* ── AI Platform Evaluator (always visible) ── */}
+        <AdminAIEvaluator />
 
         {!isLoading && !error && data && (
           <>
