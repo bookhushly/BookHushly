@@ -150,6 +150,26 @@ export async function createHotelWithRoomsAction(
         amenities: hotelAmenities,
         checkout_policy: hotelData.checkout_policy,
         policies: hotelData.policies,
+        security_deposit: hotelData.security_deposit
+          ? parseFloat(hotelData.security_deposit)
+          : null,
+        security_deposit_notes: hotelData.security_deposit_notes || null,
+        generator_available: hotelData.generator_available || null,
+        generator_hours: hotelData.generator_hours || null,
+        inverter_available: hotelData.inverter_available || null,
+        breakfast_offered: hotelData.breakfast_offered || "none",
+        breakfast_type: hotelData.breakfast_type || null,
+        early_checkin_fee: hotelData.early_checkin_fee
+          ? parseFloat(hotelData.early_checkin_fee)
+          : null,
+        late_checkout_fee: hotelData.late_checkout_fee
+          ? parseFloat(hotelData.late_checkout_fee)
+          : null,
+        weekend_pricing: hotelData.weekend_pricing !== "none"
+          ? parseInt(hotelData.weekend_pricing)
+          : null,
+        vat_inclusive: hotelData.vat_inclusive || false,
+        whatsapp_number: hotelData.whatsapp_number || null,
       })
       .select()
       .single();

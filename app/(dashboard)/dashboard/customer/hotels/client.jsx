@@ -79,7 +79,7 @@ export function HotelBookingsClient({ userId, initialData }) {
           title="No hotel bookings yet"
           description="Browse our curated selection of hotels and make your first booking."
           actionLabel="Explore Hotels"
-          actionHref="/hotels"
+          actionHref="/services?category=hotels"
         />
       ) : (
         <>

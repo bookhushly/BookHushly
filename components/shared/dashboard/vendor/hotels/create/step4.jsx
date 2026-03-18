@@ -44,6 +44,22 @@ export default function Step4Review({
               {hotelData.check_out_time}
             </p>
           </div>
+          <div>
+            <span className="text-gray-600">Security Deposit:</span>
+            <p className="font-medium text-gray-900 mt-1">
+              {hotelData.security_deposit
+                ? `₦${parseFloat(hotelData.security_deposit).toLocaleString()} (Refundable)`
+                : "None"}
+            </p>
+          </div>
+          {hotelData.security_deposit_notes && (
+            <div className="md:col-span-2">
+              <span className="text-gray-600">Deposit Terms:</span>
+              <p className="font-medium text-gray-900 mt-1">
+                {hotelData.security_deposit_notes}
+              </p>
+            </div>
+          )}
         </div>
         {hotelData.image_urls.length > 0 && (
           <div className="grid grid-cols-4 gap-2">

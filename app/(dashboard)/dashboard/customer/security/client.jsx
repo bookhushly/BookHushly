@@ -56,7 +56,10 @@ export function SecurityClient({ userId, initialData }) {
   return (
     <div>
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Security Requests" }]}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard/customer" },
+          { label: "Security Requests" },
+        ]}
         title="Security Requests"
         description={`${data?.count || 0} total requests`}
         action={
@@ -64,7 +67,7 @@ export function SecurityClient({ userId, initialData }) {
             asChild
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
-            <Link href="/security">
+            <Link href="/quote-services?tab=security">
               <Shield className="h-4 w-4 mr-2" />
               New Request
             </Link>
@@ -80,7 +83,7 @@ export function SecurityClient({ userId, initialData }) {
           title="No security requests yet"
           description="Request professional security services for events, residential, or personal protection."
           actionLabel="Get Security Quote"
-          actionHref="/security"
+          actionHref="/quote-services?tab=security"
         />
       ) : (
         <>

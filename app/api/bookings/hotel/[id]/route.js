@@ -18,7 +18,9 @@ export async function GET(request, { params }) {
           state,
           image_urls,
           checkout_policy,
-          policies
+          policies,
+          security_deposit,
+          security_deposit_notes
         ),
         room_types:room_type_id (
           id,
@@ -39,14 +41,21 @@ export async function GET(request, { params }) {
     }
 
     // Flatten structure for payment form compatibility
+    const securityDeposit = booking.hotels?.security_deposit || 0;
+    const roomTotal = booking.total_price || 0;
+    const grandTotal = roomTotal + securityDeposit;
+
     const formattedBooking = {
       ...booking,
       email: booking.guest_email,
       phone_number: booking.guest_phone,
       full_name: booking.guest_name,
-      amount: booking.total_price,
-      total_price: booking.total_price,
-      total_amount: booking.total_price,
+      amount: grandTotal,
+      total_price: grandTotal,
+      total_amount: grandTotal,
+      room_total: roomTotal,
+      security_deposit: securityDeposit,
+      security_deposit_notes: booking.hotels?.security_deposit_notes || null,
       number_of_guests: booking.adults + booking.children,
       hotel: booking.hotels,
       room_type: booking.room_types,

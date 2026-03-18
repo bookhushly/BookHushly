@@ -34,7 +34,10 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
   return (
     <div>
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Event Bookings" }]}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard/customer" },
+          { label: "Event Bookings" },
+        ]}
         title="Event Bookings"
         description={`${data?.count || 0} total`}
         action={
@@ -42,7 +45,7 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
             asChild
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
-            <Link href="/events">
+            <Link href="/services?category=events">
               <Ticket className="h-4 w-4 mr-2" />
               Browse Events
             </Link>
@@ -58,7 +61,7 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
           title="No event bookings yet"
           description="Discover exciting events and book your tickets."
           actionLabel="Browse Events"
-          actionHref="/events"
+          actionHref="/services?category=events"
         />
       ) : (
         <>

@@ -2,6 +2,7 @@ import { Building2, Upload } from "lucide-react";
 import { ImagePreview, AmenityButton, InfoBanner } from "./shared";
 import { AMENITY_ICONS } from "@/lib/hotel";
 import RichTextEditor from "@/components/common/rich-text-editor";
+import { NIGERIAN_STATES } from "@/lib/constants";
 
 export default function Step1HotelDetails({
   hotelData,
@@ -89,15 +90,20 @@ export default function Step1HotelDetails({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             State *
           </label>
-          <input
-            type="text"
+          <select
             value={hotelData.state}
             onChange={(e) =>
               setHotelData((prev) => ({ ...prev, state: e.target.value }))
             }
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            placeholder="Lagos"
-          />
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+          >
+            <option value="">Select state</option>
+            {NIGERIAN_STATES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="md:col-span-2">
@@ -189,6 +195,239 @@ export default function Step1HotelDetails({
           </div>
         </div>
 
+        {/* ── Power & Generator ── */}
+        <div className="md:col-span-2 border border-gray-200 rounded-lg p-4 space-y-4">
+          <p className="text-sm font-medium text-gray-700">Power & Generator</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Generator Available?
+              </label>
+              <select
+                value={hotelData.generator_available}
+                onChange={(e) =>
+                  setHotelData((prev) => ({
+                    ...prev,
+                    generator_available: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+              >
+                <option value="">Select</option>
+                <option value="24h">24 Hours</option>
+                <option value="partial">Partial Hours</option>
+                <option value="none">No Generator</option>
+              </select>
+            </div>
+            {hotelData.generator_available === "partial" && (
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Generator Hours
+                </label>
+                <input
+                  type="text"
+                  value={hotelData.generator_hours}
+                  onChange={(e) =>
+                    setHotelData((prev) => ({
+                      ...prev,
+                      generator_hours: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="e.g. 6pm – 6am"
+                />
+              </div>
+            )}
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Inverter / Solar?
+              </label>
+              <select
+                value={hotelData.inverter_available}
+                onChange={(e) =>
+                  setHotelData((prev) => ({
+                    ...prev,
+                    inverter_available: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+              >
+                <option value="">None</option>
+                <option value="inverter">Inverter</option>
+                <option value="solar">Solar</option>
+                <option value="both">Inverter + Solar</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Breakfast ── */}
+        <div className="md:col-span-2 border border-gray-200 rounded-lg p-4 space-y-3">
+          <p className="text-sm font-medium text-gray-700">Breakfast</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Breakfast Offered?
+              </label>
+              <select
+                value={hotelData.breakfast_offered}
+                onChange={(e) =>
+                  setHotelData((prev) => ({
+                    ...prev,
+                    breakfast_offered: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+              >
+                <option value="none">Not Available</option>
+                <option value="included">Included in Price</option>
+                <option value="paid">Available (Extra Charge)</option>
+              </select>
+            </div>
+            {hotelData.breakfast_offered !== "none" && (
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Breakfast Type
+                </label>
+                <select
+                  value={hotelData.breakfast_type}
+                  onChange={(e) =>
+                    setHotelData((prev) => ({
+                      ...prev,
+                      breakfast_type: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                >
+                  <option value="">Select type</option>
+                  <option value="continental">Continental</option>
+                  <option value="nigerian">Full Nigerian</option>
+                  <option value="both">Continental + Nigerian</option>
+                  <option value="buffet">Buffet</option>
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Fees & Pricing ── */}
+        <div className="md:col-span-2 border border-gray-200 rounded-lg p-4 space-y-4">
+          <p className="text-sm font-medium text-gray-700">
+            Fees & Pricing Rules
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Early Check-in Fee (₦)
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={hotelData.early_checkin_fee}
+                onChange={(e) =>
+                  setHotelData((prev) => ({
+                    ...prev,
+                    early_checkin_fee: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="e.g. 5000"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Charged for arrivals before standard check-in time
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Late Check-out Fee (₦)
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={hotelData.late_checkout_fee}
+                onChange={(e) =>
+                  setHotelData((prev) => ({
+                    ...prev,
+                    late_checkout_fee: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="e.g. 5000"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Charged for departures after standard checkout time
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">
+                Weekend Price Adjustment
+              </label>
+              <select
+                value={hotelData.weekend_pricing}
+                onChange={(e) =>
+                  setHotelData((prev) => ({
+                    ...prev,
+                    weekend_pricing: e.target.value,
+                  }))
+                }
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+              >
+                <option value="none">No adjustment</option>
+                <option value="10">+10% on Fri & Sat</option>
+                <option value="20">+20% on Fri & Sat</option>
+                <option value="30">+30% on Fri & Sat</option>
+                <option value="50">+50% on Fri & Sat</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-3 pt-5">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={hotelData.vat_inclusive}
+                  onChange={(e) =>
+                    setHotelData((prev) => ({
+                      ...prev,
+                      vat_inclusive: e.target.checked,
+                    }))
+                  }
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
+              <div>
+                <p className="text-sm text-gray-700 font-medium">
+                  VAT Inclusive (7.5%)
+                </p>
+                <p className="text-xs text-gray-500">
+                  Prices shown include VAT
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── WhatsApp Contact ── */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            WhatsApp Number
+          </label>
+          <input
+            type="tel"
+            value={hotelData.whatsapp_number}
+            onChange={(e) =>
+              setHotelData((prev) => ({
+                ...prev,
+                whatsapp_number: e.target.value,
+              }))
+            }
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="+2348012345678"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Guests can reach you directly on WhatsApp for quick inquiries
+          </p>
+        </div>
+
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Hotel Images
@@ -234,6 +473,54 @@ export default function Step1HotelDetails({
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Security Deposit (₦)
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  ₦
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={hotelData.security_deposit}
+                  onChange={(e) =>
+                    setHotelData((prev) => ({
+                      ...prev,
+                      security_deposit: e.target.value,
+                    }))
+                  }
+                  className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="50000"
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Refundable deposit charged at checkout. Leave blank if none.
+              </p>
+            </div>
+            <div>
+              <input
+                type="text"
+                value={hotelData.security_deposit_notes}
+                onChange={(e) =>
+                  setHotelData((prev) => ({
+                    ...prev,
+                    security_deposit_notes: e.target.value,
+                  }))
+                }
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="e.g. Refunded within 48 hours after checkout"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Optional note about deposit refund terms.
+              </p>
+            </div>
           </div>
         </div>
 

@@ -61,6 +61,18 @@ export default function HotelRegistration({ onComplete }) {
     policies: "",
     amenities: [],
     image_urls: [],
+    security_deposit: "",
+    security_deposit_notes: "",
+    generator_available: "",
+    generator_hours: "",
+    inverter_available: "",
+    breakfast_offered: "none",
+    breakfast_type: "",
+    early_checkin_fee: "",
+    late_checkout_fee: "",
+    weekend_pricing: "none",
+    vat_inclusive: false,
+    whatsapp_number: "",
   });
 
   // Custom hooks

@@ -35,7 +35,10 @@ export function ApartmentBookingsClient({ userId, initialData }) {
   return (
     <div>
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Apartment Bookings" }]}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard/customer" },
+          { label: "Apartment Bookings" },
+        ]}
         title="Apartment Bookings"
         description={`${data?.count || 0} total`}
         action={
@@ -43,7 +46,7 @@ export function ApartmentBookingsClient({ userId, initialData }) {
             asChild
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
-            <Link href="/apartments">
+            <Link href="/services?category=serviced_apartments">
               <Building2 className="h-4 w-4 mr-2" />
               Browse Apartments
             </Link>
@@ -59,7 +62,7 @@ export function ApartmentBookingsClient({ userId, initialData }) {
           title="No apartment bookings yet"
           description="Find the perfect serviced apartment for your stay."
           actionLabel="Browse Apartments"
-          actionHref="/apartments"
+          actionHref="/services?category=serviced_apartments"
         />
       ) : (
         <>

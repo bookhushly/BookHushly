@@ -147,6 +147,15 @@ export async function createServicedApartment(formData) {
       available_until: formData.get("available_until") || null,
       instant_booking: formData.get("instant_booking") === "true",
 
+      // Contact & Caretaker
+      whatsapp_number: formData.get("whatsapp_number") || null,
+      caretaker_name: formData.get("caretaker_name") || null,
+      caretaker_phone: formData.get("caretaker_phone") || null,
+      agent_fee_applies: formData.get("agent_fee_applies") || "no",
+      agent_fee_amount: formData.get("agent_fee_amount")
+        ? parseFloat(formData.get("agent_fee_amount"))
+        : null,
+
       // Vendor ID
       vendor_id: formData.get("vendor_id"),
     };

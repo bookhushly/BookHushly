@@ -145,7 +145,10 @@ export function Header() {
                       <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-52 bg-hospitality-comfort"
+                  >
                     <DropdownMenuLabel>
                       <p className="text-sm font-medium truncate">
                         {displayName}

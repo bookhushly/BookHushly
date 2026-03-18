@@ -158,11 +158,11 @@ export default function PaymentForm({
     }
   };
 
-  // Get total amount with fallbacks
+  // Get total amount with fallbacks — for hotels, total_amount already includes security deposit
   const totalAmount =
     quoteData?.total_amount ||
-    requestData?.amount ||
     requestData?.total_amount ||
+    requestData?.amount ||
     requestData?.total_price ||
     0;
 
@@ -361,6 +361,34 @@ export default function PaymentForm({
                       {requestData?.number_of_guests || 0}
                     </span>
                   </div>
+                  {requestData?.room_total > 0 && (
+                    <div className="border-t border-gray-200 pt-2 mt-2 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Room Cost</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          ₦{requestData.room_total.toLocaleString()}
+                        </span>
+                      </div>
+                      {requestData?.security_deposit > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">
+                            Security Deposit
+                            <span className="ml-1 text-xs text-green-600 font-medium">
+                              (Refundable)
+                            </span>
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            ₦{requestData.security_deposit.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      {requestData?.security_deposit_notes && (
+                        <p className="text-xs text-gray-500 italic">
+                          {requestData.security_deposit_notes}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
 

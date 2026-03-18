@@ -55,7 +55,10 @@ export function LogisticsClient({ userId, initialData }) {
   return (
     <div>
       <PageHeader
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard/customer" }, { label: "Logistics Requests" }]}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard/customer" },
+          { label: "Logistics Requests" },
+        ]}
         title="Logistics Requests"
         description={`${data?.count || 0} total requests`}
         action={
@@ -63,7 +66,7 @@ export function LogisticsClient({ userId, initialData }) {
             asChild
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
-            <Link href="/logistics">
+            <Link href="/quote-services?tab=logistics">
               <Truck className="h-4 w-4 mr-2" />
               New Request
             </Link>
@@ -79,7 +82,7 @@ export function LogisticsClient({ userId, initialData }) {
           title="No logistics requests yet"
           description="Request delivery, moving, or cargo services."
           actionLabel="Get a Quote"
-          actionHref="/logistics"
+          actionHref="/quote-services?tab=logistics"
         />
       ) : (
         <>

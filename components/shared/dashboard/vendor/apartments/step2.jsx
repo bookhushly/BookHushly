@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, Phone } from "lucide-react";
 import { NIGERIAN_STATES as STATES } from "@/lib/constants";
 
 const NIGERIAN_STATES = STATES.sort();
@@ -212,6 +212,96 @@ export default function Step2Location({ formData, updateFormData, errors }) {
                   </li>
                 </ul>
               </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Caretaker & Contact */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="h-5 w-5 text-purple-600" />
+            Contact & Caretaker Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp_number">WhatsApp Number</Label>
+              <Input
+                id="whatsapp_number"
+                type="tel"
+                placeholder="+2348012345678"
+                value={formData.whatsapp_number || ""}
+                onChange={(e) =>
+                  updateFormData({ whatsapp_number: e.target.value })
+                }
+              />
+              <p className="text-xs text-gray-500">
+                Guests can reach you directly on WhatsApp
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="caretaker_name">Caretaker Name</Label>
+              <Input
+                id="caretaker_name"
+                placeholder="e.g., Mr. Emeka"
+                value={formData.caretaker_name || ""}
+                onChange={(e) =>
+                  updateFormData({ caretaker_name: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="caretaker_phone">Caretaker Phone</Label>
+              <Input
+                id="caretaker_phone"
+                type="tel"
+                placeholder="+2348012345678"
+                value={formData.caretaker_phone || ""}
+                onChange={(e) =>
+                  updateFormData({ caretaker_phone: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-4 space-y-3">
+            <p className="text-sm font-medium text-gray-700">Agent / Agency Fee</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agent_fee_applies">Agency Fee Applies?</Label>
+                <select
+                  id="agent_fee_applies"
+                  value={formData.agent_fee_applies || "no"}
+                  onChange={(e) =>
+                    updateFormData({ agent_fee_applies: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                >
+                  <option value="no">No agency fee</option>
+                  <option value="yes">Yes — fee applies</option>
+                </select>
+              </div>
+              {formData.agent_fee_applies === "yes" && (
+                <div className="space-y-2">
+                  <Label htmlFor="agent_fee_amount">Agent Fee (₦)</Label>
+                  <Input
+                    id="agent_fee_amount"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="e.g. 50000"
+                    value={formData.agent_fee_amount || ""}
+                    onChange={(e) =>
+                      updateFormData({ agent_fee_amount: e.target.value })
+                    }
+                  />
+                  <p className="text-xs text-gray-500">
+                    One-time fee paid separately to the agent
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
