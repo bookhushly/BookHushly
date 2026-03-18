@@ -344,6 +344,65 @@ export async function createHotelWithRoomsAction(
   }
 }
 
+// ==================== DELETE HOTEL SERVER ACTION ====================
+export async function deleteHotelAction(hotelId) {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Fetch vendor record for this user
+    const { data: vendor, error: vendorError } = await supabase
+      .from("vendors")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (vendorError || !vendor) {
+      return { success: false, error: "Vendor profile not found" };
+    }
+
+    // Verify ownership
+    const { data: hotel, error: fetchError } = await supabase
+      .from("hotels")
+      .select("id, vendor_id")
+      .eq("id", hotelId)
+      .maybeSingle();
+
+    if (fetchError || !hotel) {
+      return { success: false, error: "Hotel not found" };
+    }
+
+    if (hotel.vendor_id !== vendor.id) {
+      return { success: false, error: "You don't have permission to delete this hotel" };
+    }
+
+    const { error: deleteError } = await supabase
+      .from("hotels")
+      .delete()
+      .eq("id", hotelId);
+
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
+    }
+
+    revalidatePath("/vendor/dashboard");
+    revalidatePath("/vendor/dashboard/hotels");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Delete hotel error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 // ==================== VALIDATE ROOM CONFIGURATION ====================
 export async function validateRoomConfigAction(roomConfig) {
   try {

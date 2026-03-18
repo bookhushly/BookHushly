@@ -98,8 +98,13 @@ export async function getDashboardStats(userId, userEmail) {
   };
 }
 
-export async function getRecentActivity(userId) {
+export async function getRecentActivity(userId, userEmail) {
   const supabase = await getClient();
+
+  // Build event filter — same OR logic as getDashboardStats so counts stay consistent
+  const eventFilter = userEmail
+    ? `customer_id.eq.${userId},contact_email.eq.${userEmail}`
+    : `customer_id.eq.${userId}`;
 
   const [events, hotels, apartments, logistics, security] = await Promise.all([
     supabase
@@ -108,7 +113,7 @@ export async function getRecentActivity(userId) {
         `id, status, total_amount, created_at, booking_date, booking_time,
      listing:listing_id(id, title, location, media_urls)`,
       )
-      .eq("customer_id", userId)
+      .or(eventFilter)
       .order("created_at", { ascending: false })
       .limit(5),
 
@@ -294,9 +299,12 @@ export async function getLogisticsRequests(userId, page = 1, pageSize = 10) {
   const supabase = await getClient();
   const from = (page - 1) * pageSize;
 
+  // Select all columns directly — quote_pdf_url, quoted_amount, etc. are already
+  // on the logistics_requests row itself. The service_quotes join is omitted
+  // because it requires a FK hint and all relevant quote data is denormalised here.
   const { data, error, count } = await supabase
     .from("logistics_requests")
-    .select(`*, quote:service_quotes(*)`, { count: "exact" })
+    .select("*", { count: "exact" })
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .range(from, from + pageSize - 1);
@@ -313,7 +321,7 @@ export async function getSecurityRequests(userId, page = 1, pageSize = 10) {
 
   const { data, error, count } = await supabase
     .from("security_requests")
-    .select(`*, quote:service_quotes(*)`, { count: "exact" })
+    .select("*", { count: "exact" })
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .range(from, from + pageSize - 1);

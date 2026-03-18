@@ -4,6 +4,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { deleteServicedApartment } from "@/app/actions/apartments";
+import { deleteHotelAction } from "@/app/actions/hotels";
 
 const supabase = createClient();
 
@@ -192,19 +194,31 @@ export function useDeleteListing(category) {
 
   return useMutation({
     mutationFn: async (listingId) => {
-      const table = LISTING_TABLE[category] ?? "listings";
+      // serviced_apartments: use server action (vendor_id = auth.uid())
+      if (category === "serviced_apartments") {
+        const result = await deleteServicedApartment(listingId);
+        if (!result.success) throw new Error(result.error || "Failed to delete apartment");
+        return result;
+      }
 
-      const { data, error } = await supabase
-        .from(table)
-        .delete()
-        .eq("id", listingId)
-        .select();
+      // hotels: use server action (vendor_id = vendors.id, needs service-role lookup)
+      if (category === "hotels") {
+        const result = await deleteHotelAction(listingId);
+        if (!result.success) throw new Error(result.error || "Failed to delete hotel");
+        return result;
+      }
 
-      if (error) throw new Error(error.message);
-      if (!data || data.length === 0)
-        throw new Error("Delete failed — RLS may be blocking this action.");
+      // listings table (events, logistics, security, food, etc.): use API route
+      const response = await fetch(`/api/listings/${listingId}`, {
+        method: "DELETE",
+      });
 
-      return data;
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to delete listing");
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vendorDashboardKeys.all });

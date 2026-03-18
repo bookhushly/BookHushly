@@ -17,7 +17,7 @@ export default async function CustomerDashboardPage() {
       console.error("getDashboardStats error:", e);
       return null;
     }),
-    getRecentActivity(user.id).catch(() => []),
+    getRecentActivity(user.id, user.email).catch(() => []),
     supabase
       .from("users")
       .select("name, created_at")

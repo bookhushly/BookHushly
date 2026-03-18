@@ -499,16 +499,14 @@ async function fetchListingsPage({
 async function updateListingData(listingId, updateData, businessCategory) {
   if (!listingId) throw new Error("Listing ID is required");
 
-  const dataToUpdate = {
-    ...updateData,
-    updated_at: new Date().toISOString(),
-  };
-
   try {
+    // Hotels and apartments have dedicated edit UIs; direct client update is fine
+    // for hotels since vendor_id may differ — but those edit pages use their own
+    // dedicated server actions. The generic edit page only handles the listings table.
     if (businessCategory === "hotels") {
       const { data, error } = await supabase
         .from("hotels")
-        .update(dataToUpdate)
+        .update({ ...updateData, updated_at: new Date().toISOString() })
         .eq("id", listingId)
         .select()
         .single();
@@ -520,7 +518,7 @@ async function updateListingData(listingId, updateData, businessCategory) {
     if (businessCategory === "serviced_apartments") {
       const { data, error } = await supabase
         .from("serviced_apartments")
-        .update(dataToUpdate)
+        .update({ ...updateData, updated_at: new Date().toISOString() })
         .eq("id", listingId)
         .select()
         .single();
@@ -529,14 +527,21 @@ async function updateListingData(listingId, updateData, businessCategory) {
       return data;
     }
 
-    const { data, error } = await supabase
-      .from("listings")
-      .update(dataToUpdate)
-      .eq("id", listingId)
-      .select()
-      .single();
+    // All other categories (events, logistics, security, food, etc.) use the
+    // listings table — route through the API route so ownership is verified
+    // server-side regardless of RLS configuration.
+    const response = await fetch(`/api/listings/${listingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updateData),
+    });
 
-    if (error) throw error;
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || "Failed to update listing");
+    }
+
+    const { data } = await response.json();
     return data;
   } catch (error) {
     console.error("Error updating listing:", error);

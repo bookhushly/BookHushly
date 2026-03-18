@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   Truck,
-  MapPin,
   Package,
   ArrowRight,
   Calendar,
@@ -193,7 +192,7 @@ export function LogisticsClient({ userId, initialData }) {
                         </Link>
                       </Button>
                     )}
-                    {req.quote?.pdf_url && (
+                    {req.quote_pdf_url && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -201,7 +200,7 @@ export function LogisticsClient({ userId, initialData }) {
                         className="border-purple-200 text-purple-700 hover:bg-purple-50"
                       >
                         <a
-                          href={req.quote.pdf_url}
+                          href={req.quote_pdf_url}
                           target="_blank"
                           rel="noopener noreferrer"
                         >

@@ -6,6 +6,7 @@ import VendorOnboardingSection from "@/components/shared/home/vendor";
 import CTA from "@/components/shared/home/cta";
 import FAQSection from "@/components/shared/home/faq";
 import QuoteConversionSection from "../../components/common/home/quote-services";
+import NearbyListings from "@/components/shared/home/nearby-listings";
 
 export const metadata = {
   title: "BookHushly — Book Hotels, Apartments & Services in Nigeria",
@@ -92,6 +93,7 @@ export default function Home() {
       />
       <div className="flex flex-col">
         <Hero />
+        <NearbyListings />
         <Services />
         <QuoteConversionSection />
         <HowItWorks />
