@@ -144,20 +144,19 @@ const HotelCard = ({ service }) => {
 
           {/* Price + CTA */}
           <div className="flex items-end justify-between pt-3 border-t border-gray-100">
-            <div>
-              <p className="text-[11px] text-gray-400 mb-0.5">Starting from</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl font-bold text-gray-900">
-                  ₦{service.price?.toLocaleString()}
-                </span>
-                <span className="text-xs text-gray-400">/night</span>
+            {service.price ? (
+              <div>
+                <p className="text-[11px] text-gray-400 mb-0.5">Starting from</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-bold text-gray-900">
+                    ₦{service.price.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-gray-400">/night</span>
+                </div>
               </div>
-              {service.max_price > service.price && (
-                <p className="text-[11px] text-gray-400">
-                  up to ₦{service.max_price?.toLocaleString()}
-                </p>
-              )}
-            </div>
+            ) : (
+              <p className="text-xs text-gray-400 italic">View details for pricing</p>
+            )}
             <span className="h-9 px-4 inline-flex items-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
               See rooms
             </span>

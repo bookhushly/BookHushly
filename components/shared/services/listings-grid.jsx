@@ -2,7 +2,7 @@
 
 import React, { memo, Suspense } from "react";
 import dynamic from "next/dynamic";
-import { Search, Shield } from "lucide-react";
+import { Search, Shield, Navigation } from "lucide-react";
 import { SkeletonCard, EmptyState } from "./ui";
 
 const ServiceCardWrapper = dynamic(
@@ -13,8 +13,29 @@ const ServiceCardWrapper = dynamic(
   },
 );
 
+const PROXIMITY_STYLE = {
+  city:     "bg-green-100 text-green-700 border-green-200",
+  state:    "bg-violet-100 text-violet-700 border-violet-200",
+  national: "bg-gray-100 text-gray-500 border-gray-200",
+};
+const PROXIMITY_LABEL = {
+  city:     "In your city",
+  state:    "In your state",
+  national: "Other location",
+};
+
+function ProximityBadge({ proximity }) {
+  if (!proximity || !PROXIMITY_STYLE[proximity]) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border mb-1.5 ${PROXIMITY_STYLE[proximity]}`}>
+      <Navigation className="h-2.5 w-2.5" />
+      {PROXIMITY_LABEL[proximity]}
+    </span>
+  );
+}
+
 const ListingsGrid = memo(
-  ({ listings, fetchError, isLoadingMore, lastListingRef }) => {
+  ({ listings, fetchError, isLoadingMore, lastListingRef, nearMeActive }) => {
     if (fetchError) {
       return (
         <EmptyState
@@ -42,7 +63,9 @@ const ListingsGrid = memo(
             <div
               key={service.id}
               ref={index === listings.length - 1 ? lastListingRef : null}
+              className="flex flex-col"
             >
+              {nearMeActive && <ProximityBadge proximity={service.proximity} />}
               <Suspense fallback={<SkeletonCard />}>
                 <ServiceCardWrapper service={service} />
               </Suspense>

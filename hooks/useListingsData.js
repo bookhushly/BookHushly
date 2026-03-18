@@ -288,7 +288,7 @@ function buildQuery(category, searchQuery, filters, pageParam) {
     }
 
     if (filters.city?.trim()) query = query.ilike("city", filters.city.trim());
-    if (filters.state) query = query.eq("state", filters.state);
+    if (filters.state)        query = query.eq("state", filters.state);
 
     return query;
   }
@@ -311,7 +311,8 @@ function buildQuery(category, searchQuery, filters, pageParam) {
     }
 
     if (filters.city?.trim()) query = query.ilike("city", filters.city.trim());
-    if (filters.state) query = query.eq("state", filters.state);
+    if (filters.state)        query = query.eq("state", filters.state);
+
     if (filters.apartment_type)
       query = query.eq("apartment_type", filters.apartment_type);
     if (filters.bedrooms) query = query.gte("bedrooms", filters.bedrooms);
@@ -422,12 +423,64 @@ async function fetchListing(listingId, businessCategory) {
   }
 }
 
+// ==================== NEAR-ME 3-TIER FETCH ====================
+// Runs city / state / national queries in parallel, deduplicates, and merges
+// so results are always ranked closest → farthest with no empty state.
+async function fetchNearMePage({ category, searchQuery, filters }) {
+  const base = { ...filters, nearMe: false };
+
+  const cityFilters     = { ...base, state: undefined };          // city only
+  const stateFilters    = { ...base, city: undefined };           // state only
+  const nationalFilters = { ...base, city: undefined, state: undefined }; // all
+
+  const [cityRes, stateRes, nationalRes] = await Promise.all([
+    filters.city  ? buildQuery(category, searchQuery, cityFilters,     0) : Promise.resolve({ data: [], count: 0 }),
+    filters.state ? buildQuery(category, searchQuery, stateFilters,    0) : Promise.resolve({ data: [], count: 0 }),
+                    buildQuery(category, searchQuery, nationalFilters,  0),
+  ]);
+
+  if (cityRes.error)     throw cityRes.error;
+  if (stateRes.error)    throw stateRes.error;
+  if (nationalRes.error) throw nationalRes.error;
+
+  // Deduplicate and merge: city first → state → national
+  const seen   = new Set();
+  const merged = [];
+  const addTier = (rows, proximity) => {
+    for (const row of rows || []) {
+      if (!seen.has(row.id)) { seen.add(row.id); merged.push({ ...row, proximity }); }
+    }
+  };
+  addTier(cityRes.data,     "city");
+  addTier(stateRes.data,    "state");
+  addTier(nationalRes.data, "national");
+
+  // Enrich + normalize (same as regular path, preserving proximity tag)
+  let items = merged;
+  if (category === "hotels") {
+    items = await enrichHotelsWithRoomData(items);
+    items = items.map((h) => ({ ...normalizeHotelData(h), proximity: h.proximity }));
+  } else if (category === "serviced_apartments") {
+    items = items.map((a) => ({ ...normalizeApartmentData(a), proximity: a.proximity }));
+  } else {
+    // events are already in the right shape
+    items = items.map((e) => ({ ...e, proximity: e.proximity }));
+  }
+
+  return { items, nextPage: undefined, totalCount: items.length };
+}
+
 async function fetchListingsPage({
   pageParam = 0,
   category,
   searchQuery,
   filters,
 }) {
+  // Delegate to 3-tier near-me fetch — never returns empty
+  if (filters.nearMe) {
+    return fetchNearMePage({ category, searchQuery, filters });
+  }
+
   try {
     const query = buildQuery(category, searchQuery, filters, pageParam);
     const { data, error, count } = await query;

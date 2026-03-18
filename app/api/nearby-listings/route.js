@@ -121,15 +121,13 @@ function normalizeHotel(h) {
     id: h.id,
     title: h.name,
     location: [h.city, h.state].filter(Boolean).join(", ") || h.address || "Location not specified",
-    price: 0,      // price comes from hotel_rooms — not fetched here for performance
-    max_price: 0,
+    // price intentionally omitted — fetching from hotel_rooms is a separate query
     media_urls: h.image_urls || [],
     category: "hotels",
     description: h.description,
     amenities: h.amenities,
     city: h.city,
     state: h.state,
-    hotel_id: h.id,
   };
 }
 

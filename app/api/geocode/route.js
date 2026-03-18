@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
-const GEOCODE_API = "https://maps.googleapis.com/maps/api/geocode/json";
+const GOOGLE_API = "https://maps.googleapis.com/maps/api/geocode/json";
+const NOMINATIM_API = "https://nominatim.openstreetmap.org/reverse";
 
-function extractNigerianLocation(results) {
+// ── Google Maps extraction ────────────────────────────────────────────────────
+function extractFromGoogle(results) {
   const allComponents = results.flatMap((r) => r.address_components || []);
 
   const cityTypes = [
@@ -26,14 +28,41 @@ function extractNigerianLocation(results) {
     ? stateComp.long_name.replace(/\s+State$/i, "").trim()
     : null;
 
-  // Normalize FCT / Abuja
+  return normalizeNigerian(city, state);
+}
+
+// ── OpenStreetMap Nominatim extraction (free fallback) ───────────────────────
+async function extractFromNominatim(lat, lng) {
+  const url = `${NOMINATIM_API}?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Bookhushly/1.0 (contact@bookhushly.com)" },
+    cache: "no-store",
+  });
+
+  if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
+  const data = await res.json();
+  console.log("[geocode/nominatim] raw address:", JSON.stringify(data.address));
+
+  const addr = data.address || {};
+  // Try progressively broader city-level fields
+  const city =
+    addr.city || addr.town || addr.village || addr.suburb ||
+    addr.city_district || addr.county || null;
+
+  let state = addr.state || null;
+  if (state) state = state.replace(/\s+State$/i, "").trim();
+
+  return normalizeNigerian(city, state);
+}
+
+function normalizeNigerian(city, state) {
   if (state === "Federal Capital Territory" || city === "Abuja") {
     return { city: city || "Abuja", state: "FCT" };
   }
-
-  return { city, state };
+  return { city: city || null, state: state || null };
 }
 
+// ── Route handler ─────────────────────────────────────────────────────────────
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const lat = searchParams.get("lat");
@@ -43,40 +72,45 @@ export async function GET(request) {
     return NextResponse.json({ error: "lat and lng required" }, { status: 400 });
   }
 
+  // ── 1. Try Google Maps first ──
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_GEOCODING_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "Geocoding API key not configured" }, { status: 500 });
+  if (apiKey) {
+    try {
+      const url = `${GOOGLE_API}?latlng=${lat},${lng}&key=${apiKey}&language=en`;
+      const res  = await fetch(url, { cache: "no-store" });
+      const data = await res.json();
+
+      console.log("[geocode/google] status:", data.status);
+      if (data.error_message) console.error("[geocode/google] error:", data.error_message);
+
+      if (data.status === "OK" && data.results?.length) {
+        const location = extractFromGoogle(data.results);
+        console.log("[geocode/google] extracted:", location);
+        if (location.city || location.state) {
+          return NextResponse.json({ ...location, source: "google", status: "OK" });
+        }
+        console.warn("[geocode/google] OK but city/state empty — falling back to Nominatim");
+      } else {
+        console.warn(`[geocode/google] non-OK: ${data.status} — falling back to Nominatim`);
+      }
+    } catch (err) {
+      console.error("[geocode/google] fetch error:", err.message, "— falling back to Nominatim");
+    }
+  } else {
+    console.warn("[geocode] No Google API key — using Nominatim directly");
   }
 
+  // ── 2. Fallback: OpenStreetMap Nominatim (free, no key required) ──
   try {
-    const url = `${GEOCODE_API}?latlng=${lat},${lng}&key=${apiKey}&language=en`;
-    const res = await fetch(url, { cache: "no-store" });
-    const data = await res.json();
-
-    console.log("[geocode] status:", data.status);
-    console.log("[geocode] result count:", data.results?.length ?? 0);
-    if (data.results?.[0]) {
-      console.log("[geocode] first result types:", data.results[0].types);
-      console.log("[geocode] address_components:", JSON.stringify(data.results[0].address_components));
-    }
-    if (data.error_message) {
-      console.error("[geocode] error_message:", data.error_message);
-    }
-
-    if (data.status !== "OK") {
-      console.error(`[geocode] non-OK status: ${data.status}`, data.error_message || "");
-      // Return partial response — caller will fall back to showing national listings
-      return NextResponse.json(
-        { error: `Geocoding API returned: ${data.status}`, status: data.status, city: null, state: null },
-        { status: 200 } // 200 so the hook doesn't treat it as a hard failure
-      );
-    }
-
-    const location = extractNigerianLocation(data.results);
-    console.log("[geocode] extracted:", location);
-    return NextResponse.json({ ...location, status: "OK" });
+    const location = await extractFromNominatim(lat, lng);
+    console.log("[geocode/nominatim] extracted:", location);
+    return NextResponse.json({ ...location, source: "nominatim", status: "OK" });
   } catch (err) {
-    console.error("[geocode] fetch error:", err);
-    return NextResponse.json({ error: "Geocoding request failed", city: null, state: null }, { status: 200 });
+    console.error("[geocode/nominatim] error:", err.message);
+    // Both providers failed — return nulls so component shows national listings
+    return NextResponse.json(
+      { city: null, state: null, source: "none", status: "FAILED" },
+      { status: 200 }
+    );
   }
 }

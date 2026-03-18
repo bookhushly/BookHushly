@@ -10,7 +10,7 @@ import {
   SECURITY_FEATURES,
 } from "@/lib/constants/filters";
 
-const buildFilterLabels = (filters) => {
+const buildFilterLabels = (filters, nearMeActive) => {
   const labels = [];
 
   if (filters.price_min || filters.price_max) {
@@ -21,8 +21,12 @@ const buildFilterLabels = (filters) => {
       parts.push(`To ₦${filters.price_max.toLocaleString()}`);
     labels.push({ key: "price", label: parts.join(" – ") });
   }
-  if (filters.state) labels.push({ key: "state", label: filters.state });
-  if (filters.city) labels.push({ key: "city", label: filters.city });
+  // When near-me is active the location bar already shows city + state combined —
+  // skip them here to avoid duplicate pills.
+  if (!nearMeActive) {
+    if (filters.state) labels.push({ key: "state", label: filters.state });
+    if (filters.city)  labels.push({ key: "city",  label: filters.city  });
+  }
   if (filters.apartment_type) {
     const t = APARTMENT_TYPES.find((t) => t.value === filters.apartment_type);
     labels.push({
@@ -99,8 +103,8 @@ const buildFilterLabels = (filters) => {
   return labels;
 };
 
-const ActiveFilters = ({ filters, onRemoveFilter }) => {
-  const labels = buildFilterLabels(filters);
+const ActiveFilters = ({ filters, onRemoveFilter, nearMeActive = false }) => {
+  const labels = buildFilterLabels(filters, nearMeActive);
   if (!labels.length) return null;
 
   return (

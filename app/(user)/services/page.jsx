@@ -60,32 +60,34 @@ export default function ServicesPage() {
     }
   }, [searchParams, activeCategory]);
 
-  // When geo resolves and near-me was activated, push city into filters
+  // When geo resolves and near-me was activated, push city + state into filters
   useEffect(() => {
     if (nearMeActive && geo.granted && (geo.city || geo.state)) {
       startTransition(() => {
         setFilters((prev) => ({
           ...prev,
-          city: geo.city || undefined,
-          state: !geo.city ? geo.state : undefined,
+          city:   geo.city  || undefined,
+          state:  geo.state || undefined,
+          nearMe: true,
         }));
       });
     }
   }, [nearMeActive, geo.granted, geo.city, geo.state]);
 
+  const clearNearMeFilters = useCallback((prev) => {
+    const next = { ...prev };
+    delete next.city;
+    delete next.state;
+    delete next.nearMe;
+    return next;
+  }, []);
+
   const handleNearMeToggle = useCallback(() => {
     if (nearMeActive) {
-      // Turn off — remove location filters
       setNearMeActive(false);
-      setFilters((prev) => {
-        const next = { ...prev };
-        delete next.city;
-        delete next.state;
-        return next;
-      });
+      setFilters(clearNearMeFilters);
       return;
     }
-    // Turn on
     setNearMeActive(true);
     if (!geo.granted) {
       geo.requestLocation();
@@ -93,12 +95,13 @@ export default function ServicesPage() {
       startTransition(() => {
         setFilters((prev) => ({
           ...prev,
-          city: geo.city || undefined,
-          state: !geo.city ? geo.state : undefined,
+          city:   geo.city  || undefined,
+          state:  geo.state || undefined,
+          nearMe: true,
         }));
       });
     }
-  }, [nearMeActive, geo]);
+  }, [nearMeActive, geo, clearNearMeFilters]);
 
   const categoryLabel = useMemo(
     () =>
@@ -145,7 +148,10 @@ export default function ServicesPage() {
       } else delete next[key];
       return next;
     });
-    if (key === "city" || key === "state") setNearMeActive(false);
+    if (key === "city" || key === "state") {
+      setNearMeActive(false);
+      setFilters((prev) => { const n = { ...prev }; delete n.nearMe; return n; });
+    }
   }, []);
 
   const handleFiltersChange = useCallback((f) => {
@@ -239,12 +245,7 @@ export default function ServicesPage() {
                     onClick={() => {
                       geo.clearLocation();
                       setNearMeActive(false);
-                      setFilters((prev) => {
-                        const next = { ...prev };
-                        delete next.city;
-                        delete next.state;
-                        return next;
-                      });
+                      setFilters(clearNearMeFilters);
                     }}
                     className="ml-0.5 hover:text-violet-900 transition-colors"
                   >
@@ -262,6 +263,7 @@ export default function ServicesPage() {
             <ActiveFilters
               filters={filters}
               onRemoveFilter={handleRemoveFilter}
+              nearMeActive={nearMeActive}
             />
 
             {/* Results count */}
@@ -290,6 +292,7 @@ export default function ServicesPage() {
                 fetchError={fetchError}
                 isLoadingMore={isLoadingMore}
                 lastListingRef={lastListingRef}
+                nearMeActive={nearMeActive}
               />
             )}
           </main>
