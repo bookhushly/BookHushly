@@ -34,10 +34,13 @@ function extractFromGoogle(results) {
 // ── OpenStreetMap Nominatim extraction (free fallback) ───────────────────────
 async function extractFromNominatim(lat, lng) {
   const url = `${NOMINATIM_API}?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   const res = await fetch(url, {
     headers: { "User-Agent": "Bookhushly/1.0 (contact@bookhushly.com)" },
     cache: "no-store",
-  });
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timer));
 
   if (!res.ok) throw new Error(`Nominatim HTTP ${res.status}`);
   const data = await res.json();
@@ -77,7 +80,9 @@ export async function GET(request) {
   if (apiKey) {
     try {
       const url = `${GOOGLE_API}?latlng=${lat},${lng}&key=${apiKey}&language=en`;
-      const res  = await fetch(url, { cache: "no-store" });
+      const gc = new AbortController();
+      const gt = setTimeout(() => gc.abort(), 5000);
+      const res = await fetch(url, { cache: "no-store", signal: gc.signal }).finally(() => clearTimeout(gt));
       const data = await res.json();
 
       console.log("[geocode/google] status:", data.status);

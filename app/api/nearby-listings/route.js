@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 const LIMIT = 6;
@@ -10,22 +10,19 @@ export async function GET(request) {
   const category = searchParams.get("category");
 
   // city and state are both optional — if neither provided, return national listings
-
-  const supabase = await createClient();
+  // Use static (non-SSR) client — only public SELECTs needed here, avoids cookie overhead
+  const supabase = createStaticClient();
 
   try {
     const categories = category
       ? [category]
       : ["hotels", "serviced_apartments", "events"];
 
-    const results = await Promise.all(
-      categories.map((cat) => fetchWithProximity(supabase, cat, city, state))
-    );
-
+    // Run categories sequentially to avoid connection pool exhaustion in dev
     const payload = {};
-    categories.forEach((cat, i) => {
-      payload[cat] = results[i];
-    });
+    for (const cat of categories) {
+      payload[cat] = await fetchWithProximity(supabase, cat, city, state);
+    }
 
     return NextResponse.json({ data: payload, city, state });
   } catch (err) {
