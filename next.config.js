@@ -36,6 +36,8 @@ const nextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  // Silence the webpack-config-with-Turbopack error (next-pwa adds webpack config)
+  turbopack: {},
 };
 
 module.exports = withPWA(nextConfig);
