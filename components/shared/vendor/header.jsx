@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bell,
   Search,
   Menu,
   ChevronDown,
@@ -9,6 +8,7 @@ import {
   User,
   Settings,
 } from "lucide-react";
+import { NotificationBell } from "@/components/shared/notifications/NotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -73,15 +73,7 @@ export function VendorHeader({ onMenuClick }) {
 
       {/* Right — notifications + user */}
       <div className="flex items-center gap-1.5">
-        {/* Notifications */}
-        <button
-          className="relative h-8 w-8 flex items-center justify-center rounded-lg
-                           text-gray-500 hover:bg-gray-100 transition-colors"
-        >
-          <Bell className="h-4 w-4" strokeWidth={2} />
-          {/* Unread dot */}
-          <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-violet-600" />
-        </button>
+        <NotificationBell userId={user?.id} align="right" />
 
         {/* User menu */}
         <DropdownMenu>

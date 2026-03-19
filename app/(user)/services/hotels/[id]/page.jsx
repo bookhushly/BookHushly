@@ -44,20 +44,18 @@ async function getHotelData(id) {
       return acc;
     }, {});
 
-    const enrichedRoomTypes = roomTypes
-      .map((roomType) => {
-        const rooms = roomsByType[roomType.id] || [];
-        const prices = rooms.map((r) => parseFloat(r.price_per_night));
-        const minPrice =
-          prices.length > 0 ? Math.min(...prices) : roomType.base_price;
-        return {
-          ...roomType,
-          available_rooms: rooms.length,
-          min_price: minPrice,
-          has_availability: rooms.length > 0,
-        };
-      })
-      .filter((rt) => rt.has_availability);
+    const enrichedRoomTypes = roomTypes.map((roomType) => {
+      const rooms = roomsByType[roomType.id] || [];
+      const prices = rooms.map((r) => parseFloat(r.price_per_night));
+      const minPrice =
+        prices.length > 0 ? Math.min(...prices) : roomType.base_price;
+      return {
+        ...roomType,
+        available_rooms: rooms.length,
+        min_price: minPrice,
+        has_availability: rooms.length > 0,
+      };
+    });
 
     return { hotel, roomTypes: enrichedRoomTypes };
   } catch (error) {

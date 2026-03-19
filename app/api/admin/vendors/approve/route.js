@@ -1,6 +1,7 @@
 // app/api/admin/vendors/approve/route.js
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { notifyKYCApproved } from "@/lib/notifications";
 
 export async function POST(request) {
   try {
@@ -51,6 +52,11 @@ export async function POST(request) {
       );
     } catch (emailError) {
       console.error("Failed to send approval email:", emailError);
+    }
+
+    // In-app notification to vendor
+    if (data?.user_id) {
+      await notifyKYCApproved(data.user_id);
     }
 
     return NextResponse.json({ success: true, data });

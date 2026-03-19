@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-export default function ServicePaymentPage({ requestId, requestType }) {
+export default function ServicePaymentPage() {
   const searchParams = useSearchParams();
   const quoteId = searchParams.get("quote_id");
+  const requestId = searchParams.get("request_id");
+  const requestType = searchParams.get("request_type");
   const [paymentMethod, setPaymentMethod] = useState("paystack");
 
   const { data: quote, isLoading } = useQuery({

@@ -30,6 +30,7 @@ const GeneralServiceDetail = ({ service }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
 
   const images = service.media_urls || [];
   const amenities = service.amenities || [];
@@ -178,23 +179,37 @@ const GeneralServiceDetail = ({ service }) => {
             {/* Amenities/Features */}
             {amenities.length > 0 && (
               <div className="bg-white rounded-xl border p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Features & Amenities
-                </h2>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {amenities.map((amenity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg"
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Features & Amenities
+                  </h2>
+                  {amenities.length > 6 && (
+                    <button
+                      onClick={() => setShowAllAmenities((v) => !v)}
+                      className="text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
                     >
-                      <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0" />
-                      <span className="text-gray-900">
-                        {typeof amenity === "string"
-                          ? amenity
-                          : amenity.name || amenity.label}
-                      </span>
-                    </div>
-                  ))}
+                      {showAllAmenities
+                        ? "Show less"
+                        : `Show all ${amenities.length}`}
+                    </button>
+                  )}
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {(showAllAmenities ? amenities : amenities.slice(0, 6)).map(
+                    (amenity, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg"
+                      >
+                        <CheckCircle className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                        <span className="text-gray-900">
+                          {typeof amenity === "string"
+                            ? amenity
+                            : amenity.name || amenity.label}
+                        </span>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}

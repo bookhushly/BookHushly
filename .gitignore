@@ -408,3 +408,4 @@ supabase/migrations/ai_feature_usage.sql
 supabase/migrations/indexes.sql
 supabase/migrations/reviews.sql
 CLAUDE.md
+supabase/migrations/notifications.sql

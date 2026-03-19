@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { paymentVerification, PAYMENT_STATUS } from "@/lib/paystack";
 import { nowpaymentsVerification } from "@/lib/nowpayments";
+import {
+  notifyPaymentSuccessful,
+  notifyPaymentFailed,
+  notifyBookingConfirmed,
+  notifyVendorNewBooking,
+  notifyVendorPaymentReceived,
+} from "@/lib/notifications";
 
 /**
  * Verify Payment
@@ -215,6 +222,9 @@ async function verifyPaystackPayment(supabase, payment) {
     .update({ fulfilled: true })
     .eq("id", updatedPayment.id);
 
+  // Fire in-app notifications
+  await firePaymentNotifications(supabase, updatedPayment);
+
   return NextResponse.json({
     verified: true,
     status: PAYMENT_STATUS.SUCCESS,
@@ -335,6 +345,9 @@ async function verifyCryptoPayment(supabase, payment) {
       .update({ fulfilled: true })
       .eq("id", updatedPayment.id);
 
+    // Fire in-app notifications
+    await firePaymentNotifications(supabase, updatedPayment);
+
     return NextResponse.json({
       verified: true,
       status: "completed",
@@ -354,6 +367,96 @@ async function verifyCryptoPayment(supabase, payment) {
       error: "Verification service temporarily unavailable",
       message: "Please check back in a few moments",
     });
+  }
+}
+
+/**
+ * Fire in-app notifications after a payment is confirmed.
+ * Runs best-effort — never throws so it can't break the payment flow.
+ */
+async function firePaymentNotifications(supabase, payment) {
+  try {
+    const bookingId =
+      payment.hotel_booking_id ||
+      payment.apartment_booking_id ||
+      payment.event_booking_id;
+
+    // Resolve the service name + vendor user_id from the booking
+    let serviceName = "your booking";
+    let vendorUserId = null;
+
+    if (payment.hotel_booking_id) {
+      const { data: b } = await supabase
+        .from("hotel_bookings")
+        .select("guest_name, hotels(name, vendor_id, vendors(user_id))")
+        .eq("id", payment.hotel_booking_id)
+        .single();
+      if (b) {
+        serviceName  = b.hotels?.name ?? serviceName;
+        vendorUserId = b.hotels?.vendors?.user_id ?? null;
+        // Notify vendor of new booking + payment
+        if (vendorUserId) {
+          await notifyVendorNewBooking(vendorUserId, {
+            bookingId:   payment.hotel_booking_id,
+            guestName:   b.guest_name,
+            serviceName,
+            amount:      payment.amount,
+          });
+          await notifyVendorPaymentReceived(vendorUserId, {
+            amount:      payment.amount,
+            reference:   payment.reference,
+            serviceName,
+          });
+        }
+      }
+    } else if (payment.apartment_booking_id) {
+      const { data: b } = await supabase
+        .from("apartment_bookings")
+        .select("guest_name, listings(title, vendor_id, vendors(user_id))")
+        .eq("id", payment.apartment_booking_id)
+        .single();
+      if (b) {
+        serviceName  = b.listings?.title ?? serviceName;
+        vendorUserId = b.listings?.vendors?.user_id ?? null;
+        if (vendorUserId) {
+          await notifyVendorPaymentReceived(vendorUserId, {
+            amount: payment.amount, reference: payment.reference, serviceName,
+          });
+        }
+      }
+    } else if (payment.event_booking_id) {
+      const { data: b } = await supabase
+        .from("event_bookings")
+        .select("guest_name, listings(title, vendor_id, vendors(user_id))")
+        .eq("id", payment.event_booking_id)
+        .single();
+      if (b) {
+        serviceName  = b.listings?.title ?? serviceName;
+        vendorUserId = b.listings?.vendors?.user_id ?? null;
+        if (vendorUserId) {
+          await notifyVendorPaymentReceived(vendorUserId, {
+            amount: payment.amount, reference: payment.reference, serviceName,
+          });
+        }
+      }
+    }
+
+    // Notify customer
+    if (payment.user_id) {
+      await notifyPaymentSuccessful(payment.user_id, {
+        reference:   payment.reference,
+        amount:      payment.amount,
+        serviceName,
+      });
+      if (bookingId) {
+        await notifyBookingConfirmed(payment.user_id, {
+          bookingId,
+          serviceName,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("[notifications] firePaymentNotifications error:", err.message);
   }
 }
 

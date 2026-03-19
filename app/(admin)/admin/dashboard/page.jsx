@@ -33,11 +33,18 @@ import {
   BarChart3,
   FileText,
   Eye,
+  HeadphonesIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useAdminDashboardData } from "@/hooks/useAdminDashboardData";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+const SupportStaffPanel = dynamic(
+  () => import("@/components/shared/dashboard/admin/SupportStaffPanel"),
+  { ssr: false },
+);
 
 const TABS = [
   { value: "overview", label: "Overview", icon: LayoutDashboard },
@@ -46,6 +53,7 @@ const TABS = [
   { value: "bookings", label: "Bookings", icon: Calendar },
   { value: "analytics", label: "Analytics", icon: BarChart3 },
   { value: "reports", label: "Reports", icon: FileText },
+  { value: "support-staff", label: "Support Staff", icon: HeadphonesIcon },
 ];
 
 export default function AdminDashboard() {
@@ -214,7 +222,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Desktop tabs */}
-        <TabsList className="hidden md:grid w-full grid-cols-6">
+        <TabsList className="hidden md:grid w-full grid-cols-7">
           {TABS.map(({ value, label }) => (
             <TabsTrigger key={value} value={value}>
               {label}
@@ -573,6 +581,11 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* ── Support Staff ── */}
+        <TabsContent value="support-staff" className="space-y-6">
+          <SupportStaffPanel />
         </TabsContent>
       </Tabs>
     </div>

@@ -4,6 +4,7 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { walletService } from "@/lib/wallet-service";
+import { notifyWalletDeposit } from "@/lib/notifications";
 
 export async function POST(request) {
   try {
@@ -25,7 +26,7 @@ export async function POST(request) {
     console.log("Paystack webhook event:", event.event);
 
     if (event.event === "charge.success") {
-      const reference = event.data.reference;
+      const { reference, amount, customer } = event.data;
 
       // Check if this is a wallet deposit (starts with WD-)
       if (reference.startsWith("WD-")) {
@@ -36,6 +37,14 @@ export async function POST(request) {
           console.error("Deposit verification error:", result.error);
         } else {
           console.log("Deposit verified successfully:", result.data);
+          // Notify the user their wallet was topped up
+          const userId = result.data?.user_id;
+          if (userId) {
+            await notifyWalletDeposit(userId, {
+              amount:    amount / 100, // Paystack amounts are in kobo
+              reference,
+            });
+          }
         }
       }
     }

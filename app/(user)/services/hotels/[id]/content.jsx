@@ -197,6 +197,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
   useViewTracker(hotel.id, "hotel", hotel.vendor_id);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState(null);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
   const { saved: isSaved, toggle: toggleSave } = useSavedListing(
     hotel.id, "hotel",
     { title: hotel.name, image: hotel.image_urls?.[0], location: hotel.city || hotel.state }
@@ -310,11 +311,26 @@ const HotelDetails = ({ hotel, roomTypes }) => {
 
               {hotelAmenities.length > 0 && (
                 <section className="mb-10">
-                  <h2 className="text-[18px] font-semibold text-gray-900 mb-5">
-                    What's included
-                  </h2>
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-[18px] font-semibold text-gray-900">
+                      What's included
+                    </h2>
+                    {hotelAmenities.length > 6 && (
+                      <button
+                        onClick={() => setShowAllAmenities((v) => !v)}
+                        className="text-[13px] font-medium text-violet-600 hover:text-violet-700 transition-colors"
+                      >
+                        {showAllAmenities
+                          ? "Show less"
+                          : `Show all ${hotelAmenities.length}`}
+                      </button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {hotelAmenities.map((a) => (
+                    {(showAllAmenities
+                      ? hotelAmenities
+                      : hotelAmenities.slice(0, 6)
+                    ).map((a) => (
                       <div
                         key={a.key}
                         className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-gray-100 hover:border-violet-200 transition-colors"

@@ -1,6 +1,7 @@
 // app/api/admin/vendors/reject/route.js
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { notifyKYCRejected } from "@/lib/notifications";
 
 export async function POST(request) {
   try {
@@ -37,6 +38,11 @@ export async function POST(request) {
       .single();
 
     if (error) throw error;
+
+    // In-app notification to vendor
+    if (data?.user_id) {
+      await notifyKYCRejected(data.user_id);
+    }
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
