@@ -46,10 +46,6 @@ const FILTERS = [
 const BOOKING_TYPES = ["booking_confirmed","booking_cancelled","booking_pending","booking_updated","new_booking"];
 const PAYMENT_TYPES = ["payment_successful","payment_failed","payment_received","wallet_deposit","payout_processed"];
 
-export const metadata = {
-  title: "Notifications — Vendor Dashboard",
-};
-
 export default function VendorNotificationsPage() {
   const router = useRouter();
   const { data: authData } = useAuth();
