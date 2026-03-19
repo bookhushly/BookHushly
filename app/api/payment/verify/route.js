@@ -381,24 +381,39 @@ async function firePaymentNotifications(supabase, payment) {
       payment.apartment_booking_id ||
       payment.event_booking_id;
 
-    // Resolve the service name + vendor user_id from the booking
-    let serviceName = "your booking";
+    // customer_id is how the payments table stores the user (not user_id)
+    const customerId = payment.customer_id;
+    const isValidUser = customerId && customerId !== "anonymous";
+
+    let serviceName  = "your booking";
     let vendorUserId = null;
+    let guestName    = "Guest";
 
     if (payment.hotel_booking_id) {
       const { data: b } = await supabase
         .from("hotel_bookings")
-        .select("guest_name, hotels(name, vendor_id, vendors(user_id))")
+        .select("user_id, guest_name, hotel_id, hotels!inner(name, vendor_id)")
         .eq("id", payment.hotel_booking_id)
         .single();
+
       if (b) {
-        serviceName  = b.hotels?.name ?? serviceName;
-        vendorUserId = b.hotels?.vendors?.user_id ?? null;
-        // Notify vendor of new booking + payment
+        serviceName = b.hotels?.name ?? serviceName;
+        guestName   = b.guest_name ?? guestName;
+
+        // Resolve vendor's auth user_id via their vendor record
+        if (b.hotels?.vendor_id) {
+          const { data: v } = await supabase
+            .from("vendors")
+            .select("user_id")
+            .eq("id", b.hotels.vendor_id)
+            .single();
+          vendorUserId = v?.user_id ?? null;
+        }
+
         if (vendorUserId) {
           await notifyVendorNewBooking(vendorUserId, {
             bookingId:   payment.hotel_booking_id,
-            guestName:   b.guest_name,
+            guestName,
             serviceName,
             amount:      payment.amount,
           });
@@ -412,12 +427,23 @@ async function firePaymentNotifications(supabase, payment) {
     } else if (payment.apartment_booking_id) {
       const { data: b } = await supabase
         .from("apartment_bookings")
-        .select("guest_name, listings(title, vendor_id, vendors(user_id))")
+        .select("user_id, guest_name, listing_id, listings!inner(title, vendor_id)")
         .eq("id", payment.apartment_booking_id)
         .single();
+
       if (b) {
-        serviceName  = b.listings?.title ?? serviceName;
-        vendorUserId = b.listings?.vendors?.user_id ?? null;
+        serviceName = b.listings?.title ?? serviceName;
+        guestName   = b.guest_name ?? guestName;
+
+        if (b.listings?.vendor_id) {
+          const { data: v } = await supabase
+            .from("vendors")
+            .select("user_id")
+            .eq("id", b.listings.vendor_id)
+            .single();
+          vendorUserId = v?.user_id ?? null;
+        }
+
         if (vendorUserId) {
           await notifyVendorPaymentReceived(vendorUserId, {
             amount: payment.amount, reference: payment.reference, serviceName,
@@ -427,12 +453,23 @@ async function firePaymentNotifications(supabase, payment) {
     } else if (payment.event_booking_id) {
       const { data: b } = await supabase
         .from("event_bookings")
-        .select("guest_name, listings(title, vendor_id, vendors(user_id))")
+        .select("user_id, guest_name, listing_id, listings!inner(title, vendor_id)")
         .eq("id", payment.event_booking_id)
         .single();
+
       if (b) {
-        serviceName  = b.listings?.title ?? serviceName;
-        vendorUserId = b.listings?.vendors?.user_id ?? null;
+        serviceName = b.listings?.title ?? serviceName;
+        guestName   = b.guest_name ?? guestName;
+
+        if (b.listings?.vendor_id) {
+          const { data: v } = await supabase
+            .from("vendors")
+            .select("user_id")
+            .eq("id", b.listings.vendor_id)
+            .single();
+          vendorUserId = v?.user_id ?? null;
+        }
+
         if (vendorUserId) {
           await notifyVendorPaymentReceived(vendorUserId, {
             amount: payment.amount, reference: payment.reference, serviceName,
@@ -441,15 +478,15 @@ async function firePaymentNotifications(supabase, payment) {
       }
     }
 
-    // Notify customer
-    if (payment.user_id) {
-      await notifyPaymentSuccessful(payment.user_id, {
+    // Notify customer — payment.customer_id is the auth user UUID
+    if (isValidUser) {
+      await notifyPaymentSuccessful(customerId, {
         reference:   payment.reference,
         amount:      payment.amount,
         serviceName,
       });
       if (bookingId) {
-        await notifyBookingConfirmed(payment.user_id, {
+        await notifyBookingConfirmed(customerId, {
           bookingId,
           serviceName,
         });

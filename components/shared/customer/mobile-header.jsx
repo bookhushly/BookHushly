@@ -18,7 +18,6 @@ import {
   LogOut,
   Menu,
 } from "lucide-react";
-import { NotificationBell } from "@/components/shared/notifications/NotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { createClient } from "@/lib/supabase/client";
@@ -163,15 +162,12 @@ export function CustomerMobileHeader({ user }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <NotificationBell userId={user.id} align="right" />
-        <Avatar className="h-8 w-8 border-2 border-purple-200">
-          <AvatarImage src={user.avatar} />
-          <AvatarFallback className="bg-purple-600 text-white text-xs font-semibold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-      </div>
+      <Avatar className="h-8 w-8 border-2 border-purple-200">
+        <AvatarImage src={user.avatar} />
+        <AvatarFallback className="bg-purple-600 text-white text-xs font-semibold">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
     </header>
   );
 }

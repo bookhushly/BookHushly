@@ -17,11 +17,13 @@ import {
   X,
   Brain,
   BarChart2,
+  Bell,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useUnreadCount } from "@/hooks/use-notifications";
 
 const NAV = [
   {
@@ -51,8 +53,9 @@ const NAV = [
   {
     section: "System",
     items: [
-      { label: "AI Settings",   href: "/admin/dashboard/settings",      icon: Brain     },
-      { label: "AI Analytics",  href: "/admin/dashboard/ai-analytics",  icon: BarChart2 },
+      { label: "Notifications", href: "/admin/dashboard/notifications", icon: Bell,      badge: true  },
+      { label: "AI Settings",   href: "/admin/dashboard/settings",      icon: Brain                   },
+      { label: "AI Analytics",  href: "/admin/dashboard/ai-analytics",  icon: BarChart2               },
     ],
   },
 ];
@@ -143,6 +146,7 @@ export function AdminSidebar({ isOpen, onClose }) {
   const logoutMutation = useLogout();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const unreadCount = useUnreadCount(authData?.user?.id);
 
   const admin = authData?.user;
   const displayName =
@@ -165,8 +169,9 @@ export function AdminSidebar({ isOpen, onClose }) {
           </p>
         )}
         {collapsed && !isMobile && <div className="h-3" />}
-        {items.map(({ label, href, icon: Icon }) => {
+        {items.map(({ label, href, icon: Icon, badge }) => {
           const active = isActive(href);
+          const showBadge = badge && unreadCount > 0;
           const link = (
             <Link
               key={href}
@@ -182,18 +187,30 @@ export function AdminSidebar({ isOpen, onClose }) {
                   : "text-gray-600 hover:bg-violet-50 hover:text-violet-700",
               )}
             >
-              <Icon
-                className={cn(
-                  "shrink-0 transition-colors",
-                  collapsed && !isMobile ? "h-[18px] w-[18px]" : "h-4 w-4",
-                  active
-                    ? "text-white"
-                    : "text-gray-400 group-hover:text-violet-600",
+              <div className="relative shrink-0">
+                <Icon
+                  className={cn(
+                    "transition-colors",
+                    collapsed && !isMobile ? "h-[18px] w-[18px]" : "h-4 w-4",
+                    active
+                      ? "text-white"
+                      : "text-gray-400 group-hover:text-violet-600",
+                  )}
+                  strokeWidth={2}
+                />
+                {showBadge && (
+                  <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] font-bold flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
                 )}
-                strokeWidth={2}
-              />
+              </div>
               {(!collapsed || isMobile) && (
-                <span className="truncate">{label}</span>
+                <span className="flex-1 truncate">{label}</span>
+              )}
+              {(!collapsed || isMobile) && showBadge && (
+                <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"}`}>
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
               )}
             </Link>
           );

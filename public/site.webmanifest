@@ -4,16 +4,22 @@
   "description": "Book hotels, apartments, events and services in Nigeria",
   "icons": [
     {
-      "src": "/logos/faviconhu/android-chrome-192x192.png",
+      "src": "/logo.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/logos/faviconhu/android-chrome-512x512.png",
+      "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/logos/faviconhu/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "theme_color": "#7c3aed",
@@ -26,14 +32,5 @@
   "categories": ["travel", "lifestyle", "shopping"],
   "lang": "en-NG",
   "dir": "ltr",
-  "id": "com.bookhushly.app",
-  "screenshots": [
-    {
-      "src": "/logos/faviconhu/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "BookHushly — Book Hotels & Services"
-    }
-  ]
+  "id": "com.bookhushly.app"
 }

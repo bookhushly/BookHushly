@@ -81,12 +81,7 @@
 
   /* Improved base typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-foreground font-semibold leading-tight;
     letter-spacing: -0.01em;
-  }
-
-  p, li, td, th, label, span {
-    @apply text-foreground;
   }
 
   /* Ensure small text stays readable — raise minimum from text-xs (12px) to readable sizes */
