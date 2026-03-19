@@ -9,7 +9,14 @@ import React, {
   startTransition,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MapPin, LocateFixed, X } from "lucide-react";
+import { MapPin, LocateFixed, X, ArrowUpDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SCATEGORIES } from "@/lib/constants";
 import { useListingsData } from "@/hooks/useListingsData";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -17,9 +24,28 @@ import CategoryTabs from "@/components/shared/services/category-tab";
 import FilterPanel from "@/components/shared/services/filter";
 import ActiveFilters from "@/components/shared/services/active-filters";
 import ListingsGrid from "@/components/shared/services/listings-grid";
+import SmartQuestions from "@/components/shared/services/smart-questions";
+import QuickChips from "@/components/shared/services/quick-chips";
 import { SkeletonCard } from "@/components/shared/services/ui";
 
 const BOOKHUSHLY_SERVICES = ["logistics", "security"];
+
+// ── Sort control ──────────────────────────────────────────────────────────────
+function SortControl({ sort, onSortChange }) {
+  return (
+    <Select value={sort} onValueChange={onSortChange}>
+      <SelectTrigger className="h-8 text-xs w-40 border-gray-200 bg-white gap-1">
+        <ArrowUpDown className="h-3 w-3 text-gray-400 shrink-0" />
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent align="end">
+        <SelectItem value="newest">Newest first</SelectItem>
+        <SelectItem value="price_asc">Price: Low → High</SelectItem>
+        <SelectItem value="price_desc">Price: High → Low</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
 
 export default function ServicesPage() {
   const router = useRouter();
@@ -31,10 +57,12 @@ export default function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState(initial);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState(() =>
-    urlCity ? { city: urlCity } : {}
+    urlCity ? { city: urlCity } : {},
   );
+  const [sort, setSort] = useState("newest");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [nearMeActive, setNearMeActive] = useState(!!urlCity);
+  const [nearMeBannerDismissed, setNearMeBannerDismissed] = useState(false);
 
   const geo = useGeolocation();
   const isBookHushly = BOOKHUSHLY_SERVICES.includes(activeCategory);
@@ -66,8 +94,8 @@ export default function ServicesPage() {
       startTransition(() => {
         setFilters((prev) => ({
           ...prev,
-          city:   geo.city  || undefined,
-          state:  geo.state || undefined,
+          city: geo.city || undefined,
+          state: geo.state || undefined,
           nearMe: true,
         }));
       });
@@ -89,14 +117,15 @@ export default function ServicesPage() {
       return;
     }
     setNearMeActive(true);
+    setNearMeBannerDismissed(true);
     if (!geo.granted) {
       geo.requestLocation();
     } else if (geo.city || geo.state) {
       startTransition(() => {
         setFilters((prev) => ({
           ...prev,
-          city:   geo.city  || undefined,
-          state:  geo.state || undefined,
+          city: geo.city || undefined,
+          state: geo.state || undefined,
           nearMe: true,
         }));
       });
@@ -106,7 +135,7 @@ export default function ServicesPage() {
   const categoryLabel = useMemo(
     () =>
       SCATEGORIES.find((c) => c.value === activeCategory)?.label || "Services",
-    [activeCategory]
+    [activeCategory],
   );
 
   const {
@@ -117,7 +146,7 @@ export default function ServicesPage() {
     hasMore,
     lastListingRef,
     totalCount,
-  } = useListingsData(activeCategory, searchQuery, filters);
+  } = useListingsData(activeCategory, searchQuery, filters, sort);
 
   const handleCategoryChange = useCallback(
     (cat) => {
@@ -130,10 +159,11 @@ export default function ServicesPage() {
         setFilters({});
         setSearchQuery("");
         setNearMeActive(false);
+        setSort("newest");
         router.push(`/services?category=${cat}`, { scroll: false });
       });
     },
-    [router]
+    [router],
   );
 
   const handleRemoveFilter = useCallback((key, newValue) => {
@@ -150,21 +180,41 @@ export default function ServicesPage() {
     });
     if (key === "city" || key === "state") {
       setNearMeActive(false);
-      setFilters((prev) => { const n = { ...prev }; delete n.nearMe; return n; });
+      setFilters((prev) => {
+        const n = { ...prev };
+        delete n.nearMe;
+        return n;
+      });
     }
   }, []);
 
   const handleFiltersChange = useCallback((f) => {
     startTransition(() => {
       setFilters(f);
-      // If user manually changed city, deactivate near-me
       setNearMeActive(false);
+    });
+  }, []);
+
+  const handleQuickFilters = useCallback((f) => {
+    startTransition(() => setFilters(f));
+  }, []);
+
+  const handleLocationChange = useCallback(() => {
+    setNearMeActive(false);
+    setFilters((prev) => {
+      const next = { ...prev };
+      delete next.nearMe;
+      return next;
     });
   }, []);
 
   const locationLabel = nearMeActive
     ? [geo.city, geo.state].filter(Boolean).join(", ")
     : null;
+
+  const hasActiveFilters = Object.keys(filters).some(
+    (k) => k !== "nearMe" && filters[k] !== null && filters[k] !== undefined,
+  );
 
   // Redirect spinner
   if (isBookHushly) {
@@ -188,14 +238,45 @@ export default function ServicesPage() {
       />
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        {/* Proactive near-me banner */}
+        {!nearMeActive &&
+          !geo.granted &&
+          !geo.error &&
+          !nearMeBannerDismissed && (
+            <div className="flex items-center gap-3 mb-5 px-4 py-3 bg-violet-50 border border-violet-100 rounded-xl">
+              <MapPin className="h-4 w-4 text-violet-600 shrink-0" />
+              <p className="text-sm text-gray-700 flex-1">
+                Find{" "}
+                <span className="font-medium text-violet-700">
+                  {categoryLabel.toLowerCase()}
+                </span>{" "}
+                near you
+              </p>
+              <button
+                onClick={handleNearMeToggle}
+                className="text-sm font-semibold text-violet-700 hover:text-violet-900 transition-colors shrink-0"
+              >
+                Enable location →
+              </button>
+              <button
+                onClick={() => setNearMeBannerDismissed(true)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Desktop sidebar filter */}
           <aside className="hidden lg:block lg:w-72 xl:w-80 shrink-0">
             <FilterPanel
               category={activeCategory}
               filters={filters}
               onFiltersChange={handleFiltersChange}
+              onLocationChange={handleLocationChange}
               isOpen={true}
               onToggle={() => {}}
               isMobile={false}
@@ -204,7 +285,7 @@ export default function ServicesPage() {
 
           {/* Main content */}
           <main className="flex-1 min-w-0">
-            {/* Mobile filter */}
+            {/* Mobile filter trigger */}
             <div className="lg:hidden mb-4">
               <FilterPanel
                 category={activeCategory}
@@ -212,13 +293,14 @@ export default function ServicesPage() {
                 onFiltersChange={handleFiltersChange}
                 isOpen={isFilterOpen}
                 onToggle={() => setIsFilterOpen((p) => !p)}
+                onLocationChange={handleLocationChange}
                 isMobile={true}
+                totalCount={totalCount}
               />
             </div>
 
-            {/* Location bar */}
+            {/* Location + near-me bar */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              {/* Near me toggle */}
               <button
                 onClick={handleNearMeToggle}
                 disabled={geo.loading}
@@ -233,10 +315,9 @@ export default function ServicesPage() {
                 ) : (
                   <LocateFixed className="h-3.5 w-3.5" />
                 )}
-                {nearMeActive ? "Near me" : "Near me"}
+                Near me
               </button>
 
-              {/* Detected location pill */}
               {nearMeActive && locationLabel && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-violet-50 text-violet-700 border border-violet-200">
                   <MapPin className="h-3 w-3" />
@@ -254,11 +335,24 @@ export default function ServicesPage() {
                 </span>
               )}
 
-              {/* Geo error */}
               {nearMeActive && geo.error && (
                 <span className="text-xs text-red-500">{geo.error}</span>
               )}
             </div>
+
+            {/* Smart contextual questions */}
+            <SmartQuestions
+              category={activeCategory}
+              filters={filters}
+              onFiltersChange={handleQuickFilters}
+            />
+
+            {/* Popular quick-filter chips */}
+            <QuickChips
+              category={activeCategory}
+              filters={filters}
+              onFiltersChange={handleQuickFilters}
+            />
 
             <ActiveFilters
               filters={filters}
@@ -266,22 +360,31 @@ export default function ServicesPage() {
               nearMeActive={nearMeActive}
             />
 
-            {/* Results count */}
-            {!loading && listings.length > 0 && (
-              <p className="text-sm text-gray-500 mb-6">
-                <span className="font-semibold text-gray-900">
-                  {totalCount}
-                </span>{" "}
-                {totalCount === 1 ? "service" : "services"} available
-                {nearMeActive && locationLabel && (
-                  <span className="text-violet-600"> near {locationLabel}</span>
-                )}
-              </p>
+            {/* Results count + sort */}
+            {!loading && (
+              <div className="flex items-center justify-between gap-3 mb-5">
+                <p className="text-sm text-gray-500">
+                  {listings.length > 0 ? (
+                    <>
+                      <span className="font-semibold text-gray-900">
+                        {totalCount}
+                      </span>{" "}
+                      {totalCount === 1 ? "result" : "results"}
+                      {nearMeActive && locationLabel && (
+                        <span className="text-violet-600">
+                          {" "}near {locationLabel}
+                        </span>
+                      )}
+                    </>
+                  ) : null}
+                </p>
+                <SortControl sort={sort} onSortChange={setSort} />
+              </div>
             )}
 
             {/* Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
@@ -293,6 +396,11 @@ export default function ServicesPage() {
                 isLoadingMore={isLoadingMore}
                 lastListingRef={lastListingRef}
                 nearMeActive={nearMeActive}
+                hasActiveFilters={hasActiveFilters}
+                onClearFilters={() => {
+                  setFilters({});
+                  setNearMeActive(false);
+                }}
               />
             )}
           </main>

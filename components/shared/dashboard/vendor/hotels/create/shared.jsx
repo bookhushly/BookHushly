@@ -4,51 +4,70 @@ import { Check, X, Trash2 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
 export const StepIndicator = memo(({ steps, currentStep }) => (
-  <div className="flex items-center justify-between mb-8">
-    {steps.map((step, index) => {
-      const Icon = step.icon;
-      const isActive = currentStep === step.id;
-      const isCompleted = currentStep > step.id;
+  <div className="mb-8">
+    {/* Mobile: compact progress bar + current step label */}
+    <div className="flex sm:hidden items-center gap-3 mb-3">
+      <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-purple-600 rounded-full transition-all duration-300"
+          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+        />
+      </div>
+      <span className="text-xs font-semibold text-purple-600 shrink-0">
+        {currentStep} / {steps.length}
+      </span>
+    </div>
+    <p className="flex sm:hidden text-sm font-medium text-gray-700 mb-1">
+      {steps.find((s) => s.id === currentStep)?.title}
+    </p>
 
-      return (
-        <div key={step.id} className="flex items-center flex-1">
-          <div className="flex flex-col items-center">
-            <div
-              className={`
-                w-12 h-12 rounded-full flex items-center justify-center transition-all
-                ${isActive ? "bg-purple-600 text-white scale-110" : ""}
-                ${isCompleted ? "bg-purple-100 text-purple-600" : ""}
-                ${!isActive && !isCompleted ? "bg-gray-100 text-gray-400" : ""}
-              `}
-            >
-              {isCompleted ? (
-                <Check className="w-5 h-5" />
-              ) : (
-                <Icon className="w-5 h-5" />
-              )}
+    {/* Desktop: full step indicator */}
+    <div className="hidden sm:flex items-center justify-between">
+      {steps.map((step, index) => {
+        const Icon = step.icon;
+        const isActive = currentStep === step.id;
+        const isCompleted = currentStep > step.id;
+
+        return (
+          <div key={step.id} className="flex items-center flex-1">
+            <div className="flex flex-col items-center">
+              <div
+                className={`
+                  w-12 h-12 rounded-full flex items-center justify-center transition-all
+                  ${isActive ? "bg-purple-600 text-white scale-110" : ""}
+                  ${isCompleted ? "bg-purple-100 text-purple-600" : ""}
+                  ${!isActive && !isCompleted ? "bg-gray-100 text-gray-400" : ""}
+                `}
+              >
+                {isCompleted ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  <Icon className="w-5 h-5" />
+                )}
+              </div>
+              <p
+                className={`mt-2 text-sm font-medium ${
+                  isActive
+                    ? "text-purple-600"
+                    : isCompleted
+                      ? "text-gray-700"
+                      : "text-gray-400"
+                }`}
+              >
+                {step.title}
+              </p>
             </div>
-            <p
-              className={`mt-2 text-sm font-medium ${
-                isActive
-                  ? "text-purple-600"
-                  : isCompleted
-                    ? "text-gray-700"
-                    : "text-gray-400"
-              }`}
-            >
-              {step.title}
-            </p>
+            {index < steps.length - 1 && (
+              <div
+                className={`flex-1 h-0.5 mx-4 ${
+                  isCompleted ? "bg-purple-600" : "bg-gray-200"
+                }`}
+              />
+            )}
           </div>
-          {index < steps.length - 1 && (
-            <div
-              className={`flex-1 h-0.5 mx-4 ${
-                isCompleted ? "bg-purple-600" : "bg-gray-200"
-              }`}
-            />
-          )}
-        </div>
-      );
-    })}
+        );
+      })}
+    </div>
   </div>
 ));
 StepIndicator.displayName = "StepIndicator";

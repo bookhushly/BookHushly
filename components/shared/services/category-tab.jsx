@@ -54,12 +54,13 @@ const CategoryTabs = memo(
             </h1>
           </div>
 
-          {/* Category pills */}
-          <div
-            ref={scrollRef}
-            className="flex gap-1 overflow-x-auto scrollbar-none"
-            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-          >
+          {/* Category pills — with right-edge fade hint for horizontal scroll */}
+          <div className="relative">
+            <div
+              ref={scrollRef}
+              className="flex gap-1 overflow-x-auto scrollbar-none"
+              style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+            >
             {SCATEGORIES.map((cat) => {
               const isActive = activeCategory === cat.value;
               const isDirect = BOOKHUSHLY_SERVICES.includes(cat.value);
@@ -93,6 +94,9 @@ const CategoryTabs = memo(
                 </button>
               );
             })}
+            </div>
+            {/* Right fade — hints that more tabs exist off-screen */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/90 to-transparent" />
           </div>
         </div>
 

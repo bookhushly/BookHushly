@@ -35,12 +35,20 @@ function ProximityBadge({ proximity }) {
 }
 
 const ListingsGrid = memo(
-  ({ listings, fetchError, isLoadingMore, lastListingRef, nearMeActive }) => {
+  ({
+    listings,
+    fetchError,
+    isLoadingMore,
+    lastListingRef,
+    nearMeActive,
+    hasActiveFilters,
+    onClearFilters,
+  }) => {
     if (fetchError) {
       return (
         <EmptyState
           title="Failed to load services"
-          subtitle="Please try again."
+          subtitle="Check your connection and try again."
           icon={Shield}
         />
       );
@@ -49,16 +57,22 @@ const ListingsGrid = memo(
     if (!listings.length && !isLoadingMore) {
       return (
         <EmptyState
-          title="No services found"
-          subtitle="Try different filters."
+          title="No results found"
+          subtitle={
+            hasActiveFilters
+              ? "No services match your current filters."
+              : "There are no listings in this category yet."
+          }
           icon={Search}
+          hasFilters={hasActiveFilters}
+          onClearFilters={onClearFilters}
         />
       );
     }
 
     return (
       <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {listings.map((service, index) => (
             <div
               key={service.id}

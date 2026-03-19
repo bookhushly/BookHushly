@@ -441,68 +441,64 @@ export default function ApartmentCreationForm() {
   const CurrentStepComponent = STEP_COMPONENTS[currentStep];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          {/* Header row */}
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight">
                 Create Serviced Apartment
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-sm text-gray-500 mt-0.5">
                 Step {currentStep} of {STEPS_TOTAL}: {STEP_TITLES[currentStep]}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              {/* Network status */}
+            <div className="flex items-center gap-2 shrink-0">
               {!isOnline && (
-                <div className="flex items-center gap-2 text-sm text-red-600">
+                <div className="flex items-center gap-1 text-red-600">
                   <WifiOff className="h-4 w-4" />
-                  <span className="text-xs">Offline</span>
+                  <span className="text-xs hidden sm:inline">Offline</span>
                 </div>
               )}
-
-              {/* Last saved indicator */}
               {lastSaved && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-400 hidden sm:inline">
                   Saved {lastSaved.toLocaleTimeString()}
                 </span>
               )}
-
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleSaveDraft}
                 disabled={isSaving}
+                className="h-8 px-2.5"
               >
                 {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save
-                  </>
+                  <Save className="h-3.5 w-3.5" />
                 )}
+                <span className="ml-1.5 hidden sm:inline">{isSaving ? "Saving..." : "Save"}</span>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleExit}>
+              <Button variant="ghost" size="sm" onClick={handleExit} className="h-8 px-2.5">
                 Exit
               </Button>
             </div>
           </div>
 
-          <div className="space-y-2">
+          {/* Progress bar */}
+          <div className="space-y-1.5">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-purple-600 h-2 rounded-full transition-all"
+                className="bg-purple-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>Progress: {Math.round(progress)}%</span>
-              <span>Auto-saving...</span>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>{Math.round(progress)}% complete</span>
+              {lastSaved && (
+                <span className="sm:hidden">Saved {lastSaved.toLocaleTimeString()}</span>
+              )}
             </div>
           </div>
         </div>
@@ -533,14 +529,15 @@ export default function ApartmentCreationForm() {
           )}
         </div>
 
-        <div className="flex items-center justify-between py-6 border-t border-gray-200 bg-white rounded-lg px-6">
+        <div className="sticky bottom-0 flex items-center justify-between gap-3 py-4 px-4 sm:px-6 border-t border-gray-200 bg-white rounded-lg shadow-md">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 1 || isSubmitting}
+            className="h-10"
           >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous
+            <ChevronLeft className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Previous</span>
           </Button>
 
           <Button
@@ -548,6 +545,7 @@ export default function ApartmentCreationForm() {
             size="sm"
             onClick={clearDraft}
             disabled={isSubmitting}
+            className="hidden sm:flex h-10 text-gray-400 hover:text-gray-600"
           >
             Clear Draft
           </Button>
@@ -556,16 +554,16 @@ export default function ApartmentCreationForm() {
             <Button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-purple-600 hover:bg-purple-700 h-10 flex-1 sm:flex-none"
             >
               Next
-              <ChevronRight className="h-4 w-4 ml-2" />
+              <ChevronRight className="h-4 w-4 sm:ml-1" />
             </Button>
           ) : (
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !isOnline}
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-purple-600 hover:bg-purple-700 h-10 flex-1 sm:flex-none"
             >
               {isSubmitting ? (
                 <>

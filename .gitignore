@@ -407,3 +407,4 @@ supabase/migrations/listing_views.sql
 supabase/migrations/ai_feature_usage.sql
 supabase/migrations/indexes.sql
 supabase/migrations/reviews.sql
+CLAUDE.md

@@ -301,10 +301,10 @@ export default function VendorDashboardClient({
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <Card className="border-gray-200/60 hover:border-gray-300 transition-all duration-200 group hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-xl bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
                   <Building2
@@ -322,7 +322,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Total Listings
               </p>
-              <p className="text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
                 {localListings.length}
               </p>
             </div>
@@ -330,8 +330,8 @@ export default function VendorDashboardClient({
         </Card>
 
         <Card className="border-gray-200/60 hover:border-gray-300 transition-all duration-200 group hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <Calendar className="h-5 w-5 text-blue-700" strokeWidth={2} />
@@ -346,7 +346,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Active Bookings
               </p>
-              <p className="text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
                 {stats.activeBookings}
               </p>
             </div>
@@ -354,8 +354,8 @@ export default function VendorDashboardClient({
         </Card>
 
         <Card className="border-gray-200/60 hover:border-gray-300 transition-all duration-200 group hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-xl bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
                   <DollarSign
@@ -373,7 +373,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Total Revenue
               </p>
-              <p className="text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
                 ₦{stats.totalRevenue.toLocaleString()}
               </p>
             </div>
@@ -381,8 +381,8 @@ export default function VendorDashboardClient({
         </Card>
 
         <Card className="border-gray-200/60 hover:border-gray-300 transition-all duration-200 group hover:shadow-md">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <div className="h-11 w-11 rounded-xl bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
                   <TrendingUp
@@ -399,7 +399,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Pending Requests
               </p>
-              <p className="text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
                 {stats.pendingRequests}
               </p>
             </div>
@@ -637,11 +637,11 @@ export default function VendorDashboardClient({
                             : `₦${listing.price?.toLocaleString()}`}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       {listing.active !== undefined && (
                         <Badge
                           variant={listing.active ? "default" : "secondary"}
-                          className={`text-xs ${
+                          className={`text-xs hidden sm:inline-flex ${
                             listing.active
                               ? "bg-green-100 text-green-700 hover:bg-green-100"
                               : ""
@@ -653,7 +653,7 @@ export default function VendorDashboardClient({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                         asChild
                       >
                         <Link
@@ -672,7 +672,7 @@ export default function VendorDashboardClient({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="h-8 w-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => openDeleteDialog(listing)}
                         disabled={deleteMutation.isPending}
                       >

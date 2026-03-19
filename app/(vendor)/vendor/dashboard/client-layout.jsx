@@ -16,7 +16,7 @@ export function VendorLayoutClient({ children }) {
         <VendorHeader onMenuClick={() => setMobileOpen(true)} />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto px-5 py-6">{children}</div>
+          <div className="max-w-[1400px] mx-auto px-3 sm:px-5 py-4 sm:py-6">{children}</div>
         </main>
       </div>
     </div>
