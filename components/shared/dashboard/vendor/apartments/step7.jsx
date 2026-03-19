@@ -1,11 +1,14 @@
 "use client";
 
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, FileText, Calendar, AlertCircle } from "lucide-react";
+import { Clock, FileText, Calendar, AlertCircle, User, Phone, Camera, Loader2, X } from "lucide-react";
 import RichTextEditor from "@/components/common/rich-text-editor";
+import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 
 const CANCELLATION_TEMPLATES = [
   {
@@ -40,6 +43,79 @@ const HOUSE_RULES_TEMPLATE = `• No smoking inside the apartment
 • Guests are responsible for any damages
 • No illegal activities
 • Report any issues immediately to the host`;
+
+function AgentPhotoUpload({ value, onChange }) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef(null);
+
+  const handleFile = async (file) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be under 5MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split(".").pop();
+      const path = `agent-photos/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("listing-images")
+        .upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("listing-images").getPublicUrl(path);
+      onChange(data.publicUrl);
+    } catch (err) {
+      alert("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-4">
+      <div
+        className="relative w-20 h-20 rounded-full border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden cursor-pointer hover:border-purple-400 transition-colors shrink-0"
+        onClick={() => inputRef.current?.click()}
+      >
+        {value ? (
+          <Image src={value} alt="Agent photo" fill className="object-cover rounded-full" />
+        ) : uploading ? (
+          <Loader2 className="h-6 w-6 text-purple-500 animate-spin" />
+        ) : (
+          <Camera className="h-6 w-6 text-gray-400" />
+        )}
+      </div>
+      <div className="flex-1 space-y-2">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="text-sm font-medium text-purple-600 hover:text-purple-700 disabled:opacity-50"
+        >
+          {uploading ? "Uploading…" : value ? "Change photo" : "Upload photo"}
+        </button>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="ml-3 text-sm text-gray-400 hover:text-red-500"
+          >
+            <X className="h-4 w-4 inline" /> Remove
+          </button>
+        )}
+        <p className="text-xs text-gray-400">JPG or PNG, max 5MB</p>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
+    </div>
+  );
+}
 
 export default function Step7Policies({ formData, updateFormData }) {
   const selectedPolicy = CANCELLATION_TEMPLATES.find(
@@ -308,6 +384,73 @@ export default function Step7Policies({ formData, updateFormData }) {
                 </p>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Meet Your Host */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5 text-purple-600" />
+            Meet Your Host / Agent
+          </CardTitle>
+          <p className="text-sm text-gray-600 mt-1">
+            Help guests know who will receive them. This shows as a "Meet Your Host" section on your listing.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="space-y-2">
+            <Label>Agent / Host Photo</Label>
+            <AgentPhotoUpload
+              value={formData.agent_image_url || ""}
+              onChange={(url) => updateFormData({ agent_image_url: url })}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="agent_name">
+                <User className="h-3.5 w-3.5 inline mr-1" />
+                Agent / Host Name
+              </Label>
+              <Input
+                id="agent_name"
+                placeholder="e.g. Chidi Okafor"
+                value={formData.agent_name || ""}
+                onChange={(e) => updateFormData({ agent_name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="agent_phone">
+                <Phone className="h-3.5 w-3.5 inline mr-1" />
+                Phone / WhatsApp Number
+              </Label>
+              <Input
+                id="agent_phone"
+                type="tel"
+                placeholder="e.g. +234 801 234 5678"
+                value={formData.agent_phone || ""}
+                onChange={(e) => updateFormData({ agent_phone: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="agent_bio">Short Bio (optional)</Label>
+            <Textarea
+              id="agent_bio"
+              rows={3}
+              placeholder="A brief intro about the agent or property host…"
+              value={formData.agent_bio || ""}
+              onChange={(e) => updateFormData({ agent_bio: e.target.value })}
+            />
+          </div>
+
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <p className="text-xs text-purple-800">
+              <strong>Tip:</strong> Listings with a named host and photo feel more trustworthy and typically get more bookings. The phone number will only be shared with confirmed guests.
+            </p>
           </div>
         </CardContent>
       </Card>

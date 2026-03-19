@@ -77,7 +77,7 @@ const ListingsGrid = memo(
             <div
               key={service.id}
               ref={index === listings.length - 1 ? lastListingRef : null}
-              className="flex flex-col"
+              className="flex flex-col h-full"
             >
               {nearMeActive && <ProximityBadge proximity={service.proximity} />}
               <Suspense fallback={<SkeletonCard />}>

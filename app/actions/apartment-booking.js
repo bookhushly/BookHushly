@@ -50,6 +50,26 @@ export async function createApartmentBooking(formData) {
       };
     }
 
+    // Check for an active booking lock by another user
+    const now = new Date().toISOString();
+    const { data: activeLock } = await supabase
+      .from("booking_locks")
+      .select("user_id, expires_at")
+      .eq("listing_id", bookingData.apartment_id)
+      .eq("listing_type", "apartment")
+      .gt("expires_at", now)
+      .maybeSingle();
+
+    if (activeLock && activeLock.user_id !== user.id) {
+      const lockedUntil = new Date(activeLock.expires_at);
+      const minutesLeft = Math.ceil((lockedUntil - new Date()) / 60000);
+      return {
+        success: false,
+        error: `This apartment is currently being booked by another guest. Please try again in about ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""}.`,
+        locked_until: activeLock.expires_at,
+      };
+    }
+
     // Check availability
     const { data: existingBookings } = await supabase
       .from("apartment_bookings")

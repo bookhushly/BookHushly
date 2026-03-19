@@ -48,7 +48,7 @@ function MessageBubble({ msg, agentName }) {
     return (
       <div className="flex justify-start mb-3">
         <div className="max-w-[75%]">
-          <p className="text-xs text-gray-400 mb-1 ml-1">Bot</p>
+          <p className="text-xs text-gray-400 mb-1 ml-1">Nora</p>
           <div className="bg-white border border-gray-100 text-gray-900 px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-sm">
             {msg.content}
           </div>

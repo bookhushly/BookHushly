@@ -156,6 +156,12 @@ export async function createServicedApartment(formData) {
         ? parseFloat(formData.get("agent_fee_amount"))
         : null,
 
+      // Meet Your Host / Agent
+      agent_name: formData.get("agent_name") || null,
+      agent_phone: formData.get("agent_phone") || null,
+      agent_image_url: formData.get("agent_image_url") || null,
+      agent_bio: formData.get("agent_bio") || null,
+
       // Vendor ID
       vendor_id: formData.get("vendor_id"),
     };
@@ -299,6 +305,10 @@ export async function updateServicedApartment(apartmentId, formData) {
       available_from: formData.get("available_from") || null,
       available_until: formData.get("available_until") || null,
       instant_booking: formData.get("instant_booking") === "true",
+      agent_name: formData.get("agent_name") || null,
+      agent_phone: formData.get("agent_phone") || null,
+      agent_image_url: formData.get("agent_image_url") || null,
+      agent_bio: formData.get("agent_bio") || null,
       updated_at: new Date().toISOString(),
     };
 

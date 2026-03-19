@@ -14,11 +14,11 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
     <Link
       href={`/services/serviced-apartments/${apt.id}`}
       ref={lastListingRef}
-      className="block group"
+      className="block group h-full"
     >
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
+      <div className="h-full flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
         {/* Image */}
-        <div className="relative h-52 overflow-hidden bg-gray-100">
+        <div className="relative h-36 sm:h-52 overflow-hidden bg-gray-100">
           <Image
             src={imageUrl}
             alt={apt.title}
@@ -46,7 +46,7 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-3 sm:p-4 flex-1 flex flex-col">
           {/* Location */}
           <div className="flex items-center gap-1.5 mb-1.5">
             <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
@@ -57,7 +57,7 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-gray-900 text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
+          <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
             {apt.title}
           </h3>
 
@@ -129,7 +129,7 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
           )}
 
           {/* CTA */}
-          <div className="w-full h-10 flex items-center justify-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 cursor-pointer">
+          <div className="mt-auto w-full h-10 flex items-center justify-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 cursor-pointer">
             View details
           </div>
         </div>

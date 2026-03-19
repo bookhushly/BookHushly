@@ -214,6 +214,42 @@ export async function POST(request) {
       paymentData.event_booking_id = requestId;
     }
 
+    // Acquire a booking lock so no other user can book the same listing
+    // during the active payment window (15 minutes).
+    const lockListingType =
+      requestType === "hotel" ? "hotel"
+      : requestType === "apartment" ? "apartment"
+      : requestType === "event" ? "event"
+      : null;
+
+    if (lockListingType) {
+      const listingId =
+        requestType === "hotel" ? requestData.hotel_id
+        : requestType === "apartment" ? requestData.apartment_id
+        : requestType === "event" ? requestData.listing_id || requestData.event_id
+        : null;
+
+      if (listingId) {
+        const lockExpiry = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+        // Remove stale locks by this user on same listing first
+        await supabase
+          .from("booking_locks")
+          .delete()
+          .eq("listing_id", listingId)
+          .eq("listing_type", lockListingType)
+          .eq("user_id", requestData.user_id || requestData.customer_id);
+
+        await supabase.from("booking_locks").insert({
+          listing_id: listingId,
+          listing_type: lockListingType,
+          user_id: requestData.user_id || requestData.customer_id,
+          booking_id: requestId,
+          expires_at: lockExpiry,
+        });
+      }
+    }
+
     // Create payment record
     const { data: payment, error: paymentError } = await supabase
       .from("payments")

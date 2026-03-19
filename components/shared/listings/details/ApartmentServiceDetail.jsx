@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
   AirVent,
   Shield,
   Utensils,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -206,6 +208,51 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
           </div>
         </div>
       </div>
+
+      {/* Meet Your Host */}
+      {(service.agent_name || service.agent_phone) && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <User className="h-5 w-5 text-violet-600" />
+            Meet Your Host
+          </h3>
+          <div className="flex items-start gap-4">
+            {service.agent_image_url ? (
+              <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 border-2 border-violet-100">
+                <Image
+                  src={service.agent_image_url}
+                  alt={service.agent_name || "Host"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                <User className="h-7 w-7 text-violet-500" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              {service.agent_name && (
+                <p className="font-semibold text-gray-900 text-base">{service.agent_name}</p>
+              )}
+              {service.agent_bio && (
+                <p className="text-sm text-gray-500 mt-1 leading-relaxed">{service.agent_bio}</p>
+              )}
+              {service.agent_phone && (
+                <a
+                  href={`https://wa.me/${service.agent_phone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-green-700 bg-green-50 px-3 py-1.5 rounded-lg hover:bg-green-100 transition-colors"
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  Contact on WhatsApp
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Booking Sidebar */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">

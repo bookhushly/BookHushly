@@ -56,7 +56,30 @@ export async function POST(request) {
 /**
  * Update related booking/request after payment status change
  */
+async function releaseLockForPayment(supabase, payment) {
+  try {
+    const typeMap = { hotel: "hotel", apartment: "apartment", event: "event" };
+    const lockType = typeMap[payment.request_type];
+    const bookingId =
+      payment.hotel_booking_id || payment.apartment_booking_id || payment.event_booking_id;
+    if (lockType && bookingId) {
+      await supabase
+        .from("booking_locks")
+        .delete()
+        .eq("booking_id", bookingId)
+        .eq("listing_type", lockType);
+    }
+  } catch (err) {
+    console.error("Error releasing booking lock:", err);
+  }
+}
+
 async function updateRelatedEntity(supabase, payment, status) {
+  // Release lock when payment is confirmed or failed
+  if (status === "completed" || status === "failed") {
+    await releaseLockForPayment(supabase, payment);
+  }
+
   try {
     if (
       payment.request_type === "logistics" ||

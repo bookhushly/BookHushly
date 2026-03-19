@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const GREETING =
-  "Hi! I'm the BookHushly assistant. Ask me anything about bookings, payments, or our services.";
+  "Hi! I'm Nora, your BookHushly assistant. Ask me anything about bookings, payments, or our services.";
 const MAX_CHARS = 500;
 const CHAR_WARN = 400;
 const CHAR_DANGER = 480;
@@ -915,7 +915,7 @@ export default function ChatWidget() {
                   </div>
                   <div>
                     <p className="text-white font-semibold text-sm leading-tight">
-                      BookHushly Support
+                      Nora — BookHushly Support
                     </p>
                     {/* Status line — only one shown at a time */}
                     {!isPendingHuman &&

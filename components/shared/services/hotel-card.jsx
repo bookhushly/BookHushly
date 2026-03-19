@@ -54,8 +54,8 @@ const HotelCard = ({ service }) => {
     .slice(0, 4);
 
   return (
-    <Link href={`/services/hotels/${service.id}`} className="block group">
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] transition-all duration-300">
+    <Link href={`/services/hotels/${service.id}`} className="block group h-full">
+      <div className="h-full flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] transition-all duration-300">
         {/* Image */}
         <div className="relative h-44 sm:h-52 overflow-hidden bg-gray-100">
           <Image
@@ -104,7 +104,7 @@ const HotelCard = ({ service }) => {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-3 sm:p-4 flex-1 flex flex-col">
           {/* Location */}
           <div className="flex items-center gap-1.5 mb-1.5">
             <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
@@ -114,7 +114,7 @@ const HotelCard = ({ service }) => {
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-gray-900 text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
+          <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
             {service.title}
           </h3>
 
@@ -143,12 +143,12 @@ const HotelCard = ({ service }) => {
           )}
 
           {/* Price + CTA */}
-          <div className="flex items-end justify-between pt-3 border-t border-gray-100">
+          <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between pt-3 border-t border-gray-100">
             {service.price ? (
               <div>
                 <p className="text-[11px] text-gray-400 mb-0.5">Starting from</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-gray-900">
+                  <span className="text-base sm:text-xl font-bold text-gray-900">
                     ₦{service.price.toLocaleString()}
                   </span>
                   <span className="text-xs text-gray-400">/night</span>
@@ -157,7 +157,7 @@ const HotelCard = ({ service }) => {
             ) : (
               <p className="text-xs text-gray-400 italic">View details for pricing</p>
             )}
-            <span className="h-9 px-4 inline-flex items-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
+            <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
               See rooms
             </span>
           </div>

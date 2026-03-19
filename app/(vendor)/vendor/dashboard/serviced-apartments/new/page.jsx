@@ -111,6 +111,10 @@ const INITIAL_FORM_DATA = {
   instant_booking: true,
   available_from: "",
   available_until: "",
+  agent_name: "",
+  agent_phone: "",
+  agent_image_url: "",
+  agent_bio: "",
 };
 
 export default function ApartmentCreationForm() {
