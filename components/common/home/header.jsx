@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, User, LogOut, ChevronDown } from "lucide-react";
+import { Menu, X, User, LogOut, ChevronDown, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { CATEGORIES } from "@/lib/constants";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useInstallPrompt } from "@/hooks/use-install-prompt";
 
 const NAV_LINKS = [
   { name: "Home", href: "/" },
@@ -40,6 +41,7 @@ export function Header() {
   const sheetRef = useRef(null);
   const { data: authData, isLoading } = useAuth();
   const logoutMutation = useLogout();
+  const { canInstall, isInstalling, install } = useInstallPrompt();
 
   const user = authData?.user;
   const vendor = authData?.vendor;
@@ -112,6 +114,16 @@ export function Header() {
 
           {/* Desktop auth */}
           <div className="hidden md:flex items-center gap-3">
+            {canInstall && (
+              <button
+                onClick={install}
+                disabled={isInstalling}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-xs font-semibold hover:bg-violet-100 transition-colors disabled:opacity-60"
+              >
+                <Download className="h-3.5 w-3.5" />
+                {isInstalling ? "Installing…" : "Install App"}
+              </button>
+            )}
             {isLoading ? (
               <LoadingSpinner className="h-4 w-4 text-gray-400" />
             ) : user ? (
@@ -323,6 +335,18 @@ export function Header() {
                   Get started
                 </Link>
               </div>
+            )}
+
+            {/* Install App */}
+            {canInstall && (
+              <button
+                onClick={install}
+                disabled={isInstalling}
+                className="flex items-center justify-center gap-2 w-full h-11 rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300 text-sm font-semibold hover:bg-violet-500/20 transition-colors disabled:opacity-60"
+              >
+                <Download className="h-4 w-4" />
+                {isInstalling ? "Installing…" : "Install BookHushly App"}
+              </button>
             )}
 
             {/* Divider */}

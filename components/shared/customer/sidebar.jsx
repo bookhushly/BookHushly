@@ -18,9 +18,11 @@ import {
   ChevronUp,
   X,
   Bell,
+  Download,
 } from "lucide-react";
 import { useUnreadCount } from "@/hooks/use-notifications";
 import { useAuth } from "@/hooks/use-auth";
+import { useInstallPrompt } from "@/hooks/use-install-prompt";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { useState, useRef, useEffect } from "react";
@@ -161,6 +163,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const { data: authData } = useAuth();
   const unreadCount = useUnreadCount(authData?.user?.id);
+  const { canInstall, isInstalling, install } = useInstallPrompt();
 
   const initials =
     user.name
@@ -304,6 +307,32 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
           {renderNav(false)}
         </nav>
 
+        {/* Install App */}
+        {canInstall && (
+          <div className={cn("px-3 pb-2 shrink-0", collapsed && "flex justify-center px-2")}>
+            {collapsed ? (
+              <Tooltip label="Install App">
+                <button
+                  onClick={install}
+                  disabled={isInstalling}
+                  className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl text-violet-500 hover:bg-violet-100 hover:text-violet-700 transition-colors disabled:opacity-60"
+                >
+                  <Download className="h-[18px] w-[18px]" strokeWidth={2} />
+                </button>
+              </Tooltip>
+            ) : (
+              <button
+                onClick={install}
+                disabled={isInstalling}
+                className="w-full flex items-center gap-2.5 h-9 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-[13px] font-semibold hover:bg-violet-100 transition-colors disabled:opacity-60"
+              >
+                <Download className="h-4 w-4 shrink-0" strokeWidth={2} />
+                {isInstalling ? "Installing…" : "Install App"}
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Profile strip */}
         <div className="border-t border-violet-100 shrink-0 relative">
           {profileOpen && (
@@ -399,6 +428,19 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
             <nav className="flex-1 px-3 py-3 overflow-y-auto">
               {renderNav(true)}
             </nav>
+
+            {canInstall && (
+              <div className="px-3 pb-2 shrink-0">
+                <button
+                  onClick={install}
+                  disabled={isInstalling}
+                  className="w-full flex items-center gap-2.5 h-9 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-[13px] font-semibold hover:bg-violet-100 transition-colors disabled:opacity-60"
+                >
+                  <Download className="h-4 w-4 shrink-0" strokeWidth={2} />
+                  {isInstalling ? "Installing…" : "Install App"}
+                </button>
+              </div>
+            )}
 
             <div className="border-t border-violet-100 shrink-0 relative">
               {profileOpen && (

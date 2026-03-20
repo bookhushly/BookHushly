@@ -79,7 +79,7 @@ export function AdminHeader({ onMenuClick }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-52 shadow-lg shadow-black/10"
+            className="w-52 shadow-lg bg-white shadow-black/10"
           >
             <DropdownMenuLabel className="pb-2">
               <p className="text-[13px] font-semibold text-gray-900">

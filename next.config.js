@@ -5,6 +5,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   reloadOnOnline: true,
   workboxOptions: {
     disableDevLogs: true,
+    importScripts: ["/push-sw.js"],
   },
   fallbacks: {
     document: "/offline",

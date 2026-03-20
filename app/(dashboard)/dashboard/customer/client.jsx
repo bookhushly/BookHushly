@@ -27,6 +27,7 @@ import {
   SectionCard,
   Amount,
 } from "@/components/shared/customer/shared-ui";
+import { PushNotificationOptIn } from "@/components/shared/customer/PushNotificationOptIn";
 
 const SERVICE_LINKS = [
   {
@@ -114,6 +115,9 @@ export function DashboardOverviewClient({
 
   return (
     <div className="space-y-6">
+      {/* Push opt-in */}
+      <PushNotificationOptIn userId={userId} />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
