@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { render } from "@react-email/render";
 import QuoteEmail from "@/emails/quote-email";
+import { notifyQuoteReceived } from "@/lib/notifications";
 
 export async function POST(request) {
   try {
@@ -89,6 +90,15 @@ export async function POST(request) {
       const errorData = await emailResponse.json();
       console.error("Email send failed:", errorData);
       throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
+    }
+
+    // Notify customer in-app that their quote is ready (if they have an account)
+    if (requestData.user_id) {
+      notifyQuoteReceived(requestData.user_id, {
+        requestId:   quote.request_id,
+        serviceType: requestType,
+        amount:      quote.total_amount,
+      }).catch(() => {});
     }
 
     return NextResponse.json({

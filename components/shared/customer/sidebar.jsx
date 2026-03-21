@@ -235,7 +235,9 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
                 <span className="flex-1 truncate">{label}</span>
               )}
               {(!collapsed || isMobile) && showBadge && (
-                <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"}`}>
+                <span
+                  className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"}`}
+                >
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
@@ -275,12 +277,12 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
         >
           {!collapsed && (
             <Link href="/">
-              <div className="relative w-28 h-8">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
                   fill
-                  className="object-contain object-left"
+                  className="object-contain object-left scale-125"
                 />
               </div>
             </Link>
@@ -309,7 +311,12 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
 
         {/* Install App */}
         {canInstall && (
-          <div className={cn("px-3 pb-2 shrink-0", collapsed && "flex justify-center px-2")}>
+          <div
+            className={cn(
+              "px-3 pb-2 shrink-0",
+              collapsed && "flex justify-center px-2",
+            )}
+          >
             {collapsed ? (
               <Tooltip label="Install App">
                 <button
@@ -408,12 +415,12 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
             }}
           >
             <div className="h-16 flex items-center justify-between px-5 border-b border-violet-100 shrink-0">
-              <div className="relative w-28 h-8">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/logo.png"
                   alt="BookHushly"
                   fill
-                  className="object-contain object-left"
+                  className="object-contain object-left scale-150"
                 />
               </div>
               <button

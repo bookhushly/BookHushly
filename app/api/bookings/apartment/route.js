@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { notifyBookingPending } from "@/lib/notifications";
 
 export async function POST(request) {
   try {
@@ -79,6 +80,24 @@ export async function POST(request) {
         { error: "Failed to create booking", details: insertError.message },
         { status: 500 },
       );
+    }
+
+    // Notify the customer their booking was received (if logged in)
+    if (user?.id) {
+      const apartmentName = bookingData.guest_name
+        ? `your apartment stay`
+        : "your apartment stay";
+      // Fetch apartment name for a better message
+      const { data: apt } = await supabase
+        .from("serviced_apartments")
+        .select("name")
+        .eq("id", bookingData.apartment_id)
+        .single();
+      notifyBookingPending(user.id, {
+        bookingId:   booking.id,
+        serviceName: apt?.name || "your apartment",
+        bookingType: "apartment",
+      }).catch(() => {}); // non-blocking
     }
 
     return NextResponse.json({ success: true, data: booking });

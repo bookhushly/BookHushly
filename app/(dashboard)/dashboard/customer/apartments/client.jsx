@@ -79,9 +79,9 @@ export function ApartmentBookingsClient({ userId, initialData }) {
                 >
                   <div className="flex flex-col sm:flex-row">
                     <div className="sm:w-40 h-32 sm:h-auto bg-purple-50 flex-shrink-0 overflow-hidden">
-                      {booking.apartment?.images?.[0] ? (
+                      {booking.apartment?.image_urls?.[0] ? (
                         <img
-                          src={booking.apartment.images[0]}
+                          src={booking.apartment.image_urls[0]}
                           alt={booking.apartment?.name}
                           className="w-full h-full object-cover"
                         />

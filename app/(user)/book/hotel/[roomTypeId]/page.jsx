@@ -269,6 +269,13 @@ export default function HotelBookingPage() {
         .update({ status: "reserved" })
         .eq("id", selectedRoom.id);
 
+      // Fire "Booking Received" in-app notification (non-blocking)
+      fetch("/api/bookings/hotel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId: booking.id, hotelName: hotel?.name }),
+      }).catch(() => {});
+
       router.push(`/payment/hotel/${booking.id}`);
     } catch (err) {
       console.error("Booking creation error:", err);

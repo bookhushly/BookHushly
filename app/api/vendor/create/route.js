@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
+import { notifyAdminKYCSubmitted } from "@/lib/notifications";
 
 export async function POST(req) {
   const supabase = createClient();
@@ -45,6 +46,19 @@ export async function POST(req) {
       .single();
 
     if (vendorError) throw vendorError;
+
+    // Notify all admins in-app about the new KYC submission
+    const { data: admins } = await supabase
+      .from("users")
+      .select("id")
+      .eq("role", "admin");
+    const adminIds = admins?.map((a) => a.id).filter(Boolean) || [];
+    if (adminIds.length) {
+      notifyAdminKYCSubmitted(adminIds, {
+        vendorName: vendorData.business_name || user.full_name || user.email,
+        vendorId: newVendor.id,
+      }).catch(() => {});
+    }
 
     // Send KYC submission email to admin (or team)
     await sendEmail("aboderindaniel482@gmail.com", "kycSubmissionNotice", {

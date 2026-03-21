@@ -121,7 +121,7 @@ export async function getRecentActivity(userId, userEmail) {
       .from("hotel_bookings")
       .select(
         `id, booking_status, payment_status, total_price, created_at, check_in_date, check_out_date,
-         hotel:hotel_id(id, name, city, state, images)`,
+         hotel:hotel_id(id, name, city, state, image_urls)`,
       )
       .eq("customer_id", userId)
       .order("created_at", { ascending: false })
@@ -131,7 +131,7 @@ export async function getRecentActivity(userId, userEmail) {
       .from("apartment_bookings")
       .select(
         `id, booking_status, payment_status, total_amount, created_at, check_in_date, check_out_date,
-         apartment:apartment_id(id, name, city, state, images)`,
+         apartment:apartment_id(id, name, city, state, image_urls)`,
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -174,7 +174,7 @@ export async function getRecentActivity(userId, userEmail) {
       status: b.booking_status,
       amount: b.total_price,
       date: b.check_in_date,
-      image: b.hotel?.images?.[0] || null,
+      image: b.hotel?.image_urls?.[0] || null,
       created_at: b.created_at,
     })),
     ...(apartments.data || []).map((b) => ({
@@ -185,7 +185,7 @@ export async function getRecentActivity(userId, userEmail) {
       status: b.booking_status,
       amount: b.total_amount,
       date: b.check_in_date,
-      image: b.apartment?.images?.[0] || null,
+      image: b.apartment?.image_urls?.[0] || null,
       created_at: b.created_at,
     })),
     ...(logistics.data || []).map((b) => ({
@@ -260,7 +260,7 @@ export async function getHotelBookings(userId, page = 1, pageSize = 10) {
   const { data, error, count } = await supabase
     .from("hotel_bookings")
     .select(
-      `*, hotel:hotel_id(id, name, city, state, images, star_rating),
+      `*, hotel:hotel_id(id, name, city, state, image_urls),
        room:room_id(id, room_number, floor),
        room_type:room_type_id(id, name, amenities)`,
       { count: "exact" },
@@ -282,7 +282,7 @@ export async function getApartmentBookings(userId, page = 1, pageSize = 10) {
   const { data, error, count } = await supabase
     .from("apartment_bookings")
     .select(
-      `*, apartment:apartment_id(id, name, city, state, images, apartment_type)`,
+      `*, apartment:apartment_id(id, name, city, state, image_urls, apartment_type)`,
       { count: "exact" },
     )
     .eq("user_id", userId)

@@ -1,12 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { Menu, Bell } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, ChevronDown, LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { NotificationBell } from "@/components/shared/notifications/NotificationBell";
 import { CustomerSidebar } from "@/components/shared/customer/sidebar";
+import { useLogout } from "@/hooks/use-auth";
 
 const PAGE_TITLES = {
   "/dashboard/customer": "Overview",
@@ -17,11 +26,15 @@ const PAGE_TITLES = {
   "/dashboard/customer/security": "Security",
   "/dashboard/customer/payments": "Payments",
   "/dashboard/customer/favorites": "Favourites",
+  "/dashboard/customer/notifications": "Notifications",
   "/dashboard/customer/profile": "Profile",
 };
 
 function CustomerHeader({ user, onMenuClick }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const logoutMutation = useLogout();
+
   const initials =
     user.name
       ?.split(" ")
@@ -48,49 +61,67 @@ function CustomerHeader({ user, onMenuClick }) {
           <Menu className="h-4 w-4" />
         </button>
 
-        {/* Mobile: logo + current page */}
-        <div className="lg:hidden flex items-center gap-2">
-          <div className="relative w-32 h-32">
-            <Image
-              src="/logo.png"
-              alt="BookHushly"
-              fill
-              className="object-contain object-left scale-150"
-            />
-          </div>
-          <span className="text-gray-300 text-sm">·</span>
-          <span className="text-[13px] font-semibold text-gray-800">
-            {pageTitle}
-          </span>
-        </div>
-
-        {/* Desktop: just the page title */}
+        {/* Desktop: page title (left-aligned) */}
         <h1 className="hidden lg:block text-[15px] font-semibold text-gray-900">
           {pageTitle}
         </h1>
       </div>
 
-      {/* Right */}
-      <div className="flex items-center gap-1.5">
-        <button className="relative h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-          <Bell className="h-4 w-4" strokeWidth={2} />
-          <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-violet-600" />
-        </button>
+      {/* Mobile: page title (absolutely centered) */}
+      <span className="lg:hidden absolute left-1/2 -translate-x-1/2 text-[13px] font-semibold text-gray-800 pointer-events-none">
+        {pageTitle}
+      </span>
 
-        <Link
-          href="/dashboard/customer/profile"
-          className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={user.avatar} />
-            <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-bold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden sm:inline text-[13px] font-medium text-gray-700">
-            {user.name}
-          </span>
-        </Link>
+      {/* Right — notifications + user */}
+      <div className="flex items-center gap-1.5">
+        <NotificationBell userId={user.id} align="right" />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 transition-colors">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="hidden sm:inline text-[13px] font-medium text-gray-700">
+                {user.name}
+              </span>
+              <ChevronDown className="hidden sm:inline h-3 w-3 text-gray-400" />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" className="w-52 shadow-lg bg-white shadow-black/10">
+            <DropdownMenuLabel className="pb-2">
+              <p className="text-[13px] font-semibold text-gray-900">{user.name}</p>
+              <p className="text-[11px] font-normal text-gray-400 mt-0.5">{user.email}</p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => router.push("/dashboard/customer/profile")}
+              className="text-[13px] gap-2.5 cursor-pointer"
+            >
+              <User className="h-3.5 w-3.5 text-gray-400" /> Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+              className="text-[13px] gap-2.5 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+            >
+              {logoutMutation.isPending ? (
+                <>
+                  <LoadingSpinner className="h-3.5 w-3.5" /> Signing out…
+                </>
+              ) : (
+                <>
+                  <LogOut className="h-3.5 w-3.5" /> Sign out
+                </>
+              )}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
@@ -100,13 +131,7 @@ export function CustomerLayoutClient({ user, children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div
-      className="min-h-screen flex"
-      style={{
-        background:
-          "linear-gradient(160deg, #f5f3ff 0%, #fdf8ff 45%, #faf5ff 100%)",
-      }}
-    >
+    <div className="min-h-screen bg-gray-50/60 flex">
       <CustomerSidebar
         user={user}
         isOpen={mobileOpen}
@@ -115,7 +140,7 @@ export function CustomerLayoutClient({ user, children }) {
       <div className="flex-1 flex flex-col min-w-0">
         <CustomerHeader user={user} onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-[1400px] mx-auto px-5 py-6">{children}</div>
+          <div className="max-w-[1400px] mx-auto px-3 sm:px-5 py-4 sm:py-6">{children}</div>
         </main>
       </div>
     </div>

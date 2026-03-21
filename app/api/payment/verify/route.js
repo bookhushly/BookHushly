@@ -8,6 +8,7 @@ import {
   notifyBookingConfirmed,
   notifyVendorNewBooking,
   notifyVendorPaymentReceived,
+  notifyBookingPending,
 } from "@/lib/notifications";
 
 /**
@@ -427,24 +428,30 @@ async function firePaymentNotifications(supabase, payment) {
     } else if (payment.apartment_booking_id) {
       const { data: b } = await supabase
         .from("apartment_bookings")
-        .select("user_id, guest_name, listing_id, listings!inner(title, vendor_id)")
+        .select("guest_name, apartment_id, serviced_apartments!inner(name, vendor_id)")
         .eq("id", payment.apartment_booking_id)
         .single();
 
       if (b) {
-        serviceName = b.listings?.title ?? serviceName;
+        serviceName = b.serviced_apartments?.name ?? serviceName;
         guestName   = b.guest_name ?? guestName;
 
-        if (b.listings?.vendor_id) {
+        if (b.serviced_apartments?.vendor_id) {
           const { data: v } = await supabase
             .from("vendors")
             .select("user_id")
-            .eq("id", b.listings.vendor_id)
+            .eq("id", b.serviced_apartments.vendor_id)
             .single();
           vendorUserId = v?.user_id ?? null;
         }
 
         if (vendorUserId) {
+          await notifyVendorNewBooking(vendorUserId, {
+            bookingId:   payment.apartment_booking_id,
+            guestName,
+            serviceName,
+            amount:      payment.amount,
+          });
           await notifyVendorPaymentReceived(vendorUserId, {
             amount: payment.amount, reference: payment.reference, serviceName,
           });
@@ -453,7 +460,7 @@ async function firePaymentNotifications(supabase, payment) {
     } else if (payment.event_booking_id) {
       const { data: b } = await supabase
         .from("event_bookings")
-        .select("user_id, guest_name, listing_id, listings!inner(title, vendor_id)")
+        .select("customer_id, guest_name, listing_id, listings!inner(title, vendor_id)")
         .eq("id", payment.event_booking_id)
         .single();
 
@@ -471,6 +478,12 @@ async function firePaymentNotifications(supabase, payment) {
         }
 
         if (vendorUserId) {
+          await notifyVendorNewBooking(vendorUserId, {
+            bookingId:   payment.event_booking_id,
+            guestName,
+            serviceName,
+            amount:      payment.amount,
+          });
           await notifyVendorPaymentReceived(vendorUserId, {
             amount: payment.amount, reference: payment.reference, serviceName,
           });

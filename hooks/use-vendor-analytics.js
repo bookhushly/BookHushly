@@ -127,7 +127,7 @@ async function fetchBookingsRaw(vendorId, range) {
     supabase
       .from("hotel_bookings")
       .select(
-        "id, status, created_at, total_amount, hotel_id, hotels:hotel_id (vendor_id)",
+        "id, booking_status as status, created_at, total_price as total_amount, hotel_id, hotels:hotel_id (vendor_id)",
       )
       .gte("created_at", from.toISOString()),
     // apartment_bookings

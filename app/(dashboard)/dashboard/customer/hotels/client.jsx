@@ -94,9 +94,9 @@ export function HotelBookingsClient({ userId, initialData }) {
                 <div className="flex flex-col sm:flex-row">
                   {/* Image */}
                   <div className="sm:w-40 h-32 sm:h-auto bg-purple-50 flex-shrink-0 overflow-hidden">
-                    {booking.hotel?.images?.[0] ? (
+                    {booking.hotel?.image_urls?.[0] ? (
                       <img
-                        src={booking.hotel.images[0]}
+                        src={booking.hotel.image_urls[0]}
                         alt={booking.hotel?.name}
                         className="w-full h-full object-cover"
                       />

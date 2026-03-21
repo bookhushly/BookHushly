@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { render } from "@react-email/render";
 import AdminNotificationEmail from "@/emails/admin-notification";
+import { notifyRequestSubmitted } from "@/lib/notifications";
 
 export async function POST(request) {
   try {
@@ -73,6 +74,15 @@ export async function POST(request) {
     if (!emailResponse.ok) {
       const errorData = await emailResponse.json();
       throw new Error(errorData.error || "Failed to send email");
+    }
+
+    // Notify the customer their request was received (if they have an account)
+    if (requestData.user_id) {
+      notifyRequestSubmitted(requestData.user_id, {
+        requestId:    requestData.id,
+        serviceType:  "logistics",
+        requestLabel: requestData.service_type?.replace(/_/g, " ") || "logistics",
+      }).catch(() => {});
     }
 
     return NextResponse.json({ success: true });

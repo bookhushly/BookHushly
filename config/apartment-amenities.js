@@ -33,6 +33,7 @@ import {
   Bed,
   Bath,
   AirVent,
+  ShowerHead,
 } from "lucide-react";
 
 // Amenity categories for Nigerian serviced apartments
@@ -165,6 +166,12 @@ export const APARTMENT_AMENITIES = {
   },
 
   // Comfort & Climate
+  shower: {
+    value: "shower",
+    label: "Shower",
+    icon: ShowerHead,
+    category: "comfort",
+  },
   air_conditioning: {
     value: "air_conditioning",
     label: "Air Conditioning",
