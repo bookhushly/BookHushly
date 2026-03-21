@@ -25,10 +25,10 @@ export default function HotelManagementPage() {
   const vendor = authData?.vendor;
 
   useEffect(() => {
-    if (!authLoading && user?.id) {
+    if (!authLoading && user?.id && vendor?.id) {
       loadHotel();
     }
-  }, [params.id, user?.id, authLoading]);
+  }, [params.id, user?.id, vendor?.id, authLoading]);
 
   const loadHotel = async () => {
     if (!user?.id || !vendor?.id) return;

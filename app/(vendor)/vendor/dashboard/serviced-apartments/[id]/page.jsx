@@ -15,6 +15,17 @@ async function getApartmentDetails(apartmentId) {
     redirect("/login");
   }
 
+  // Resolve vendor ID (vendor_id in tables references vendors.id, not auth.users.id)
+  const { data: vendor } = await supabase
+    .from("vendors")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!vendor) {
+    redirect("/vendor/dashboard");
+  }
+
   // Fetch apartment details - selecting only actual columns from schema
   const { data: apartment, error: apartmentError } = await supabase
     .from("serviced_apartments")
@@ -75,7 +86,7 @@ async function getApartmentDetails(apartmentId) {
     `
     )
     .eq("id", apartmentId)
-    .eq("vendor_id", user.id) // Ensure ownership
+    .eq("vendor_id", vendor.id) // Ensure ownership
     .single();
 
   if (apartmentError || !apartment) {
