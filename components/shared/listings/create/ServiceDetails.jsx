@@ -16,7 +16,7 @@ import {
 import { getFeatureIcon } from "@/lib/featureIcons";
 import { Trash2, Plus, Upload, Calendar, Clock } from "lucide-react";
 import OperatingHoursComponent from "./OperatingHours";
-import { AIGenerateButton } from "@/components/shared/listings/AIGenerateButton";
+import RichTextEditor from "@/components/common/rich-text-editor";
 
 // Fixed AmenityMultiSelect Component
 const AmenityMultiSelect = React.memo(
@@ -315,29 +315,30 @@ const ServiceDetails = ({
                 {field.label}
                 {field.required && <span className="text-red-500 ml-1">*</span>}
               </Label>
-              <Textarea
-                id={field.name}
-                name={field.name}
-                value={value}
-                onChange={handleChange}
-                placeholder={field.placeholder}
-                className={`min-h-24 ${error ? "border-red-500" : ""}`}
-                rows={4}
-              />
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              {field.name === "description" && (
-                <AIGenerateButton
-                  category={selectedCategory}
-                  formData={formData}
-                  onGenerated={({ title, description }) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      ...(title && !prev.title ? { title } : {}),
-                      description,
-                    }));
-                  }}
+              {field.name === "description" ? (
+                <div className={error ? "ring-1 ring-red-500 rounded-lg" : ""}>
+                  <RichTextEditor
+                    content={value || ""}
+                    onChange={(html) =>
+                      setFormData((prev) => ({ ...prev, description: html }))
+                    }
+                    placeholder={field.placeholder || "Describe your service in detail..."}
+                    minHeight="180px"
+                    showWordCount
+                  />
+                </div>
+              ) : (
+                <Textarea
+                  id={field.name}
+                  name={field.name}
+                  value={value}
+                  onChange={handleChange}
+                  placeholder={field.placeholder}
+                  className={`min-h-24 ${error ? "border-red-500" : ""}`}
+                  rows={4}
                 />
               )}
+              {error && <p className="text-sm text-red-500">{error}</p>}
             </div>
           );
 

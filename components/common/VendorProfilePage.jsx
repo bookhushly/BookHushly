@@ -384,7 +384,7 @@ export default function VendorProfilePage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                      {listing.description}
+                      {listing.description?.replace(/<[^>]*>/g, "") || ""}
                     </p>
 
                     <div className="flex items-center justify-between mb-4">

@@ -35,33 +35,61 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
     email: "",
     phone: "",
   });
+  const [questionAnswers, setQuestionAnswers] = useState({});
+
+  // Normalize custom questions from the service listing
+  const customQuestions = useMemo(() => {
+    if (!service?.custom_questions) return [];
+    try {
+      return Array.isArray(service.custom_questions)
+        ? service.custom_questions
+        : JSON.parse(service.custom_questions);
+    } catch {
+      return [];
+    }
+  }, [service?.custom_questions]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const images = service?.media_urls || [];
 
-  // Normalize ticket packages
+  // Normalize ticket packages with early bird logic
   const ticketPackages = useMemo(() => {
     if (!service) return [];
-
-    return Array.isArray(service.ticket_packages) &&
-      service.ticket_packages.length > 0
-      ? service.ticket_packages.map((pkg) => ({
+    const now = Date.now();
+    if (Array.isArray(service.ticket_packages) && service.ticket_packages.length > 0) {
+      return service.ticket_packages.map((pkg) => {
+        const ebEnd = pkg.early_bird_end ? new Date(pkg.early_bird_end) : null;
+        const ebActive = ebEnd && ebEnd > now && pkg.early_bird_price;
+        const ebExpired = ebEnd && ebEnd <= now && pkg.early_bird_price;
+        return {
           name: pkg.name || "Ticket",
-          price: parseFloat(pkg.price) || 0,
+          regularPrice: parseFloat(pkg.price) || 0,
+          price: ebActive ? parseFloat(pkg.early_bird_price) : parseFloat(pkg.price) || 0,
+          earlyBirdPrice: pkg.early_bird_price ? parseFloat(pkg.early_bird_price) : null,
+          earlyBirdEnd: ebEnd,
+          earlyBirdActive: !!ebActive,
+          earlyBirdExpired: !!ebExpired,
           remaining: parseInt(pkg.remaining) || 0,
           total: parseInt(pkg.total) || 0,
           description: pkg.description || "",
-        }))
-      : [
-          {
-            name: "Standard Ticket",
-            price: parseFloat(service.price) || 0,
-            remaining: parseInt(service.remaining_tickets) || 0,
-            total: parseInt(service.total_tickets) || 0,
-            description: "Standard admission to the event",
-          },
-        ];
+        };
+      });
+    }
+    return [
+      {
+        name: "Standard Ticket",
+        regularPrice: parseFloat(service.price) || 0,
+        price: parseFloat(service.price) || 0,
+        earlyBirdPrice: null,
+        earlyBirdEnd: null,
+        earlyBirdActive: false,
+        earlyBirdExpired: false,
+        remaining: parseInt(service.remaining_tickets) || 0,
+        total: parseInt(service.total_tickets) || 0,
+        description: "Standard admission to the event",
+      },
+    ];
   }, [service]);
 
   // Initialize selected tickets
@@ -175,13 +203,25 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
     return true;
   }, [contactDetails]);
 
+  // Validate custom attendee question answers
+  const validateQuestions = useCallback(() => {
+    for (const q of customQuestions) {
+      if (q.required && !questionAnswers[q.id]?.toString().trim()) {
+        setError(`"${q.label}" is required`);
+        return false;
+      }
+    }
+    return true;
+  }, [customQuestions, questionAnswers]);
+
   // Handle contact submission
   const handleContactSubmit = useCallback(() => {
     if (!validateContactDetails()) return;
+    if (!validateQuestions()) return;
     localStorage.setItem("contactDetails", JSON.stringify(contactDetails));
     setStep(3);
     setError("");
-  }, [validateContactDetails, contactDetails]);
+  }, [validateContactDetails, validateQuestions, contactDetails]);
 
   // Handle payment - redirect to unified payment page
   const handlePayment = async () => {
@@ -214,6 +254,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
         status: "pending",
         payment_status: "pending",
         ticket_details: JSON.stringify(selectedTickets),
+        attendee_answers: Object.keys(questionAnswers).length > 0 ? questionAnswers : null,
       };
 
       const { data: booking, error: bookingError } =
@@ -295,8 +336,9 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                 </div>
               </div>
               <p className="text-sm sm:text-base text-white/80 max-w-2xl">
-                {service?.description ||
-                  "Join us for an unforgettable event experience"}
+                {service?.description
+                  ? service.description.replace(/<[^>]*>/g, "")
+                  : "Join us for an unforgettable event experience"}
               </p>
             </div>
           </div>
@@ -374,18 +416,50 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                   {ticketPackages.map((ticket, index) => (
                     <div
                       key={index}
-                      className="border border-gray-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-lg transition-all"
+                      className={`border rounded-xl p-6 hover:shadow-lg transition-all ${
+                        ticket.earlyBirdActive
+                          ? "border-amber-300 bg-amber-50/40 hover:border-amber-400"
+                          : "border-gray-200 hover:border-purple-300"
+                      }`}
                     >
-                      <div className="flex flex-col flex-wrap justify-between  gap-4">
+                      <div className="flex flex-col flex-wrap justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold text-gray-900 mb-2">
-                            {ticket.name}
-                          </h3>
-                          <p className="text-gray-600 mb-2">
-                            ₦{ticket.price.toLocaleString()} per ticket
-                          </p>
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <h3 className="text-lg font-bold text-gray-900">
+                              {ticket.name}
+                            </h3>
+                            {ticket.earlyBirdActive && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                                Early Bird
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-baseline gap-2 mb-1">
+                            <p className="text-purple-600 font-bold text-xl">
+                              ₦{ticket.price.toLocaleString()}
+                            </p>
+                            {ticket.earlyBirdActive && (
+                              <p className="text-gray-400 line-through text-sm">
+                                ₦{ticket.regularPrice.toLocaleString()}
+                              </p>
+                            )}
+                            <p className="text-gray-500 text-sm">per ticket</p>
+                          </div>
+
+                          {ticket.earlyBirdActive && ticket.earlyBirdEnd && (
+                            <p className="text-xs text-amber-600 font-medium mb-1">
+                              Early bird ends {ticket.earlyBirdEnd.toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                            </p>
+                          )}
+                          {ticket.earlyBirdExpired && (
+                            <p className="text-xs text-gray-400 mb-1">
+                              Early bird was ₦{ticket.earlyBirdPrice?.toLocaleString()} — offer has ended
+                            </p>
+                          )}
+
                           {ticket.description && (
-                            <p className="text-gray-600 text-sm">
+                            <p className="text-gray-600 text-sm mt-1">
                               {ticket.description}
                             </p>
                           )}
@@ -527,6 +601,56 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                       required
                     />
                   </div>
+                  {/* Custom attendee questions */}
+                  {customQuestions.length > 0 && (
+                    <div className="space-y-4 pt-2 border-t border-gray-100">
+                      <p className="text-sm font-semibold text-gray-700">
+                        Additional Information
+                      </p>
+                      {customQuestions.map((q) => (
+                        <div key={q.id}>
+                          <label className="block text-sm font-medium text-gray-900 mb-2">
+                            {q.label}
+                            {q.required && <span className="text-red-500 ml-1">*</span>}
+                          </label>
+                          {q.type === "select" ? (
+                            <select
+                              value={questionAnswers[q.id] || ""}
+                              onChange={(e) =>
+                                setQuestionAnswers((p) => ({ ...p, [q.id]: e.target.value }))
+                              }
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                            >
+                              <option value="">Select an option</option>
+                              {(q.options || []).map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          ) : q.type === "textarea" ? (
+                            <textarea
+                              value={questionAnswers[q.id] || ""}
+                              onChange={(e) =>
+                                setQuestionAnswers((p) => ({ ...p, [q.id]: e.target.value }))
+                              }
+                              rows={3}
+                              placeholder={`Your answer${q.required ? "" : " (optional)"}`}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                            />
+                          ) : (
+                            <Input
+                              type="text"
+                              value={questionAnswers[q.id] || ""}
+                              onChange={(e) =>
+                                setQuestionAnswers((p) => ({ ...p, [q.id]: e.target.value }))
+                              }
+                              placeholder={`Your answer${q.required ? "" : " (optional)"}`}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="flex gap-4">
                     <Button
                       variant="outline"

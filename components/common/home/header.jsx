@@ -146,7 +146,7 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors duration-150 outline-none">
                       <Avatar className="h-7 w-7">
-                        <AvatarImage src={user.avatar_url} alt={displayName} />
+                        <AvatarImage src={undefined} alt={displayName} />
                         <AvatarFallback className="bg-violet-600 text-white text-xs font-semibold">
                           {getInitials(displayName)}
                         </AvatarFallback>
@@ -288,7 +288,7 @@ export function Header() {
             ) : user ? (
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/8">
                 <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarImage src={user.avatar_url} alt={displayName} />
+                  <AvatarImage src={undefined} alt={displayName} />
                   <AvatarFallback className="bg-violet-600 text-white text-xs font-semibold">
                     {getInitials(displayName)}
                   </AvatarFallback>

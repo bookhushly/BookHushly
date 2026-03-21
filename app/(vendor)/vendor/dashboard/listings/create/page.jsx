@@ -23,6 +23,7 @@ import MediaUpload from "@/components/shared/listings/create/MediaUpload";
 import ReviewListing from "@/components/shared/listings/create/ReviewListing";
 import NavigationButtons from "@/components/shared/listings/create/NavigationButtons";
 import HotelRegistration from "../../../../../../components/shared/dashboard/vendor/hotels/create/create";
+import EventListingEditor from "@/components/shared/listings/create/EventListingEditor";
 import { motion } from "framer-motion";
 const STEPS = [
   { id: 1, label: "Category" },
@@ -655,6 +656,18 @@ export default function CreateListingPage() {
       </Link>
       {vendor?.business_category === "hotels" ? (
         <HotelRegistration onComplete={onComplete} />
+      ) : selectedCategory === "events" && eventType === "event_organizer" ? (
+        <>
+          <div className="mb-10">
+            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+              Create Event Listing
+            </h1>
+            <p className="text-lg text-gray-600">
+              Set up your event, tickets, and publish when ready
+            </p>
+          </div>
+          <EventListingEditor vendor={vendor} user={user} eventType={eventType} />
+        </>
       ) : (
         <>
           <div className="mb-10">

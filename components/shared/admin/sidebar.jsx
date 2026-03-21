@@ -77,7 +77,7 @@ function Tooltip({ label, children }) {
 function ProfilePopover({ admin, onLogout, onClose, isLoggingOut }) {
   const ref = useRef(null);
   const displayName =
-    admin?.full_name || admin?.email?.split("@")[0] || "Admin";
+    admin?.name || admin?.email?.split("@")[0] || "Admin";
 
   useEffect(() => {
     const handler = (e) => {
@@ -150,7 +150,7 @@ export function AdminSidebar({ isOpen, onClose }) {
 
   const admin = authData?.user;
   const displayName =
-    admin?.full_name || admin?.email?.split("@")[0] || "Admin";
+    admin?.name || admin?.email?.split("@")[0] || "Admin";
   const initial = displayName.charAt(0).toUpperCase();
 
   const isActive = (href) =>

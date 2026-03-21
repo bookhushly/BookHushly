@@ -24,7 +24,7 @@ export async function POST(req) {
     // Check if user exists
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("id, email, full_name, role")
+      .select("id, email, name, role")
       .eq("id", session.user.id)
       .single();
 
@@ -70,7 +70,7 @@ export async function POST(req) {
     const adminIds = admins?.map((a) => a.id).filter(Boolean) || [];
     if (adminIds.length) {
       notifyAdminKYCSubmitted(adminIds, {
-        vendorName: vendorData.business_name || user.full_name || user.email,
+        vendorName: vendorData.business_name || user.name || user.email,
         vendorId: newVendor.id,
       }).catch(() => {});
     }
@@ -79,7 +79,7 @@ export async function POST(req) {
     const adminEmail = process.env.ADMIN_KYC_EMAIL || process.env.ADMIN_EMAIL;
     if (adminEmail) {
       await sendEmail(adminEmail, "kycSubmissionNotice", {
-        vendorName: vendorData.business_name || user.full_name || user.email,
+        vendorName: vendorData.business_name || user.name || user.email,
         email: user.email,
         phone: vendorData.phone || "N/A",
         businessName: vendorData.business_name || "N/A",

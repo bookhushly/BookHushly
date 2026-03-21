@@ -70,11 +70,11 @@ export async function POST(request, { params }) {
     // Get user's display name from profile
     const { data: profile } = await supabase
       .from("users")
-      .select("full_name")
+      .select("name")
       .eq("id", user.id)
       .maybeSingle();
 
-    const customer_name = profile?.full_name || user.email?.split("@")[0] || "Guest";
+    const customer_name = profile?.name || user.email?.split("@")[0] || "Guest";
 
     const { data: review, error } = await supabase
       .from("reviews")

@@ -674,7 +674,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
                       {booking.listings?.title}
                     </h4>
                     <p className="text-sm text-gray-600 mt-1">
-                      {booking.listings?.description}
+                      {booking.listings?.description?.replace(/<[^>]*>/g, "")}
                     </p>
                   </div>
                   <div className="flex items-center text-sm">

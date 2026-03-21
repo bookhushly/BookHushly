@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import RichContentRenderer from "@/components/common/rich-text-renderer";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -503,9 +504,10 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                 About This Venue
               </h2>
               <div className="prose prose-gray prose-lg max-w-none">
-                <p className="text-gray-700 leading-relaxed">
-                  {listing.description}
-                </p>
+                <RichContentRenderer
+                  content={listing.description}
+                  className="text-gray-700"
+                />
                 {listing.features && (
                   <div className="mt-4">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">

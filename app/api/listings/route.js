@@ -288,7 +288,7 @@ function buildEventsQuery(supabase, p) {
   let q = supabase
     .from("listings")
     .select(
-      "id,title,location,price,media_urls,category,vendor_name,description,amenities,maximum_capacity,created_at",
+      "id,title,location,price,media_urls,category,vendor_name,description,amenities,maximum_capacity,event_date,event_time,created_at",
       { count: "exact" },
     )
     .eq("active", true)

@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import EventCenterDetail from "@/components/shared/listings/details/EventCenterDetail";
 import EventOrganizerDetail from "@/components/shared/listings/details/EventOrganizer";
 import HotelServiceDetail from "@/components/shared/listings/details/HotelServiceDetail";
 import ApartmentServiceDetail from "@/components/shared/listings/details/ApartmentServiceDetail";
@@ -32,9 +31,6 @@ const ServiceDetailClient = ({ service }) => {
   const renderServiceDetail = () => {
     switch (service.category) {
       case "events":
-        if (service.event_type === "event_center") {
-          return <EventCenterDetail listing={service} />;
-        }
         return <EventOrganizerDetail service={service} />;
 
       case "hotels":

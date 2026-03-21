@@ -28,7 +28,7 @@ export function AdminHeader({ onMenuClick }) {
   const logoutMutation = useLogout();
 
   const user = authData?.user;
-  const displayName = user?.full_name || user?.email?.split("@")[0] || "Admin";
+  const displayName = user?.name || user?.email?.split("@")[0] || "Admin";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
@@ -66,7 +66,7 @@ export function AdminHeader({ onMenuClick }) {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 transition-colors">
               <Avatar className="h-6 w-6">
-                <AvatarImage src={user?.avatar_url} alt={displayName} />
+                <AvatarImage src={undefined} alt={displayName} />
                 <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-bold">
                   {initials}
                 </AvatarFallback>

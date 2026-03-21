@@ -14,11 +14,6 @@ const EventsTicketPurchase = dynamic(
   { ssr: false, loading: () => <ComponentLoader /> },
 );
 
-const EventCentersBookingForm = dynamic(
-  () => import("./EventCenterBookingForm"),
-  { ssr: false, loading: () => <ComponentLoader /> },
-);
-
 // Component loader
 function ComponentLoader() {
   return (
@@ -32,10 +27,7 @@ function ComponentLoader() {
 }
 
 const serviceComponents = {
-  events: {
-    event_organizer: EventsTicketPurchase,
-    event_center: EventCentersBookingForm,
-  },
+  events: EventsTicketPurchase,
   hotels: null,
   serviced_apartments: null,
   car_rentals: null,
@@ -108,11 +100,7 @@ export default function BookServiceClient() {
   // Handle booking submission
   const handleSubmit = async (bookingData) => {
     try {
-      const isEventOrganizer =
-        service?.category === "events" &&
-        service?.event_type === "event_organizer";
-
-      const table = isEventOrganizer ? "event_bookings" : "bookings";
+      const table = service?.category === "events" ? "event_bookings" : "bookings";
 
       const { data, error: bookingError } = await supabase
         .from(table)
@@ -166,13 +154,8 @@ export default function BookServiceClient() {
     );
   }
 
-  // Select component based on category and event_type
-  let Component = null;
-  if (service.category === "events") {
-    Component = serviceComponents.events[service.event_type] || null;
-  } else {
-    Component = serviceComponents[service.category] || null;
-  }
+  // Select component based on category
+  const Component = serviceComponents[service.category] || null;
 
   if (!Component) {
     return (

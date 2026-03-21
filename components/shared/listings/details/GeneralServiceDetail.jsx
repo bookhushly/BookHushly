@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import RichContentRenderer from "@/components/common/rich-text-renderer";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -184,9 +185,10 @@ const GeneralServiceDetail = ({ service }) => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 About This Service
               </h2>
-              <p className="text-gray-700 leading-relaxed">
-                {service.description}
-              </p>
+              <RichContentRenderer
+                content={service.description}
+                className="text-gray-700"
+              />
             </div>
 
             {/* Amenities/Features */}

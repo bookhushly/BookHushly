@@ -52,9 +52,9 @@ export async function POST(request) {
     // ── 1. Re-engage inactive customers ─────────────────────────────────────
     const { data: inactiveCustomers } = await supabase
       .from("users")
-      .select("id, full_name")
+      .select("id, name")
       .eq("role", "customer")
-      .lt("last_sign_in_at", daysAgo(CUSTOMER_INACTIVE_DAYS));
+      .lt("updated_at", daysAgo(CUSTOMER_INACTIVE_DAYS));
 
     if (inactiveCustomers?.length) {
       const settled = await Promise.allSettled(
@@ -120,9 +120,9 @@ export async function POST(request) {
     // ── 3. Re-engage inactive vendors ────────────────────────────────────────
     const { data: inactiveVendors } = await supabase
       .from("users")
-      .select("id, full_name")
+      .select("id, name")
       .eq("role", "vendor")
-      .lt("last_sign_in_at", daysAgo(VENDOR_INACTIVE_DAYS));
+      .lt("updated_at", daysAgo(VENDOR_INACTIVE_DAYS));
 
     if (inactiveVendors?.length) {
       const settled = await Promise.allSettled(

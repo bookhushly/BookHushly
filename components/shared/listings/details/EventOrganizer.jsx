@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
+import RichContentRenderer from "@/components/common/rich-text-renderer";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ import {
   ChevronRight,
   ArrowLeft,
   ImageOff,
+  Timer,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -67,7 +70,7 @@ const OptimizedImage = ({
         src={src}
         alt={alt}
         fill={fill}
-        className={`${className} ${!isLoaded ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
+        className={`${className} ${isLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
         sizes={sizes}
         quality={priority ? 90 : 75}
         priority={priority}
@@ -87,6 +90,56 @@ const EventOrganizerDetail = ({ service }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [autoPlay, setAutoPlay] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState(new Set());
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+
+  // Countdown to event
+  // event_time is stored as full ISO timestamptz; event_date is the date-only fallback
+  useEffect(() => {
+    const src = service.event_time || service.event_date;
+    if (!src) return;
+    const target = new Date(src);
+    if (isNaN(target.getTime())) return;
+    const calc = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) { setCountdown(null); return; }
+      setCountdown({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff / 3600000) % 24),
+        minutes: Math.floor((diff / 60000) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
+    };
+    calc();
+    const id = setInterval(calc, 1000);
+    return () => clearInterval(id);
+  }, [service.event_time, service.event_date]);
+
+  // Normalise ticket packages with early-bird logic
+  const ticketPackages = useMemo(() => {
+    if (!Array.isArray(service.ticket_packages) || service.ticket_packages.length === 0) return null;
+    const now = Date.now();
+    return service.ticket_packages.map((pkg) => {
+      const ebEnd = pkg.early_bird_end ? new Date(pkg.early_bird_end) : null;
+      const ebActive = ebEnd && ebEnd > now && pkg.early_bird_price;
+      const ebExpired = ebEnd && ebEnd <= now && pkg.early_bird_price;
+      return {
+        ...pkg,
+        regularPrice: parseFloat(pkg.price) || 0,
+        effectivePrice: ebActive ? parseFloat(pkg.early_bird_price) : parseFloat(pkg.price) || 0,
+        earlyBirdActive: !!ebActive,
+        earlyBirdExpired: !!ebExpired,
+        earlyBirdPrice: parseFloat(pkg.early_bird_price) || null,
+        earlyBirdEnd: ebEnd,
+      };
+    });
+  }, [service.ticket_packages]);
+
+  const descriptionText = useMemo(
+    () => (service.description || "").replace(/<[^>]*>/g, ""),
+    [service.description]
+  );
+  const descriptionIsLong = descriptionText.length > 500;
 
   const handleShare = useCallback(async () => {
     const shareData = {
@@ -101,20 +154,19 @@ const EventOrganizerDetail = ({ service }) => {
     }
   }, [service.title]);
 
-  const images = useMemo(() => {
-    const urls = service.media_urls || [];
-    // Preload first 3 images
-    if (typeof window !== "undefined" && urls.length > 0) {
-      urls.slice(0, 3).forEach((url, index) => {
-        const img = document.createElement("img");
-        img.src = url;
-        img.onload = () => {
-          setImagesLoaded((prev) => new Set([...prev, index]));
-        };
-      });
-    }
-    return urls;
-  }, [service.media_urls]);
+  const images = useMemo(() => service.media_urls || [], [service.media_urls]);
+
+  // Preload first 3 images after mount
+  useEffect(() => {
+    if (images.length === 0) return;
+    images.slice(0, 3).forEach((url, index) => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.onload = () => {
+        setImagesLoaded((prev) => new Set([...prev, index]));
+      };
+    });
+  }, [images]);
 
   const hasMultipleImages = images.length > 1;
 
@@ -269,18 +321,27 @@ const EventOrganizerDetail = ({ service }) => {
         <div className="relative h-[60vh] md:h-[75vh] overflow-hidden">
           {images.length > 0 ? (
             <>
-              {/* Main Image */}
-              <OptimizedImage
-                src={images[currentImageIndex]}
-                alt={`${service.title} - Image ${currentImageIndex + 1}`}
-                fill
-                className="object-cover"
-                priority={currentImageIndex === 0}
-                sizes="100vw"
-              />
+              {/* All images stacked — switch via opacity, zero reload lag */}
+              {images.map((src, i) => (
+                <div
+                  key={src}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    i === currentImageIndex ? "opacity-100 z-[1]" : "opacity-0 z-0"
+                  }`}
+                >
+                  <OptimizedImage
+                    src={src}
+                    alt={`${service.title} - Image ${i + 1}`}
+                    fill
+                    className="object-cover"
+                    priority={i === 0}
+                    sizes="100vw"
+                  />
+                </div>
+              ))}
 
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent z-[2]" />
 
               {/* Navigation Arrows */}
               {hasMultipleImages && (
@@ -400,10 +461,31 @@ const EventOrganizerDetail = ({ service }) => {
               <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
                 About This Event
               </h2>
-              <p className="text-gray-700 text-base md:text-lg leading-relaxed">
-                {service.description ||
-                  "Join us for an amazing event experience! Get ready for an unforgettable time with great music, food, and entertainment."}
-              </p>
+              {service.description ? (
+                <div>
+                  <div className={`relative overflow-hidden transition-all duration-300 ${descExpanded || !descriptionIsLong ? "" : "max-h-48"}`}>
+                    <RichContentRenderer
+                      content={service.description}
+                      className="text-gray-700 text-base md:text-lg leading-relaxed"
+                    />
+                    {!descExpanded && descriptionIsLong && (
+                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                    )}
+                  </div>
+                  {descriptionIsLong && (
+                    <button
+                      onClick={() => setDescExpanded((p) => !p)}
+                      className="mt-3 text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors"
+                    >
+                      {descExpanded ? "Show less" : "Read more"}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-700 text-base md:text-lg leading-relaxed">
+                  Join us for an amazing event experience! Get ready for an unforgettable time with great music, food, and entertainment.
+                </p>
+              )}
             </section>
 
             {/* Event Details */}
@@ -515,37 +597,111 @@ const EventOrganizerDetail = ({ service }) => {
 
           {/* Sidebar */}
           <div className="lg:col-span-4">
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 sticky top-24">
-              <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-6">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 sticky top-24 space-y-5">
+              <h3 className="text-lg md:text-xl font-bold text-gray-900">
                 Event Tickets
               </h3>
 
-              <div className="mb-6">
-                <div className="text-center mb-2">
+              {/* Countdown */}
+              {countdown && (
+                <div className="rounded-2xl overflow-hidden border border-brand-100">
+                  <div className="bg-brand-600 px-4 py-2 flex items-center gap-2">
+                    <Timer className="w-3.5 h-3.5 text-white/80" />
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-white/80">
+                      Event starts in
+                    </span>
+                  </div>
+                  <div className="bg-brand-50 px-4 py-4 flex items-start justify-center gap-1">
+                    {[
+                      { label: "Days", val: countdown.days },
+                      { label: "Hrs",  val: countdown.hours },
+                      { label: "Min",  val: countdown.minutes },
+                      { label: "Sec",  val: countdown.seconds },
+                    ].map(({ label, val }, i) => (
+                      <div key={label} className="flex items-start gap-1">
+                        <div className="flex flex-col items-center min-w-[3rem]">
+                          <div className="w-full bg-white border border-brand-100 rounded-xl py-2.5 text-center shadow-sm">
+                            <span className="text-2xl font-bold tabular-nums leading-none text-brand-700 tracking-tight">
+                              {String(val).padStart(2, "0")}
+                            </span>
+                          </div>
+                          <span className="text-[9px] text-brand-400 uppercase tracking-widest mt-1.5 font-medium">
+                            {label}
+                          </span>
+                        </div>
+                        {i < 3 && (
+                          <span className="text-xl font-bold text-brand-300 leading-none mt-2 select-none">
+                            :
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ticket packages */}
+              {ticketPackages ? (
+                <div className="space-y-3">
+                  {ticketPackages.map((pkg, i) => (
+                    <div key={i} className="border border-gray-200 rounded-xl p-4">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <span className="font-semibold text-gray-900 text-sm">{pkg.name}</span>
+                        {pkg.earlyBirdActive && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
+                            <Tag className="w-2.5 h-2.5" /> Early Bird
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-bold text-purple-600">
+                          ₦{pkg.effectivePrice.toLocaleString()}
+                        </span>
+                        {pkg.earlyBirdActive && (
+                          <span className="text-sm text-gray-400 line-through">
+                            ₦{pkg.regularPrice.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      {pkg.earlyBirdActive && pkg.earlyBirdEnd && (
+                        <p className="text-xs text-amber-600 mt-1">
+                          Early bird ends {pkg.earlyBirdEnd.toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      )}
+                      {pkg.earlyBirdExpired && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          Early bird was ₦{pkg.earlyBirdPrice?.toLocaleString()} — offer ended
+                        </p>
+                      )}
+                      {pkg.remaining > 0 ? (
+                        <p className="text-xs text-green-600 mt-1">{pkg.remaining} tickets left</p>
+                      ) : (
+                        <p className="text-xs text-red-500 mt-1 font-medium">Sold out</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center">
                   <div className="text-3xl font-bold text-gray-900">
                     {formatPrice(service.price, service.price_unit)}
                   </div>
+                  {service.total_tickets && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      {service.remaining_tickets || service.total_tickets} tickets available
+                    </div>
+                  )}
                 </div>
-
-                {service.total_tickets && (
-                  <div className="text-center text-sm text-gray-600">
-                    {service.remaining_tickets || service.total_tickets} tickets
-                    available
-                  </div>
-                )}
-              </div>
+              )}
 
               <Button
                 asChild={service.availability === "available"}
                 disabled={service.availability !== "available"}
                 size="lg"
-                className="w-full h-12 text-base font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-xl mb-4"
+                className="w-full h-12 text-base font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
               >
                 {service.availability === "available" ? (
-                  <Link
-                    href={`/book/${service.id}`}
-                    className="flex items-center justify-center gap-2"
-                  >
+                  <Link href={`/book/${service.id}`} className="flex items-center justify-center gap-2">
                     <Ticket className="w-5 h-5" />
                     Get Tickets Now
                   </Link>

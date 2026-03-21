@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import RichContentRenderer from "@/components/common/rich-text-renderer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -217,9 +218,9 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               {apartment.description && (
                 <div className="pt-4 border-t">
                   <p className="text-sm text-gray-600 mb-2">Description</p>
-                  <div
+                  <RichContentRenderer
+                    content={apartment.description}
                     className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: apartment.description }}
                   />
                 </div>
               )}
