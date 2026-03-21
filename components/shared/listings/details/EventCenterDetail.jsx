@@ -87,6 +87,19 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
   const [imageLoadErrors, setImageLoadErrors] = useState(new Set());
   const [isLiked, setIsLiked] = useState(false);
 
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: listing?.title,
+      text: `Check out ${listing?.title}`,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* dismissed */ }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+    }
+  }, [listing?.title]);
+
   // Refs
   const heroRef = useRef(null);
   const galleryRef = useRef(null);
@@ -299,7 +312,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
               >
                 <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
               </button>
-              <button className="p-2 text-gray-600 hover:text-purple-600 transition-colors">
+              <button onClick={handleShare} className="p-2 text-gray-600 hover:text-purple-600 transition-colors">
                 <Share2 className="w-5 h-5" />
               </button>
             </div>

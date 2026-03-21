@@ -64,6 +64,19 @@ const HotelDetails = ({ hotel, roomTypes }) => {
     children: 0,
   });
 
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: hotel.name,
+      text: `Check out ${hotel.name} in ${hotel.city || hotel.state}`,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* dismissed */ }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+    }
+  }, [hotel.name, hotel.city, hotel.state]);
+
   const autoPlayRef = useRef(null);
 
   const allImages = useMemo(() => {
@@ -234,7 +247,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
               >
                 <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
               </button>
-              <button className="p-2 text-gray-600 hover:text-purple-600 transition-colors">
+              <button onClick={handleShare} className="p-2 text-gray-600 hover:text-purple-600 transition-colors">
                 <Share2 className="w-5 h-5" />
               </button>
             </div>

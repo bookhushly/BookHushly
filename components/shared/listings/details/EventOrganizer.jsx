@@ -88,6 +88,19 @@ const EventOrganizerDetail = ({ service }) => {
   const [autoPlay, setAutoPlay] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState(new Set());
 
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: service.title,
+      text: `Check out ${service.title}`,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* dismissed */ }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+    }
+  }, [service.title]);
+
   const images = useMemo(() => {
     const urls = service.media_urls || [];
     // Preload first 3 images
@@ -243,7 +256,7 @@ const EventOrganizerDetail = ({ service }) => {
               >
                 <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
               </button>
-              <button className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors">
+              <button onClick={handleShare} className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors">
                 <Share2 className="w-5 h-5" />
               </button>
             </div>

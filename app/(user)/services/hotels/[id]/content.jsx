@@ -248,6 +248,19 @@ const HotelDetails = ({ hotel, roomTypes }) => {
     setBookingModalOpen(true);
   }, []);
 
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: hotel.name,
+      text: `Check out ${hotel.name} in ${hotel.city || hotel.state}`,
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch { /* dismissed */ }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+    }
+  }, [hotel.name, hotel.city, hotel.state]);
+
   const lowestPrice = useMemo(
     () =>
       roomTypes.length > 0
@@ -269,7 +282,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
             Back to search
           </Link>
           <div className="flex items-center gap-1">
-            <button className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
+            <button onClick={handleShare} className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
               <Share2 className="h-4 w-4" />
             </button>
             <button

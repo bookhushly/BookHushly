@@ -106,7 +106,7 @@ export async function generateMetadata({ params }) {
       locale: "en_NG",
       url: `https://bookhushly.com/services/hotels/${id}`,
       images: hotel.image_urls?.[0]
-        ? [{ url: hotel.image_urls[0], alt: hotel.name }]
+        ? [{ url: hotel.image_urls[0], alt: hotel.name, width: 1200, height: 630 }]
         : [],
     },
     twitter: {

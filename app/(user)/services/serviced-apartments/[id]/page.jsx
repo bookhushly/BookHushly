@@ -40,7 +40,7 @@ export async function generateMetadata({ params }) {
       locale: "en_NG",
       url: `https://bookhushly.com/services/serviced-apartments/${id}`,
       images: apt.image_urls?.[0]
-        ? [{ url: apt.image_urls[0], alt: apt.name }]
+        ? [{ url: apt.image_urls[0], alt: apt.name, width: 1200, height: 630 }]
         : [],
     },
     twitter: {

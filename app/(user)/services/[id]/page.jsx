@@ -52,7 +52,7 @@ export async function generateMetadata({ params }) {
         title,
         description,
         type: "website",
-        images: images[0] ? [images[0]] : [],
+        images: images[0] ? [{ url: images[0], width: 1200, height: 630 }] : [],
         locale: "en_NG",
         siteName: "BookHushly",
       },
