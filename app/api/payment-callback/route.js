@@ -9,7 +9,7 @@ import {
 
 export async function POST(request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { reference, provider, event_booking_id } = await request.json();
 
     if (!reference || !provider || !event_booking_id) {

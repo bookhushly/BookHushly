@@ -40,9 +40,9 @@ export async function POST(request) {
 
     if (error) throw error;
 
-    // Send approval email
+    // Send approval email (non-blocking — log clearly so ops can investigate)
     try {
-      await fetch(
+      const emailRes = await fetch(
         `${process.env.NEXT_PUBLIC_APP_URL}/api/emails/vendor-approved`,
         {
           method: "POST",
@@ -50,8 +50,18 @@ export async function POST(request) {
           body: JSON.stringify({ vendorId }),
         },
       );
+      if (!emailRes.ok) {
+        const text = await emailRes.text().catch(() => "");
+        console.error(
+          `[vendor/approve] Approval email failed for vendor ${vendorId}: HTTP ${emailRes.status}`,
+          text,
+        );
+      }
     } catch (emailError) {
-      console.error("Failed to send approval email:", emailError);
+      console.error(
+        `[vendor/approve] Approval email threw for vendor ${vendorId}:`,
+        emailError.message,
+      );
     }
 
     // In-app notification to vendor
@@ -61,7 +71,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error("Error approving vendor:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[vendor/approve] Error:", error);
+    return NextResponse.json({ error: "Failed to approve vendor" }, { status: 500 });
   }
 }

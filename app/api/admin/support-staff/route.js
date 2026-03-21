@@ -29,10 +29,12 @@ export async function GET() {
     if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const staff = await getSupportStaff();
-    return NextResponse.json({ staff });
+    return NextResponse.json({ staff }, {
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" },
+    });
   } catch (err) {
     console.error("GET support-staff error:", err);
-    return NextResponse.json({ error: err.message || "Failed to fetch staff" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
   }
 }
 

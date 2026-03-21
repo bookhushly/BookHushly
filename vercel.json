@@ -3,6 +3,10 @@
     {
       "path": "/api/notifications/engagement",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/booking-locks/cleanup",
+      "schedule": "*/30 * * * *"
     }
   ]
 }

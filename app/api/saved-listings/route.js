@@ -16,9 +16,11 @@ export async function GET() {
       .limit(500);
 
     if (error) throw error;
-    return NextResponse.json({ data });
+    return NextResponse.json({ data }, {
+      headers: { "Cache-Control": "private, no-cache" },
+    });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch saved listings" }, { status: 500 });
   }
 }
 

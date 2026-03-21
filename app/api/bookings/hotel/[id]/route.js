@@ -6,6 +6,12 @@ export async function GET(request, { params }) {
     const { id } = await params;
     const supabase = await createClient();
 
+    // Require authentication
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { data: booking, error } = await supabase
       .from("hotel_bookings")
       .select(
@@ -40,6 +46,17 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
+    // Ownership check — only the booking owner or admins may view
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (booking.user_id && booking.user_id !== user.id && profile?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     // Flatten structure for payment form compatibility
     const securityDeposit = booking.hotels?.security_deposit || 0;
     const roomTotal = booking.total_price || 0;
@@ -65,7 +82,7 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error("Error fetching hotel booking:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch booking" },
+      { error: "Failed to fetch booking" },
       { status: 500 },
     );
   }

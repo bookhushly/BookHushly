@@ -4,6 +4,10 @@ import { unifiedPayment } from "@/lib/payment-service";
 import { generateReference } from "@/lib/paystack/utils/reference-generator";
 import { generateOrderId } from "@/lib/nowpayments/utils/order-id-generator";
 
+// Strict whitelist — never allow user-supplied strings directly in table names
+const VALID_REQUEST_TYPES = new Set(["logistics", "security", "hotel", "apartment", "event"]);
+const VALID_PROVIDERS = new Set(["paystack", "crypto"]);
+
 /**
  * Unified Payment Initialization
  * POST /api/payment/initialize
@@ -30,6 +34,22 @@ export async function POST(request) {
       );
     }
 
+    // Whitelist requestType — never interpolate unsanitized client input into table names
+    if (!VALID_REQUEST_TYPES.has(requestType)) {
+      return NextResponse.json(
+        { error: "Invalid request type" },
+        { status: 400 },
+      );
+    }
+
+    // Whitelist provider
+    if (!VALID_PROVIDERS.has(provider)) {
+      return NextResponse.json(
+        { error: "Invalid payment provider" },
+        { status: 400 },
+      );
+    }
+
     if (provider === "crypto" && !payCurrency) {
       return NextResponse.json(
         { error: "payCurrency is required for crypto payments" },
@@ -39,10 +59,17 @@ export async function POST(request) {
 
     const supabase = await createClient();
 
+    // Require authentication for all payment initializations
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     // Fetch request details based on type
     let requestData, quote, tableName;
 
     if (requestType === "logistics" || requestType === "security") {
+      // tableName is safe — requestType already validated against whitelist above
       tableName = `${requestType}_requests`;
 
       // Fetch request
@@ -57,6 +84,11 @@ export async function POST(request) {
           { error: "Request not found" },
           { status: 404 },
         );
+      }
+
+      // Ownership check: user must own this request (user_id may be null for guests who later signed in)
+      if (request.user_id && request.user_id !== user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
       requestData = request;
@@ -85,6 +117,11 @@ export async function POST(request) {
         );
       }
 
+      // Ownership check
+      if (data.user_id && data.user_id !== user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
       requestData = data;
       // For hotel bookings, amount comes from booking total
     } else if (requestType === "apartment") {
@@ -99,6 +136,11 @@ export async function POST(request) {
           { error: "Booking not found" },
           { status: 404 },
         );
+      }
+
+      // Ownership check
+      if (data.user_id && data.user_id !== user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
       requestData = data;
@@ -116,12 +158,12 @@ export async function POST(request) {
         );
       }
 
+      // Ownership check
+      if (data.customer_id && data.customer_id !== user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
       requestData = data;
-    } else {
-      return NextResponse.json(
-        { error: "Invalid request type" },
-        { status: 400 },
-      );
     }
 
     // Verify amount if quote exists
@@ -149,7 +191,7 @@ export async function POST(request) {
         : generateOrderId(prefix);
 
     // Callback URL
-    const callbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/payment/callback?reference=${reference}&provider=${provider}`;
+    const callbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}payment/callback?reference=${reference}&provider=${provider}`;
 
     // Initialize payment with unified service
     const paymentResult = await unifiedPayment.initializePayment({
@@ -260,10 +302,7 @@ export async function POST(request) {
     if (paymentError) {
       console.error("Failed to create payment record:", paymentError);
       return NextResponse.json(
-        {
-          error: "Failed to create payment record",
-          details: paymentError.message,
-        },
+        { error: "Failed to create payment record. Please try again." },
         { status: 500 },
       );
     }
@@ -308,10 +347,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Payment initialization error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to initialize payment",
-        details: error.message,
-      },
+      { error: "Failed to initialize payment. Please try again." },
       { status: 500 },
     );
   }

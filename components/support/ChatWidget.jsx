@@ -472,11 +472,6 @@ export default function ChatWidget() {
     }
     sessionId.current = sid;
 
-    const savedConvId = localStorage.getItem("bh_conversation_id");
-    if (savedConvId) {
-      setConversationId(savedConvId);
-      conversationIdRef.current = savedConvId;
-    }
   }, []);
 
   // Fetch history on open
@@ -610,7 +605,6 @@ export default function ChatWidget() {
           if (u.assigned_to && u.status === "active_human")
             fetchAgentName(u.assigned_to);
           if (u.status === "resolved") {
-            localStorage.removeItem("bh_conversation_id");
             conversationIdRef.current = null;
             setConversationId(null);
           }
@@ -721,7 +715,6 @@ export default function ChatWidget() {
         if (data.conversationId && !conversationIdRef.current) {
           conversationIdRef.current = data.conversationId;
           setConversationId(data.conversationId);
-          localStorage.setItem("bh_conversation_id", data.conversationId);
         }
 
         if (data.reply) {

@@ -2,22 +2,42 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { trackAIUsage } from "@/lib/track-ai-usage";
+import { Redis } from "@upstash/redis";
 
-// In-memory rate limiting: sessionId/userId → { count, resetAt }
-const rateLimitStore = new Map();
 const RATE_LIMIT_MAX = 20;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const RATE_LIMIT_WINDOW_SEC = 60 * 60; // 1 hour
 
-function checkRateLimit(key) {
-  const now = Date.now();
-  const entry = rateLimitStore.get(key);
-  if (!entry || now > entry.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false; // not limited
+// Use Redis for distributed rate limiting — works correctly across Vercel instances
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
+
+/**
+ * Returns true if the key is rate-limited.
+ * Falls back to allowing the request if Redis is unavailable.
+ */
+async function checkRateLimit(key) {
+  if (!redis) {
+    // Redis not configured — allow but log warning
+    console.warn("[support/chat] Redis not configured; rate limiting disabled");
+    return false;
   }
-  if (entry.count >= RATE_LIMIT_MAX) return true; // limited
-  entry.count++;
-  return false;
+  const redisKey = `chat_rl:${key}`;
+  try {
+    const count = await redis.incr(redisKey);
+    if (count === 1) {
+      // First request in window — set expiry
+      await redis.expire(redisKey, RATE_LIMIT_WINDOW_SEC);
+    }
+    return count > RATE_LIMIT_MAX;
+  } catch (err) {
+    console.error("[support/chat] Redis rate limit error:", err.message);
+    return false; // Fail open — don't block users due to Redis errors
+  }
 }
 
 function stripHtml(str) {
@@ -85,8 +105,10 @@ export async function POST(request) {
     }
 
     // Rate limit by userId (authenticated) or sessionId (guest)
+    // sessionId is a client-generated UUID used only for rate limiting guests;
+    // it is not treated as a security token — auth users are keyed by their real userId.
     const rateLimitKey = userId || sessionId;
-    const limited = checkRateLimit(rateLimitKey);
+    const limited = await checkRateLimit(rateLimitKey);
     if (limited) {
       return NextResponse.json({
         reply:

@@ -20,10 +20,10 @@ export function useCurrentUser() {
   return useQuery({
     queryKey: authKeys.user,
     queryFn: getCurrentUser,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    staleTime: 10 * 60 * 1000, // 10 minutes — auth state rarely changes mid-session
+    gcTime: 15 * 60 * 1000,
     retry: 1,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false, // prevents re-query + re-render on every tab switch (INP fix)
     refetchOnMount: false,
   });
 }
@@ -43,10 +43,10 @@ export function useAuth() {
   return useQuery({
     queryKey: authKeys.userWithVendor,
     queryFn: getUserWithVendor,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     retry: 1,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false, // prevents re-query + re-render on every tab switch (INP fix)
     refetchOnMount: false,
   });
 }

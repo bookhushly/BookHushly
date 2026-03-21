@@ -142,9 +142,11 @@ export async function GET(request, { params }) {
           hasMore: offset + limit < (count ?? total),
         },
       },
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
     });
   } catch (error) {
     console.error("GET /api/reviews error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
   }
 }

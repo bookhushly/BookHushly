@@ -81,9 +81,11 @@ export async function GET() {
       byType,
       topListings,
       daily,
+    }, {
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" },
     });
   } catch (err) {
     console.error("GET /api/admin/views error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch view stats" }, { status: 500 });
   }
 }

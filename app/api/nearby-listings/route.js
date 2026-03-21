@@ -24,7 +24,9 @@ export async function GET(request) {
       payload[cat] = await fetchWithProximity(supabase, cat, city, state);
     }
 
-    return NextResponse.json({ data: payload, city, state });
+    return NextResponse.json({ data: payload, city, state }, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch (err) {
     console.error("[nearby-listings]", err);
     return NextResponse.json({ error: "Failed to fetch nearby listings" }, { status: 500 });

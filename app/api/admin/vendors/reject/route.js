@@ -46,7 +46,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error("Error rejecting vendor:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[vendor/reject] Error:", error);
+    return NextResponse.json({ error: "Failed to reject vendor" }, { status: 500 });
   }
 }

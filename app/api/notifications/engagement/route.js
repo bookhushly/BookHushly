@@ -15,7 +15,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifySystem, notifyReviewRequest } from "@/lib/notifications";
 
-const CRON_SECRET = process.env.CRON_SECRET;
+const { CRON_SECRET } = process.env;
 
 // Days thresholds
 const CUSTOMER_INACTIVE_DAYS = 14;
@@ -28,15 +28,25 @@ function daysAgo(n) {
   return d.toISOString();
 }
 
+/** Log any rejected promises from allSettled and count them */
+function logSettledErrors(settled, label, results) {
+  settled.forEach((r, i) => {
+    if (r.status === "rejected") {
+      console.error(`[engagement] ${label}[${i}] failed:`, r.reason?.message || r.reason);
+      results.errors++;
+    }
+  });
+}
+
 export async function POST(request) {
-  // Verify cron secret to prevent public triggering
+  // Verify cron secret — fail-safe: block if CRON_SECRET is not configured
   const authHeader = request.headers.get("authorization");
-  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+  if (!CRON_SECRET || authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const supabase = createAdminClient();
-  const results  = { customers: 0, reviews: 0, vendors: 0, admins: 0 };
+  const results  = { customers: 0, reviews: 0, vendors: 0, admins: 0, errors: 0 };
 
   try {
     // ── 1. Re-engage inactive customers ─────────────────────────────────────
@@ -47,7 +57,7 @@ export async function POST(request) {
       .lt("last_sign_in_at", daysAgo(CUSTOMER_INACTIVE_DAYS));
 
     if (inactiveCustomers?.length) {
-      await Promise.allSettled(
+      const settled = await Promise.allSettled(
         inactiveCustomers.map((u) =>
           notifySystem(u.id, {
             title:   "We miss you at BookHushly!",
@@ -56,6 +66,7 @@ export async function POST(request) {
           }),
         ),
       );
+      logSettledErrors(settled, "customer re-engagement", results);
       results.customers = inactiveCustomers.length;
     }
 
@@ -69,7 +80,7 @@ export async function POST(request) {
       .lt("check_out_date", new Date().toISOString());
 
     if (recentHotelCheckouts?.length) {
-      await Promise.allSettled(
+      const settled = await Promise.allSettled(
         recentHotelCheckouts
           .filter((b) => b.user_id)
           .map((b) =>
@@ -79,6 +90,7 @@ export async function POST(request) {
             }),
           ),
       );
+      logSettledErrors(settled, "hotel review requests", results);
       results.reviews += recentHotelCheckouts.length;
     }
 
@@ -91,7 +103,7 @@ export async function POST(request) {
       .lt("check_out_date", new Date().toISOString());
 
     if (recentAptCheckouts?.length) {
-      await Promise.allSettled(
+      const settled = await Promise.allSettled(
         recentAptCheckouts
           .filter((b) => b.user_id)
           .map((b) =>
@@ -101,6 +113,7 @@ export async function POST(request) {
             }),
           ),
       );
+      logSettledErrors(settled, "apartment review requests", results);
       results.reviews += recentAptCheckouts.length;
     }
 
@@ -112,7 +125,7 @@ export async function POST(request) {
       .lt("last_sign_in_at", daysAgo(VENDOR_INACTIVE_DAYS));
 
     if (inactiveVendors?.length) {
-      await Promise.allSettled(
+      const settled = await Promise.allSettled(
         inactiveVendors.map((u) =>
           notifySystem(u.id, {
             title:   "Your dashboard is waiting",
@@ -121,6 +134,7 @@ export async function POST(request) {
           }),
         ),
       );
+      logSettledErrors(settled, "vendor re-engagement", results);
       results.vendors = inactiveVendors.length;
     }
 
@@ -145,7 +159,7 @@ export async function POST(request) {
           .select("id", { count: "exact", head: true })
           .gte("created_at", daysAgo(7));
 
-        await Promise.allSettled(
+        const settled = await Promise.allSettled(
           admins.map((a) =>
             notifySystem(a.id, {
               title:   "Weekly Platform Summary",
@@ -154,6 +168,7 @@ export async function POST(request) {
             }),
           ),
         );
+        logSettledErrors(settled, "admin digest", results);
         results.admins = admins.length;
       }
     }

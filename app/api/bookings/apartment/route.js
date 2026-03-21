@@ -25,8 +25,8 @@ export async function POST(request) {
 
     const bookingData = {
       apartment_id: formData.get("apartment_id"),
-      // user_id is NOT NULL in schema — use a placeholder for guests or the actual user
-      user_id: user?.id || "00000000-0000-0000-0000-000000000000",
+      // user_id is nullable for guest bookings; guest identity tracked via guest_name/email/phone fields
+      user_id: user?.id || null,
       guest_id: user?.id || null,
       check_in_date: formData.get("check_in_date"),
       check_out_date: formData.get("check_out_date"),
@@ -55,7 +55,7 @@ export async function POST(request) {
       .gt("expires_at", now)
       .maybeSingle();
 
-    if (activeLock && activeLock.user_id !== (user?.id ?? null)) {
+    if (activeLock && activeLock.user_id !== (user?.id || null)) {
       const minutesLeft = Math.ceil(
         (new Date(activeLock.expires_at) - new Date()) / 60000,
       );
@@ -77,7 +77,7 @@ export async function POST(request) {
     if (insertError) {
       console.error("Insert error:", insertError);
       return NextResponse.json(
-        { error: "Failed to create booking", details: insertError.message },
+        { error: "Failed to create booking. Please try again." },
         { status: 500 },
       );
     }

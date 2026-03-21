@@ -4,7 +4,7 @@ import { sendEmail } from "@/lib/email";
 import { notifyAdminKYCSubmitted } from "@/lib/notifications";
 
 export async function POST(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },
@@ -24,7 +24,7 @@ export async function POST(req) {
     // Check if user exists
     const { data: user, error: userError } = await supabase
       .from("users")
-      .select("*")
+      .select("id, email, full_name, role")
       .eq("id", session.user.id)
       .single();
 
@@ -32,13 +32,28 @@ export async function POST(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Create vendor
+    // Reject if a vendor record already exists for this user — prevents silent overwrites
+    const { data: existingVendor } = await supabase
+      .from("vendors")
+      .select("id, status")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if (existingVendor) {
+      return NextResponse.json(
+        { error: "A vendor application already exists for this account.", status: existingVendor.status },
+        { status: 409 }
+      );
+    }
+
+    // Insert — never upsert to avoid accidental overwrites
     const { data: newVendor, error: vendorError } = await supabase
       .from("vendors")
-      .upsert({
+      .insert({
         ...vendorData,
         user_id: session.user.id,
         approved: false,
+        status: "pending",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -61,19 +76,22 @@ export async function POST(req) {
     }
 
     // Send KYC submission email to admin (or team)
-    await sendEmail("aboderindaniel482@gmail.com", "kycSubmissionNotice", {
-      vendorName: vendorData.business_name || user.full_name || user.email,
-      email: user.email,
-      phone: vendorData.phone || "N/A",
-      businessName: vendorData.business_name || "N/A",
-      dashboardUrl: `https://www.bookhushly.com/admin/`, // adjust as needed
-    });
+    const adminEmail = process.env.ADMIN_KYC_EMAIL || process.env.ADMIN_EMAIL;
+    if (adminEmail) {
+      await sendEmail(adminEmail, "kycSubmissionNotice", {
+        vendorName: vendorData.business_name || user.full_name || user.email,
+        email: user.email,
+        phone: vendorData.phone || "N/A",
+        businessName: vendorData.business_name || "N/A",
+        dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL}admin/`,
+      });
+    }
 
     return NextResponse.json({ success: true, data: newVendor });
   } catch (error) {
-    console.error("Error creating vendor:", error);
+    console.error("[vendor/create] Error:", error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: "Failed to create vendor application. Please try again." },
       { status: 500 }
     );
   }

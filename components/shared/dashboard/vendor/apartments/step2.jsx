@@ -268,7 +268,9 @@ export default function Step2Location({ formData, updateFormData, errors }) {
           </div>
 
           <div className="border-t border-gray-100 pt-4 space-y-3">
-            <p className="text-sm font-medium text-gray-700">Agent / Agency Fee</p>
+            <p className="text-sm font-medium text-gray-700">
+              Agent / Agency Fee
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="agent_fee_applies">Agency Fee Applies?</Label>
