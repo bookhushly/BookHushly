@@ -2,7 +2,7 @@ import "./globals.css";
 import { Bricolage_Grotesque, Fraunces } from "next/font/google";
 import QueryProvider from "@/components/common/QueryProvider";
 import { Analytics } from "@vercel/analytics/next";
-
+import { SpeedInsights } from "@vercel/speed-insights/next";
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
@@ -71,9 +71,7 @@ export const metadata = {
     images: ["/og-image.png"],
   },
   icons: {
-    icon: [
-      { url: "/logo.png", sizes: "any", type: "image/png" },
-    ],
+    icon: [{ url: "/logo.png", sizes: "any", type: "image/png" }],
     apple: [{ url: "/logos/faviconhu/apple-touch-icon.png" }],
   },
   manifest: "/site.webmanifest",
@@ -94,6 +92,7 @@ export default function RootLayout({ children }) {
       <body className="font-bricolage antialiased">
         <QueryProvider>{children}</QueryProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
