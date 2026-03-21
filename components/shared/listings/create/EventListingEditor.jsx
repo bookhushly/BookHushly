@@ -699,7 +699,14 @@ function MediaTab({ images, imagePreviews, onImageChange, errors, coverIndex, on
 
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
-function SettingsTab({ visibility, setVisibility, customQuestions, setCustomQuestions }) {
+const AGE_OPTIONS = [
+  { value: "all", label: "All ages welcome", desc: "No age restriction" },
+  { value: "16", label: "16 and above", desc: "Attendees must be 16+" },
+  { value: "18", label: "18 and above", desc: "Attendees must be 18+" },
+  { value: "21", label: "21 and above", desc: "Attendees must be 21+" },
+];
+
+function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestriction, customQuestions, setCustomQuestions }) {
   const [newQuestion, setNewQuestion] = useState({
     label: "",
     type: "text",
@@ -765,6 +772,39 @@ function SettingsTab({ visibility, setVisibility, customQuestions, setCustomQues
                 {isSelected && (
                   <CheckCircle className={`w-5 h-5 ml-auto shrink-0 ${opt.color}`} />
                 )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Age Restriction */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Age Restriction</h2>
+          <p className="text-sm text-gray-500">
+            Set the minimum age for attendees. This will be shown on your event listing and at checkout.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {AGE_OPTIONS.map((opt) => {
+            const selected = ageRestriction === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setAgeRestriction(opt.value)}
+                className={`flex flex-col items-start p-3 rounded-xl border-2 text-left transition-all ${
+                  selected
+                    ? "border-brand-600 bg-brand-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <span className={`text-sm font-semibold ${selected ? "text-brand-700" : "text-gray-700"}`}>
+                  {opt.label}
+                </span>
+                <span className="text-xs text-gray-500 mt-0.5">{opt.desc}</span>
+                {selected && <CheckCircle className="w-4 h-4 text-brand-600 mt-1.5" />}
               </button>
             );
           })}
@@ -1201,6 +1241,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
   const [imagePreviews, setImagePreviews] = useState([]);
   const [coverIndex, setCoverIndex] = useState(0);
   const [visibility, setVisibility] = useState("public");
+  const [ageRestriction, setAgeRestriction] = useState("all");
   const [customQuestions, setCustomQuestions] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -1220,6 +1261,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         if (p.tickets) setTickets(p.tickets);
         if (p.useMultiplePackages != null) setUseMultiplePackages(p.useMultiplePackages);
         if (p.visibility) setVisibility(p.visibility);
+        if (p.ageRestriction) setAgeRestriction(p.ageRestriction);
         if (p.customQuestions) setCustomQuestions(p.customQuestions);
       }
     } catch {}
@@ -1231,12 +1273,12 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
       try {
         localStorage.setItem(
           draftKey,
-          JSON.stringify({ formData, tickets, useMultiplePackages, visibility, customQuestions })
+          JSON.stringify({ formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions })
         );
       } catch {}
     }, 800);
     return () => clearTimeout(id);
-  }, [formData, tickets, useMultiplePackages, visibility, customQuestions, draftKey]);
+  }, [formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, draftKey]);
 
   // ── Image handler ───────────────────────────────────────────────────────────
   const handleImageChange = useCallback((e) => {
@@ -1346,6 +1388,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         media_urls: mediaUrls,
         amenities: [],
         visibility,
+        age_restriction: ageRestriction !== "all" ? ageRestriction : null,
         custom_questions: customQuestions,
         active: visibility !== "draft",
       };
@@ -1461,6 +1504,8 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
             <SettingsTab
               visibility={visibility}
               setVisibility={setVisibility}
+              ageRestriction={ageRestriction}
+              setAgeRestriction={setAgeRestriction}
               customQuestions={customQuestions}
               setCustomQuestions={setCustomQuestions}
             />

@@ -237,6 +237,7 @@ export async function createListing(listingData) {
         delivery_areas: listingData.delivery_areas || null,
         meals: listingData.meals || null,
         event_types: listingData.event_types || null,
+        age_restriction: listingData.age_restriction || null,
         vehicle_categories: listingData.vehicle_categories || null,
         transmission_types: listingData.transmission_types || null,
         fuel_types: listingData.fuel_types || null,

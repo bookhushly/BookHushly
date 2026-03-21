@@ -15,6 +15,7 @@ import {
   Share2,
   Heart,
   Shield,
+  ShieldAlert,
   Ticket,
   X,
   Camera,
@@ -549,7 +550,31 @@ const EventOrganizerDetail = ({ service }) => {
                     </div>
                   </div>
                 )}
+
+                {service.category_data?.age_restriction && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                      <ShieldAlert className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900 mb-1">Age Restriction</div>
+                      <div className="text-gray-600 text-sm md:text-base">
+                        {service.category_data.age_restriction}+ only — valid ID required at entry
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {service.category_data?.age_restriction && (
+                <div className="mt-6 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                  <ShieldAlert className="w-5 h-5 text-red-500 shrink-0" />
+                  <p className="text-sm text-red-700">
+                    <span className="font-semibold">Age restricted event ({service.category_data.age_restriction}+).</span>{" "}
+                    Attendees must be at least {service.category_data.age_restriction} years old and carry valid ID. Tickets purchased by underage attendees will not be refunded.
+                  </p>
+                </div>
+              )}
             </section>
 
             {/* Photo Gallery */}

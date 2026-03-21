@@ -114,8 +114,8 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
-            {/* Badge */}
-            <div className="absolute top-3 left-3">
+            {/* Badges */}
+            <div className="absolute top-3 left-3 flex items-center gap-1.5">
               {isPast ? (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-gray-600/80 text-white">
                   Ended
@@ -123,6 +123,11 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
               ) : (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-violet-600/90 text-white">
                   Event
+                </span>
+              )}
+              {service.category_data?.age_restriction && (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-red-600/90 text-white">
+                  {service.category_data.age_restriction}+
                 </span>
               )}
             </div>

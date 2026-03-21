@@ -11,6 +11,7 @@ import {
   Clock,
   MapPin,
   Shield,
+  ShieldAlert,
   Camera,
   Share2,
   Heart,
@@ -36,6 +37,9 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
     phone: "",
   });
   const [questionAnswers, setQuestionAnswers] = useState({});
+  const [ageAcknowledged, setAgeAcknowledged] = useState(false);
+
+  const ageRestriction = service?.category_data?.age_restriction || null;
 
   // Normalize custom questions from the service listing
   const customQuestions = useMemo(() => {
@@ -412,6 +416,20 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   Select Tickets
                 </h2>
+
+                {ageRestriction && (
+                  <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">
+                    <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-red-700">
+                        Age restricted event — {ageRestriction}+ only
+                      </p>
+                      <p className="text-xs text-red-600 mt-0.5">
+                        Valid government-issued ID will be required at the gate. Tickets purchased by attendees who do not meet the age requirement will not be refunded.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-4">
                   {ticketPackages.map((ticket, index) => (
                     <div
@@ -529,8 +547,23 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                     </div>
                   ))}
                 </div>
+                {ageRestriction && (
+                  <label className="flex items-start gap-3 mt-5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={ageAcknowledged}
+                      onChange={(e) => setAgeAcknowledged(e.target.checked)}
+                      className="mt-0.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      I confirm that I am {ageRestriction} years of age or older and understand that valid ID will be required at the venue.
+                    </span>
+                  </label>
+                )}
+
                 <Button
-                  className="w-full mt-6 bg-purple-600 hover:bg-purple-700 text-white rounded-full py-3"
+                  className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white rounded-full py-3 disabled:opacity-50"
+                  disabled={ageRestriction && !ageAcknowledged}
                   onClick={() => {
                     if (validateTickets()) {
                       setStep(2);
