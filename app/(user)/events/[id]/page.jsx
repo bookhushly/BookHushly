@@ -53,8 +53,7 @@ export async function generateStaticParams() {
       .from("listings")
       .select("id")
       .eq("active", true)
-      .eq("category", "events")
-      .eq("event_type", "event_organizer");
+      .eq("category", "events");
 
     if (error) {
       console.error("Error fetching events:", error);

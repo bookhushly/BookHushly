@@ -45,6 +45,7 @@ import {
   HelpCircle,
   Loader2,
   X,
+  Save,
 } from "lucide-react";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -110,7 +111,7 @@ const MAX_TICKETS = 10;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function tabComplete(tab, formData, tickets, useMultiplePackages, images) {
+function tabComplete(tab, formData, tickets, useMultiplePackages, totalImages) {
   switch (tab) {
     case "basic":
       return !!(
@@ -124,7 +125,7 @@ function tabComplete(tab, formData, tickets, useMultiplePackages, images) {
     case "tickets":
       return useMultiplePackages ? tickets.length > 0 : !!formData.price;
     case "media":
-      return images.length > 0;
+      return totalImages > 0;
     case "settings":
       return true; // optional tab
     default:
@@ -134,7 +135,7 @@ function tabComplete(tab, formData, tickets, useMultiplePackages, images) {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function TabNav({ activeTab, setActiveTab, formData, tickets, useMultiplePackages, images }) {
+function TabNav({ activeTab, setActiveTab, formData, tickets, useMultiplePackages, totalImages }) {
   return (
     <div className="flex overflow-x-auto border-b border-gray-200 mb-8 -mx-1 px-1 gap-1 no-scrollbar">
       {TABS.map((tab) => {
@@ -142,7 +143,7 @@ function TabNav({ activeTab, setActiveTab, formData, tickets, useMultiplePackage
         const isActive = activeTab === tab.id;
         const done =
           tab.id !== "publish" &&
-          tabComplete(tab.id, formData, tickets, useMultiplePackages, images);
+          tabComplete(tab.id, formData, tickets, useMultiplePackages, totalImages);
         return (
           <button
             key={tab.id}
@@ -997,7 +998,7 @@ function PublishTab({
   formData,
   tickets,
   useMultiplePackages,
-  images,
+  totalImages,
   visibility,
   customQuestions,
   eventType,
@@ -1007,6 +1008,7 @@ function PublishTab({
   loading,
   uploadProgress,
   errors,
+  isEditMode,
 }) {
   const totalTickets = tickets.reduce(
     (s, t) => s + parseInt(t.quantity || 0),
@@ -1030,7 +1032,7 @@ function PublishTab({
       label: "Tickets",
       ok: useMultiplePackages ? tickets.length > 0 : !!formData.price,
     },
-    { label: "At least 1 photo", ok: images.length > 0 },
+    { label: "At least 1 photo", ok: totalImages > 0 },
   ];
 
   const allReady = checks.every((c) => c.ok);
@@ -1038,9 +1040,13 @@ function PublishTab({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Ready to Publish?</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">
+          {isEditMode ? "Review & Save Changes" : "Ready to Publish?"}
+        </h2>
         <p className="text-sm text-gray-500">
-          Review your event details before making it live.
+          {isEditMode
+            ? "Review your changes before saving."
+            : "Review your event details before making it live."}
         </p>
       </div>
 
@@ -1115,7 +1121,7 @@ function PublishTab({
 
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Camera className="w-4 h-4 text-gray-400" />
-          {images.length} photo{images.length !== 1 ? "s" : ""} uploaded
+          {totalImages} photo{totalImages !== 1 ? "s" : ""} uploaded
           {customQuestions.length > 0 && (
             <>
               <span className="text-gray-300">·</span>
@@ -1154,15 +1160,17 @@ function PublishTab({
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCopyPastEvent}
-          className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
-        >
-          <Copy className="w-4 h-4" />
-          Copy from Past Event
-        </Button>
+        {!isEditMode && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCopyPastEvent}
+            className="flex items-center gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+          >
+            <Copy className="w-4 h-4" />
+            Copy from Past Event
+          </Button>
+        )}
 
         <Button
           type="submit"
@@ -1173,17 +1181,21 @@ function PublishTab({
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Publishing...
+              {isEditMode ? "Saving..." : "Publishing..."}
             </>
           ) : visibility === "draft" ? (
             <>
               <FileEdit className="w-4 h-4 mr-2" />
-              Save as Draft
+              {isEditMode ? "Save Changes" : "Save as Draft"}
             </>
           ) : (
             <>
-              <Rocket className="w-4 h-4 mr-2" />
-              Publish Event
+              {isEditMode ? (
+                <Save className="w-4 h-4 mr-2" />
+              ) : (
+                <Rocket className="w-4 h-4 mr-2" />
+              )}
+              {isEditMode ? "Save Changes" : "Publish Event"}
             </>
           )}
         </Button>
@@ -1203,7 +1215,7 @@ function CopyPastEventModal({ vendorId, onSelect, onClose }) {
     async function load() {
       const { data } = await supabase
         .from("listings")
-        .select("id, title, event_date, ticket_packages, price, total_tickets, event_types")
+        .select("id, title, event_date, ticket_packages, price, total_tickets, category_data")
         .eq("vendor_id", vendorId)
         .eq("category", "events")
         .order("created_at", { ascending: false })
@@ -1270,12 +1282,14 @@ function CopyPastEventModal({ vendorId, onSelect, onClose }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function EventListingEditor({ vendor, user, eventType = "event_organizer" }) {
+export default function EventListingEditor({ vendor, user, eventType = "event_organizer", initialData = null, listingId = null }) {
+  const isEditMode = !!listingId;
   const supabase = createClient();
   const router = useRouter();
 
   // ── Form State ─────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState("basic");
+  const [existingMediaUrls, setExistingMediaUrls] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -1301,8 +1315,8 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showCopyModal, setShowCopyModal] = useState(false);
 
-  // ── Draft persistence ───────────────────────────────────────────────────────
-  const draftKey = user?.id ? `event-draft-${user.id}` : null;
+  // ── Draft persistence (create mode only) ───────────────────────────────────
+  const draftKey = (!isEditMode && user?.id) ? `event-draft-${user.id}` : null;
 
   useEffect(() => {
     if (!draftKey) return;
@@ -1334,14 +1348,76 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
     return () => clearTimeout(id);
   }, [formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence, draftKey]);
 
+  // ── Populate state from existing listing (edit mode) ───────────────────────
+  useEffect(() => {
+    if (!initialData || !isEditMode) return;
+
+    const rawDate = initialData.event_date;
+    const eventDate = rawDate ? new Date(rawDate).toISOString().split("T")[0] : "";
+
+    const rawTime = initialData.event_time;
+    let eventTime = "";
+    if (rawTime) {
+      const d = new Date(rawTime);
+      eventTime = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+    }
+
+    setFormData({
+      title: initialData.title || "",
+      description: initialData.description || "",
+      location: initialData.location || "",
+      event_date: eventDate,
+      event_time: eventTime,
+      event_types: initialData.category_data?.event_types || "",
+      asoebi_available: initialData.category_data?.asoebi_available || "no",
+      price: initialData.price?.toString() || "",
+      total_tickets: initialData.total_tickets?.toString() || "",
+    });
+
+    if (initialData.ticket_packages?.length > 0) {
+      setUseMultiplePackages(true);
+      setTickets(
+        initialData.ticket_packages.map((pkg) => ({
+          name: pkg.name,
+          price: String(pkg.price),
+          quantity: String(pkg.total || pkg.remaining),
+          description: pkg.description || "",
+          early_bird_price: pkg.early_bird_price ? String(pkg.early_bird_price) : "",
+          early_bird_end: pkg.early_bird_end || "",
+        }))
+      );
+    }
+
+    setVisibility(initialData.visibility || "public");
+    setAgeRestriction(initialData.category_data?.age_restriction || "all");
+    setCustomQuestions(Array.isArray(initialData.custom_questions) ? initialData.custom_questions : []);
+    if (initialData.category_data?.recurrence) {
+      setRecurrence(initialData.category_data.recurrence);
+    }
+
+    if (initialData.media_urls?.length > 0) {
+      setExistingMediaUrls(initialData.media_urls);
+      setImagePreviews(initialData.media_urls);
+    }
+  }, [initialData]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Image handler ───────────────────────────────────────────────────────────
   const handleImageChange = useCallback((e) => {
-    const files = Array.from(e.target.files || []).slice(0, MAX_IMAGES);
-    setImages(files);
-    setImagePreviews(files.map((f) => URL.createObjectURL(f)));
-    setCoverIndex(0);
+    const newFiles = Array.from(e.target.files || []);
+    if (isEditMode) {
+      setImages((prev) => [...prev, ...newFiles].slice(0, MAX_IMAGES - existingMediaUrls.length));
+      setImagePreviews((prev) => {
+        const newPreviews = newFiles.map((f) => URL.createObjectURL(f));
+        return [...prev, ...newPreviews].slice(0, MAX_IMAGES);
+      });
+    } else {
+      const files = newFiles.slice(0, MAX_IMAGES);
+      setImages(files);
+      setImagePreviews(files.map((f) => URL.createObjectURL(f)));
+      setCoverIndex(0);
+    }
     setErrors((p) => ({ ...p, images: undefined }));
-  }, []);
+  }, [isEditMode, existingMediaUrls.length]);
 
   // ── Validate & submit ───────────────────────────────────────────────────────
   const validate = () => {
@@ -1352,7 +1428,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
     if (!formData.event_date) errs.event_date = "Event date is required";
     if (!formData.event_time) errs.event_time = "Start time is required";
     if (!formData.event_types) errs.event_types = "Event type is required";
-    if (images.length === 0) errs.images = "At least one photo is required";
+    if (images.length === 0 && existingMediaUrls.length === 0) errs.images = "At least one photo is required";
     if (useMultiplePackages && tickets.length === 0)
       errs.tickets = "Add at least one ticket tier";
     if (!useMultiplePackages && (!formData.price || parseFloat(formData.price) <= 0))
@@ -1473,6 +1549,124 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
     }
   };
 
+  // ── Update existing listing (edit mode) ────────────────────────────────────
+  const handleUpdate = async (e) => {
+    e?.preventDefault();
+    if (!validate()) {
+      if (errors.title || errors.description || errors.location || errors.event_date || errors.event_time || errors.event_types)
+        setActiveTab("basic");
+      else if (errors.price || errors.tickets) setActiveTab("tickets");
+      else if (errors.images) setActiveTab("media");
+      return;
+    }
+
+    setLoading(true);
+    setErrors({});
+
+    try {
+      setUploadProgress(10);
+
+      // Upload only new File objects
+      const newUploadedUrls = await Promise.all(
+        images.map(async (img, i) => {
+          const path = `${user.id}/${Date.now()}-${i}-${img.name}`;
+          const { error } = await supabase.storage
+            .from("listing-images")
+            .upload(path, img, { cacheControl: "3600", upsert: false });
+          if (error) throw new Error(`Upload failed: ${error.message}`);
+          return supabase.storage.from("listing-images").getPublicUrl(path).data.publicUrl;
+        })
+      );
+
+      // Reconstruct ordered URL list from imagePreviews (existing + new)
+      const allUrls = imagePreviews.map((_, i) =>
+        i < existingMediaUrls.length
+          ? existingMediaUrls[i]
+          : newUploadedUrls[i - existingMediaUrls.length]
+      );
+      const mediaUrls = [allUrls[coverIndex], ...allUrls.filter((_, i) => i !== coverIndex)];
+
+      setUploadProgress(60);
+
+      let processedTickets = [];
+      let totalTickets = 0;
+      let listingPrice = parseFloat(formData.price) || 0;
+
+      if (useMultiplePackages && tickets.length > 0) {
+        processedTickets = tickets.map((t) => ({
+          name: t.name,
+          price: parseFloat(t.price),
+          total: parseInt(t.quantity),
+          remaining: parseInt(t.quantity),
+          description: t.description || "",
+          early_bird_price: t.early_bird_price ? parseFloat(t.early_bird_price) : null,
+          early_bird_end: t.early_bird_end || null,
+        }));
+        totalTickets = processedTickets.reduce((s, t) => s + t.total, 0);
+        listingPrice = Math.min(
+          ...processedTickets.map((t) => t.early_bird_price != null ? t.early_bird_price : t.price)
+        );
+      } else {
+        totalTickets = parseInt(formData.total_tickets) || 0;
+      }
+
+      setUploadProgress(70);
+
+      let eventTimestamp = null;
+      if (formData.event_date && formData.event_time) {
+        eventTimestamp = new Date(`${formData.event_date}T${formData.event_time}:00`).toISOString();
+      }
+
+      const updateData = {
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        media_urls: mediaUrls,
+        price: listingPrice,
+        event_date: formData.event_date || null,
+        event_time: eventTimestamp,
+        total_tickets: totalTickets,
+        ticket_packages: processedTickets.length > 0 ? processedTickets : [],
+        visibility,
+        active: visibility !== "draft",
+        custom_questions: customQuestions || [],
+        category_data: {
+          ...(initialData?.category_data || {}),
+          event_types: formData.event_types || null,
+          age_restriction: ageRestriction !== "all" ? ageRestriction : null,
+          recurrence: recurrence.enabled ? recurrence : null,
+          asoebi_available: formData.asoebi_available || null,
+        },
+      };
+
+      setUploadProgress(80);
+
+      const res = await fetch(`/api/listings/${listingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to update event");
+      }
+
+      setUploadProgress(100);
+      toast.success("Event updated!", {
+        description: visibility === "draft" ? "Draft saved." : "Your event has been updated.",
+      });
+
+      router.push("/vendor/dashboard/listings");
+    } catch (err) {
+      setErrors({ global: err.message || "Something went wrong. Please try again." });
+      toast.error(err.message || "Failed to update event");
+    } finally {
+      setLoading(false);
+      setUploadProgress(0);
+    }
+  };
+
   // ── Copy from past event ────────────────────────────────────────────────────
   const handleCopySelect = (pastEvent) => {
     setFormData((p) => ({
@@ -1480,7 +1674,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
       // Copy fields but NOT date/time (new event)
       description: pastEvent.description || p.description,
       location: pastEvent.location || p.location,
-      event_types: pastEvent.event_types || p.event_types,
+      event_types: pastEvent.category_data?.event_types || p.event_types,
       asoebi_available: pastEvent.asoebi_available || p.asoebi_available,
       price: pastEvent.price ? String(pastEvent.price) : p.price,
       total_tickets: pastEvent.total_tickets ? String(pastEvent.total_tickets) : p.total_tickets,
@@ -1514,7 +1708,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         formData={formData}
         tickets={tickets}
         useMultiplePackages={useMultiplePackages}
-        images={images}
+        totalImages={imagePreviews.length}
       />
 
       <AnimatePresence mode="wait">
@@ -1571,16 +1765,17 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
               formData={formData}
               tickets={tickets}
               useMultiplePackages={useMultiplePackages}
-              images={images}
+              totalImages={imagePreviews.length}
               visibility={visibility}
               customQuestions={customQuestions}
               eventType={eventType}
               vendor={vendor}
               onCopyPastEvent={() => setShowCopyModal(true)}
-              onPublish={handlePublish}
+              onPublish={isEditMode ? handleUpdate : handlePublish}
               loading={loading}
               uploadProgress={uploadProgress}
               errors={errors}
+              isEditMode={isEditMode}
             />
           )}
         </motion.div>

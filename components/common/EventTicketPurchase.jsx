@@ -804,6 +804,17 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                 </div>
               </div>
             )}
+
+            {/* About this event */}
+            {service?.description && (
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">About this event</h2>
+                <div
+                  className="prose prose-sm max-w-none text-gray-700 [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-4"
+                  dangerouslySetInnerHTML={{ __html: service.description }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

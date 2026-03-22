@@ -209,7 +209,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
 
         {!isHotel && listing.description && (
           <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-            {listing.description}
+            {listing.description.replace(/<[^>]*>/g, "")}
           </p>
         )}
 

@@ -39,6 +39,7 @@ import {
 import Link from "next/link";
 import { AIGenerateButton } from "@/components/shared/listings/AIGenerateButton";
 import { toast } from "sonner";
+import EventListingEditor from "@/components/shared/listings/create/EventListingEditor";
 
 export default function EditListingPage() {
   const params = useParams();
@@ -232,6 +233,31 @@ export default function EditListingPage() {
             </Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // Events use the full EventListingEditor in edit mode
+  if (listing?.category === "events") {
+    return (
+      <div className="container max-w-4xl py-8">
+        <div className="mb-8">
+          <Link
+            href="/vendor/dashboard/listings"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Listings
+          </Link>
+          <h1 className="text-3xl font-bold mb-2">Edit Event</h1>
+          <p className="text-muted-foreground">Update your event details</p>
+        </div>
+        <EventListingEditor
+          vendor={vendor}
+          user={user}
+          initialData={listing}
+          listingId={params.id}
+        />
       </div>
     );
   }
