@@ -239,6 +239,7 @@ export async function createListing(listingData) {
         event_types: listingData.event_types || null,
         age_restriction: listingData.age_restriction || null,
         recurrence: listingData.recurrence || null,
+        asoebi_available: listingData.asoebi_available || null,
         vehicle_categories: listingData.vehicle_categories || null,
         transmission_types: listingData.transmission_types || null,
         fuel_types: listingData.fuel_types || null,
@@ -266,7 +267,6 @@ export async function createListing(listingData) {
       },
 
       // Events specific fields with proper timestamp
-      ...(listingData.event_type && { event_type: listingData.event_type }),
       ...(listingData.event_date && { event_date: listingData.event_date }),
       ...(eventTimestamp && { event_time: eventTimestamp }),
       ...(listingData.total_tickets && {
@@ -279,6 +279,8 @@ export async function createListing(listingData) {
 
       // Status fields
       active: listingData.active !== false,
+      visibility: listingData.visibility || "public",
+      custom_questions: listingData.custom_questions || [],
 
       // Timestamps
       created_at: new Date().toISOString(),

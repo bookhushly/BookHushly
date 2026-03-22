@@ -1427,7 +1427,6 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         vendor_name: vendor.business_name || "",
         vendor_phone: vendor.phone_number || "",
         category: "events",
-        event_type: eventType,
         title: formData.title,
         description: formData.description,
         location: formData.location,
