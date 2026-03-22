@@ -252,6 +252,98 @@ function SalesVelocityChart({ bookings, eventDate }) {
   );
 }
 
+// ─── Broadcast Panel ─────────────────────────────────────────────────────────
+function BroadcastPanel({ listingId }) {
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState(null); // null | "sending" | "sent" | "error"
+  const [sentCount, setSentCount] = useState(0);
+
+  const handleSend = async () => {
+    if (!title.trim() || !message.trim()) return;
+    setStatus("sending");
+    try {
+      const res = await fetch(`/api/vendor/events/${listingId}/broadcast`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title.trim(), message: message.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send");
+      setSentCount(data.sent);
+      setStatus("sent");
+      setTitle("");
+      setMessage("");
+    } catch (err) {
+      console.error("[broadcast]", err);
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl space-y-5">
+      <div>
+        <h3 className="font-bold text-gray-900 mb-1">Broadcast to Attendees</h3>
+        <p className="text-sm text-gray-500">
+          Send a notification to all confirmed ticket holders for this event.
+        </p>
+      </div>
+
+      {status === "sent" && (
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm">
+          <CheckCircle className="w-4 h-4 shrink-0" />
+          Message sent to {sentCount} attendee{sentCount !== 1 ? "s" : ""}.
+        </div>
+      )}
+      {status === "error" && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          Failed to send. Please try again.
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-gray-700">Subject / Title</label>
+        <input
+          type="text"
+          maxLength={100}
+          value={title}
+          onChange={(e) => { setTitle(e.target.value); setStatus(null); }}
+          placeholder="e.g. Important update about the event"
+          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+        />
+        <p className="text-xs text-gray-400 text-right">{title.length}/100</p>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-gray-700">Message</label>
+        <textarea
+          rows={5}
+          maxLength={1000}
+          value={message}
+          onChange={(e) => { setMessage(e.target.value); setStatus(null); }}
+          placeholder="Write your message here..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+        />
+        <p className="text-xs text-gray-400 text-right">{message.length}/1000</p>
+      </div>
+
+      <button
+        onClick={handleSend}
+        disabled={status === "sending" || !title.trim() || !message.trim()}
+        className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+      >
+        {status === "sending" ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Mail className="w-4 h-4" />
+        )}
+        {status === "sending" ? "Sending..." : "Send to All Attendees"}
+      </button>
+    </div>
+  );
+}
+
 // ─── Promo Codes Panel ────────────────────────────────────────────────────────
 function PromoCodesPanel({ listingId, vendorId }) {
   const supabase = createClient();
@@ -484,6 +576,7 @@ const EventManagementDashboard = () => {
     { id: "bookings", label: "Bookings", icon: Users },
     { id: "analytics", label: "Analytics", icon: BarChart2 },
     { id: "promo", label: "Promo Codes", icon: Tag },
+    { id: "broadcast", label: "Broadcast", icon: Mail },
   ];
 
   return (
@@ -742,6 +835,11 @@ const EventManagementDashboard = () => {
             </p>
             <PromoCodesPanel listingId={listingId} vendorId={listing.vendor_id} />
           </div>
+        )}
+
+        {/* ── Broadcast Tab ── */}
+        {activeTab === "broadcast" && (
+          <BroadcastPanel listingId={listingId} />
         )}
       </div>
     </div>

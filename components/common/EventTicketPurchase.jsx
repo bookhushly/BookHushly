@@ -18,6 +18,7 @@ import {
   CheckCircle,
   AlertTriangle,
   X,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -31,6 +32,10 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [selectedTickets, setSelectedTickets] = useState({});
+  const [waitlistEmail, setWaitlistEmail] = useState(contactDetails.email || "");
+  const [waitlistName, setWaitlistName] = useState(contactDetails.name || "");
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [contactDetails, setContactDetails] = useState({
     name: "",
     email: "",
@@ -416,6 +421,59 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   Select Tickets
                 </h2>
+
+                {/* Sold-out waitlist block */}
+                {ticketPackages.every((t) => t.remaining === 0) && ticketPackages.length > 0 && (
+                  <div className="space-y-4 mb-4">
+                    {waitlistJoined ? (
+                      <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-4">
+                        <Bell className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-semibold text-green-700">You're on the waitlist!</p>
+                          <p className="text-xs text-green-600 mt-0.5">We'll notify you at {waitlistEmail} if tickets become available.</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
+                        <p className="text-sm font-semibold text-orange-700">All tickets are sold out</p>
+                        <p className="text-xs text-gray-600">Join the waitlist to be notified if spots open up.</p>
+                        <Input
+                          type="text"
+                          placeholder="Your name"
+                          value={waitlistName}
+                          onChange={(e) => setWaitlistName(e.target.value)}
+                        />
+                        <Input
+                          type="email"
+                          placeholder="Your email address"
+                          value={waitlistEmail}
+                          onChange={(e) => setWaitlistEmail(e.target.value)}
+                        />
+                        <Button
+                          className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full"
+                          disabled={waitlistLoading || !waitlistEmail}
+                          onClick={async () => {
+                            if (!waitlistEmail || !/^\S+@\S+\.\S+$/.test(waitlistEmail)) return;
+                            setWaitlistLoading(true);
+                            try {
+                              const res = await fetch(`/api/events/${service.id}/waitlist`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ email: waitlistEmail, name: waitlistName }),
+                              });
+                              if (res.ok) setWaitlistJoined(true);
+                            } finally {
+                              setWaitlistLoading(false);
+                            }
+                          }}
+                        >
+                          <Bell className="w-4 h-4 mr-2" />
+                          {waitlistLoading ? "Joining..." : "Notify Me When Available"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {ageRestriction && (
                   <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">

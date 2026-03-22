@@ -26,7 +26,7 @@ import ActiveFilters from "@/components/shared/services/active-filters";
 import ListingsGrid from "@/components/shared/services/listings-grid";
 import SmartQuestions from "@/components/shared/services/smart-questions";
 import QuickChips from "@/components/shared/services/quick-chips";
-import { SkeletonCard } from "@/components/shared/services/ui";
+import { SkeletonCard, EventCardSkeleton } from "@/components/shared/services/ui";
 
 const BOOKHUSHLY_SERVICES = ["logistics", "security"];
 
@@ -385,9 +385,13 @@ export default function ServicesPage() {
             {/* Grid */}
             {loading ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))}
+                {Array.from({ length: 12 }).map((_, i) =>
+                  activeCategory === "events" ? (
+                    <EventCardSkeleton key={i} />
+                  ) : (
+                    <SkeletonCard key={i} />
+                  )
+                )}
               </div>
             ) : (
               <ListingsGrid

@@ -10,6 +10,7 @@ import {
   Ticket,
   ImageOff,
   Timer,
+  Repeat2,
 } from "lucide-react";
 
 const FALLBACK_IMAGES = [
@@ -123,6 +124,12 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
               ) : (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-violet-600/90 text-white">
                   Event
+                </span>
+              )}
+              {service.category_data?.recurrence?.enabled && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-indigo-600/90 text-white">
+                  <Repeat2 className="h-2.5 w-2.5" />
+                  {service.category_data.recurrence.type}
                 </span>
               )}
               {service.category_data?.age_restriction && (

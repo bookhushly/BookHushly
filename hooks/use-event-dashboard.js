@@ -11,6 +11,7 @@ export const eventDashboardKeys = {
   all: ["event-dashboard"],
   listing: (listingId) => [...eventDashboardKeys.all, "listing", listingId],
   bookings: (listingId) => [...eventDashboardKeys.all, "bookings", listingId],
+  waitlist: (listingId) => [...eventDashboardKeys.all, "waitlist", listingId],
 };
 
 // ─── Fetch Functions ─────────────────────────────────────────────────────────
@@ -43,6 +44,22 @@ async function fetchEventBookings(listingId) {
 
   if (error) throw error;
   return data || [];
+}
+
+// ─── Waitlist hook (customer-facing) ─────────────────────────────────────────
+export function useWaitlistStatus(listingId, email) {
+  return useQuery({
+    queryKey: eventDashboardKeys.waitlist(listingId),
+    queryFn: async () => {
+      const url = new URL(`/api/events/${listingId}/waitlist`, window.location.origin);
+      if (email) url.searchParams.set("email", email);
+      const res = await fetch(url);
+      if (!res.ok) return { onWaitlist: false };
+      return res.json();
+    },
+    enabled: !!listingId,
+    staleTime: 60 * 1000,
+  });
 }
 
 // ─── Mutation Function ───────────────────────────────────────────────────────
@@ -92,12 +109,18 @@ export function useUpdateTicketCount(listingId) {
   return useMutation({
     mutationFn: (remainingTickets) =>
       updateRemainingTickets(listingId, remainingTickets),
-    onSuccess: (updatedListing) => {
+    onSuccess: (updatedListing, remainingTickets) => {
       // Write the fresh row directly into the listing cache — no refetch needed.
       queryClient.setQueryData(
         eventDashboardKeys.listing(listingId),
         updatedListing,
       );
+      // Revalidate the public detail page cache so fresh ticket counts show immediately
+      fetch(`/api/events/${listingId}/revalidate`, { method: "POST" }).catch(() => {});
+      // If tickets went above 0, notify waitlist users in the background
+      if (remainingTickets > 0) {
+        fetch(`/api/events/${listingId}/waitlist/notify`, { method: "POST" }).catch(() => {});
+      }
     },
     // Retry once on network flake, but not on RLS/validation errors
     retry: (failureCount, error) => {

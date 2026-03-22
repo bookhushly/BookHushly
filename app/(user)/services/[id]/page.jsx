@@ -1,8 +1,27 @@
 // app/services/[...slug]/page.jsx
 import { Suspense } from "react";
+import { unstable_cache } from "next/cache";
 import ServiceDetailClient from "./service-detail-content";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+
+// Cache public event/listing fetches for 60 s; tagged so they can be revalidated
+// instantly when the vendor updates ticket counts.
+function makeCachedListingFetch(id) {
+  return unstable_cache(
+    async () => {
+      const supabase = createStaticClient();
+      const { data } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      return data ?? null;
+    },
+    [`listing-${id}`],
+    { revalidate: 60, tags: [`event-listing-${id}`, "listings"] },
+  );
+}
 
 export async function generateMetadata({ params }) {
   try {
@@ -80,15 +99,11 @@ export default async function ServiceDetailPage({ params }) {
     let service = null;
     let serviceType = null;
 
-    // Try listings first
-    const listingsResult = await supabase
-      .from("listings")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (listingsResult.data) {
-      service = listingsResult.data;
+    // Try listings first (cached for 60 s; revalidated on ticket/listing changes)
+    const cachedFetch = makeCachedListingFetch(id);
+    const listingData = await cachedFetch();
+    if (listingData) {
+      service = listingData;
       serviceType = "listings";
     }
 

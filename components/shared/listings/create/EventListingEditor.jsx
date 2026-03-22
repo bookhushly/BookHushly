@@ -706,7 +706,7 @@ const AGE_OPTIONS = [
   { value: "21", label: "21 and above", desc: "Attendees must be 21+" },
 ];
 
-function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestriction, customQuestions, setCustomQuestions }) {
+function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestriction, customQuestions, setCustomQuestions, recurrence, setRecurrence }) {
   const [newQuestion, setNewQuestion] = useState({
     label: "",
     type: "text",
@@ -934,6 +934,58 @@ function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestrict
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Recurring Event */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Recurring Event</h2>
+          <p className="text-sm text-gray-500">
+            Mark this event as recurring so attendees can see upcoming dates.
+          </p>
+        </div>
+        <label className="flex items-center gap-3 cursor-pointer select-none">
+          <div
+            onClick={() => setRecurrence((r) => ({ ...r, enabled: !r.enabled }))}
+            className={`relative w-11 h-6 rounded-full transition-colors ${recurrence.enabled ? "bg-brand-600" : "bg-gray-200"}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${recurrence.enabled ? "translate-x-5" : "translate-x-0"}`} />
+          </div>
+          <span className="text-sm font-medium text-gray-700">This event repeats</span>
+        </label>
+        {recurrence.enabled && (
+          <div className="grid sm:grid-cols-2 gap-4 pl-1">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">Frequency</Label>
+              <div className="flex gap-2">
+                {["weekly", "monthly"].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setRecurrence((r) => ({ ...r, type: t }))}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg border-2 transition-all capitalize ${
+                      recurrence.type === t
+                        ? "border-brand-600 bg-brand-50 text-brand-700"
+                        : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="recurrence_end" className="text-sm font-medium">Ends on (optional)</Label>
+              <Input
+                id="recurrence_end"
+                type="date"
+                value={recurrence.end_date}
+                onChange={(e) => setRecurrence((r) => ({ ...r, end_date: e.target.value }))}
+              />
+              <p className="text-xs text-gray-400">Leave blank for open-ended recurrence</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1243,6 +1295,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
   const [visibility, setVisibility] = useState("public");
   const [ageRestriction, setAgeRestriction] = useState("all");
   const [customQuestions, setCustomQuestions] = useState([]);
+  const [recurrence, setRecurrence] = useState({ enabled: false, type: "weekly", end_date: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -1263,6 +1316,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         if (p.visibility) setVisibility(p.visibility);
         if (p.ageRestriction) setAgeRestriction(p.ageRestriction);
         if (p.customQuestions) setCustomQuestions(p.customQuestions);
+        if (p.recurrence) setRecurrence(p.recurrence);
       }
     } catch {}
   }, [draftKey]);
@@ -1273,12 +1327,12 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
       try {
         localStorage.setItem(
           draftKey,
-          JSON.stringify({ formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions })
+          JSON.stringify({ formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence })
         );
       } catch {}
     }, 800);
     return () => clearTimeout(id);
-  }, [formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, draftKey]);
+  }, [formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence, draftKey]);
 
   // ── Image handler ───────────────────────────────────────────────────────────
   const handleImageChange = useCallback((e) => {
@@ -1390,6 +1444,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         visibility,
         age_restriction: ageRestriction !== "all" ? ageRestriction : null,
         custom_questions: customQuestions,
+        recurrence: recurrence.enabled ? recurrence : null,
         active: visibility !== "draft",
       };
 
@@ -1508,6 +1563,8 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
               setAgeRestriction={setAgeRestriction}
               customQuestions={customQuestions}
               setCustomQuestions={setCustomQuestions}
+              recurrence={recurrence}
+              setRecurrence={setRecurrence}
             />
           )}
           {activeTab === "publish" && (

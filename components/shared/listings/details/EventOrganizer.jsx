@@ -6,6 +6,7 @@ import RichContentRenderer from "@/components/common/rich-text-renderer";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Users,
   Calendar,
@@ -25,7 +26,32 @@ import {
   ImageOff,
   Timer,
   Tag,
+  Repeat2,
+  Bell,
 } from "lucide-react";
+
+// Compute next N occurrence dates for a recurring event
+function getUpcomingDates(eventDate, recurrence, maxDates = 5) {
+  if (!eventDate || !recurrence?.enabled) return [];
+  const base = new Date(eventDate);
+  if (isNaN(base.getTime())) return [];
+  const endDate = recurrence.end_date ? new Date(recurrence.end_date) : null;
+  const now = new Date();
+  const dates = [];
+  let cursor = new Date(base);
+  // advance cursor past today if base is in the past
+  while (cursor <= now) {
+    if (recurrence.type === "weekly") cursor.setDate(cursor.getDate() + 7);
+    else cursor.setMonth(cursor.getMonth() + 1);
+  }
+  while (dates.length < maxDates) {
+    if (endDate && cursor > endDate) break;
+    dates.push(new Date(cursor));
+    if (recurrence.type === "weekly") cursor.setDate(cursor.getDate() + 7);
+    else cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return dates;
+}
 import Link from "next/link";
 
 // Optimized Image Component with blur placeholder
@@ -93,6 +119,12 @@ const EventOrganizerDetail = ({ service }) => {
   const [imagesLoaded, setImagesLoaded] = useState(new Set());
   const [descExpanded, setDescExpanded] = useState(false);
   const [countdown, setCountdown] = useState(null);
+
+  // Waitlist state
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistName, setWaitlistName] = useState("");
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
 
   // Countdown to event
   // event_time is stored as full ISO timestamptz; event_date is the date-only fallback
@@ -577,6 +609,43 @@ const EventOrganizerDetail = ({ service }) => {
               )}
             </section>
 
+            {/* Recurring Dates */}
+            {(() => {
+              const recurrence = service.category_data?.recurrence;
+              const upcomingDates = getUpcomingDates(service.event_date, recurrence);
+              if (!upcomingDates.length) return null;
+              return (
+                <section className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Repeat2 className="w-5 h-5 text-purple-600" />
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">Upcoming Dates</h2>
+                    <span className="ml-1 text-xs font-semibold uppercase tracking-wide bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full capitalize">
+                      {recurrence.type}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {upcomingDates.map((d, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
+                          <span className="text-sm font-bold text-purple-700">{d.getDate()}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {recurrence.end_date && (
+                    <p className="text-xs text-gray-400 mt-3">
+                      Recurs until {new Date(recurrence.end_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                    </p>
+                  )}
+                </section>
+              );
+            })()}
+
             {/* Photo Gallery */}
             {images.length > 1 && (
               <section className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
@@ -719,21 +788,80 @@ const EventOrganizerDetail = ({ service }) => {
                 </div>
               )}
 
-              <Button
-                asChild={service.availability === "available"}
-                disabled={service.availability !== "available"}
-                size="lg"
-                className="w-full h-12 text-base font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
-              >
-                {service.availability === "available" ? (
-                  <Link href={`/book/${service.id}`} className="flex items-center justify-center gap-2">
-                    <Ticket className="w-5 h-5" />
-                    Get Tickets Now
-                  </Link>
-                ) : (
-                  <span>Event Unavailable</span>
-                )}
-              </Button>
+              {(() => {
+                const hasPkgs = Array.isArray(ticketPackages) && ticketPackages.length > 0;
+                const isSoldOut = hasPkgs
+                  ? ticketPackages.every((p) => (parseInt(p.remaining) || 0) === 0)
+                  : (parseInt(service.remaining_tickets) || 0) === 0 && service.total_tickets > 0;
+
+                if (isSoldOut && service.availability === "available") {
+                  return waitlistJoined ? (
+                    <div className="flex items-center gap-2 justify-center p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm font-medium">
+                      <Bell className="w-4 h-4" />
+                      You're on the waitlist — we'll notify you if tickets open up.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-red-600 text-center">All tickets sold out</p>
+                      <p className="text-xs text-gray-500 text-center">Join the waitlist to be notified if spots open up.</p>
+                      <Input
+                        type="text"
+                        placeholder="Your name"
+                        value={waitlistName}
+                        onChange={(e) => setWaitlistName(e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                      <Input
+                        type="email"
+                        placeholder="Your email address"
+                        value={waitlistEmail}
+                        onChange={(e) => setWaitlistEmail(e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                      <Button
+                        size="lg"
+                        className="w-full h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-xl"
+                        disabled={waitlistLoading || !waitlistEmail}
+                        onClick={async () => {
+                          if (!waitlistEmail || !/^\S+@\S+\.\S+$/.test(waitlistEmail)) return;
+                          setWaitlistLoading(true);
+                          try {
+                            const res = await fetch(`/api/events/${service.id}/waitlist`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ email: waitlistEmail, name: waitlistName }),
+                            });
+                            if (res.ok) setWaitlistJoined(true);
+                          } finally {
+                            setWaitlistLoading(false);
+                          }
+                        }}
+                      >
+                        <Bell className="w-5 h-5 mr-2" />
+                        {waitlistLoading ? "Joining..." : "Join Waitlist"}
+                      </Button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Button
+                    asChild={service.availability === "available"}
+                    disabled={service.availability !== "available"}
+                    size="lg"
+                    className="w-full h-12 text-base font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
+                  >
+                    {service.availability === "available" ? (
+                      <Link href={`/book/${service.id}`} className="flex items-center justify-center gap-2">
+                        <Ticket className="w-5 h-5" />
+                        Get Tickets Now
+                      </Link>
+                    ) : (
+                      <span>Event Unavailable</span>
+                    )}
+                  </Button>
+                );
+              })()}
 
               <div className="flex items-center justify-center gap-2 text-green-600 text-sm font-medium">
                 <Shield className="w-4 h-4" />

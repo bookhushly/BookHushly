@@ -5,8 +5,8 @@
  *
  * Engagement types sent:
  *  - Customers inactive 14+ days → re-engagement nudge
- *  - Customers with completed stays but no review → review reminder
- *  - Vendors with pending/unapproved listings → listing completion nudge
+ *  - Customers with completed stays but no review → review reminder (hotels & apartments)
+ *  - Event attendees whose event passed 1–7 days ago → post-event review prompt
  *  - Vendors inactive 21+ days → re-engagement nudge
  *  - Admins: weekly platform summary notification
  */
@@ -117,7 +117,59 @@ export async function POST(request) {
       results.reviews += recentAptCheckouts.length;
     }
 
-    // ── 3. Re-engage inactive vendors ────────────────────────────────────────
+    // ── 3. Post-event review requests ────────────────────────────────────────
+    // Find event listings whose event_date was 1–7 days ago
+    const { data: recentEventListings } = await supabase
+      .from("listings")
+      .select("id, title")
+      .eq("category", "events")
+      .gte("event_date", daysAgo(REVIEW_WINDOW_DAYS))
+      .lt("event_date", new Date().toISOString().split("T")[0]);
+
+    if (recentEventListings?.length) {
+      const listingIds = recentEventListings.map((l) => l.id);
+      const titleMap = Object.fromEntries(recentEventListings.map((l) => [l.id, l.title]));
+
+      // Get confirmed bookings for those events (registered users only)
+      const { data: eventBookings } = await supabase
+        .from("event_bookings")
+        .select("id, customer_id, listing_id")
+        .in("listing_id", listingIds)
+        .in("status", ["confirmed", "completed"])
+        .not("customer_id", "is", null);
+
+      if (eventBookings?.length) {
+        // Dedup: don't re-send to the same user for the same booking
+        const { data: alreadySent } = await supabase
+          .from("notifications")
+          .select("data")
+          .eq("type", "review_request")
+          .gte("created_at", daysAgo(REVIEW_WINDOW_DAYS));
+
+        const notifiedBookingIds = new Set(
+          (alreadySent || []).map((n) => n.data?.bookingId).filter(Boolean),
+        );
+
+        const toNotify = eventBookings.filter(
+          (b) => b.customer_id && !notifiedBookingIds.has(b.id),
+        );
+
+        if (toNotify.length) {
+          const settled = await Promise.allSettled(
+            toNotify.map((b) =>
+              notifyReviewRequest(b.customer_id, {
+                bookingId: b.id,
+                serviceName: titleMap[b.listing_id] || "the event",
+              }),
+            ),
+          );
+          logSettledErrors(settled, "event review requests", results);
+          results.reviews += toNotify.length;
+        }
+      }
+    }
+
+    // ── 5. Re-engage inactive vendors ────────────────────────────────────────
     const { data: inactiveVendors } = await supabase
       .from("users")
       .select("id, name")
@@ -138,7 +190,7 @@ export async function POST(request) {
       results.vendors = inactiveVendors.length;
     }
 
-    // ── 4. Weekly platform digest for admins ─────────────────────────────────
+    // ── 6. Weekly platform digest for admins ─────────────────────────────────
     // Only send on Mondays (day 1) — cron runs daily, we gate on weekday
     const isMonday = new Date().getDay() === 1;
     if (isMonday) {
