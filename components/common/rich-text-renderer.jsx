@@ -10,15 +10,11 @@ export default function RichContentRenderer({ content, className = "" }) {
   // Sanitize HTML content
   const sanitizedContent = useMemo(() => {
     if (!content) return "";
-
-    // Basic sanitization - removes script tags and dangerous attributes
-    const cleaned = content
+    return content
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
       .replace(/on\w+="[^"]*"/g, "")
       .replace(/on\w+='[^']*'/g, "")
       .replace(/javascript:/gi, "");
-
-    return cleaned;
   }, [content]);
 
   if (!sanitizedContent) {
@@ -27,7 +23,7 @@ export default function RichContentRenderer({ content, className = "" }) {
 
   return (
     <div
-      className={`prose prose-sm max-w-none ${className}`}
+      className={`prose prose-sm max-w-none overflow-hidden [&_*]:max-w-full [&_img]:max-w-full [&_table]:w-full [&_table]:table-fixed [&_pre]:whitespace-pre-wrap [&_pre]:overflow-x-auto [&_*]:break-words ${className}`}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
