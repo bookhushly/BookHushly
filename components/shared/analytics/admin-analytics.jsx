@@ -6,24 +6,27 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  BarChart3, 
-  TrendingUp, 
+import {
+  BarChart3,
+  TrendingUp,
   TrendingDown,
-  Users, 
-  Building, 
-  Calendar, 
+  Users,
+  Building,
+  Calendar,
   DollarSign,
   PieChart,
   Activity,
   Target,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  MapPin,
 } from 'lucide-react'
 
 export function AdminAnalytics() {
   const [timeRange, setTimeRange] = useState('30d')
   const [loading, setLoading] = useState(true)
+  const [locationData, setLocationData] = useState(null)
+  const [locationLoading, setLocationLoading] = useState(true)
   const [analytics, setAnalytics] = useState({
     overview: {
       totalRevenue: 2500000,
@@ -78,14 +81,19 @@ export function AdminAnalytics() {
   useEffect(() => {
     const loadAnalytics = async () => {
       setLoading(true)
-      
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
       setLoading(false)
     }
-
     loadAnalytics()
+  }, [timeRange])
+
+  useEffect(() => {
+    const days = timeRange === '7d' ? 7 : timeRange === '90d' ? 90 : timeRange === '1y' ? 90 : 30
+    setLocationLoading(true)
+    fetch(`/api/admin/location-analytics?days=${days}`)
+      .then((r) => r.json())
+      .then((data) => { setLocationData(data); setLocationLoading(false) })
+      .catch(() => setLocationLoading(false))
   }, [timeRange])
 
   const formatCurrency = (amount) => {
@@ -219,11 +227,12 @@ export function AdminAnalytics() {
 
       {/* Detailed Analytics */}
       <Tabs defaultValue="revenue" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="vendors">Top Vendors</TabsTrigger>
           <TabsTrigger value="users">User Activity</TabsTrigger>
+          <TabsTrigger value="locations">Locations</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue" className="space-y-6">
@@ -427,6 +436,221 @@ export function AdminAnalytics() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        {/* ── Locations ── */}
+        <TabsContent value="locations" className="space-y-6">
+          {locationLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[0, 1, 2].map((i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="animate-pulse space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-1/2" />
+                      <div className="h-8 bg-gray-200 rounded w-3/4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : !locationData || locationData.error ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <MapPin className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p>No location data yet. Data will appear once users grant location access.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Summary cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Location Grants</CardTitle>
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{locationData.totalGrants.toLocaleString()}</div>
+                    <p className="text-xs text-muted-foreground">Last {locationData.days} days</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{locationData.uniqueUsers.toLocaleString()}</div>
+                    <p className="text-xs text-muted-foreground">Distinct logged-in users</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Top State</CardTitle>
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{locationData.topState || '—'}</div>
+                    <p className="text-xs text-muted-foreground">Highest location requests</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Top States */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Requests by State
+                    </CardTitle>
+                    <CardDescription>Where users are granting location access from</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {locationData.states.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No state data available.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {locationData.states.map((row, i) => {
+                          const pct = Math.round((row.count / locationData.totalGrants) * 100)
+                          return (
+                            <div key={row.state}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="font-medium">
+                                  <span className="text-muted-foreground mr-2">#{i + 1}</span>
+                                  {row.state}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {row.count.toLocaleString()} ({pct}%)
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-2">
+                                <div
+                                  className="h-2 rounded-full bg-purple-500 transition-all"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Top Cities */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Requests by City
+                    </CardTitle>
+                    <CardDescription>Most active cities on the platform</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {locationData.cities.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No city data available.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {locationData.cities.map((row, i) => {
+                          const pct = Math.round((row.count / locationData.totalGrants) * 100)
+                          return (
+                            <div key={`${row.city}-${row.state}`}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="font-medium">
+                                  <span className="text-muted-foreground mr-2">#{i + 1}</span>
+                                  {row.city}
+                                  {row.state ? (
+                                    <span className="text-muted-foreground font-normal ml-1 text-xs">
+                                      · {row.state}
+                                    </span>
+                                  ) : null}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {row.count.toLocaleString()} ({pct}%)
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-2">
+                                <div
+                                  className="h-2 rounded-full bg-blue-500 transition-all"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Daily Trend */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Daily Location Grants
+                    </CardTitle>
+                    <CardDescription>Trend over the last {locationData.days} days</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {locationData.daily.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No trend data available.</p>
+                    ) : (() => {
+                      const maxCount = Math.max(...locationData.daily.map((d) => d.count), 1)
+                      const visible = locationData.daily.slice(-30)
+                      return (
+                        <div className="flex items-end gap-1 h-32">
+                          {visible.map((d) => (
+                            <div
+                              key={d.date}
+                              className="flex-1 flex flex-col items-center gap-0.5 group relative"
+                            >
+                              <div
+                                className="w-full bg-purple-400 hover:bg-purple-600 rounded-t transition-colors"
+                                style={{ height: `${Math.max((d.count / maxCount) * 100, 2)}%` }}
+                              />
+                              <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs bg-gray-800 text-white px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10">
+                                {d.date}: {d.count}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    })()}
+                  </CardContent>
+                </Card>
+
+                {/* Top Pages */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      Where Location Is Granted
+                    </CardTitle>
+                    <CardDescription>Pages where users enable location access</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {locationData.pages.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No page data available.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {locationData.pages.map((row) => (
+                          <div key={row.page} className="flex items-center justify-between py-1.5 border-b last:border-0">
+                            <span className="text-sm font-mono truncate max-w-[60%]" title={row.page}>
+                              {row.page}
+                            </span>
+                            <Badge variant="secondary">{row.count.toLocaleString()}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
         </TabsContent>
       </Tabs>
     </div>

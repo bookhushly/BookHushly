@@ -410,3 +410,4 @@ supabase/migrations/reviews.sql
 CLAUDE.md
 supabase/migrations/notifications.sql
 supabase/migrations/20260320_push_subscriptions.sql
+supabase/migrations/20260323_location_analytics.sql

@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 
 const CACHE_KEY = "bh_user_location";
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const TRACKED_KEY = "bh_loc_tracked"; // set after analytics POST so we don't send twice
 
 function readCache() {
   try {
@@ -83,6 +84,26 @@ export function useGeolocation() {
             writeCache(payload); // only cache if we got a real location
           }
           setState({ ...payload, loading: false, error: null, granted: true });
+
+          // Track location analytics once per session (fire-and-forget)
+          try {
+            if (!sessionStorage.getItem(TRACKED_KEY)) {
+              sessionStorage.setItem(TRACKED_KEY, "1");
+              fetch("/api/analytics/location", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  lat,
+                  lng,
+                  city: data.city || null,
+                  state: data.state || null,
+                  page: window.location.pathname,
+                }),
+              }).catch(() => {}); // swallow errors — analytics must never break the app
+            }
+          } catch {
+            // sessionStorage or fetch unavailable — ignore
+          }
         } catch (err) {
           // Geolocation succeeded but reverse-geocoding failed — still mark as granted
           // so we can at least show national listings
