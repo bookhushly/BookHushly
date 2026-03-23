@@ -337,6 +337,8 @@ function TicketsTab({
   useMultiplePackages,
   setUseMultiplePackages,
   errors,
+  lowStockThreshold,
+  setLowStockThreshold,
 }) {
   const [tempTicket, setTempTicket] = useState({
     name: "",
@@ -616,6 +618,26 @@ function TicketsTab({
           <FieldError msg={errors.tickets} />
         </div>
       )}
+
+      {/* Low stock alert threshold */}
+      <div className="pt-4 border-t border-gray-100 space-y-1.5">
+        <Label className="font-medium text-sm">
+          Low stock alert threshold
+        </Label>
+        <p className="text-xs text-gray-500">
+          Attendees see a &quot;Few tickets left&quot; warning when available tickets drop below this number. Leave at 50 if unsure.
+        </p>
+        <Input
+          type="text"
+          inputMode="numeric"
+          value={formData.low_stock_threshold || "50"}
+          onChange={(e) =>
+            setFormData((p) => ({ ...p, low_stock_threshold: e.target.value }))
+          }
+          placeholder="50"
+          className="max-w-[120px]"
+        />
+      </div>
     </div>
   );
 }
@@ -1300,6 +1322,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
     asoebi_available: "no",
     price: "",
     total_tickets: "",
+    low_stock_threshold: "50",
   });
   const [tickets, setTickets] = useState([]);
   const [useMultiplePackages, setUseMultiplePackages] = useState(false);
@@ -1372,6 +1395,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
       asoebi_available: initialData.category_data?.asoebi_available || "no",
       price: initialData.price?.toString() || "",
       total_tickets: initialData.total_tickets?.toString() || "",
+      low_stock_threshold: String(initialData.category_data?.low_stock_threshold ?? 50),
     });
 
     if (initialData.ticket_packages?.length > 0) {
@@ -1518,6 +1542,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         amenities: [],
         visibility,
         age_restriction: ageRestriction !== "all" ? ageRestriction : null,
+        low_stock_threshold: formData.low_stock_threshold ? parseInt(formData.low_stock_threshold) : 50,
         custom_questions: customQuestions,
         recurrence: recurrence.enabled ? recurrence : null,
         active: visibility !== "draft",
@@ -1636,6 +1661,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
           age_restriction: ageRestriction !== "all" ? ageRestriction : null,
           recurrence: recurrence.enabled ? recurrence : null,
           asoebi_available: formData.asoebi_available || null,
+          low_stock_threshold: formData.low_stock_threshold ? parseInt(formData.low_stock_threshold) : 50,
         },
       };
 
@@ -1736,6 +1762,8 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
               useMultiplePackages={useMultiplePackages}
               setUseMultiplePackages={setUseMultiplePackages}
               errors={errors}
+              lowStockThreshold={formData.low_stock_threshold}
+              setLowStockThreshold={(v) => setFormData((p) => ({ ...p, low_stock_threshold: v }))}
             />
           )}
           {activeTab === "media" && (

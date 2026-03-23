@@ -101,6 +101,15 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
     ];
   }, [service]);
 
+  // Low-stock urgency helpers
+  const lowStockThreshold = service?.category_data?.low_stock_threshold ?? 50;
+  const getStockBadge = (remaining) => {
+    if (remaining === 0) return { label: "Sold Out", className: "bg-red-100 text-red-800" };
+    if (remaining <= Math.ceil(lowStockThreshold * 0.3)) return { label: "Almost Sold Out!", className: "bg-red-100 text-red-700" };
+    if (remaining <= lowStockThreshold) return { label: "Few Tickets Left", className: "bg-amber-100 text-amber-800" };
+    return null; // no badge when plenty available
+  };
+
   // Initialize selected tickets
   useEffect(() => {
     const initialTickets = {};
@@ -542,15 +551,12 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
-                          <Badge
-                            className={`${
-                              ticket.remaining > 0
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {ticket.remaining > 0 ? "Available" : "Sold Out"}
-                          </Badge>
+                          {(() => {
+                            const badge = getStockBadge(ticket.remaining);
+                            return badge ? (
+                              <Badge className={badge.className}>{badge.label}</Badge>
+                            ) : null;
+                          })()}
 
                           {ticket.remaining > 0 && (
                             <div className="flex items-center gap-1 w-[140px] justify-between">

@@ -240,6 +240,7 @@ export async function createListing(listingData) {
         age_restriction: listingData.age_restriction || null,
         recurrence: listingData.recurrence || null,
         asoebi_available: listingData.asoebi_available || null,
+        low_stock_threshold: listingData.low_stock_threshold ? parseInt(listingData.low_stock_threshold) : 50,
         vehicle_categories: listingData.vehicle_categories || null,
         transmission_types: listingData.transmission_types || null,
         fuel_types: listingData.fuel_types || null,
