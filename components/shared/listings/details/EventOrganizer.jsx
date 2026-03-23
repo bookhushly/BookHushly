@@ -767,11 +767,13 @@ const EventOrganizerDetail = ({ service }) => {
                           Early bird was ₦{pkg.earlyBirdPrice?.toLocaleString()} — offer ended
                         </p>
                       )}
-                      {pkg.remaining > 0 ? (
-                        <p className="text-xs text-green-600 mt-1">{pkg.remaining} tickets left</p>
-                      ) : (
-                        <p className="text-xs text-red-500 mt-1 font-medium">Sold out</p>
-                      )}
+                      {(() => {
+                        const threshold = parseInt(service.category_data?.low_stock_threshold) || 50;
+                        if (pkg.remaining === 0) return <p className="text-xs text-red-500 mt-1 font-medium">Sold out</p>;
+                        if (pkg.remaining <= Math.ceil(threshold * 0.3)) return <p className="text-xs text-red-600 mt-1 font-medium">Almost Sold Out!</p>;
+                        if (pkg.remaining <= threshold) return <p className="text-xs text-amber-600 mt-1 font-medium">Few Tickets Left</p>;
+                        return <p className="text-xs text-green-600 mt-1">Available</p>;
+                      })()}
                     </div>
                   ))}
                 </div>
@@ -782,7 +784,14 @@ const EventOrganizerDetail = ({ service }) => {
                   </div>
                   {service.total_tickets && (
                     <div className="text-sm text-gray-600 mt-1">
-                      {service.remaining_tickets || service.total_tickets} tickets available
+                      {(() => {
+                        const rem = parseInt(service.remaining_tickets) || parseInt(service.total_tickets) || 0;
+                        const threshold = parseInt(service.category_data?.low_stock_threshold) || 50;
+                        if (rem === 0) return "Sold out";
+                        if (rem <= Math.ceil(threshold * 0.3)) return "Almost Sold Out!";
+                        if (rem <= threshold) return "Few Tickets Left";
+                        return "Tickets available";
+                      })()}
                     </div>
                   )}
                 </div>

@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useViewTracker } from "@/hooks/use-view-tracker";
+import RichContentRenderer from "@/components/common/rich-text-renderer";
 
 export default function EventsTicketPurchase({ service, onSubmit }) {
   useViewTracker(service?.id, "event", service?.vendor_id);
@@ -813,11 +814,11 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
 
             {/* About this event */}
             {service?.description && (
-              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 overflow-hidden">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">About this event</h2>
-                <div
-                  className="prose prose-sm max-w-none text-gray-700 [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_ul]:list-disc [&_ol]:list-decimal [&_li]:ml-4"
-                  dangerouslySetInnerHTML={{ __html: service.description }}
+                <RichContentRenderer
+                  content={service.description}
+                  className="text-gray-700 [&_*]:max-w-full [&_img]:max-w-full [&_table]:table-fixed [&_pre]:whitespace-pre-wrap [&_*]:break-words"
                 />
               </div>
             )}
