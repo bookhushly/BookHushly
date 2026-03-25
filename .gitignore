@@ -411,3 +411,12 @@ CLAUDE.md
 supabase/migrations/notifications.sql
 supabase/migrations/20260320_push_subscriptions.sql
 supabase/migrations/20260323_location_analytics.sql
+supabase/migrations/20260326_event_checkin.sql
+supabase/migrations/20260326_event_end_date.sql
+supabase/migrations/20260326_hotel_book_atomic.sql
+supabase/migrations/20260326_hotel_checkin.sql
+supabase/migrations/20260326_hotel_reminder_flag.sql
+supabase/migrations/20260326_hotel_pricing_rules.sql
+supabase/migrations/20260326_organizer_follows.sql
+supabase/migrations/20260326_pay_at_hotel.sql
+supabase/migrations/20260326_refund_requests.sql

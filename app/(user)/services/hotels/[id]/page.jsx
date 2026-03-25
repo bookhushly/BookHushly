@@ -57,7 +57,20 @@ async function getHotelData(id) {
       };
     });
 
-    return { hotel, roomTypes: enrichedRoomTypes };
+    // Aggregate rating from reviews (listing_type = 'hotel', listing_id = hotel id)
+    const { data: ratingData } = await supabase
+      .from("reviews")
+      .select("rating")
+      .eq("listing_id", id)
+      .eq("listing_type", "hotel");
+
+    const reviewCount = ratingData?.length ?? 0;
+    const avgRating =
+      reviewCount > 0
+        ? Math.round((ratingData.reduce((s, r) => s + r.rating, 0) / reviewCount) * 10) / 10
+        : null;
+
+    return { hotel, roomTypes: enrichedRoomTypes, avgRating, reviewCount };
   } catch (error) {
     console.error("Error fetching hotel data:", error);
     return null;
@@ -126,7 +139,7 @@ export default async function HotelPage({ params }) {
     notFound();
   }
 
-  const { hotel, roomTypes } = data;
+  const { hotel, roomTypes, avgRating, reviewCount } = data;
   const minPrice = roomTypes.length > 0
     ? Math.min(...roomTypes.map((r) => r.min_price || r.base_price))
     : undefined;
@@ -178,7 +191,7 @@ export default async function HotelPage({ params }) {
           </div>
         }
       >
-        <HotelDetails hotel={hotel} roomTypes={roomTypes} />
+        <HotelDetails hotel={hotel} roomTypes={roomTypes} avgRating={avgRating} reviewCount={reviewCount} />
       </Suspense>
     </>
   );

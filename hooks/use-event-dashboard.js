@@ -103,6 +103,37 @@ export function useEventBookings(listingId) {
   });
 }
 
+// ─── Check-in mutation ────────────────────────────────────────────────────────
+export function useCheckInAttendee(listingId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ bookingId, checkedIn }) => {
+      const res = await fetch(`/api/events/${listingId}/checkin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: bookingId, checked_in: checkedIn }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Check-in failed");
+      return data.booking;
+    },
+    onSuccess: (updatedBooking) => {
+      // Optimistically patch the booking in the list cache
+      queryClient.setQueryData(
+        eventDashboardKeys.bookings(listingId),
+        (prev) =>
+          prev?.map((b) =>
+            b.id === updatedBooking.id
+              ? { ...b, checked_in: updatedBooking.checked_in, checked_in_at: updatedBooking.checked_in_at }
+              : b,
+          ) ?? [],
+      );
+    },
+    retry: false,
+  });
+}
+
 export function useUpdateTicketCount(listingId) {
   const queryClient = useQueryClient();
 

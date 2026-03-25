@@ -15,7 +15,17 @@ import {
   Phone,
   AlertCircle,
   Loader2,
+  CalendarPlus,
+  ChevronDown,
+  Calendar,
+  Video,
+  ExternalLink,
 } from "lucide-react";
+import {
+  getGoogleCalendarUrl,
+  getOutlookCalendarUrl,
+  downloadICS,
+} from "@/lib/calendar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +35,60 @@ const BOOKING_TYPES = {
   HOTEL: "hotel",
   APARTMENT: "apartment",
 };
+
+// ─── Add to Calendar (inline for order confirmation) ─────────────────────────
+function AddToCalendarSection({ title, location, eventDate, eventTime, description }) {
+  const [open, setOpen] = useState(false);
+  const googleUrl = getGoogleCalendarUrl({ title, location, eventDate, eventTime, description });
+  const outlookUrl = getOutlookCalendarUrl({ title, location, eventDate, eventTime, description });
+  if (!eventDate) return null;
+
+  return (
+    <div className="relative mb-4">
+      <button
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center justify-center gap-2 border border-gray-200 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <CalendarPlus className="w-4 h-4 text-purple-600" />
+        Add to Calendar
+        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20">
+            {googleUrl && (
+              <a href={googleUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Google Calendar
+              </a>
+            )}
+            {outlookUrl && (
+              <a href={outlookUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 transition-colors">
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="#0078D4">
+                  <path d="M2 4l10 2v12L2 20V4zm11 2.5V7h9v10h-9v.5L13 18V6.5zM14 9v2h2V9h-2zm3 0v2h2V9h-2zm-3 3v2h2v-2h-2zm3 0v2h2v-2h-2z"/>
+                </svg>
+                Outlook Calendar
+              </a>
+            )}
+            <button onClick={() => { downloadICS({ title, location, eventDate, eventTime, description }); setOpen(false); }}
+              className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 transition-colors w-full">
+              <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
+              Apple / iCal (.ics)
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 const OrderSuccessful = () => {
   const params = useParams();
@@ -48,7 +112,7 @@ const OrderSuccessful = () => {
           `*,
           listing:listing_id (
             id, title, description, location,
-            event_date, event_time, ticket_packages,
+            event_date, event_time, ticket_packages, category_data,
             vendors:vendor_id ( business_name, phone_number )
           )`,
         )
@@ -447,6 +511,37 @@ const OrderSuccessful = () => {
             ? "Download Tickets"
             : "Download Confirmation"}
         </button>
+
+        {/* Add to Calendar — events only */}
+        {bookingType === BOOKING_TYPES.EVENT && booking.listing?.event_date && (
+          <AddToCalendarSection
+            title={booking.listing.title}
+            location={booking.listing.location}
+            eventDate={booking.listing.event_date}
+            eventTime={booking.listing.event_time}
+            description={booking.listing.description}
+          />
+        )}
+
+        {/* Stream link — virtual events only */}
+        {bookingType === BOOKING_TYPES.EVENT && booking.listing?.category_data?.is_online && booking.listing?.category_data?.stream_url && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Video className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-semibold text-blue-800">Virtual Event — Stream Link</span>
+            </div>
+            <p className="text-xs text-blue-600 mb-3">Use this link to join the event. Keep it private — it is for your ticket only.</p>
+            <a
+              href={booking.listing.category_data.stream_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900 underline break-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+              {booking.listing.category_data.stream_url}
+            </a>
+          </div>
+        )}
 
         {/* Contact Details */}
         <div className="grid sm:grid-cols-2 gap-4 mb-5">

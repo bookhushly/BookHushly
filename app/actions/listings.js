@@ -2,6 +2,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyMany } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
 
 function generateOperatingHoursText(hoursData) {
@@ -241,6 +243,8 @@ export async function createListing(listingData) {
         recurrence: listingData.recurrence || null,
         asoebi_available: listingData.asoebi_available || null,
         low_stock_threshold: listingData.low_stock_threshold ? parseInt(listingData.low_stock_threshold) : 50,
+        is_online: listingData.is_online || false,
+        stream_url: listingData.stream_url || null,
         vehicle_categories: listingData.vehicle_categories || null,
         transmission_types: listingData.transmission_types || null,
         fuel_types: listingData.fuel_types || null,
@@ -269,6 +273,7 @@ export async function createListing(listingData) {
 
       // Events specific fields with proper timestamp
       ...(listingData.event_date && { event_date: listingData.event_date }),
+      ...(listingData.event_end_date && { event_end_date: listingData.event_end_date }),
       ...(eventTimestamp && { event_time: eventTimestamp }),
       ...(listingData.total_tickets && {
         remaining_tickets: parseInt(listingData.total_tickets) || 0,
@@ -315,6 +320,33 @@ export async function createListing(listingData) {
     // Revalidate relevant paths
     revalidatePath("/vendor/dashboard");
     revalidatePath("/vendor/dashboard/listings");
+
+    // Notify followers when a public event listing is published
+    if (
+      data.category === "events" &&
+      data.active === true &&
+      data.visibility === "public"
+    ) {
+      try {
+        const admin = createAdminClient();
+        const { data: follows } = await admin
+          .from("organizer_follows")
+          .select("user_id")
+          .eq("vendor_id", data.vendor_id);
+
+        if (follows?.length > 0) {
+          const followerIds = follows.map((f) => f.user_id);
+          notifyMany(followerIds, {
+            title: "New Event from an Organizer You Follow",
+            message: `${data.vendor_name || "An organizer"} just published a new event: "${data.title}"`,
+            link: `/services/${data.id}`,
+          }).catch(() => {});
+        }
+      } catch (e) {
+        // Non-critical — don't fail the create action
+        console.error("[follow-notify]", e.message);
+      }
+    }
 
     console.log("[Server] ===== CREATE LISTING SUCCESS =====");
     return { success: true, data };

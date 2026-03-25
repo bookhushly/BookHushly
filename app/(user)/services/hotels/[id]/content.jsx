@@ -19,6 +19,14 @@ import {
   Info,
   AlertCircle,
   Building,
+  Zap,
+  ZapOff,
+  Battery,
+  Coffee,
+  UtensilsCrossed,
+  Clock,
+  BadgePercent,
+  Star,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import RichContentRenderer from "@/components/common/rich-text-renderer";
@@ -26,6 +34,7 @@ import { AMENITY_ICONS } from "@/lib/constants/filters";
 import { cn } from "@/lib/utils";
 import ImageGallery from "./image-gallery";
 import BookingModal from "./booking-modal";
+import HotelDateRangePicker from "@/components/shared/hotels/HotelDateRangePicker";
 import { ReviewSection } from "@/components/shared/reviews/ReviewSection";
 import { useSavedListing } from "@/hooks/use-saved-listing";
 import { useViewTracker } from "@/hooks/use-view-tracker";
@@ -193,7 +202,7 @@ const RoomTypeCard = React.memo(({ roomType, onBookNow }) => {
 RoomTypeCard.displayName = "RoomTypeCard";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const HotelDetails = ({ hotel, roomTypes }) => {
+const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
   useViewTracker(hotel.id, "hotel", hotel.vendor_id);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState(null);
@@ -310,6 +319,32 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                 >
                   {hotel.name}
                 </h1>
+
+                {/* Aggregate rating badge */}
+                {avgRating !== null && reviewCount > 0 && (
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      <span className="text-[15px] font-bold text-gray-900">{avgRating}</span>
+                      <span className="text-[13px] text-gray-500">
+                        {avgRating >= 4.8 ? "Exceptional" :
+                         avgRating >= 4.5 ? "Excellent" :
+                         avgRating >= 4.0 ? "Very Good" :
+                         avgRating >= 3.5 ? "Good" : "Okay"}
+                      </span>
+                    </div>
+                    <a
+                      href="#reviews"
+                      className="text-[13px] text-violet-600 hover:underline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      {reviewCount} review{reviewCount !== 1 ? "s" : ""}
+                    </a>
+                  </div>
+                )}
               </div>
 
               {hotel.description && (
@@ -356,6 +391,113 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                         </span>
                       </div>
                     ))}
+                  </div>
+                </section>
+              )}
+
+              {/* ── Hotel Essentials (power, breakfast, timing, VAT) ──────────── */}
+              {(hotel.generator_available || hotel.inverter_available ||
+                hotel.breakfast_offered !== "none" || hotel.check_in_time ||
+                hotel.check_out_time || hotel.vat_inclusive ||
+                hotel.weekend_pricing || hotel.whatsapp_number) && (
+                <section className="mb-10">
+                  <h2 className="text-[18px] font-semibold text-gray-900 mb-5">
+                    Hotel essentials
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Power situation — critical for Nigerian travellers */}
+                    {hotel.generator_available && (
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
+                        <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                          <Zap className="h-4 w-4 text-amber-500" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-800">Generator</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5">
+                            {hotel.generator_available === "24hrs"
+                              ? "24-hour generator"
+                              : hotel.generator_available === "partial"
+                              ? `Available ${hotel.generator_hours || "select hours"}`
+                              : "Generator available"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {!hotel.generator_available && !hotel.inverter_available && (
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
+                        <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+                          <ZapOff className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-800">NEPA supply only</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5">No backup power listed</p>
+                        </div>
+                      </div>
+                    )}
+                    {hotel.inverter_available && (
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
+                        <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                          <Battery className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-800">Inverter / Solar</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5">Backup power available</p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Breakfast */}
+                    {hotel.breakfast_offered && hotel.breakfast_offered !== "none" && (
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
+                        <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+                          <Coffee className="h-4 w-4 text-orange-500" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-800">Breakfast included</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5 capitalize">
+                            {hotel.breakfast_type || hotel.breakfast_offered}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {hotel.breakfast_offered === "none" && (
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
+                        <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+                          <UtensilsCrossed className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-800">No breakfast</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5">Room-only rate</p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Check-in / out times */}
+                    {(hotel.check_in_time || hotel.check_out_time) && (
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
+                        <div className="h-8 w-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                          <Clock className="h-4 w-4 text-violet-600" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-800">Check-in / Check-out</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5">
+                            {hotel.check_in_time && `From ${hotel.check_in_time}`}
+                            {hotel.check_in_time && hotel.check_out_time && " · "}
+                            {hotel.check_out_time && `Out by ${hotel.check_out_time}`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {/* VAT inclusive */}
+                    {hotel.vat_inclusive && (
+                      <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
+                        <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                          <BadgePercent className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-semibold text-gray-800">VAT inclusive</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5">Prices shown include 7.5% VAT</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </section>
               )}
@@ -435,9 +577,15 @@ const HotelDetails = ({ hotel, roomTypes }) => {
               </section>
 
               {/* Reviews */}
-              <section className="mt-10">
+              <section id="reviews" className="mt-10">
                 <h2 className="text-[18px] font-semibold text-gray-900 mb-5">
                   Guest Reviews
+                  {avgRating !== null && reviewCount > 0 && (
+                    <span className="ml-2 inline-flex items-center gap-1 text-[14px] font-normal text-amber-600">
+                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      {avgRating} · {reviewCount} review{reviewCount !== 1 ? "s" : ""}
+                    </span>
+                  )}
                 </h2>
                 <ReviewSection listingId={hotel.id} listingType="hotel" listingTitle={hotel.name} />
               </section>
@@ -460,34 +608,16 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                   </div>
                 )}
 
-                <div className="space-y-3 mb-5">
-                  {[
-                    ["checkIn", "Check-in"],
-                    ["checkOut", "Check-out"],
-                  ].map(([field, label]) => (
-                    <div key={field}>
-                      <Label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.1em]">
-                        {label}
-                      </Label>
-                      <Input
-                        type="date"
-                        value={sidebarDates[field]}
-                        min={
-                          field === "checkIn"
-                            ? new Date().toISOString().split("T")[0]
-                            : sidebarDates.checkIn ||
-                              new Date().toISOString().split("T")[0]
-                        }
-                        onChange={(e) =>
-                          setSidebarDates({
-                            ...sidebarDates,
-                            [field]: e.target.value,
-                          })
-                        }
-                        className="mt-1 h-10 text-sm focus-visible:ring-violet-500"
-                      />
-                    </div>
-                  ))}
+                <div className="mb-5">
+                  <HotelDateRangePicker
+                    roomTypeId={roomTypes[0]?.id}
+                    checkIn={sidebarDates.checkIn}
+                    checkOut={sidebarDates.checkOut}
+                    onChange={({ checkIn, checkOut }) =>
+                      setSidebarDates({ checkIn, checkOut })
+                    }
+                    className="text-[12px]"
+                  />
                 </div>
 
                 {sidebarNights > 0 && (

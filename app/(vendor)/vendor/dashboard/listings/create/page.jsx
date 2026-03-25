@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useTransition, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/use-auth";
@@ -43,7 +43,23 @@ export default function CreateListingPage() {
   const user = authData?.user;
   const vendor = authData?.vendor;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const cloneId = searchParams.get("clone");
+  const [cloneData, setCloneData] = useState(null);
   const [isPending, startTransition] = useTransition();
+
+  // Load cloned listing data when ?clone=id is present
+  useEffect(() => {
+    if (!cloneId) return;
+    supabase
+      .from("listings")
+      .select("*")
+      .eq("id", cloneId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCloneData(data);
+      });
+  }, [cloneId]);
 
   // Track if form has been initialized to prevent re-initialization
   const isInitialized = useRef(false);
@@ -666,7 +682,12 @@ export default function CreateListingPage() {
               Set up your event, tickets, and publish when ready
             </p>
           </div>
-          <EventListingEditor vendor={vendor} user={user} eventType={eventType} />
+          <EventListingEditor
+            vendor={vendor}
+            user={user}
+            eventType={eventType}
+            initialData={cloneData || undefined}
+          />
         </>
       ) : (
         <>

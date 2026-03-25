@@ -5,6 +5,8 @@ import { useRouter, useSearchParams, useParams } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/store";
+import { bookHotelRoomAction, getEffectivePriceAction } from "@/app/actions/hotels";
+import HotelDateRangePicker from "@/components/shared/hotels/HotelDateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,10 +53,27 @@ export default function HotelBookingPage() {
     phone: "",
     specialRequests: "",
   });
+  const [payAtHotel, setPayAtHotel] = useState(false);
+  const [pricingResult, setPricingResult] = useState(null);
 
   useEffect(() => {
     loadBookingData();
   }, []);
+
+  // Re-calculate effective price whenever dates change
+  useEffect(() => {
+    if (roomTypeId && bookingDetails.checkInDate && bookingDetails.checkOutDate) {
+      getEffectivePriceAction(
+        roomTypeId,
+        bookingDetails.checkInDate,
+        bookingDetails.checkOutDate,
+      ).then((res) => {
+        if (res.success) setPricingResult(res);
+      });
+    } else {
+      setPricingResult(null);
+    }
+  }, [roomTypeId, bookingDetails.checkInDate, bookingDetails.checkOutDate]);
 
   const loadBookingData = async () => {
     try {
@@ -72,7 +91,8 @@ export default function HotelBookingPage() {
             state,
             image_urls,
             checkout_policy,
-            policies
+            policies,
+            pay_at_hotel_enabled
           )
         `,
         )
@@ -140,6 +160,7 @@ export default function HotelBookingPage() {
   };
 
   const calculateNights = () => {
+    if (pricingResult) return pricingResult.nights;
     if (!bookingDetails.checkInDate || !bookingDetails.checkOutDate) return 0;
     const checkIn = new Date(bookingDetails.checkInDate);
     const checkOut = new Date(bookingDetails.checkOutDate);
@@ -148,6 +169,7 @@ export default function HotelBookingPage() {
   };
 
   const calculateTotal = () => {
+    if (pricingResult) return pricingResult.totalPrice;
     const nights = calculateNights();
     return nights * (roomType?.base_price || 0);
   };
@@ -170,10 +192,6 @@ export default function HotelBookingPage() {
     }
     if (new Date(bookingDetails.checkInDate) < new Date()) {
       setError("Check-in date cannot be in the past");
-      return false;
-    }
-    if (availableRooms.length === 0) {
-      setError("No rooms available for selected dates");
       return false;
     }
     return true;
@@ -200,11 +218,11 @@ export default function HotelBookingPage() {
 
   const handleContinueToGuest = async () => {
     if (!validateBookingDetails()) return;
-    await checkAvailability(roomType.id);
-    if (availableRooms.length > 0) {
-      setStep(2);
-      setError("");
-    }
+    // Run availability preview so the UI badge stays fresh, but don't gate on
+    // its result — the atomic RPC is the authoritative availability check.
+    checkAvailability(roomType.id);
+    setStep(2);
+    setError("");
   };
 
   const handleProceedToPayment = async () => {
@@ -214,69 +232,44 @@ export default function HotelBookingPage() {
     setError("");
 
     try {
-      if (availableRooms.length === 0) {
-        throw new Error("No rooms available");
-      }
-
-      const selectedRoom = availableRooms[0];
       const totalAmount = calculateTotal();
 
-      const bookingData = {
-        hotel_id: hotel.id,
-        room_id: selectedRoom.id,
-        room_type_id: roomType.id,
-        customer_id: user?.id || null,
-        guest_name: guestDetails.name,
-        guest_email: guestDetails.email,
-        guest_phone: guestDetails.phone,
-        check_in_date: bookingDetails.checkInDate,
-        check_out_date: bookingDetails.checkOutDate,
-        adults: bookingDetails.adults,
-        children: bookingDetails.children,
-        total_price: totalAmount,
-        payment_status: "pending",
-        booking_status: "confirmed",
-        special_requests: guestDetails.specialRequests || null,
-      };
+      // Single atomic server action — locks a room and inserts the booking in
+      // one PostgreSQL transaction, preventing race conditions.
+      const result = await bookHotelRoomAction({
+        roomTypeId:      roomType.id,
+        hotelId:         hotel.id,
+        guestName:       guestDetails.name,
+        guestEmail:      guestDetails.email,
+        guestPhone:      guestDetails.phone,
+        checkInDate:     bookingDetails.checkInDate,
+        checkOutDate:    bookingDetails.checkOutDate,
+        adults:          bookingDetails.adults,
+        children:        bookingDetails.children,
+        totalPrice:      totalAmount,
+        specialRequests: guestDetails.specialRequests || null,
+        payAtHotel,
+      });
 
-      const { data: booking, error: bookingError } = await supabase
-        .from("hotel_bookings")
-        .insert(bookingData)
-        .select(
-          `
-          *,
-          hotels:hotel_id (
-            id,
-            name,
-            city,
-            state,
-            image_urls,
-            checkout_policy
-          ),
-          room_types:room_type_id (
-            id,
-            name,
-            base_price
-          )
-        `,
-        )
-        .single();
-
-      if (bookingError) throw bookingError;
-
-      await supabase
-        .from("hotel_rooms")
-        .update({ status: "reserved" })
-        .eq("id", selectedRoom.id);
+      if (!result.success) {
+        setError(result.error || "Failed to create booking");
+        toast.error(result.error || "Failed to create booking");
+        return;
+      }
 
       // Fire "Booking Received" in-app notification (non-blocking)
       fetch("/api/bookings/hotel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId: booking.id, hotelName: hotel?.name }),
+        body: JSON.stringify({ bookingId: result.bookingId, hotelName: hotel?.name }),
       }).catch(() => {});
 
-      router.push(`/payment/hotel/${booking.id}`);
+      // Pay at Hotel → skip payment gateway, go to confirmation
+      if (result.payAtHotel) {
+        router.push(`/order-successful/${result.bookingId}?type=hotel&pay_at_hotel=true`);
+      } else {
+        router.push(`/payment/hotel/${result.bookingId}`);
+      }
     } catch (err) {
       console.error("Booking creation error:", err);
       setError(err.message || "Failed to create booking");
@@ -392,42 +385,19 @@ export default function HotelBookingPage() {
                   </h2>
 
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="checkIn">Check-in Date</Label>
-                        <Input
-                          id="checkIn"
-                          type="date"
-                          value={bookingDetails.checkInDate}
-                          min={new Date().toISOString().split("T")[0]}
-                          onChange={(e) =>
-                            setBookingDetails({
-                              ...bookingDetails,
-                              checkInDate: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="checkOut">Check-out Date</Label>
-                        <Input
-                          id="checkOut"
-                          type="date"
-                          value={bookingDetails.checkOutDate}
-                          min={
-                            bookingDetails.checkInDate ||
-                            new Date().toISOString().split("T")[0]
-                          }
-                          onChange={(e) =>
-                            setBookingDetails({
-                              ...bookingDetails,
-                              checkOutDate: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
+                    {/* Visual date-range picker with blocked dates */}
+                    <HotelDateRangePicker
+                      roomTypeId={roomType?.id}
+                      checkIn={bookingDetails.checkInDate}
+                      checkOut={bookingDetails.checkOutDate}
+                      onChange={({ checkIn, checkOut }) =>
+                        setBookingDetails((prev) => ({
+                          ...prev,
+                          checkInDate: checkIn,
+                          checkOutDate: checkOut,
+                        }))
+                      }
+                    />
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -593,6 +563,49 @@ export default function HotelBookingPage() {
                     </div>
                   </div>
 
+                  {/* Payment method — Pay at Hotel if vendor has it enabled */}
+                  {hotel?.pay_at_hotel_enabled && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">Payment Method</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[
+                          {
+                            value: false,
+                            title: "Pay Online",
+                            desc: "Paystack or crypto — secure instant payment",
+                            icon: "💳",
+                          },
+                          {
+                            value: true,
+                            title: "Pay at Hotel",
+                            desc: "Pay cash or transfer when you arrive",
+                            icon: "🏨",
+                          },
+                        ].map((opt) => (
+                          <button
+                            key={String(opt.value)}
+                            type="button"
+                            onClick={() => setPayAtHotel(opt.value)}
+                            className={`text-left p-4 rounded-xl border-2 transition-all ${
+                              payAtHotel === opt.value
+                                ? "border-purple-500 bg-purple-50"
+                                : "border-gray-200 hover:border-purple-300"
+                            }`}
+                          >
+                            <p className="text-lg mb-1">{opt.icon}</p>
+                            <p className="text-sm font-semibold text-gray-900">{opt.title}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                      {payAtHotel && (
+                        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                          Your room will be held for 24 hours before check-in. Please arrive on time to avoid cancellation.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex gap-3 mt-6">
                     <Button
                       variant="outline"
@@ -606,7 +619,7 @@ export default function HotelBookingPage() {
                       onClick={handleProceedToPayment}
                       disabled={submitting}
                     >
-                      {submitting ? "Creating..." : "Continue to Payment"}
+                      {submitting ? "Creating..." : payAtHotel ? "Confirm Reservation" : "Continue to Payment"}
                     </Button>
                   </div>
                 </CardContent>
@@ -696,15 +709,45 @@ export default function HotelBookingPage() {
 
                   {nights > 0 && (
                     <div className="border-t pt-4 space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">
-                          ₦{roomType.base_price.toLocaleString()} × {nights}{" "}
-                          night{nights !== 1 ? "s" : ""}
-                        </span>
-                        <span className="font-medium">
-                          ₦{total.toLocaleString()}
-                        </span>
-                      </div>
+                      {pricingResult?.hasPriceVariation ? (
+                        <>
+                          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                            Seasonal pricing applies to some nights
+                          </p>
+                          {/* Show unique rule names */}
+                          {[...new Set(pricingResult.breakdown.filter(d => d.rule).map(d => d.rule))].map((ruleName) => {
+                            const ruleNights = pricingResult.breakdown.filter(d => d.rule === ruleName);
+                            const ruleTotal = ruleNights.reduce((s, d) => s + d.price, 0);
+                            return (
+                              <div key={ruleName} className="flex justify-between text-sm">
+                                <span className="text-gray-600">{ruleName} ({ruleNights.length}n)</span>
+                                <span className="font-medium">₦{ruleTotal.toLocaleString()}</span>
+                              </div>
+                            );
+                          })}
+                          {(() => {
+                            const stdNights = pricingResult.breakdown.filter(d => !d.rule);
+                            if (!stdNights.length) return null;
+                            const stdTotal = stdNights.reduce((s, d) => s + d.price, 0);
+                            return (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Standard ({stdNights.length}n)</span>
+                                <span className="font-medium">₦{stdTotal.toLocaleString()}</span>
+                              </div>
+                            );
+                          })()}
+                        </>
+                      ) : (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">
+                            ₦{roomType.base_price.toLocaleString()} × {nights}{" "}
+                            night{nights !== 1 ? "s" : ""}
+                          </span>
+                          <span className="font-medium">
+                            ₦{total.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex justify-between font-bold text-lg pt-2 border-t">
                         <span>Total</span>
                         <span className="text-purple-600">

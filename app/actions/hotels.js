@@ -403,6 +403,186 @@ export async function deleteHotelAction(hotelId) {
   }
 }
 
+// ==================== ATOMIC HOTEL ROOM BOOKING ====================
+export async function bookHotelRoomAction(bookingData) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: "You must be signed in to book a room." };
+    }
+
+    const {
+      roomTypeId,
+      hotelId,
+      guestName,
+      guestEmail,
+      guestPhone,
+      checkInDate,
+      checkOutDate,
+      adults,
+      children,
+      totalPrice,
+      specialRequests,
+      payAtHotel = false,
+    } = bookingData;
+
+    if (!roomTypeId || !hotelId || !checkInDate || !checkOutDate) {
+      return { success: false, error: "Missing required booking fields." };
+    }
+
+    if (new Date(checkOutDate) <= new Date(checkInDate)) {
+      return { success: false, error: "Check-out must be after check-in." };
+    }
+
+    // If Pay at Hotel requested, verify the hotel has it enabled
+    if (payAtHotel) {
+      const { data: hotel } = await supabase
+        .from("hotels")
+        .select("pay_at_hotel_enabled")
+        .eq("id", hotelId)
+        .maybeSingle();
+
+      if (!hotel?.pay_at_hotel_enabled) {
+        return { success: false, error: "Pay at Hotel is not available for this property." };
+      }
+    }
+
+    // Call the atomic PostgreSQL function — locks a room and inserts the booking
+    // in a single transaction, preventing double-booking race conditions.
+    const { data: bookingId, error: rpcError } = await supabase.rpc(
+      "book_hotel_room",
+      {
+        p_room_type_id:     roomTypeId,
+        p_hotel_id:         hotelId,
+        p_customer_id:      user.id,
+        p_guest_name:       guestName,
+        p_guest_email:      guestEmail,
+        p_guest_phone:      guestPhone,
+        p_check_in_date:    checkInDate,
+        p_check_out_date:   checkOutDate,
+        p_adults:           adults,
+        p_children:         children,
+        p_total_price:      totalPrice,
+        p_special_requests: specialRequests || null,
+      },
+    );
+
+    if (rpcError) {
+      if (rpcError.message?.includes("no_rooms_available")) {
+        return { success: false, error: "No rooms available for the selected dates. Please try different dates." };
+      }
+      return { success: false, error: rpcError.message };
+    }
+
+    // For Pay at Hotel bookings, override payment_status so the payment gateway
+    // is skipped and the booking stays as a soft reservation.
+    if (payAtHotel && bookingId) {
+      await supabase
+        .from("hotel_bookings")
+        .update({ booking_status: "pay_at_hotel", payment_status: "pay_at_hotel" })
+        .eq("id", bookingId);
+    }
+
+    return { success: true, bookingId, payAtHotel };
+  } catch (error) {
+    console.error("bookHotelRoomAction error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// ==================== EFFECTIVE PRICE CALCULATION ====================
+/**
+ * Compute total price for a stay, applying any active seasonal pricing rules.
+ * Returns { totalPrice, nights, breakdown: [{ date, price }] }
+ */
+export async function getEffectivePriceAction(roomTypeId, checkInDate, checkOutDate) {
+  try {
+    const supabase = await createClient();
+
+    // Fetch base price + hotel id
+    const { data: roomType, error: rtError } = await supabase
+      .from("hotel_room_types")
+      .select("base_price, hotel_id")
+      .eq("id", roomTypeId)
+      .single();
+
+    if (rtError || !roomType) {
+      return { success: false, error: "Room type not found" };
+    }
+
+    // Fetch pricing rules that overlap with the stay
+    const { data: rules } = await supabase
+      .from("hotel_pricing_rules")
+      .select("*")
+      .eq("hotel_id", roomType.hotel_id)
+      .lte("start_date", checkOutDate)
+      .gte("end_date", checkInDate);
+
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+
+    let totalPrice = 0;
+    const breakdown = [];
+
+    // Walk each night of the stay
+    const cursor = new Date(checkIn);
+    while (cursor < checkOut) {
+      const dateStr = cursor.toISOString().split("T")[0];
+      let nightPrice = roomType.base_price;
+
+      // Apply the first matching rule (highest adjustment wins if multiple overlap)
+      const matchingRules = (rules || []).filter((r) => {
+        return dateStr >= r.start_date && dateStr <= r.end_date;
+      });
+
+      if (matchingRules.length > 0) {
+        // Pick the rule with the largest effective adjustment
+        const best = matchingRules.reduce((a, b) => {
+          const aAdj =
+            a.adjustment_type === "percentage"
+              ? roomType.base_price * (a.adjustment_value / 100)
+              : a.adjustment_value;
+          const bAdj =
+            b.adjustment_type === "percentage"
+              ? roomType.base_price * (b.adjustment_value / 100)
+              : b.adjustment_value;
+          return bAdj > aAdj ? b : a;
+        });
+
+        if (best.adjustment_type === "percentage") {
+          nightPrice = roomType.base_price * (1 + best.adjustment_value / 100);
+        } else {
+          nightPrice = roomType.base_price + best.adjustment_value;
+        }
+
+        breakdown.push({ date: dateStr, price: Math.round(nightPrice), rule: best.name });
+      } else {
+        breakdown.push({ date: dateStr, price: Math.round(nightPrice), rule: null });
+      }
+
+      totalPrice += nightPrice;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return {
+      success: true,
+      totalPrice: Math.round(totalPrice),
+      nights: breakdown.length,
+      basePrice: roomType.base_price,
+      breakdown,
+      hasPriceVariation: breakdown.some((d) => d.price !== roomType.base_price),
+    };
+  } catch (error) {
+    console.error("getEffectivePriceAction error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 // ==================== VALIDATE ROOM CONFIGURATION ====================
 export async function validateRoomConfigAction(roomConfig) {
   try {

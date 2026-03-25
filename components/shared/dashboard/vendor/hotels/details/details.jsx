@@ -31,6 +31,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
     state: hotel.state || "",
     checkout_policy: hotel.checkout_policy || "",
     policies: hotel.policies || "",
+    pay_at_hotel_enabled: hotel.pay_at_hotel_enabled ?? false,
   });
 
   const [amenities, setAmenities] = useState({
@@ -108,6 +109,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
         checkout_policy: formData.checkout_policy || null,
         policies: cleanPolicies || null,
         amenities: amenities,
+        pay_at_hotel_enabled: formData.pay_at_hotel_enabled,
       };
 
       console.log("Updating hotel with data:", updateData);
@@ -364,6 +366,43 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               requirements, and any restrictions.
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Pay at Hotel toggle */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Info className="h-5 w-5" />
+            Booking Options
+          </CardTitle>
+          <CardDescription>Control how guests can pay for their reservation.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <label className="flex items-start gap-4 cursor-pointer group">
+            <div className="relative mt-0.5 shrink-0">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.pay_at_hotel_enabled}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    pay_at_hotel_enabled: e.target.checked,
+                  }))
+                }
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-purple-600 transition-colors" />
+              <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Enable "Pay at Hotel"</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Guests can reserve a room and pay cash or bank transfer on arrival.
+                Reservations auto-expire if the guest does not check in within 24 hours of their check-in date.
+              </p>
+            </div>
+          </label>
         </CardContent>
       </Card>
 

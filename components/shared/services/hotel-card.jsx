@@ -12,6 +12,7 @@ import {
   AirVent,
   Waves,
   Car,
+  Star,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
@@ -98,6 +99,16 @@ const HotelCard = ({ service }) => {
             <div className="absolute top-3 left-3 z-10">
               <span className="text-[10px] font-semibold bg-green-500 text-white px-2 py-1 rounded-lg">
                 Free cancellation
+              </span>
+            </div>
+          )}
+
+          {/* Rating badge */}
+          {service.avg_rating && (
+            <div className="absolute top-3 right-3 z-10">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-white/95 text-gray-900 px-2 py-1 rounded-lg shadow-sm">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                {service.avg_rating}
               </span>
             </div>
           )}

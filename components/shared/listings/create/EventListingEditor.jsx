@@ -117,7 +117,7 @@ function tabComplete(tab, formData, tickets, useMultiplePackages, totalImages) {
       return !!(
         formData.title &&
         formData.description &&
-        formData.location &&
+        (formData.location || formData.is_online) &&
         formData.event_date &&
         formData.event_time &&
         formData.event_types
@@ -229,18 +229,59 @@ function BasicInfoTab({ formData, setFormData, errors, eventType }) {
         <FieldError msg={errors.description} />
       </div>
 
+      {/* Virtual event toggle */}
+      <div className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl bg-gray-50">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={!!formData.is_online}
+          onClick={() => setFormData((p) => ({ ...p, is_online: !p.is_online }))}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            formData.is_online ? "bg-purple-600" : "bg-gray-300"
+          }`}
+        >
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            formData.is_online ? "translate-x-6" : "translate-x-1"
+          }`} />
+        </button>
+        <div>
+          <p className="text-sm font-medium text-gray-800 flex items-center gap-1">
+            <Globe className="w-4 h-4 text-purple-500" />
+            Virtual / Online Event
+          </p>
+          <p className="text-xs text-gray-500">Attendees will receive the stream link after booking</p>
+        </div>
+      </div>
+
+      {formData.is_online && (
+        <div className="space-y-1.5">
+          <Label htmlFor="stream_url" className="font-medium">
+            Stream / Join Link
+          </Label>
+          <Input
+            id="stream_url"
+            name="stream_url"
+            type="url"
+            value={formData.stream_url || ""}
+            onChange={handleChange}
+            placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+          />
+          <p className="text-xs text-gray-400">Only revealed to confirmed attendees. Keep this private until then.</p>
+        </div>
+      )}
+
       {/* Location */}
       <div className="space-y-1.5">
         <Label htmlFor="location" className="font-medium">
           <MapPin className="inline w-4 h-4 mr-1 text-gray-400" />
-          Location <span className="text-red-500">*</span>
+          {formData.is_online ? "Location (optional)" : <>Location <span className="text-red-500">*</span></>}
         </Label>
         <Input
           id="location"
           name="location"
           value={formData.location || ""}
           onChange={handleChange}
-          placeholder="e.g., Eko Hotel & Suites, Victoria Island, Lagos"
+          placeholder={formData.is_online ? "e.g., Online (Zoom)" : "e.g., Eko Hotel & Suites, Victoria Island, Lagos"}
           className={errors.location ? "border-red-500" : ""}
         />
         <FieldError msg={errors.location} />
@@ -280,6 +321,22 @@ function BasicInfoTab({ formData, setFormData, errors, eventType }) {
           />
           <FieldError msg={errors.event_time} />
         </div>
+      </div>
+
+      {/* End Date (multi-day) */}
+      <div className="space-y-1.5">
+        <Label htmlFor="event_end_date" className="font-medium">
+          <Calendar className="inline w-4 h-4 mr-1 text-gray-400" />
+          End Date <span className="text-xs font-normal text-gray-400">(optional — leave blank for single-day)</span>
+        </Label>
+        <Input
+          id="event_end_date"
+          name="event_end_date"
+          type="date"
+          value={formData.event_end_date || ""}
+          onChange={handleChange}
+          min={formData.event_date || new Date().toISOString().split("T")[0]}
+        />
       </div>
 
       {/* Event Type */}
@@ -347,8 +404,15 @@ function TicketsTab({
     description: "",
     early_bird_price: "",
     early_bird_end: "",
+    sale_starts_at: "",
+    sale_ends_at: "",
+    min_per_order: "",
+    max_per_order: "",
+    is_hidden: false,
+    access_code: "",
   });
   const [showEarlyBird, setShowEarlyBird] = useState(false);
+  const [showSaleWindow, setShowSaleWindow] = useState(false);
 
   const totalTickets = tickets.reduce(
     (s, t) => s + parseInt(t.quantity || 0),
@@ -356,7 +420,8 @@ function TicketsTab({
   );
 
   const addTicket = () => {
-    if (!tempTicket.name || !tempTicket.price || !tempTicket.quantity) return;
+    // Allow price = "0" for free tickets; only block an empty string
+    if (!tempTicket.name || tempTicket.price === "" || !tempTicket.quantity) return;
     if (tickets.length >= MAX_TICKETS) return;
     setTickets((prev) => [
       ...prev,
@@ -365,6 +430,12 @@ function TicketsTab({
         remaining: tempTicket.quantity,
         early_bird_price: tempTicket.early_bird_price || null,
         early_bird_end: tempTicket.early_bird_end || null,
+        sale_starts_at: tempTicket.sale_starts_at || null,
+        sale_ends_at: tempTicket.sale_ends_at || null,
+        min_per_order: tempTicket.min_per_order ? parseInt(tempTicket.min_per_order) : 1,
+        max_per_order: tempTicket.max_per_order ? parseInt(tempTicket.max_per_order) : null,
+        is_hidden: !!tempTicket.is_hidden,
+        access_code: tempTicket.is_hidden ? (tempTicket.access_code || null) : null,
       },
     ]);
     setTempTicket({
@@ -374,8 +445,15 @@ function TicketsTab({
       description: "",
       early_bird_price: "",
       early_bird_end: "",
+      sale_starts_at: "",
+      sale_ends_at: "",
+      min_per_order: "",
+      max_per_order: "",
+      is_hidden: false,
+      access_code: "",
     });
     setShowEarlyBird(false);
+    setShowSaleWindow(false);
   };
 
   const removeTicket = (i) => setTickets((prev) => prev.filter((_, idx) => idx !== i));
@@ -551,6 +629,64 @@ function TicketsTab({
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium">Min per order (optional)</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={tempTicket.min_per_order}
+                    onChange={(e) =>
+                      setTempTicket((p) => ({ ...p, min_per_order: e.target.value }))
+                    }
+                    placeholder="1"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium">Max per order (optional)</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={tempTicket.max_per_order}
+                    onChange={(e) =>
+                      setTempTicket((p) => ({ ...p, max_per_order: e.target.value }))
+                    }
+                    placeholder="No limit"
+                  />
+                </div>
+              </div>
+
+              {/* Hidden ticket toggle */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={!!tempTicket.is_hidden}
+                  onClick={() => setTempTicket((p) => ({ ...p, is_hidden: !p.is_hidden }))}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                    tempTicket.is_hidden ? "bg-purple-600" : "bg-gray-300"
+                  }`}
+                >
+                  <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                    tempTicket.is_hidden ? "translate-x-5" : "translate-x-1"
+                  }`} />
+                </button>
+                <span className="text-sm text-gray-700 font-medium">Hidden ticket (requires access code)</span>
+              </div>
+
+              {tempTicket.is_hidden && (
+                <div className="space-y-1 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <Label className="text-xs font-medium text-purple-800">Access Code</Label>
+                  <Input
+                    value={tempTicket.access_code}
+                    onChange={(e) => setTempTicket((p) => ({ ...p, access_code: e.target.value }))}
+                    placeholder="e.g., BACKSTAGE2025"
+                    className="border-purple-300 focus-visible:ring-purple-400"
+                  />
+                  <p className="text-xs text-purple-600">Attendees must enter this code to reveal and purchase this tier.</p>
+                </div>
+              )}
+
               {/* Early bird toggle */}
               <button
                 type="button"
@@ -598,6 +734,50 @@ function TicketsTab({
                       className="border-amber-300 focus-visible:ring-amber-400"
                     />
                   </div>
+                </div>
+              )}
+
+              {/* Sale window toggle */}
+              <button
+                type="button"
+                onClick={() => setShowSaleWindow((p) => !p)}
+                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                <Clock className="w-4 h-4" />
+                {showSaleWindow ? "Remove sale window" : "+ Set sale window (optional)"}
+              </button>
+
+              {showSaleWindow && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-blue-800">
+                      Sales Start
+                    </Label>
+                    <Input
+                      type="datetime-local"
+                      value={tempTicket.sale_starts_at}
+                      onChange={(e) =>
+                        setTempTicket((p) => ({ ...p, sale_starts_at: e.target.value }))
+                      }
+                      className="border-blue-300 focus-visible:ring-blue-400"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-blue-800">
+                      Sales End
+                    </Label>
+                    <Input
+                      type="datetime-local"
+                      value={tempTicket.sale_ends_at}
+                      onChange={(e) =>
+                        setTempTicket((p) => ({ ...p, sale_ends_at: e.target.value }))
+                      }
+                      className="border-blue-300 focus-visible:ring-blue-400"
+                    />
+                  </div>
+                  <p className="text-xs text-blue-600 col-span-full">
+                    Leave blank to sell from now until the event. Attendees will see "Sales not yet open" or "Sales ended" outside this window.
+                  </p>
                 </div>
               )}
 
@@ -1316,7 +1496,10 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
     title: "",
     description: "",
     location: "",
+    is_online: false,
+    stream_url: "",
     event_date: "",
+    event_end_date: "",
     event_time: "",
     event_types: "",
     asoebi_available: "no",
@@ -1371,9 +1554,9 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
     return () => clearTimeout(id);
   }, [formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence, draftKey]);
 
-  // ── Populate state from existing listing (edit mode) ───────────────────────
+  // ── Populate state from existing listing (edit mode or clone pre-fill) ──────
   useEffect(() => {
-    if (!initialData || !isEditMode) return;
+    if (!initialData) return;
 
     const rawDate = initialData.event_date;
     const eventDate = rawDate ? new Date(rawDate).toISOString().split("T")[0] : "";
@@ -1389,7 +1572,10 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
       title: initialData.title || "",
       description: initialData.description || "",
       location: initialData.location || "",
+      is_online: initialData.category_data?.is_online || false,
+      stream_url: initialData.category_data?.stream_url || "",
       event_date: eventDate,
+      event_end_date: initialData.event_end_date ? new Date(initialData.event_end_date).toISOString().split("T")[0] : "",
       event_time: eventTime,
       event_types: initialData.category_data?.event_types || "",
       asoebi_available: initialData.category_data?.asoebi_available || "no",
@@ -1531,6 +1717,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         description: formData.description,
         location: formData.location,
         event_date: formData.event_date,
+        event_end_date: formData.event_end_date || null,
         event_time: formData.event_time,
         event_types: formData.event_types,
         asoebi_available: formData.asoebi_available || "no",
@@ -1545,6 +1732,8 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         low_stock_threshold: formData.low_stock_threshold ? parseInt(formData.low_stock_threshold) : 50,
         custom_questions: customQuestions,
         recurrence: recurrence.enabled ? recurrence : null,
+        is_online: !!formData.is_online,
+        stream_url: formData.is_online ? (formData.stream_url || null) : null,
         active: visibility !== "draft",
       };
 
@@ -1649,6 +1838,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         media_urls: mediaUrls,
         price: listingPrice,
         event_date: formData.event_date || null,
+        event_end_date: formData.event_end_date || null,
         event_time: eventTimestamp,
         total_tickets: totalTickets,
         ticket_packages: processedTickets.length > 0 ? processedTickets : [],
@@ -1662,6 +1852,8 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
           recurrence: recurrence.enabled ? recurrence : null,
           asoebi_available: formData.asoebi_available || null,
           low_stock_threshold: formData.low_stock_threshold ? parseInt(formData.low_stock_threshold) : 50,
+          is_online: !!formData.is_online,
+          stream_url: formData.is_online ? (formData.stream_url || null) : null,
         },
       };
 

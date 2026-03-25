@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Ticket, MapPin, Calendar, Users, Clock, Download } from "lucide-react";
+import { Ticket, MapPin, Calendar, Users, Clock, Download, RefreshCcw, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { toast } from "sonner";
 import { getEventBookings } from "@/app/actions/customers";
 import {
   PageHeader,
@@ -16,8 +17,137 @@ import {
   Amount,
 } from "@/components/shared/customer/shared-ui";
 
+// ─── Transfer Ticket Modal ────────────────────────────────────────────────────
+function TransferModal({ booking, onClose }) {
+  const [newEmail, setNewEmail] = useState("");
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/bookings/event/${booking.id}/transfer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ new_email: newEmail.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Transfer failed");
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Ticket transferred to ${data.transferred_to}.`);
+      queryClient.invalidateQueries({ queryKey: ["event-bookings"] });
+      onClose();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const isValidEmail = /^\S+@\S+\.\S+$/.test(newEmail.trim());
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-gray-900 text-lg">Transfer Ticket</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Transfer your ticket for <strong>{booking.listing?.title}</strong> to another person.
+          Once transferred, you will no longer have access to this ticket.
+        </p>
+        <label className="block text-xs font-medium text-gray-700 mb-1">Recipient email</label>
+        <input
+          type="email"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          placeholder="e.g. friend@example.com"
+          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 mb-4"
+        />
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isPending}>
+            Cancel
+          </Button>
+          <Button
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+            disabled={!isValidEmail || isPending}
+            onClick={() => mutate()}
+          >
+            {isPending ? "Transferring..." : "Transfer Ticket"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Refund Request Modal ─────────────────────────────────────────────────────
+function RefundModal({ booking, onClose }) {
+  const [reason, setReason] = useState("");
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/refunds/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: booking.id, reason }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to submit");
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Refund request submitted. The organiser will respond within 2–3 business days.");
+      queryClient.invalidateQueries({ queryKey: ["event-bookings"] });
+      onClose();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-gray-900 text-lg">Request Refund</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Tell the organiser why you'd like a refund for <strong>{booking.listing?.title}</strong>.
+          They will review and respond within 2–3 business days.
+        </p>
+        <textarea
+          rows={4}
+          maxLength={500}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="e.g. I can no longer attend due to travel plans..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none mb-1"
+        />
+        <p className="text-xs text-gray-400 text-right mb-4">{reason.length}/500</p>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isPending}>
+            Cancel
+          </Button>
+          <Button
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+            disabled={!reason.trim() || isPending}
+            onClick={() => mutate()}
+          >
+            {isPending ? "Submitting..." : "Submit Request"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EventBookingsClient({ userId, initialData, userEmail }) {
   const [page, setPage] = useState(1);
+  const [refundBooking, setRefundBooking] = useState(null);
+  const [transferBooking, setTransferBooking] = useState(null);
   const PAGE_SIZE = 10;
 
   const { data, isLoading, isFetching } = useQuery({
@@ -33,6 +163,12 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
 
   return (
     <div>
+      {transferBooking && (
+        <TransferModal booking={transferBooking} onClose={() => setTransferBooking(null)} />
+      )}
+      {refundBooking && (
+        <RefundModal booking={refundBooking} onClose={() => setRefundBooking(null)} />
+      )}
       <PageHeader
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard/customer" },
@@ -158,14 +294,39 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
                         )}
                         {booking.status === "confirmed" &&
                           booking.payment_status === "completed" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-purple-200 text-purple-700 hover:bg-purple-50"
-                            >
-                              <Download className="h-3.5 w-3.5 mr-1" />
-                              Ticket
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                              >
+                                <Download className="h-3.5 w-3.5 mr-1" />
+                                Ticket
+                              </Button>
+                              {booking.listing?.event_date &&
+                                new Date(booking.listing.event_date) > new Date() && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                      onClick={() => setTransferBooking(booking)}
+                                    >
+                                      <Send className="h-3.5 w-3.5 mr-1" />
+                                      Transfer
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-red-200 text-red-600 hover:bg-red-50"
+                                      onClick={() => setRefundBooking(booking)}
+                                    >
+                                      <RefreshCcw className="h-3.5 w-3.5 mr-1" />
+                                      Refund
+                                    </Button>
+                                  </>
+                                )}
+                            </>
                           )}
                       </div>
                     </div>

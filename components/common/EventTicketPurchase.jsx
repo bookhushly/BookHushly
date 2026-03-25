@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   X,
   Bell,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -60,6 +61,9 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
   }, [service?.custom_questions]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [unlockedCodes, setUnlockedCodes] = useState({}); // { [ticketName]: true }
+  const [accessCodeInputs, setAccessCodeInputs] = useState({}); // { [ticketName]: string }
+  const [accessCodeError, setAccessCodeError] = useState({}); // { [ticketName]: string }
 
   const images = service?.media_urls || [];
 
@@ -72,6 +76,10 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
         const ebEnd = pkg.early_bird_end ? new Date(pkg.early_bird_end) : null;
         const ebActive = ebEnd && ebEnd > now && pkg.early_bird_price;
         const ebExpired = ebEnd && ebEnd <= now && pkg.early_bird_price;
+        const saleStart = pkg.sale_starts_at ? new Date(pkg.sale_starts_at) : null;
+        const saleEnd = pkg.sale_ends_at ? new Date(pkg.sale_ends_at) : null;
+        const saleNotStarted = saleStart && saleStart > now;
+        const saleEnded = saleEnd && saleEnd <= now;
         return {
           name: pkg.name || "Ticket",
           regularPrice: parseFloat(pkg.price) || 0,
@@ -83,6 +91,15 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
           remaining: parseInt(pkg.remaining) || 0,
           total: parseInt(pkg.total) || 0,
           description: pkg.description || "",
+          saleStart,
+          saleEnd,
+          saleNotStarted: !!saleNotStarted,
+          saleEnded: !!saleEnded,
+          saleClosed: !!(saleNotStarted || saleEnded),
+          minPerOrder: parseInt(pkg.min_per_order) || 1,
+          maxPerOrder: pkg.max_per_order ? parseInt(pkg.max_per_order) : null,
+          isHidden: !!pkg.is_hidden,
+          accessCode: pkg.access_code || null,
         };
       });
     }
@@ -181,7 +198,9 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
   const handleTicketChange = useCallback(
     (ticketName, quantity) => {
       const ticket = ticketPackages.find((t) => t.name === ticketName);
-      if (!ticket || quantity < 0 || quantity > ticket.remaining) return;
+      if (!ticket || quantity < 0 || quantity > ticket.remaining || ticket.saleClosed) return;
+      if (quantity > 0 && quantity < ticket.minPerOrder) return;
+      if (ticket.maxPerOrder && quantity > ticket.maxPerOrder) return;
 
       setSelectedTickets((prev) => ({
         ...prev,
@@ -233,6 +252,11 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
     return true;
   }, [customQuestions, questionAnswers]);
 
+  // Is this a free event? (all selected packages have price 0)
+  const isFreeEvent = useMemo(() => {
+    return ticketPackages.length > 0 && ticketPackages.every((t) => (parseFloat(t.price) || 0) === 0);
+  }, [ticketPackages]);
+
   // Handle contact submission
   const handleContactSubmit = useCallback(() => {
     if (!validateContactDetails()) return;
@@ -241,6 +265,36 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
     setStep(3);
     setError("");
   }, [validateContactDetails, validateQuestions, contactDetails]);
+
+  // Handle free registration (no payment)
+  const [freeBookingLoading, setFreeBookingLoading] = useState(false);
+  const handleFreeRegistration = async () => {
+    if (!service) return;
+    setFreeBookingLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/bookings/event/free", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listing_id: service.id,
+          contact_name: contactDetails.name,
+          contact_email: contactDetails.email,
+          contact_phone: contactDetails.phone,
+          ticket_details: selectedTickets,
+          custom_answers: Object.keys(questionAnswers).length > 0 ? questionAnswers : null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Registration failed");
+      router.push(`/order-successful/${data.booking.id}`);
+    } catch (err) {
+      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setFreeBookingLoading(false);
+    }
+  };
 
   // Handle payment - redirect to unified payment page
   const handlePayment = async () => {
@@ -381,7 +435,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between max-w-2xl mx-auto">
-            {["Select Tickets", "Contact Details", "Payment"].map(
+            {["Select Tickets", "Contact Details", isFreeEvent ? "Confirm" : "Payment"].map(
               (stepName, index) => (
                 <div key={index} className="flex items-center flex-1">
                   <div
@@ -500,10 +554,49 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                 )}
                 <div className="space-y-4">
                   {ticketPackages.map((ticket, index) => (
+                    {ticket.isHidden && !unlockedCodes[ticket.name] ? (
+                      <div key={index} className="border border-dashed border-gray-300 rounded-xl p-5 bg-gray-50">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Lock className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm font-semibold text-gray-600">Hidden Ticket Tier</span>
+                          <span className="text-xs text-gray-400">— enter access code to unlock</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={accessCodeInputs[ticket.name] || ""}
+                            onChange={(e) => setAccessCodeInputs((p) => ({ ...p, [ticket.name]: e.target.value }))}
+                            placeholder="Access code"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 uppercase"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const entered = (accessCodeInputs[ticket.name] || "").trim().toUpperCase();
+                              const expected = (ticket.accessCode || "").trim().toUpperCase();
+                              if (entered === expected) {
+                                setUnlockedCodes((p) => ({ ...p, [ticket.name]: true }));
+                                setAccessCodeError((p) => ({ ...p, [ticket.name]: "" }));
+                              } else {
+                                setAccessCodeError((p) => ({ ...p, [ticket.name]: "Incorrect code" }));
+                              }
+                            }}
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            Unlock
+                          </button>
+                        </div>
+                        {accessCodeError[ticket.name] && (
+                          <p className="text-xs text-red-500 mt-1">{accessCodeError[ticket.name]}</p>
+                        )}
+                      </div>
+                    ) : (
                     <div
                       key={index}
                       className={`border rounded-xl p-6 hover:shadow-lg transition-all ${
-                        ticket.earlyBirdActive
+                        ticket.saleClosed
+                          ? "border-gray-200 bg-gray-50 opacity-75"
+                          : ticket.earlyBirdActive
                           ? "border-amber-300 bg-amber-50/40 hover:border-amber-400"
                           : "border-gray-200 hover:border-purple-300"
                       }`}
@@ -517,6 +610,16 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                             {ticket.earlyBirdActive && (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                                 Early Bird
+                              </span>
+                            )}
+                            {ticket.saleNotStarted && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                                Sales open {ticket.saleStart?.toLocaleDateString("en-NG", { day: "numeric", month: "short" })}
+                              </span>
+                            )}
+                            {ticket.saleEnded && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
+                                Sales Ended
                               </span>
                             )}
                           </div>
@@ -543,10 +646,24 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                               Early bird was ₦{ticket.earlyBirdPrice?.toLocaleString()} — offer has ended
                             </p>
                           )}
+                          {ticket.saleEnd && !ticket.saleEnded && !ticket.saleNotStarted && (
+                            <p className="text-xs text-blue-600 font-medium mb-1">
+                              Sales close {ticket.saleEnd.toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                            </p>
+                          )}
 
                           {ticket.description && (
                             <p className="text-gray-600 text-sm mt-1">
                               {ticket.description}
+                            </p>
+                          )}
+                          {(ticket.minPerOrder > 1 || ticket.maxPerOrder) && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              {ticket.minPerOrder > 1 && ticket.maxPerOrder
+                                ? `${ticket.minPerOrder}–${ticket.maxPerOrder} per order`
+                                : ticket.minPerOrder > 1
+                                ? `Min ${ticket.minPerOrder} per order`
+                                : `Max ${ticket.maxPerOrder} per order`}
                             </p>
                           )}
                         </div>
@@ -559,18 +676,16 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                             ) : null;
                           })()}
 
-                          {ticket.remaining > 0 && (
+                          {ticket.remaining > 0 && !ticket.saleClosed && (
                             <div className="flex items-center gap-1 w-[140px] justify-between">
                               <Button
                                 variant="outline"
                                 size="sm"
                                 disabled={selectedTickets[ticket.name] === 0}
-                                onClick={() =>
-                                  handleTicketChange(
-                                    ticket.name,
-                                    (selectedTickets[ticket.name] || 0) - 1,
-                                  )
-                                }
+                                onClick={() => {
+                                  const next = (selectedTickets[ticket.name] || 0) - 1;
+                                  handleTicketChange(ticket.name, next === 0 ? 0 : Math.max(next, ticket.minPerOrder));
+                                }}
                               >
                                 -
                               </Button>
@@ -578,7 +693,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                               <Input
                                 type="text" inputMode="decimal"
                                 min="0"
-                                max={ticket.remaining}
+                                max={ticket.maxPerOrder ?? ticket.remaining}
                                 value={selectedTickets[ticket.name] || 0}
                                 onChange={(e) =>
                                   handleTicketChange(
@@ -593,15 +708,14 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                                 variant="outline"
                                 size="sm"
                                 disabled={
-                                  selectedTickets[ticket.name] >=
-                                  ticket.remaining
+                                  selectedTickets[ticket.name] >= ticket.remaining ||
+                                  (ticket.maxPerOrder && selectedTickets[ticket.name] >= ticket.maxPerOrder)
                                 }
-                                onClick={() =>
-                                  handleTicketChange(
-                                    ticket.name,
-                                    (selectedTickets[ticket.name] || 0) + 1,
-                                  )
-                                }
+                                onClick={() => {
+                                  const curr = selectedTickets[ticket.name] || 0;
+                                  const next = curr === 0 ? ticket.minPerOrder : curr + 1;
+                                  handleTicketChange(ticket.name, next);
+                                }}
                               >
                                 +
                               </Button>
@@ -610,6 +724,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                         </div>
                       </div>
                     </div>
+                    )}
                   ))}
                 </div>
                 {ageRestriction && (
@@ -768,30 +883,63 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
               </div>
             )}
 
-            {/* Step 3: Payment */}
+            {/* Step 3: Payment or Free Confirm */}
             {step === 3 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Complete Payment
+                  {isFreeEvent ? "Confirm Registration" : "Complete Payment"}
                 </h2>
                 <div className="space-y-4">
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <p className="text-sm text-purple-700 mb-2">
-                      You'll be redirected to our secure payment page to
-                      complete your purchase.
-                    </p>
-                    <p className="text-xs text-purple-600">
-                      Multiple payment options available: Card, Bank Transfer,
-                      USSD, and Cryptocurrency
-                    </p>
-                  </div>
-
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-green-600" />
-                    <span className="text-green-600 text-sm">
-                      Secure & Verified Ticketing
-                    </span>
-                  </div>
+                  {isFreeEvent ? (
+                    <>
+                      <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                        <p className="text-sm font-semibold text-green-700 mb-1">
+                          🎉 This is a free event!
+                        </p>
+                        <p className="text-sm text-green-600">
+                          No payment required. Click below to confirm your free registration.
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Name</span>
+                          <span className="font-medium text-gray-900">{contactDetails.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Email</span>
+                          <span className="font-medium text-gray-900">{contactDetails.email}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Tickets</span>
+                          <span className="font-medium text-gray-900">
+                            {Object.entries(selectedTickets)
+                              .filter(([, q]) => q > 0)
+                              .map(([n, q]) => `${q}× ${n}`)
+                              .join(", ")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between font-semibold">
+                          <span className="text-gray-500">Total</span>
+                          <span className="text-green-600">Free</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <p className="text-sm text-purple-700 mb-2">
+                          You'll be redirected to our secure payment page to complete your purchase.
+                        </p>
+                        <p className="text-xs text-purple-600">
+                          Multiple payment options available: Card, Bank Transfer, USSD, and Cryptocurrency
+                        </p>
+                      </div>
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-green-600" />
+                        <span className="text-green-600 text-sm">Secure & Verified Ticketing</span>
+                      </div>
+                    </>
+                  )}
 
                   <div className="flex gap-4">
                     <Button
@@ -803,9 +951,14 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                     </Button>
                     <Button
                       className="flex-1 bg-purple-600 hover:bg-purple-700 text-white rounded-full"
-                      onClick={handlePayment}
+                      disabled={freeBookingLoading}
+                      onClick={isFreeEvent ? handleFreeRegistration : handlePayment}
                     >
-                      Proceed to Payment
+                      {freeBookingLoading
+                        ? "Confirming..."
+                        : isFreeEvent
+                          ? "Confirm Free Registration"
+                          : "Proceed to Payment"}
                     </Button>
                   </div>
                 </div>

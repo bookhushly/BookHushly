@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   AreaChart,
   Area,
@@ -16,6 +16,7 @@ import {
   useEventListing,
   useEventBookings,
   useUpdateTicketCount,
+  useCheckInAttendee,
 } from "@/hooks/use-event-dashboard";
 import { createClient } from "@/lib/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -249,6 +250,203 @@ function SalesVelocityChart({ bookings, eventDate }) {
           fill="none" name="tickets" dot={false} strokeDasharray="4 2" />
       </AreaChart>
     </ResponsiveContainer>
+  );
+}
+
+// ─── Refunds Panel ────────────────────────────────────────────────────────────
+function RefundsPanel({ listingId }) {
+  const supabase = createClient();
+  const queryClient = useQueryClient();
+
+  const { data: requests = [], isLoading } = useQuery({
+    queryKey: ["refund-requests", listingId],
+    queryFn: async () => {
+      // Vendor must use admin endpoint — use dedicated API
+      const res = await fetch(`/api/vendor/events/${listingId}/refunds`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    staleTime: 30 * 1000,
+  });
+
+  const respond = useMutation({
+    mutationFn: async ({ id, action, vendorNote }) => {
+      const res = await fetch(`/api/refunds/${id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, vendor_note: vendorNote }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["refund-requests", listingId] }),
+  });
+
+  const [notes, setNotes] = useState({});
+
+  if (isLoading) return <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-purple-600" /></div>;
+
+  if (!requests.length) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center max-w-2xl">
+        <CheckCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500 text-sm">No refund requests for this event.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      {requests.map((r) => (
+        <div key={r.id} className={`bg-white border rounded-2xl p-5 ${
+          r.status === "pending" ? "border-amber-200" :
+          r.status === "approved" ? "border-green-200" : "border-gray-200"
+        }`}>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <p className="font-semibold text-gray-900 text-sm">{r.contact_email}</p>
+              <p className="text-xs text-gray-400">Requested {new Date(r.requested_at).toLocaleDateString("en-GB")}</p>
+            </div>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+              r.status === "pending" ? "bg-amber-50 text-amber-700 border-amber-200" :
+              r.status === "approved" ? "bg-green-50 text-green-700 border-green-200" :
+              "bg-gray-50 text-gray-600 border-gray-200"
+            }`}>
+              {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+            </span>
+          </div>
+          <p className="text-sm text-gray-700 bg-gray-50 rounded-xl px-4 py-3 mb-3">{r.reason}</p>
+          {r.status === "pending" && (
+            <div className="space-y-2">
+              <input
+                type="text"
+                maxLength={200}
+                value={notes[r.id] || ""}
+                onChange={(e) => setNotes((p) => ({ ...p, [r.id]: e.target.value }))}
+                placeholder="Optional note to customer..."
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => respond.mutate({ id: r.id, action: "approve", vendorNote: notes[r.id] })}
+                  disabled={respond.isPending}
+                  className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Approve Refund
+                </button>
+                <button
+                  onClick={() => respond.mutate({ id: r.id, action: "deny", vendorNote: notes[r.id] })}
+                  disabled={respond.isPending}
+                  className="flex-1 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Deny
+                </button>
+              </div>
+            </div>
+          )}
+          {r.vendor_note && r.status !== "pending" && (
+            <p className="text-xs text-gray-500 italic mt-2">Your note: {r.vendor_note}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Email Attendees Panel ────────────────────────────────────────────────────
+function EmailAttendeesPanel({ listingId }) {
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState(null); // null | "sending" | { sent, failed, total, remaining_today } | "error"
+
+  const handleSend = async () => {
+    if (!subject.trim() || !message.trim()) return;
+    setStatus("sending");
+    try {
+      const res = await fetch(`/api/vendor/events/${listingId}/email-attendees`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: subject.trim(), message: message.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send");
+      setStatus(data);
+      setSubject("");
+      setMessage("");
+    } catch (err) {
+      console.error("[email-attendees]", err);
+      setStatus("error");
+    }
+  };
+
+  const isSending = status === "sending";
+  const isSuccess = status && typeof status === "object";
+  const isError = status === "error";
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl space-y-5">
+      <div>
+        <h3 className="font-bold text-gray-900 mb-1">Email All Attendees</h3>
+        <p className="text-sm text-gray-500">
+          Send a custom email directly to all confirmed attendees' inboxes. Max 5 blasts per event per day.
+        </p>
+      </div>
+
+      {isSuccess && (
+        <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm">
+          <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            Email sent to <strong>{status.sent}</strong> of <strong>{status.total}</strong> attendees.
+            {status.failed > 0 && <span className="text-amber-700"> ({status.failed} failed)</span>}
+            {status.remaining_today > 0 && (
+              <span className="text-gray-500"> · {status.remaining_today} blast{status.remaining_today !== 1 ? "s" : ""} left today.</span>
+            )}
+          </div>
+        </div>
+      )}
+      {isError && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          Failed to send. Please try again.
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-gray-700">Subject *</label>
+        <input
+          type="text"
+          maxLength={150}
+          value={subject}
+          onChange={(e) => { setSubject(e.target.value); setStatus(null); }}
+          placeholder="e.g. Important update about your ticket"
+          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+        />
+        <p className="text-xs text-gray-400 text-right">{subject.length}/150</p>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-gray-700">Message *</label>
+        <textarea
+          rows={6}
+          maxLength={2000}
+          value={message}
+          onChange={(e) => { setMessage(e.target.value); setStatus(null); }}
+          placeholder="Write your message here. Plain text — line breaks are preserved."
+          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+        />
+        <p className="text-xs text-gray-400 text-right">{message.length}/2000</p>
+      </div>
+
+      <button
+        onClick={handleSend}
+        disabled={isSending || !subject.trim() || !message.trim()}
+        className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+      >
+        {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+        {isSending ? "Sending emails..." : "Send Email to All Attendees"}
+      </button>
+    </div>
   );
 }
 
@@ -511,14 +709,32 @@ function PromoCodesPanel({ listingId, vendorId }) {
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const EventManagementDashboard = () => {
   const { id: listingId } = useParams();
+  const router = useRouter();
   const { data: listing, isLoading: listingLoading } = useEventListing(listingId);
   const { data: bookings = [], isLoading: bookingsLoading } = useEventBookings(listingId);
   const updateTickets = useUpdateTicketCount(listingId);
+  const checkIn = useCheckInAttendee(listingId);
 
   const [activeTab, setActiveTab] = useState("bookings");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isEditingTickets, setIsEditingTickets] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+
+  const handleDuplicate = useCallback(async () => {
+    if (duplicating) return;
+    setDuplicating(true);
+    try {
+      const res = await fetch(`/api/vendor/events/${listingId}/duplicate`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to duplicate");
+      router.push(`/vendor/dashboard/create-event?clone=${data.id}`);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setDuplicating(false);
+    }
+  }, [listingId, duplicating, router]);
 
   const stats = useMemo(() => {
     const ticketsSold = bookings.reduce(
@@ -575,8 +791,10 @@ const EventManagementDashboard = () => {
   const TABS = [
     { id: "bookings", label: "Bookings", icon: Users },
     { id: "analytics", label: "Analytics", icon: BarChart2 },
+    { id: "refunds", label: "Refunds", icon: AlertCircle },
     { id: "promo", label: "Promo Codes", icon: Tag },
-    { id: "broadcast", label: "Broadcast", icon: Mail },
+    { id: "email", label: "Email", icon: Mail },
+    { id: "broadcast", label: "Push Notify", icon: ScanLine },
   ];
 
   return (
@@ -584,8 +802,20 @@ const EventManagementDashboard = () => {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">{listing.title}</h1>
-          <p className="text-gray-600 mt-1">{listing.location}</p>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{listing.title}</h1>
+              <p className="text-gray-600 mt-1">{listing.location}</p>
+            </div>
+            <button
+              onClick={handleDuplicate}
+              disabled={duplicating}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
+            >
+              {duplicating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
+              {duplicating ? "Duplicating..." : "Duplicate Event"}
+            </button>
+          </div>
           {listing.event_date && (
             <div className="flex items-center gap-2 text-gray-600 mt-3">
               <Calendar className="w-5 h-5 text-purple-600" />
@@ -593,6 +823,9 @@ const EventManagementDashboard = () => {
                 {new Date(listing.event_date).toLocaleDateString("en-US", {
                   weekday: "long", year: "numeric", month: "long", day: "numeric",
                 })}
+                {listing.event_end_date && listing.event_end_date !== listing.event_date && (
+                  <> – {new Date(listing.event_end_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</>
+                )}
                 {listing.event_time && ` · ${listing.event_time}`}
               </span>
             </div>
@@ -691,7 +924,7 @@ const EventManagementDashboard = () => {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      {["Customer", "Contact", "Date", "Tickets", "Amount", "Status", "Payment"].map((col) => (
+                      {["Customer", "Contact", "Date", "Tickets", "Amount", "Status", "Payment", "Check-in"].map((col) => (
                         <th key={col} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           {col}
                         </th>
@@ -741,6 +974,26 @@ const EventManagementDashboard = () => {
                         </td>
                         <td className="px-6 py-4"><StatusBadge status={booking.status} /></td>
                         <td className="px-6 py-4"><PaymentBadge status={booking.payment_status} /></td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() =>
+                              checkIn.mutate({ bookingId: booking.id, checkedIn: !booking.checked_in })
+                            }
+                            disabled={checkIn.isPending}
+                            title={booking.checked_in ? "Mark as not checked in" : "Mark as checked in"}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                              booking.checked_in
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200"
+                            }`}
+                          >
+                            {booking.checked_in ? (
+                              <><CheckCircle className="w-3.5 h-3.5" /> Checked In</>
+                            ) : (
+                              <><ScanLine className="w-3.5 h-3.5" /> Check In</>
+                            )}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -837,7 +1090,17 @@ const EventManagementDashboard = () => {
           </div>
         )}
 
-        {/* ── Broadcast Tab ── */}
+        {/* ── Refunds Tab ── */}
+        {activeTab === "refunds" && (
+          <RefundsPanel listingId={listingId} />
+        )}
+
+        {/* ── Email Tab ── */}
+        {activeTab === "email" && (
+          <EmailAttendeesPanel listingId={listingId} />
+        )}
+
+        {/* ── Broadcast (Push) Tab ── */}
         {activeTab === "broadcast" && (
           <BroadcastPanel listingId={listingId} />
         )}

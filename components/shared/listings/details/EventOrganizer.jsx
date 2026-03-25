@@ -4,6 +4,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import RichContentRenderer from "@/components/common/rich-text-renderer";
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,22 @@ import {
   Tag,
   Repeat2,
   Bell,
+  CalendarPlus,
+  ChevronDown,
+  ExternalLink,
+  Twitter,
+  Facebook,
+  MessageCircle,
+  Copy,
+  Check,
+  Globe,
+  Video,
 } from "lucide-react";
+import {
+  getGoogleCalendarUrl,
+  getOutlookCalendarUrl,
+  downloadICS,
+} from "@/lib/calendar";
 
 // Compute next N occurrence dates for a recurring event
 function getUpcomingDates(eventDate, recurrence, maxDates = 5) {
@@ -53,6 +69,150 @@ function getUpcomingDates(eventDate, recurrence, maxDates = 5) {
   return dates;
 }
 import Link from "next/link";
+
+// ─── Add to Calendar dropdown ─────────────────────────────────────────────────
+function AddToCalendarMenu({ title, location, eventDate, eventTime, description }) {
+  const [open, setOpen] = useState(false);
+  const googleUrl = getGoogleCalendarUrl({ title, location, eventDate, eventTime, description });
+  const outlookUrl = getOutlookCalendarUrl({ title, location, eventDate, eventTime, description });
+  if (!eventDate) return null;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <CalendarPlus className="w-4 h-4 text-purple-600" />
+        Add to Calendar
+        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 ml-auto transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20">
+            {googleUrl && (
+              <a
+                href={googleUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Google Calendar
+              </a>
+            )}
+            {outlookUrl && (
+              <a
+                href={outlookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 transition-colors"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="#0078D4">
+                  <path d="M2 4l10 2v12L2 20V4zm11 2.5V7h9v10h-9v.5L13 18V6.5zM14 9v2h2V9h-2zm3 0v2h2V9h-2zm-3 3v2h2v-2h-2zm3 0v2h2v-2h-2z"/>
+                </svg>
+                Outlook Calendar
+              </a>
+            )}
+            <button
+              onClick={() => { downloadICS({ title, location, eventDate, eventTime, description }); setOpen(false); }}
+              className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 transition-colors w-full text-left"
+            >
+              <Calendar className="w-4 h-4 text-gray-500 shrink-0" />
+              Apple / iCal (.ics)
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Social Share dropdown ────────────────────────────────────────────────────
+function SocialShareMenu({ title, url }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const encodedUrl = encodeURIComponent(url || (typeof window !== "undefined" ? window.location.href : ""));
+  const encodedTitle = encodeURIComponent(title || "Check out this event");
+
+  const copyLink = async () => {
+    const link = url || window.location.href;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = link;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((p) => !p)}
+        className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+        aria-label="Share event"
+      >
+        <Share2 className="w-5 h-5" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute top-full right-0 mt-2 w-52 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 pt-3 pb-1">Share this event</p>
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
+              target="_blank" rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Twitter className="w-4 h-4 text-[#1DA1F2] shrink-0" /> Twitter / X
+            </a>
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+              target="_blank" rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 transition-colors"
+            >
+              <Facebook className="w-4 h-4 text-[#1877F2] shrink-0" /> Facebook
+            </a>
+            <a
+              href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
+              target="_blank" rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 text-[#25D366] shrink-0" /> WhatsApp
+            </a>
+            <button
+              onClick={copyLink}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-100 transition-colors w-full"
+            >
+              {copied ? <Check className="w-4 h-4 text-green-600 shrink-0" /> : <Copy className="w-4 h-4 text-gray-500 shrink-0" />}
+              {copied ? "Link copied!" : "Copy link"}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // Optimized Image Component with blur placeholder
 const OptimizedImage = ({
@@ -341,9 +501,7 @@ const EventOrganizerDetail = ({ service }) => {
               >
                 <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
               </button>
-              <button onClick={handleShare} className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors">
-                <Share2 className="w-5 h-5" />
-              </button>
+              <SocialShareMenu title={service.title} url={typeof window !== "undefined" ? window.location.href : ""} />
             </div>
           </div>
         </div>
@@ -534,8 +692,13 @@ const EventOrganizerDetail = ({ service }) => {
                   <div>
                     <div className="font-semibold text-gray-900 mb-1">Date</div>
                     <div className="text-gray-600 text-sm md:text-base">
-                      {formatEventDate(service.event_date)}
+                      {service.event_end_date && service.event_end_date !== service.event_date
+                        ? `${formatEventDate(service.event_date)} – ${formatEventDate(service.event_end_date)}`
+                        : formatEventDate(service.event_date)}
                     </div>
+                    {service.event_end_date && service.event_end_date !== service.event_date && (
+                      <div className="text-xs text-purple-600 font-medium mt-0.5">Multi-day event</div>
+                    )}
                   </div>
                 </div>
 
@@ -554,15 +717,22 @@ const EventOrganizerDetail = ({ service }) => {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
-                    <MapPin className="w-6 h-6 text-purple-600" />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${service.category_data?.is_online ? "bg-blue-100" : "bg-purple-100"}`}>
+                    {service.category_data?.is_online
+                      ? <Globe className="w-6 h-6 text-blue-600" />
+                      : <MapPin className="w-6 h-6 text-purple-600" />}
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900 mb-1">
-                      Location
+                    <div className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                      {service.category_data?.is_online ? "Online Event" : "Location"}
+                      {service.category_data?.is_online && (
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">Virtual</span>
+                      )}
                     </div>
                     <div className="text-gray-600 text-sm md:text-base">
-                      {service.location}
+                      {service.category_data?.is_online
+                        ? (service.location || "Stream link provided after booking")
+                        : service.location}
                     </div>
                   </div>
                 </div>
@@ -609,6 +779,41 @@ const EventOrganizerDetail = ({ service }) => {
               )}
             </section>
 
+            {/* Location Map */}
+            {service.location && (
+              <section className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                <div className="px-6 md:px-8 pt-6 pb-4 flex items-center justify-between">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">Location</h2>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(service.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Get Directions
+                  </a>
+                </div>
+                <div className="px-6 md:px-8 pb-4">
+                  <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-purple-500 shrink-0" />
+                    {service.location}
+                  </p>
+                </div>
+                <div className="w-full h-64">
+                  <iframe
+                    title="Event location map"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(service.location)}&output=embed&z=15`}
+                  />
+                </div>
+              </section>
+            )}
+
             {/* Recurring Dates */}
             {(() => {
               const recurrence = service.category_data?.recurrence;
@@ -619,7 +824,7 @@ const EventOrganizerDetail = ({ service }) => {
                   <div className="flex items-center gap-2 mb-4">
                     <Repeat2 className="w-5 h-5 text-purple-600" />
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900">Upcoming Dates</h2>
-                    <span className="ml-1 text-xs font-semibold uppercase tracking-wide bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full capitalize">
+                    <span className="ml-1 text-xs font-semibold uppercase tracking-wide bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
                       {recurrence.type}
                     </span>
                   </div>
@@ -871,6 +1076,32 @@ const EventOrganizerDetail = ({ service }) => {
                   </Button>
                 );
               })()}
+
+              <AddToCalendarMenu
+                title={service.title}
+                location={service.location}
+                eventDate={service.event_date}
+                eventTime={service.event_time}
+                description={service.description}
+              />
+
+              {service.vendor_id && (
+                <Link
+                  href={`/organizers/${service.vendor_id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50 transition-all group"
+                >
+                  <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                    <Users className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400">Organised by</p>
+                    <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-purple-700 transition-colors">
+                      {service.vendor_name || "View Organizer"}
+                    </p>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-purple-400 shrink-0" />
+                </Link>
+              )}
 
               <div className="flex items-center justify-center gap-2 text-green-600 text-sm font-medium">
                 <Shield className="w-4 h-4" />

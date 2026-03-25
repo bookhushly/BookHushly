@@ -3,9 +3,9 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Minus, Plus } from "lucide-react";
+import HotelDateRangePicker from "@/components/shared/hotels/HotelDateRangePicker";
 
 export default function BookingModal({
   open,
@@ -94,33 +94,15 @@ export default function BookingModal({
 
         {/* Body */}
         <div className="p-6 space-y-5">
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              ["checkIn", "Check-in"],
-              ["checkOut", "Check-out"],
-            ].map(([field, label]) => (
-              <div key={field} className="space-y-1.5">
-                <Label className="text-[12px] font-medium text-gray-600">
-                  {label}
-                </Label>
-                <Input
-                  type="date"
-                  min={
-                    field === "checkIn"
-                      ? new Date().toISOString().split("T")[0]
-                      : bookingData.checkIn ||
-                        new Date().toISOString().split("T")[0]
-                  }
-                  value={bookingData[field]}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, [field]: e.target.value })
-                  }
-                  className="h-9 text-sm focus-visible:ring-violet-500"
-                />
-              </div>
-            ))}
-          </div>
+          {/* Visual date-range picker with blocked dates */}
+          <HotelDateRangePicker
+            roomTypeId={roomType?.id}
+            checkIn={bookingData.checkIn}
+            checkOut={bookingData.checkOut}
+            onChange={({ checkIn, checkOut }) =>
+              setBookingData((prev) => ({ ...prev, checkIn, checkOut }))
+            }
+          />
 
           {/* Guests — stepper pattern, no number inputs */}
           <div className="rounded-xl border border-gray-100 overflow-hidden">
