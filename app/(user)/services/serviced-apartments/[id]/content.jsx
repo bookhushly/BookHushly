@@ -20,16 +20,11 @@ import {
   Check,
   Navigation,
   Sun,
-  Wind,
-  DollarSign,
   Home,
-  Waves,
-  Timer,
   Info,
   CheckCircle2,
   PlayCircle,
   Globe,
-  Sparkles,
 } from "lucide-react";
 import ImageGallery from "@/components/common/home/ImageGallery";
 import { getAmenityLabel } from "@/config/apartment-amenities";
@@ -521,104 +516,56 @@ export default function ApartmentClient({ apartment }) {
 
           {/* Right Column - Booking Card */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
-              <div className="border border-gray-300 rounded-2xl p-6 shadow-xl">
-                {/* Pricing */}
-                <div className="mb-6 pb-6 border-b border-gray-200">
+            <div className="sticky top-24 space-y-4">
+              <div className="border border-gray-200 rounded-2xl p-5 shadow-sm bg-white">
+                {/* Pricing header */}
+                <div className="mb-5 pb-5 border-b border-gray-100">
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-3xl font-semibold text-gray-900">
+                    <span className="text-2xl font-bold text-gray-900">
                       {formatPrice(apartment.price_per_night)}
                     </span>
-                    <span className="text-gray-600">/ night</span>
+                    <span className="text-gray-500 text-sm">/ night</span>
                   </div>
-
-                  {apartment.price_per_week && (
-                    <div className="mt-3 p-3 bg-green-50 rounded-lg">
-                      <div className="flex items-baseline justify-between mb-1">
-                        <span className="text-sm text-gray-700">
-                          Weekly rate:
-                        </span>
-                        <span className="font-semibold text-gray-900">
-                          {formatPrice(apartment.price_per_week)}
-                        </span>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {apartment.price_per_week && (
+                      <div className="flex-1 p-2.5 bg-green-50 rounded-lg border border-green-100 text-[12px]">
+                        <p className="text-gray-500">Weekly</p>
+                        <p className="font-semibold text-gray-900">{formatPrice(apartment.price_per_week)}</p>
+                        {weeklySavings > 0 && <p className="text-green-700">Save {formatPrice(weeklySavings)}</p>}
                       </div>
-                      {weeklySavings > 0 && (
-                        <p className="text-xs text-green-700">
-                          Save {formatPrice(weeklySavings)} vs. nightly rate
-                        </p>
-                      )}
+                    )}
+                    {apartment.price_per_month && (
+                      <div className="flex-1 p-2.5 bg-green-50 rounded-lg border border-green-100 text-[12px]">
+                        <p className="text-gray-500">Monthly</p>
+                        <p className="font-semibold text-gray-900">{formatPrice(apartment.price_per_month)}</p>
+                        {monthlySavings > 0 && <p className="text-green-700">Save {formatPrice(monthlySavings)}</p>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick facts */}
+                <div className="space-y-2.5 mb-5 pb-5 border-b border-gray-100 text-[13px]">
+                  <div className="flex justify-between text-gray-600">
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Min stay</span>
+                    <span className="font-medium text-gray-900">{apartment.minimum_stay} night{apartment.minimum_stay !== 1 ? "s" : ""}</span>
+                  </div>
+                  {apartment.check_in_time && (
+                    <div className="flex justify-between text-gray-600">
+                      <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Check-in</span>
+                      <span className="font-medium text-gray-900">{apartment.check_in_time}</span>
                     </div>
                   )}
-
-                  {apartment.price_per_month && (
-                    <div className="mt-3 p-3 bg-green-50 rounded-lg">
-                      <div className="flex items-baseline justify-between mb-1">
-                        <span className="text-sm text-gray-700">
-                          Monthly rate:
-                        </span>
-                        <span className="font-semibold text-gray-900">
-                          {formatPrice(apartment.price_per_month)}
-                        </span>
-                      </div>
-                      {monthlySavings > 0 && (
-                        <p className="text-xs text-green-700">
-                          Save {formatPrice(monthlySavings)} vs. nightly rate
-                        </p>
-                      )}
+                  {apartment.check_out_time && (
+                    <div className="flex justify-between text-gray-600">
+                      <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Check-out</span>
+                      <span className="font-medium text-gray-900">{apartment.check_out_time}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Booking Details */}
-                <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Calendar className="w-4 h-4" />
-                      <span>Minimum stay</span>
-                    </div>
-                    <span className="font-medium">
-                      {apartment.minimum_stay}{" "}
-                      {apartment.minimum_stay === 1 ? "night" : "nights"}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Clock className="w-4 h-4" />
-                      <span>Check-in</span>
-                    </div>
-                    <span className="font-medium">
-                      {apartment.check_in_time}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Clock className="w-4 h-4" />
-                      <span>Check-out</span>
-                    </div>
-                    <span className="font-medium">
-                      {apartment.check_out_time}
-                    </span>
-                  </div>
-
-                  {apartment.caution_deposit && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700">Security deposit</span>
-                      <span className="font-medium">
-                        {formatPrice(apartment.caution_deposit)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* CTA Button */}
+                {/* Booking flow — dates + guests + form */}
                 <ApartmentBookingCard apartment={apartment} />
-                {apartment.instant_booking && (
-                  <p className="text-xs text-center text-gray-500">
-                    Instant booking - You won't be charged yet
-                  </p>
-                )}
               </div>
 
               {/* Trust Badge */}
