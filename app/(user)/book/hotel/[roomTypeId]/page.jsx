@@ -110,7 +110,7 @@ export default function HotelBookingPage() {
       setHotel(roomTypeData.hotels);
 
       if (bookingDetails.checkInDate && bookingDetails.checkOutDate) {
-        await checkAvailability(roomTypeId);
+        await checkAvailability(roomTypeId, bookingDetails.checkInDate, bookingDetails.checkOutDate);
       }
     } catch (err) {
       console.error("Error loading booking data:", err);
@@ -121,46 +121,40 @@ export default function HotelBookingPage() {
     }
   };
 
-  const checkAvailability = async (roomTypeId) => {
+  const checkAvailability = async (rtId, checkIn, checkOut) => {
+    const ci = checkIn ?? bookingDetails.checkInDate;
+    const co = checkOut ?? bookingDetails.checkOutDate;
+    if (!ci || !co) return;
+
     try {
-      const { data: availableRoomsData, error: roomsError } = await supabase
-        .from("hotel_rooms")
-        .select("*")
-        .eq("room_type_id", roomTypeId)
-        .eq("status", "available");
-
-      if (roomsError) throw roomsError;
-
-      if (availableRoomsData.length === 0) {
-        setError("No rooms available for selected dates");
-        return;
-      }
-
-      const { data: bookingsData, error: bookingsError } = await supabase
+      // Count bookings that overlap with the requested date range
+      const { data, error } = await supabase
         .from("hotel_bookings")
-        .select("room_id")
-        .gte("check_out_date", bookingDetails.checkInDate)
-        .lte("check_in_date", bookingDetails.checkOutDate)
+        .select("id")
+        .eq("room_type_id", rtId)
         .in("booking_status", ["confirmed", "checked_in"])
-        .neq("payment_status", "failed");
+        .neq("payment_status", "failed")
+        .lt("check_in_date", co)
+        .gt("check_out_date", ci);
 
-      if (bookingsError) throw bookingsError;
+      if (error) throw error;
 
-      const bookedRoomIds = bookingsData.map((b) => b.room_id);
-      const available = availableRoomsData.filter(
-        (room) => !bookedRoomIds.includes(room.id),
-      );
+      const bookedCount = data?.length ?? 0;
+      // Use available_rooms from the room type; fall back to 1
+      const totalRooms = roomType?.available_rooms ?? 1;
+      const freeRooms = Math.max(0, totalRooms - bookedCount);
 
-      setAvailableRooms(available);
+      // setAvailableRooms is used only for the "X rooms available" badge
+      setAvailableRooms(freeRooms > 0 ? Array(freeRooms).fill({ id: "available" }) : []);
 
-      if (available.length === 0) {
+      if (freeRooms === 0) {
         setError("No rooms available for selected dates");
       } else {
         setError("");
       }
     } catch (err) {
       console.error("Error checking availability:", err);
-      toast.error("Failed to check availability");
+      // Don't block the user on a network error — the server action is authoritative
     }
   };
 
@@ -225,7 +219,7 @@ export default function HotelBookingPage() {
     if (!validateBookingDetails()) return;
     // Run availability preview so the UI badge stays fresh, but don't gate on
     // its result — the atomic RPC is the authoritative availability check.
-    checkAvailability(roomType.id);
+    checkAvailability(roomType.id, bookingDetails.checkInDate, bookingDetails.checkOutDate);
     setStep(2);
     setError("");
   };
