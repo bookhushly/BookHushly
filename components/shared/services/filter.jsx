@@ -31,6 +31,10 @@ import {
   Bed,
   Bath,
   Users,
+  Star,
+  CreditCard,
+  CalendarSearch,
+  Award,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { NIGERIAN_STATES } from "@/lib/constants";
@@ -506,11 +510,70 @@ const FilterPanel = memo(
             </Collapsible>
 
             <Separator />
+            <SectionLabel>
+              <CalendarSearch className="h-3 w-3 inline mr-1" />
+              Availability
+            </SectionLabel>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500">Check-in</p>
+                <Input
+                  type="date"
+                  className="h-9 text-xs"
+                  value={local.avail_checkin || ""}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => set("avail_checkin", e.target.value || null)}
+                />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500">Check-out</p>
+                <Input
+                  type="date"
+                  className="h-9 text-xs"
+                  value={local.avail_checkout || ""}
+                  min={local.avail_checkin || new Date().toISOString().split("T")[0]}
+                  onChange={(e) => set("avail_checkout", e.target.value || null)}
+                />
+              </div>
+            </div>
+
+            <Separator />
+            <SectionLabel>
+              <Star className="h-3 w-3 inline mr-1 fill-amber-400 text-amber-400" />
+              Guest Rating
+            </SectionLabel>
+            <div className="flex gap-1.5 flex-wrap">
+              {[null, 3, 3.5, 4, 4.5].map((val) => (
+                <button
+                  key={String(val)}
+                  onClick={() => set("min_rating", val)}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                    local.min_rating === val
+                      ? "bg-amber-50 border-amber-400 text-amber-800"
+                      : "bg-white border-gray-200 text-gray-600 hover:border-amber-300"
+                  }`}
+                >
+                  {val === null ? "Any" : `${val}+★`}
+                </button>
+              ))}
+            </div>
+
+            <Separator />
             <SectionLabel>Nigerian Essentials</SectionLabel>
             <CheckItem
               label="Has Generator / Power Backup"
               checked={local.hotel_has_generator || false}
               onChange={(c) => set("hotel_has_generator", c || null)}
+            />
+            <CheckItem
+              label="Pay at Hotel (no upfront payment)"
+              checked={local.pay_at_hotel || false}
+              onChange={(c) => set("pay_at_hotel", c || null)}
+            />
+            <CheckItem
+              label="NIHOTOUR Certified"
+              checked={local.nihotour_only || false}
+              onChange={(c) => set("nihotour_only", c || null)}
             />
             <div>
               <p className="text-xs font-medium text-gray-700 mb-1.5">

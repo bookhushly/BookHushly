@@ -9,7 +9,12 @@ import React, {
   startTransition,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MapPin, LocateFixed, X, ArrowUpDown } from "lucide-react";
+import { MapPin, LocateFixed, X, ArrowUpDown, LayoutGrid, Map } from "lucide-react";
+import dynamic from "next/dynamic";
+const NigeriaMapView = dynamic(
+  () => import("@/components/shared/services/NigeriaMapView"),
+  { ssr: false }
+);
 import {
   Select,
   SelectContent,
@@ -63,6 +68,7 @@ export default function ServicesPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [nearMeActive, setNearMeActive] = useState(!!urlCity);
   const [nearMeBannerDismissed, setNearMeBannerDismissed] = useState(false);
+  const [mapView, setMapView] = useState(false);
 
   const geo = useGeolocation();
   const isBookHushly = BOOKHUSHLY_SERVICES.includes(activeCategory);
@@ -360,7 +366,7 @@ export default function ServicesPage() {
               nearMeActive={nearMeActive}
             />
 
-            {/* Results count + sort */}
+            {/* Results count + sort + view toggle */}
             {!loading && (
               <div className="flex items-center justify-between gap-3 mb-5">
                 <p className="text-sm text-gray-500">
@@ -378,34 +384,73 @@ export default function ServicesPage() {
                     </>
                   ) : null}
                 </p>
-                <SortControl sort={sort} onSortChange={setSort} />
+                <div className="flex items-center gap-2">
+                  {activeCategory === "hotels" && (
+                    <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                      <button
+                        onClick={() => setMapView(false)}
+                        className={`px-2.5 py-1.5 flex items-center gap-1 text-xs font-medium transition-colors ${mapView ? "bg-white text-gray-600 hover:bg-gray-50" : "bg-violet-600 text-white"}`}
+                      >
+                        <LayoutGrid className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Grid</span>
+                      </button>
+                      <button
+                        onClick={() => setMapView(true)}
+                        className={`px-2.5 py-1.5 flex items-center gap-1 text-xs font-medium transition-colors ${mapView ? "bg-violet-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+                      >
+                        <Map className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Map</span>
+                      </button>
+                    </div>
+                  )}
+                  <SortControl sort={sort} onSortChange={setSort} />
+                </div>
               </div>
             )}
 
-            {/* Grid */}
-            {loading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-                {Array.from({ length: 12 }).map((_, i) =>
-                  activeCategory === "events" ? (
-                    <EventCardSkeleton key={i} />
-                  ) : (
-                    <SkeletonCard key={i} />
-                  )
-                )}
-              </div>
-            ) : (
-              <ListingsGrid
+            {/* Map view (hotels only) */}
+            {mapView && activeCategory === "hotels" && !loading && (
+              <NigeriaMapView
                 listings={listings}
-                fetchError={fetchError}
-                isLoadingMore={isLoadingMore}
-                lastListingRef={lastListingRef}
-                nearMeActive={nearMeActive}
-                hasActiveFilters={hasActiveFilters}
-                onClearFilters={() => {
-                  setFilters({});
-                  setNearMeActive(false);
+                activeState={filters.state || null}
+                onStateClick={(state) => {
+                  setFilters((prev) => {
+                    const next = { ...prev };
+                    if (state) next.state = state;
+                    else delete next.state;
+                    return next;
+                  });
+                  if (!state) setNearMeActive(false);
                 }}
               />
+            )}
+
+            {/* Grid */}
+            {(!mapView || activeCategory !== "hotels") && (
+              loading ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+                  {Array.from({ length: 12 }).map((_, i) =>
+                    activeCategory === "events" ? (
+                      <EventCardSkeleton key={i} />
+                    ) : (
+                      <SkeletonCard key={i} />
+                    )
+                  )}
+                </div>
+              ) : (
+                <ListingsGrid
+                  listings={listings}
+                  fetchError={fetchError}
+                  isLoadingMore={isLoadingMore}
+                  lastListingRef={lastListingRef}
+                  nearMeActive={nearMeActive}
+                  hasActiveFilters={hasActiveFilters}
+                  onClearFilters={() => {
+                    setFilters({});
+                    setNearMeActive(false);
+                  }}
+                />
+              )
             )}
           </main>
         </div>

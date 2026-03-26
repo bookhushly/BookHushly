@@ -68,11 +68,14 @@ function enrichHotel(hotel) {
     rt.amenities?.items?.forEach((a) => roomAmenities.add(a));
   });
 
+  const availableRoomIds = rooms.filter((r) => r.status === "available").map((r) => r.id);
+
   const { hotel_rooms, hotel_room_types, ...base } = hotel;
   return {
     ...base,
     total_rooms: rooms.length,
     available_rooms: availableRooms,
+    available_room_ids: availableRoomIds,
     room_types_count: roomTypes.length,
     min_price: prices.length ? Math.min(...prices) : 0,
     max_price: prices.length ? Math.max(...prices) : 0,
@@ -107,8 +110,14 @@ function normalizeHotel(h) {
     policies: h.policies,
     generator_available: h.generator_available,
     breakfast_offered: h.breakfast_offered,
+    pay_at_hotel_enabled: h.pay_at_hotel_enabled,
+    nihotour_certified: h.nihotour_certified,
+    nihotour_number: h.nihotour_number,
+    avg_rating: h.avg_rating || null,
+    review_count: h.review_count || 0,
     total_rooms: h.total_rooms,
     available_rooms: h.available_rooms,
+    available_room_ids: h.available_room_ids || [],
     room_types_count: h.room_types_count,
     max_price: h.max_price,
     bed_sizes: h.bed_sizes,
@@ -210,24 +219,18 @@ function filterSecurityFeatures(items, features) {
 function buildHotelQuery(supabase, p) {
   const offset = p.page * PAGE_SIZE;
 
-  // Single JOIN query — eliminates the previous 3-query enrichment pattern
   let q = supabase
     .from("hotels")
     .select(
-      `id,name,description,address,city,state,image_urls,amenities,checkout_policy,policies,created_at,generator_available,breakfast_offered,
+      `id,name,description,address,city,state,image_urls,amenities,checkout_policy,policies,created_at,
+       generator_available,breakfast_offered,pay_at_hotel_enabled,nihotour_certified,nihotour_number,
+       avg_rating,review_count,
        hotel_room_types(id,name,max_occupancy,base_price,size_sqm,amenities),
-       hotel_rooms(hotel_id,price_per_night,status,beds,floor,amenities)`,
+       hotel_rooms(id,hotel_id,price_per_night,status,beds,floor,amenities)`,
       { count: "exact" },
     )
-    .range(offset, offset + PAGE_SIZE - 1);
-
-  // Price and occupancy sorting happens post-enrichment; default to newest
-  if (p.sort !== "price_asc" && p.sort !== "price_desc") {
-    q = q.order("created_at", { ascending: false });
-  } else {
-    // Still need a deterministic order for pagination
-    q = q.order("created_at", { ascending: false });
-  }
+    .range(offset, offset + PAGE_SIZE - 1)
+    .order("created_at", { ascending: false });
 
   if (p.search)
     q = q.or(
@@ -237,6 +240,8 @@ function buildHotelQuery(supabase, p) {
   if (p.state) q = q.eq("state", p.state);
   if (p.hotel_has_generator) q = q.in("generator_available", ["24h", "partial"]);
   if (p.breakfast_offered) q = q.eq("breakfast_offered", p.breakfast_offered);
+  if (p.pay_at_hotel) q = q.eq("pay_at_hotel_enabled", true);
+  if (p.nihotour_only) q = q.eq("nihotour_certified", true);
 
   return q;
 }
@@ -346,6 +351,11 @@ function parseParams(sp) {
     // Hotels
     hotel_has_generator: sp.get("hotel_has_generator") === "true",
     breakfast_offered: sp.get("breakfast_offered") || null,
+    pay_at_hotel: sp.get("pay_at_hotel") === "true",
+    nihotour_only: sp.get("nihotour_only") === "true",
+    min_rating: parseFloat(sp.get("min_rating") || "0") || null,
+    avail_checkin: sp.get("avail_checkin") || null,
+    avail_checkout: sp.get("avail_checkout") || null,
     amenities: arr("amenities"),
     bed_sizes: arr("bed_sizes"),
     max_occupancy: int("max_occupancy"),
@@ -409,12 +419,27 @@ export async function GET(request) {
       // Post-enrichment filters (can't be done in SQL without a materialized view)
       if (p.price_min) enriched = enriched.filter((h) => h.price >= p.price_min);
       if (p.price_max) enriched = enriched.filter((h) => h.price <= p.price_max);
+      if (p.min_rating) enriched = enriched.filter((h) => (h.avg_rating || 0) >= p.min_rating);
       if (p.amenities.length) enriched = filterAmenities(enriched, p.amenities);
       if (p.bed_sizes.length) enriched = filterBedSizes(enriched, p.bed_sizes);
       if (p.max_occupancy)
         enriched = enriched.filter((h) => h.max_occupancy >= p.max_occupancy);
       if (p.floor)
         enriched = enriched.filter((h) => (h.floors || []).includes(p.floor));
+
+      // Date availability filter — if dates provided, check for non-conflicting rooms
+      if (p.avail_checkin && p.avail_checkout) {
+        const { data: conflicts } = await supabase
+          .from("hotel_bookings")
+          .select("room_id")
+          .lt("check_in_date", p.avail_checkout)
+          .gt("check_out_date", p.avail_checkin)
+          .in("booking_status", ["confirmed", "checked_in", "pay_at_hotel"]);
+        const bookedRoomIds = new Set((conflicts || []).map((b) => b.room_id));
+        enriched = enriched.filter((h) =>
+          (h.available_room_ids || []).some((id) => !bookedRoomIds.has(id))
+        );
+      }
 
       // Price sort is post-enrichment for hotels
       if (p.sort === "price_asc") enriched.sort((a, b) => a.price - b.price);

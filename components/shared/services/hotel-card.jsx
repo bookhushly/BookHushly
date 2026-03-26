@@ -94,14 +94,19 @@ const HotelCard = ({ service }) => {
             </>
           )}
 
-          {/* Free cancellation */}
-          {service.checkout_policy && (
-            <div className="absolute top-3 left-3 z-10">
+          {/* Badges — top left stack */}
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
+            {service.checkout_policy && (
               <span className="text-[10px] font-semibold bg-green-500 text-white px-2 py-1 rounded-lg">
                 Free cancellation
               </span>
-            </div>
-          )}
+            )}
+            {service.nihotour_certified && (
+              <span className="text-[10px] font-semibold bg-amber-500 text-white px-2 py-1 rounded-lg flex items-center gap-0.5">
+                🏅 NIHOTOUR
+              </span>
+            )}
+          </div>
 
           {/* Rating badge */}
           {service.avg_rating && (

@@ -14,6 +14,7 @@ import {
   Loader2,
   XCircle,
   AlertTriangle,
+  FileText,
 } from "lucide-react";
 import {
   Dialog,
@@ -203,6 +204,41 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
                   )}
                 </div>
               )}
+
+            {/* Airport transfer info */}
+            {booking.airport_transfer && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2">
+                <span className="text-lg leading-none">🚗</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Airport Transfer Requested</p>
+                  <p className="text-xs text-blue-700 mt-0.5 capitalize">
+                    {booking.airport_transfer_type === "pickup"
+                      ? "Airport → Hotel"
+                      : booking.airport_transfer_type === "dropoff"
+                      ? "Hotel → Airport"
+                      : "Both ways"}
+                  </p>
+                  {booking.airport_transfer_notes && (
+                    <p className="text-xs text-blue-600 mt-1">{booking.airport_transfer_notes}</p>
+                  )}
+                  <p className="text-xs text-blue-500 mt-1">The hotel will contact you to confirm arrangements.</p>
+                </div>
+              </div>
+            )}
+
+            {/* VAT Invoice download — confirmed/paid bookings */}
+            {["confirmed", "checked_in", "completed", "pay_at_hotel"].includes(
+              booking.booking_status
+            ) && (
+              <a
+                href={`/api/bookings/hotel/invoice?booking_id=${booking.id}`}
+                download
+                className="flex items-center justify-center gap-2 w-full h-9 rounded-lg border border-purple-200 text-purple-700 text-sm font-medium hover:bg-purple-50 transition-colors"
+              >
+                <FileText className="h-4 w-4" />
+                Download VAT Invoice
+              </a>
+            )}
 
             {/* Actions */}
             {booking.payment_status === "pending" && (

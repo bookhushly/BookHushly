@@ -54,6 +54,9 @@ export default function HotelBookingPage() {
     specialRequests: "",
   });
   const [payAtHotel, setPayAtHotel] = useState(false);
+  const [airportTransfer, setAirportTransfer] = useState(false);
+  const [airportTransferType, setAirportTransferType] = useState("pickup");
+  const [airportTransferNotes, setAirportTransferNotes] = useState("");
   const [pricingResult, setPricingResult] = useState(null);
 
   useEffect(() => {
@@ -92,7 +95,9 @@ export default function HotelBookingPage() {
             image_urls,
             checkout_policy,
             policies,
-            pay_at_hotel_enabled
+            pay_at_hotel_enabled,
+            airport_transfer_enabled,
+            airport_transfer_fee
           )
         `,
         )
@@ -237,18 +242,21 @@ export default function HotelBookingPage() {
       // Single atomic server action — locks a room and inserts the booking in
       // one PostgreSQL transaction, preventing race conditions.
       const result = await bookHotelRoomAction({
-        roomTypeId:      roomType.id,
-        hotelId:         hotel.id,
-        guestName:       guestDetails.name,
-        guestEmail:      guestDetails.email,
-        guestPhone:      guestDetails.phone,
-        checkInDate:     bookingDetails.checkInDate,
-        checkOutDate:    bookingDetails.checkOutDate,
-        adults:          bookingDetails.adults,
-        children:        bookingDetails.children,
-        totalPrice:      totalAmount,
-        specialRequests: guestDetails.specialRequests || null,
+        roomTypeId:           roomType.id,
+        hotelId:              hotel.id,
+        guestName:            guestDetails.name,
+        guestEmail:           guestDetails.email,
+        guestPhone:           guestDetails.phone,
+        checkInDate:          bookingDetails.checkInDate,
+        checkOutDate:         bookingDetails.checkOutDate,
+        adults:               bookingDetails.adults,
+        children:             bookingDetails.children,
+        totalPrice:           totalAmount,
+        specialRequests:      guestDetails.specialRequests || null,
         payAtHotel,
+        airportTransfer,
+        airportTransferType:  airportTransfer ? airportTransferType : null,
+        airportTransferNotes: airportTransfer ? airportTransferNotes : null,
       });
 
       if (!result.success) {
@@ -563,6 +571,68 @@ export default function HotelBookingPage() {
                     </div>
                   </div>
 
+                  {/* Airport transfer add-on */}
+                  {hotel?.airport_transfer_enabled && (
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-start gap-3 p-4 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-purple-300 transition-colors"
+                        onClick={() => setAirportTransfer((v) => !v)}
+                      >
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 h-4 w-4 accent-purple-600 cursor-pointer"
+                          checked={airportTransfer}
+                          onChange={(e) => setAirportTransfer(e.target.checked)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-900">
+                            🚗 Add Airport Transfer
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {hotel.airport_transfer_fee
+                              ? `₦${Number(hotel.airport_transfer_fee).toLocaleString("en-NG")} per trip`
+                              : "Fee to be confirmed by hotel"}{" "}
+                            · Hotel will contact you to arrange
+                          </p>
+                        </div>
+                      </div>
+
+                      {airportTransfer && (
+                        <div className="space-y-3 pl-2">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-600">Transfer type</Label>
+                            <div className="flex gap-2">
+                              {["pickup", "dropoff", "both"].map((t) => (
+                                <button
+                                  key={t}
+                                  type="button"
+                                  onClick={() => setAirportTransferType(t)}
+                                  className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
+                                    airportTransferType === t
+                                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                                      : "border-gray-200 text-gray-600 hover:border-purple-300"
+                                  }`}
+                                >
+                                  {t === "pickup" ? "Airport → Hotel" : t === "dropoff" ? "Hotel → Airport" : "Both ways"}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-gray-600">Flight details (optional)</Label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Arik Air W3 200, Terminal 1, arrives 14:30"
+                              value={airportTransferNotes}
+                              onChange={(e) => setAirportTransferNotes(e.target.value)}
+                              className="w-full h-9 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Payment method — Pay at Hotel if vendor has it enabled */}
                   {hotel?.pay_at_hotel_enabled && (
                     <div className="space-y-2">
@@ -745,6 +815,17 @@ export default function HotelBookingPage() {
                           </span>
                           <span className="font-medium">
                             ₦{total.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      {airportTransfer && hotel?.airport_transfer_fee && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">
+                            Airport transfer
+                            {airportTransferType === "both" ? " (×2)" : ""}
+                          </span>
+                          <span className="font-medium">
+                            ₦{(Number(hotel.airport_transfer_fee) * (airportTransferType === "both" ? 2 : 1)).toLocaleString()}
                           </span>
                         </div>
                       )}

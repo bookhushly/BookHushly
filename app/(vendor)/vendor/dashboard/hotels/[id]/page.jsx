@@ -12,6 +12,7 @@ import { HotelDetailsTab } from "@/components/shared/dashboard/vendor/hotels/det
 import { HotelRoomsTab } from "@/components/shared/dashboard/vendor/hotels/details/rooms";
 import { HotelStaffTab } from "@/components/shared/dashboard/vendor/hotels/details/staff";
 import { HotelPricingTab } from "@/components/shared/dashboard/vendor/hotels/details/pricing";
+import { HotelOccupancyTab } from "@/components/shared/dashboard/vendor/hotels/details/occupancy";
 
 export default function HotelManagementPage() {
   const params = useParams();
@@ -105,6 +106,7 @@ export default function HotelManagementPage() {
             <TabsTrigger value="details">Hotel Details</TabsTrigger>
             <TabsTrigger value="rooms">Rooms & Types</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>
+            <TabsTrigger value="occupancy">Occupancy</TabsTrigger>
             <TabsTrigger value="staff">Staff Management</TabsTrigger>
           </TabsList>
 
@@ -118,6 +120,10 @@ export default function HotelManagementPage() {
 
           <TabsContent value="pricing">
             <HotelPricingTab hotelId={hotel.id} />
+          </TabsContent>
+
+          <TabsContent value="occupancy">
+            <HotelOccupancyTab hotelId={hotel.id} />
           </TabsContent>
 
           <TabsContent value="staff">

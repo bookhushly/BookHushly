@@ -429,6 +429,9 @@ export async function bookHotelRoomAction(bookingData) {
       totalPrice,
       specialRequests,
       payAtHotel = false,
+      airportTransfer = false,
+      airportTransferType = null,
+      airportTransferNotes = null,
     } = bookingData;
 
     if (!roomTypeId || !hotelId || !checkInDate || !checkOutDate) {
@@ -479,12 +482,21 @@ export async function bookHotelRoomAction(bookingData) {
       return { success: false, error: rpcError.message };
     }
 
-    // For Pay at Hotel bookings, override payment_status so the payment gateway
-    // is skipped and the booking stays as a soft reservation.
-    if (payAtHotel && bookingId) {
+    // Apply post-RPC updates: pay-at-hotel status + airport transfer details
+    const postUpdate = {};
+    if (payAtHotel) {
+      postUpdate.booking_status = "pay_at_hotel";
+      postUpdate.payment_status = "pay_at_hotel";
+    }
+    if (airportTransfer) {
+      postUpdate.airport_transfer = true;
+      postUpdate.airport_transfer_type = airportTransferType || "pickup";
+      postUpdate.airport_transfer_notes = airportTransferNotes || null;
+    }
+    if (bookingId && Object.keys(postUpdate).length > 0) {
       await supabase
         .from("hotel_bookings")
-        .update({ booking_status: "pay_at_hotel", payment_status: "pay_at_hotel" })
+        .update(postUpdate)
         .eq("id", bookingId);
     }
 

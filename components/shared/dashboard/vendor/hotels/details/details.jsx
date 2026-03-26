@@ -32,6 +32,10 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
     checkout_policy: hotel.checkout_policy || "",
     policies: hotel.policies || "",
     pay_at_hotel_enabled: hotel.pay_at_hotel_enabled ?? false,
+    nihotour_certified: hotel.nihotour_certified ?? false,
+    nihotour_number: hotel.nihotour_number || "",
+    airport_transfer_enabled: hotel.airport_transfer_enabled ?? false,
+    airport_transfer_fee: hotel.airport_transfer_fee?.toString() || "",
   });
 
   const [amenities, setAmenities] = useState({
@@ -110,6 +114,12 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
         policies: cleanPolicies || null,
         amenities: amenities,
         pay_at_hotel_enabled: formData.pay_at_hotel_enabled,
+        nihotour_certified: formData.nihotour_certified,
+        nihotour_number: formData.nihotour_number.trim() || null,
+        airport_transfer_enabled: formData.airport_transfer_enabled,
+        airport_transfer_fee: formData.airport_transfer_fee
+          ? parseFloat(formData.airport_transfer_fee)
+          : null,
       };
 
       console.log("Updating hotel with data:", updateData);
@@ -403,6 +413,114 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               </p>
             </div>
           </label>
+        </CardContent>
+      </Card>
+
+      {/* Airport Transfer */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <span>🚗</span> Airport Transfer
+          </CardTitle>
+          <CardDescription>
+            Offer guests an optional airport pickup/drop-off when booking.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <label className="flex items-start gap-4 cursor-pointer group">
+            <div className="relative mt-0.5 shrink-0">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.airport_transfer_enabled}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    airport_transfer_enabled: e.target.checked,
+                  }))
+                }
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-purple-600 transition-colors" />
+              <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Enable Airport Transfer add-on</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Guests can request a transfer when booking. You will contact them to confirm details.
+              </p>
+            </div>
+          </label>
+          {formData.airport_transfer_enabled && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-700">
+                Transfer Fee per Trip (₦)
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                placeholder="e.g. 15000"
+                value={formData.airport_transfer_fee}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, airport_transfer_fee: e.target.value }))
+                }
+                className="w-full h-9 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <p className="text-xs text-gray-400">Leave blank to show "Fee to be confirmed"</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* NIHOTOUR Certification */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <span>🏅</span> NIHOTOUR Certification
+          </CardTitle>
+          <CardDescription>
+            Display your Nigeria Hotel &amp; Tourism Association registration badge on your listing.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <label className="flex items-start gap-4 cursor-pointer group">
+            <div className="relative mt-0.5 shrink-0">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.nihotour_certified}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    nihotour_certified: e.target.checked,
+                  }))
+                }
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-purple-600 transition-colors" />
+              <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">NIHOTOUR Certified</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Show the certified badge on your hotel listing to build guest trust.
+              </p>
+            </div>
+          </label>
+          {formData.nihotour_certified && (
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-700">
+                NIHOTOUR Registration Number
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. NHT/2024/001234"
+                value={formData.nihotour_number}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, nihotour_number: e.target.value }))
+                }
+                className="w-full h-9 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

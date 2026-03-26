@@ -320,6 +320,17 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                   {hotel.name}
                 </h1>
 
+                {/* NIHOTOUR badge */}
+                {hotel.nihotour_certified && (
+                  <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-xl">
+                    <span className="text-base leading-none">🏅</span>
+                    <span className="text-[13px] font-semibold text-amber-800">NIHOTOUR Certified</span>
+                    {hotel.nihotour_number && (
+                      <span className="text-[11px] text-amber-600">· {hotel.nihotour_number}</span>
+                    )}
+                  </div>
+                )}
+
                 {/* Aggregate rating badge */}
                 {avgRating !== null && reviewCount > 0 && (
                   <div className="flex items-center gap-3 mt-3">
