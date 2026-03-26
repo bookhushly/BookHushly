@@ -31,10 +31,13 @@ export default function HotelBookingPage() {
 
   const roomTypeId = params.roomTypeId;
 
+  const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => { setMounted(true); }, []);
 
   const [hotel, setHotel] = useState(null);
   const [roomType, setRoomType] = useState(null);
@@ -477,7 +480,7 @@ export default function HotelBookingPage() {
                     Guest Information
                   </h2>
 
-                  {!user && (
+                  {mounted && !user && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                       <p className="text-sm text-blue-800 mb-2">
                         <strong>
