@@ -25,16 +25,6 @@ import { createClient } from "@/lib/supabase/client";
 import { Loader2, RotateCcw } from "lucide-react";
 import "react-day-picker/dist/style.css";
 
-function useIsMobile(breakpoint = 640) {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < breakpoint);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, [breakpoint]);
-  return isMobile;
-}
 
 // Derive which step the user is on
 function getStep(checkIn, checkOut) {
@@ -75,7 +65,6 @@ export default function HotelDateRangePicker({
   className = "",
 }) {
   const supabase = createClient();
-  const isMobile = useIsMobile();
   const [bookedDates, setBookedDates] = useState([]);
   const [loadingDates, setLoadingDates] = useState(false);
 
@@ -204,7 +193,7 @@ export default function HotelDateRangePicker({
       <div className="rounded-xl border border-gray-100 bg-white p-2 sm:p-3">
         <DayPicker
           mode="range"
-          numberOfMonths={isMobile ? 1 : 2}
+          numberOfMonths={1}
           selected={selected}
           onSelect={handleSelect}
           disabled={disabledDays}
