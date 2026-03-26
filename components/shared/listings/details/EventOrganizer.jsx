@@ -68,7 +68,6 @@ function getUpcomingDates(eventDate, recurrence, maxDates = 5) {
   }
   return dates;
 }
-import Link from "next/link";
 
 // ─── Add to Calendar dropdown ─────────────────────────────────────────────────
 function AddToCalendarMenu({ title, location, eventDate, eventTime, description }) {

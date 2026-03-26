@@ -553,8 +553,8 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                   </div>
                 )}
                 <div className="space-y-4">
-                  {ticketPackages.map((ticket, index) => (
-                    {ticket.isHidden && !unlockedCodes[ticket.name] ? (
+                  {ticketPackages.map((ticket, index) => {
+                    return (ticket.isHidden && !unlockedCodes[ticket.name] ? (
                       <div key={index} className="border border-dashed border-gray-300 rounded-xl p-5 bg-gray-50">
                         <div className="flex items-center gap-2 mb-3">
                           <Lock className="w-4 h-4 text-gray-400" />
@@ -724,8 +724,8 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                         </div>
                       </div>
                     </div>
-                    )}
-                  ))}
+                    ));
+                  })}
                 </div>
                 {ageRestriction && (
                   <label className="flex items-start gap-3 mt-5 cursor-pointer select-none">
