@@ -56,7 +56,7 @@ export default function BookingModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onOpenChange(false);
       }}
@@ -65,9 +65,9 @@ export default function BookingModal({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Modal panel */}
-      <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 pb-4 border-b border-gray-100">
+        <div className="flex items-start justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-gray-100">
           <div>
             <h2 className="text-[17px] font-semibold text-gray-900">
               Book {roomType.name}
@@ -93,7 +93,7 @@ export default function BookingModal({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto max-h-[80vh]">
           {/* Visual date-range picker with blocked dates */}
           <HotelDateRangePicker
             roomTypeId={roomType?.id}
