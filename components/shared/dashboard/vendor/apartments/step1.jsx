@@ -20,6 +20,8 @@ const APARTMENT_TYPES = [
   { value: "2_bedroom", label: "2 Bedrooms" },
   { value: "3_bedroom", label: "3 Bedrooms" },
   { value: "penthouse", label: "Penthouse" },
+  { value: "bungalow", label: "Bungalow" },
+  { value: "duplex", label: "Duplex" },
 ];
 
 function Step1BasicInfo({ formData, updateFormData, errors }) {
