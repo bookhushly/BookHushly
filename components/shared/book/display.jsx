@@ -50,27 +50,27 @@ export const EventBookingDisplay = ({ booking }) => {
       </div>
 
       <div className="p-5">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <h2 className="text-xl font-medium text-gray-900 mb-4">
           {booking.listing?.title || "Event"}
         </h2>
 
         <p className="text-sm text-gray-700 leading-relaxed mb-4">
           You have{" "}
-          <span className="font-semibold text-gray-900">{ticketSummary}</span>{" "}
+          <span className="font-medium text-gray-900">{ticketSummary}</span>{" "}
           for{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {booking.listing?.title || "this event"}
           </span>{" "}
           on{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {formatDate(booking.listing?.event_date)}
           </span>{" "}
           at{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {formatTime(booking.booking_time)}
           </span>
           , taking place at{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {booking.listing?.location || "Venue TBD"}
           </span>
           .
@@ -125,7 +125,7 @@ export const HotelBookingDisplay = ({ booking }) => {
       </div>
 
       <div className="p-5">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
+        <h2 className="text-xl font-medium text-gray-900 mb-2">
           {booking.hotel?.name || "Hotel"}
         </h2>
         <p className="text-sm text-gray-600 mb-4">
@@ -133,7 +133,7 @@ export const HotelBookingDisplay = ({ booking }) => {
         </p>
 
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-          <h3 className="font-semibold text-gray-900 text-sm mb-2">
+          <h3 className="font-medium text-gray-900 text-sm mb-2">
             {booking.room_type?.name || "Room"}
           </h3>
           <p className="text-xs text-gray-600">
@@ -167,11 +167,11 @@ export const HotelBookingDisplay = ({ booking }) => {
 
         <p className="text-sm text-gray-700 leading-relaxed">
           Your reservation at{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {booking.hotel?.name}
           </span>{" "}
           has been confirmed. Check-in is at{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {formatDate(booking.check_in_date)}
           </span>
           . Your confirmation details have been sent to your email.
@@ -218,7 +218,7 @@ export const ApartmentBookingDisplay = ({ booking }) => {
       </div>
 
       <div className="p-5">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
+        <h2 className="text-xl font-medium text-gray-900 mb-2">
           {booking.apartment?.name || "Serviced Apartment"}
         </h2>
         <p className="text-sm text-gray-600 mb-4">
@@ -249,11 +249,11 @@ export const ApartmentBookingDisplay = ({ booking }) => {
 
         <p className="text-sm text-gray-700 leading-relaxed">
           Your reservation at{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {booking.apartment?.name}
           </span>{" "}
           has been confirmed. Check-in is at{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {formatDate(booking.check_in_date)}
           </span>
           . Your confirmation details have been sent to your email.

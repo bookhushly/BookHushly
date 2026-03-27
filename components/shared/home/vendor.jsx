@@ -44,7 +44,7 @@ export default function VendorOnboardingSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <h2 className="text-4xl lg:text-5xl font-semibold text-gray-900">
+          <h2 className="text-4xl lg:text-5xl font-medium text-gray-900">
             Grow Your Business with{" "}
             <span className="text-purple-600">Bookhushly</span>
           </h2>
@@ -98,7 +98,7 @@ export default function VendorOnboardingSection() {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <div className="text-center space-y-4">
-              <h3 className="text-xl font-semibold text-gray-800">
+              <h3 className="text-xl font-medium text-gray-800">
                 Vendor Dashboard
               </h3>
               <Image

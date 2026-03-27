@@ -93,12 +93,12 @@ export function CustomerMobileHeader({ user }) {
               <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
                 <Avatar className="h-9 w-9 border-2 border-purple-200">
                   <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="bg-purple-600 text-white text-sm font-semibold">
+                  <AvatarFallback className="bg-purple-600 text-white text-sm font-medium">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 truncate">
                     {user.name}
                   </p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
@@ -156,7 +156,7 @@ export function CustomerMobileHeader({ user }) {
             className="object-contain"
           />
           <span className="text-gray-300">·</span>
-          <span className="font-semibold text-gray-900 text-sm">
+          <span className="font-medium text-gray-900 text-sm">
             {currentPage}
           </span>
         </div>
@@ -164,7 +164,7 @@ export function CustomerMobileHeader({ user }) {
 
       <Avatar className="h-8 w-8 border-2 border-purple-200">
         <AvatarImage src={user.avatar} />
-        <AvatarFallback className="bg-purple-600 text-white text-xs font-semibold">
+        <AvatarFallback className="bg-purple-600 text-white text-xs font-medium">
           {initials}
         </AvatarFallback>
       </Avatar>

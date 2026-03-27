@@ -76,7 +76,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
 
       {/* Security Types */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Security Services
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -121,7 +121,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
 
       {/* Security Team */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Security Personnel
         </h3>
         <div className="grid gap-4">
@@ -130,7 +130,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
               <Shield className="h-6 w-6 text-red-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">Armed Security</h4>
+              <h4 className="font-medium text-gray-900">Armed Security</h4>
               <p className="text-sm text-gray-600">Licensed armed personnel</p>
             </div>
             <div className="text-right">
@@ -143,7 +143,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
               <UserCheck className="h-6 w-6 text-red-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">Unarmed Security</h4>
+              <h4 className="font-medium text-gray-900">Unarmed Security</h4>
               <p className="text-sm text-gray-600">Trained security guards</p>
             </div>
             <div className="text-right">
@@ -156,7 +156,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
               <Eye className="h-6 w-6 text-red-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">
+              <h4 className="font-medium text-gray-900">
                 Security Supervisor
               </h4>
               <p className="text-sm text-gray-600">Team leader & coordinator</p>
@@ -171,7 +171,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
 
       {/* Certifications & Experience */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Certifications & Experience
         </h3>
         <div className="bg-red-50 rounded-lg p-4">
@@ -212,7 +212,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
         <div className="mb-6">
           <div className="flex items-baseline mb-2">
-            <span className="text-3xl font-bold text-gray-900">
+            <span className="text-3xl font-medium text-gray-900">
               ₦{service.price.toLocaleString()}
             </span>
             <span className="text-sm text-gray-600 ml-2">
@@ -230,7 +230,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
         <Button
           asChild={service.availability === "available"}
           disabled={service.availability !== "available"}
-          className={`w-full mb-4 h-12 text-base font-semibold ${
+          className={`w-full mb-4 h-12 text-base font-medium ${
             service.availability === "available"
               ? "bg-red-600 hover:bg-red-700 text-white"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -251,7 +251,7 @@ const SecurityServiceDetail = ({ service, categoryData }) => {
 
         {/* Security info */}
         <div className="bg-red-50 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold text-gray-900 mb-2">Security Details</h4>
+          <h4 className="font-medium text-gray-900 mb-2">Security Details</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-center justify-between">
               <span>Minimum Duration:</span>

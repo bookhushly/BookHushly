@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, User, LogOut, ChevronDown, Download } from "lucide-react";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -118,7 +119,7 @@ export function Header() {
               <button
                 onClick={install}
                 disabled={isInstalling}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-xs font-semibold hover:bg-violet-100 transition-colors disabled:opacity-60"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-xs font-medium hover:bg-violet-100 transition-colors disabled:opacity-60"
               >
                 <Download className="h-3.5 w-3.5" />
                 {isInstalling ? "Installing…" : "Install App"}
@@ -147,7 +148,7 @@ export function Header() {
                     <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors duration-150 outline-none">
                       <Avatar className="h-7 w-7">
                         <AvatarImage src={undefined} alt={displayName} />
-                        <AvatarFallback className="bg-violet-600 text-white text-xs font-semibold">
+                        <AvatarFallback className="bg-violet-600 text-white text-xs font-medium">
                           {getInitials(displayName)}
                         </AvatarFallback>
                       </Avatar>
@@ -168,7 +169,7 @@ export function Header() {
                       <p className="text-xs text-gray-400 truncate">
                         {user.email}
                       </p>
-                      <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
+                      <span className="inline-block mt-1 text-[10px] font-medium uppercase tracking-wide text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
                         {userRole}
                       </span>
                     </DropdownMenuLabel>
@@ -210,7 +211,7 @@ export function Header() {
                 </Link>
                 <Link
                   href="/register"
-                  className="h-9 px-4 inline-flex items-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150"
+                  className="h-9 px-4 inline-flex items-center text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150"
                 >
                   Get started
                 </Link>
@@ -270,12 +271,15 @@ export function Header() {
                 className="object-contain object-left brightness-0 invert"
               />
             </div>
-            <button
-              onClick={close}
-              className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/15 hover:text-white transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle className="text-white/50 hover:bg-white/10 hover:text-white dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white" />
+              <button
+                onClick={close}
+                className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/15 hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Scrollable body */}
@@ -289,16 +293,16 @@ export function Header() {
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/8">
                 <Avatar className="h-10 w-10 shrink-0">
                   <AvatarImage src={undefined} alt={displayName} />
-                  <AvatarFallback className="bg-violet-600 text-white text-xs font-semibold">
+                  <AvatarFallback className="bg-violet-600 text-white text-xs font-medium">
                     {getInitials(displayName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">
+                  <p className="text-sm font-medium text-white truncate">
                     {displayName}
                   </p>
                   <p className="text-xs text-white/40 truncate">{user.email}</p>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-400">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-violet-400">
                     {userRole}
                   </span>
                 </div>
@@ -323,14 +327,14 @@ export function Header() {
                 <Link
                   href="/login"
                   onClick={close}
-                  className="flex items-center justify-center h-11 rounded-xl border border-white/15 text-sm font-semibold text-white/80 hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-center h-11 rounded-xl border border-white/15 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/register"
                   onClick={close}
-                  className="flex items-center justify-center h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-semibold text-white transition-colors"
+                  className="flex items-center justify-center h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-medium text-white transition-colors"
                 >
                   Get started
                 </Link>
@@ -342,7 +346,7 @@ export function Header() {
               <button
                 onClick={install}
                 disabled={isInstalling}
-                className="flex items-center justify-center gap-2 w-full h-11 rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300 text-sm font-semibold hover:bg-violet-500/20 transition-colors disabled:opacity-60"
+                className="flex items-center justify-center gap-2 w-full h-11 rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300 text-sm font-medium hover:bg-violet-500/20 transition-colors disabled:opacity-60"
               >
                 <Download className="h-4 w-4" />
                 {isInstalling ? "Installing…" : "Install BookHushly App"}
@@ -398,7 +402,7 @@ export function Header() {
 
             {/* Services grid */}
             <div>
-              <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[0.15em] mb-3 px-1">
+              <p className="text-[11px] font-medium text-white/30 uppercase tracking-[0.15em] mb-3 px-1">
                 Explore Services
               </p>
               <div className="grid grid-cols-3 gap-2">
@@ -426,7 +430,7 @@ export function Header() {
                       <span className="text-sm block leading-none mb-0.5">
                         {cat.icon}
                       </span>
-                      <span className="text-[9px] font-semibold text-white leading-tight line-clamp-1 uppercase tracking-wide">
+                      <span className="text-[9px] font-medium text-white leading-tight line-clamp-1 uppercase tracking-wide">
                         {cat.label}
                       </span>
                     </div>

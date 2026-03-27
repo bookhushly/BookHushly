@@ -173,22 +173,22 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Bedrooms</p>
-                  <p className="text-lg font-semibold">{apartment.bedrooms}</p>
+                  <p className="text-lg font-medium">{apartment.bedrooms}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Bathrooms</p>
-                  <p className="text-lg font-semibold">{apartment.bathrooms}</p>
+                  <p className="text-lg font-medium">{apartment.bathrooms}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Max Guests</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-lg font-medium">
                     {apartment.max_guests}
                   </p>
                 </div>
                 {apartment.square_meters && (
                   <div>
                     <p className="text-sm text-gray-600">Size</p>
-                    <p className="text-lg font-semibold">
+                    <p className="text-lg font-medium">
                       {apartment.square_meters}m²
                     </p>
                   </div>
@@ -284,7 +284,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-gray-600">Address</p>
-                <p className="font-semibold">
+                <p className="font-medium">
                   {apartment.area && `${apartment.area}, `}
                   {apartment.city}, {apartment.state}
                 </p>
@@ -361,14 +361,14 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Per Night:</span>
-                <span className="text-xl font-bold">
+                <span className="text-xl font-medium">
                   ₦{parseFloat(apartment.price_per_night).toLocaleString()}
                 </span>
               </div>
               {apartment.price_per_week && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Per Week:</span>
-                  <span className="text-lg font-semibold">
+                  <span className="text-lg font-medium">
                     ₦{parseFloat(apartment.price_per_week).toLocaleString()}
                   </span>
                 </div>
@@ -376,7 +376,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               {apartment.price_per_month && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Per Month:</span>
-                  <span className="text-lg font-semibold">
+                  <span className="text-lg font-medium">
                     ₦{parseFloat(apartment.price_per_month).toLocaleString()}
                   </span>
                 </div>
@@ -384,7 +384,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               {apartment.caution_deposit && (
                 <div className="flex justify-between items-center pt-3 border-t">
                   <span className="text-gray-600">Security Deposit:</span>
-                  <span className="font-semibold">
+                  <span className="font-medium">
                     ₦{parseFloat(apartment.caution_deposit).toLocaleString()}
                   </span>
                 </div>
@@ -724,11 +724,11 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Check-in Time</p>
-                  <p className="font-semibold">{apartment.check_in_time}</p>
+                  <p className="font-medium">{apartment.check_in_time}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Check-out Time</p>
-                  <p className="font-semibold">{apartment.check_out_time}</p>
+                  <p className="font-medium">{apartment.check_out_time}</p>
                 </div>
               </div>
 

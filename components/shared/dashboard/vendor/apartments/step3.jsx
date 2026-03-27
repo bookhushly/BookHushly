@@ -275,7 +275,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-700">Per Night:</span>
-                <span className="font-semibold text-gray-900">
+                <span className="font-medium text-gray-900">
                   ₦{parseFloat(formData.price_per_night).toLocaleString()}
                 </span>
               </div>
@@ -283,7 +283,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-700">Per Week:</span>
                   <div className="text-right">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-medium text-gray-900">
                       ₦{parseFloat(formData.price_per_week).toLocaleString()}
                     </span>
                     <span className="block text-xs text-green-600">
@@ -300,7 +300,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-700">Per Month:</span>
                   <div className="text-right">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-medium text-gray-900">
                       ₦{parseFloat(formData.price_per_month).toLocaleString()}
                     </span>
                     <span className="block text-xs text-green-600">
@@ -318,7 +318,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
                   <span className="text-sm text-gray-700">
                     Security Deposit:
                   </span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-medium text-gray-900">
                     ₦{parseFloat(formData.caution_deposit).toLocaleString()}
                   </span>
                 </div>

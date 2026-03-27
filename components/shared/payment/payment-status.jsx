@@ -68,7 +68,7 @@ export default function PaymentStatus({ reference }) {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-red-900 mb-2">
+            <h2 className="text-xl font-medium text-red-900 mb-2">
               Verification Error
             </h2>
             <p className="text-red-700">{error}</p>
@@ -112,7 +112,7 @@ export default function PaymentStatus({ reference }) {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-green-900 mb-2">
+            <h2 className="text-2xl font-medium text-green-900 mb-2">
               Payment Successful!
             </h2>
             <p className="text-green-700 mb-4">
@@ -124,7 +124,7 @@ export default function PaymentStatus({ reference }) {
             <div className="bg-white rounded-lg p-4 space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Amount Paid</span>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-medium text-gray-900">
                   ₦{payment.amount?.toLocaleString()}
                 </span>
               </div>
@@ -189,7 +189,7 @@ export default function PaymentStatus({ reference }) {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-red-900 mb-2">
+            <h2 className="text-2xl font-medium text-red-900 mb-2">
               Payment Failed
             </h2>
             <p className="text-red-700">Your payment could not be processed</p>
@@ -243,7 +243,7 @@ export default function PaymentStatus({ reference }) {
           <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <div className="w-8 h-8 border-4 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <h2 className="text-xl font-semibold text-yellow-900 mb-2">
+          <h2 className="text-xl font-medium text-yellow-900 mb-2">
             {verifying ? "Verifying Payment..." : "Payment Pending"}
           </h2>
           <p className="text-yellow-700 mb-6">

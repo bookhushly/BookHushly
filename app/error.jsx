@@ -13,10 +13,10 @@ export default function GlobalError({ error, reset }) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 font-bricolage">
       <div className="text-center max-w-md">
-        <p className="text-8xl font-bold text-gray-200 leading-none select-none mb-2">
+        <p className="text-8xl font-medium text-gray-200 leading-none select-none mb-2">
           500
         </p>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-medium text-gray-900 mb-2">
           Something went wrong
         </h1>
         <p className="text-gray-500 text-sm leading-relaxed mb-8">

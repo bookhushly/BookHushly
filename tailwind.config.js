@@ -176,6 +176,9 @@ module.exports = {
         "2xl": "1rem",
         "3xl": "1.5rem",
       },
+      borderWidth: {
+        DEFAULT: "0.5px",
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
@@ -202,7 +205,7 @@ module.exports = {
           border: "1px solid rgba(255,255,255,0.2)",
         },
         ".btn-hospitality": {
-          "@apply px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105":
+          "@apply px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105":
             {},
         },
         ".card-hospitality": {

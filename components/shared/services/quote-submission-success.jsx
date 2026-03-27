@@ -22,7 +22,7 @@ export default function SubmissionSuccess({
 
         {/* Success Message */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+          <h2 className="text-2xl md:text-3xl font-medium text-gray-900 mb-3">
             Request Submitted Successfully!
           </h2>
           <p className="text-gray-600 text-base md:text-lg">
@@ -34,13 +34,13 @@ export default function SubmissionSuccess({
 
         {/* What Happens Next */}
         <div className="bg-purple-50 border border-purple-100 rounded-lg p-6 mb-8">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="font-medium text-gray-900 mb-4 flex items-center gap-2">
             <Clock className="w-5 h-5 text-purple-600" />
             What happens next?
           </h3>
           <div className="space-y-3">
             <div className="flex gap-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
                 1
               </div>
               <div>
@@ -52,7 +52,7 @@ export default function SubmissionSuccess({
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
                 2
               </div>
               <div>
@@ -63,7 +63,7 @@ export default function SubmissionSuccess({
               </div>
             </div>
             <div className="flex gap-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
                 3
               </div>
               <div>

@@ -65,7 +65,7 @@ export default function DepositCallbackPage() {
                 <Loader className="h-16 w-16 text-purple-600 animate-spin" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-medium text-gray-900 mb-2">
               Verifying Deposit
             </h2>
             <p className="text-gray-600">
@@ -81,11 +81,11 @@ export default function DepositCallbackPage() {
                 <CheckCircle className="h-12 w-12 text-green-600" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-medium text-gray-900 mb-2">
               Deposit Successful!
             </h2>
             {depositInfo?.amount && (
-              <p className="text-lg font-semibold text-purple-600 mb-2">
+              <p className="text-lg font-medium text-purple-600 mb-2">
                 ₦{depositInfo.amount.toLocaleString()} added to your wallet
               </p>
             )}
@@ -110,7 +110,7 @@ export default function DepositCallbackPage() {
                 <XCircle className="h-12 w-12 text-red-600" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-medium text-gray-900 mb-2">
               Deposit Failed
             </h2>
             <p className="text-gray-600 mb-6">
@@ -118,7 +118,7 @@ export default function DepositCallbackPage() {
             </p>
             <button
               onClick={() => router.push("/dashboard/customer")}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-xl font-medium transition-colors"
             >
               Back to Wallet
             </button>
@@ -132,7 +132,7 @@ export default function DepositCallbackPage() {
                 <XCircle className="h-12 w-12 text-red-600" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-medium text-gray-900 mb-2">
               Verification Error
             </h2>
             <p className="text-gray-600 mb-6">
@@ -141,7 +141,7 @@ export default function DepositCallbackPage() {
             </p>
             <button
               onClick={() => router.push("/dashboard/customer")}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-xl font-medium transition-colors"
             >
               Back to Wallet
             </button>

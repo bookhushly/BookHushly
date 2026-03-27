@@ -133,7 +133,7 @@ export default function EditPhotos({ formData, updateFormData }) {
 
                 {/* Primary Badge */}
                 {index === 0 && (
-                  <div className="absolute top-2 left-2 bg-purple-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                  <div className="absolute top-2 left-2 bg-purple-600 text-white text-xs font-medium px-2 py-1 rounded">
                     Cover
                   </div>
                 )}

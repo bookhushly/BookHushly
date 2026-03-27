@@ -155,7 +155,7 @@ const GeneralServiceDetail = ({ service }) => {
                   </Badge>
                 )}
               </div>
-              <h1 className="text-4xl font-bold text-white mb-4">
+              <h1 className="text-4xl font-medium text-white mb-4">
                 {service.title}
               </h1>
               <div className="flex items-center gap-4 text-white">
@@ -182,7 +182,7 @@ const GeneralServiceDetail = ({ service }) => {
           <div className="lg:col-span-2 space-y-8">
             {/* Description */}
             <div className="bg-white rounded-xl border p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl font-medium text-gray-900 mb-4">
                 About This Service
               </h2>
               <RichContentRenderer
@@ -195,7 +195,7 @@ const GeneralServiceDetail = ({ service }) => {
             {amenities.length > 0 && (
               <div className="bg-white rounded-xl border p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-medium text-gray-900">
                     Features & Amenities
                   </h2>
                   {amenities.length > 6 && (
@@ -232,13 +232,13 @@ const GeneralServiceDetail = ({ service }) => {
             {/* Additional Info */}
             {(service.requirements || service.cancellation_policy) && (
               <div className="bg-white rounded-xl border p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-medium text-gray-900 mb-4">
                   Important Information
                 </h2>
                 <div className="space-y-4">
                   {service.requirements && (
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-2">
+                      <h3 className="font-medium text-gray-900 mb-2">
                         Requirements
                       </h3>
                       <p className="text-gray-700">{service.requirements}</p>
@@ -246,7 +246,7 @@ const GeneralServiceDetail = ({ service }) => {
                   )}
                   {service.cancellation_policy && (
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-2">
+                      <h3 className="font-medium text-gray-900 mb-2">
                         Cancellation Policy
                       </h3>
                       <p className="text-gray-700">
@@ -264,7 +264,7 @@ const GeneralServiceDetail = ({ service }) => {
             {/* Price Card */}
             <div className="bg-white rounded-xl border p-6 sticky top-24">
               <div className="text-center mb-6">
-                <div className="text-3xl font-bold text-gray-900 mb-2">
+                <div className="text-3xl font-medium text-gray-900 mb-2">
                   {formatPrice(service.price, service.price_unit)}
                 </div>
                 {service.security_deposit && (
@@ -278,7 +278,7 @@ const GeneralServiceDetail = ({ service }) => {
               <Button
                 asChild={service.availability === "available"}
                 disabled={service.availability !== "available"}
-                className="w-full h-12 text-base font-semibold bg-purple-600 hover:bg-purple-700 mb-4"
+                className="w-full h-12 text-base font-medium bg-purple-600 hover:bg-purple-700 mb-4"
               >
                 {service.availability === "available" ? (
                   <Link href={`/book/${service.id}`}>Book Now</Link>
@@ -309,7 +309,7 @@ const GeneralServiceDetail = ({ service }) => {
             {/* Contact Info */}
             {(service.vendor_name || service.vendor_phone) && (
               <div className="bg-white rounded-xl border p-6">
-                <h3 className="font-bold text-gray-900 mb-4">
+                <h3 className="font-medium text-gray-900 mb-4">
                   Provider Contact
                 </h3>
                 <div className="space-y-3">

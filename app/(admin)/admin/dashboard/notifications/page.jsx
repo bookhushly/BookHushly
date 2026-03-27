@@ -102,7 +102,7 @@ export default function AdminNotificationsPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-medium text-gray-900 flex items-center gap-2">
             <Bell className="h-5 w-5 text-violet-600" />
             Notifications
           </h1>
@@ -130,7 +130,7 @@ export default function AdminNotificationsPage() {
             { label: "Requests", value: notifications.filter(n => REQUEST_TYPES.includes(n.type)).length },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-gray-100 px-3 py-3 text-center">
-              <p className={`text-lg font-bold ${s.highlight ? "text-violet-600" : "text-gray-900"}`}>
+              <p className={`text-lg font-medium ${s.highlight ? "text-violet-600" : "text-gray-900"}`}>
                 {s.value}
               </p>
               <p className="text-[11px] text-gray-400 mt-0.5">{s.label}</p>
@@ -174,7 +174,7 @@ export default function AdminNotificationsPage() {
           <div className="w-16 h-16 rounded-full bg-violet-50 flex items-center justify-center">
             <BellOff className="h-7 w-7 text-violet-300" />
           </div>
-          <p className="text-base font-semibold text-gray-600">No notifications</p>
+          <p className="text-base font-medium text-gray-600">No notifications</p>
           <p className="text-sm text-center text-gray-400">
             {filter !== "all" ? "Nothing in this category yet." : "All quiet — nothing to action right now."}
           </p>
@@ -184,12 +184,12 @@ export default function AdminNotificationsPage() {
           {/* Priority alerts at top */}
           {alerts.length > 0 && (
             <>
-              <p className="text-[11px] font-bold uppercase tracking-widest text-red-500 px-1 mb-2">
+              <p className="text-[11px] font-medium uppercase tracking-widest text-red-500 px-1 mb-2">
                 Requires Attention
               </p>
               {alerts.map((n) => <NotifRow key={n.id} n={n} onMarkRead={handleMarkRead} onDelete={handleDelete} onClick={handleClick} priority />)}
               {rest.length > 0 && (
-                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 px-1 pt-2 mb-1">
+                <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 px-1 pt-2 mb-1">
                   Earlier
                 </p>
               )}
@@ -232,10 +232,10 @@ function NotifRow({ n, onMarkRead, onDelete, onClick, priority }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className={`text-sm font-semibold leading-snug ${isNew ? "text-gray-900" : "text-gray-700"}`}>
+            <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900" : "text-gray-700"}`}>
               {n.title}
             </p>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
               {cfg.label}
             </span>
           </div>

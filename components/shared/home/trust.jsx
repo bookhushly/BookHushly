@@ -62,7 +62,7 @@ export default function ShowcaseSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-semibold text-gray-900">
+          <h2 className="text-4xl font-medium text-gray-900">
             Experience the <span className="text-purple-600">Bookhushly</span>{" "}
             Lifestyle
           </h2>

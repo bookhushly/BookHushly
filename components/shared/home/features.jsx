@@ -60,10 +60,10 @@ const Features = () => {
 
       <div className="container relative z-10">
         <div className="text-center mb-20">
-          <Badge className="mb-6 bg-gradient-to-r from-yellow-400 to-orange-400 text-black font-semibold px-4 py-2 text-sm">
+          <Badge className="mb-6 bg-gradient-to-r from-yellow-400 to-orange-400 text-black font-medium px-4 py-2 text-sm">
             Why Choose Bookhushly?
           </Badge>
-          <h2 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+          <h2 className="text-5xl md:text-6xl font-medium mb-8 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
             Built for African Excellence
           </h2>
           <p className="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed">
@@ -88,7 +88,7 @@ const Features = () => {
                 <div className="mx-auto mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                   {feature.icon}
                 </div>
-                <CardTitle className="text-xl font-bold text-white group-hover:text-yellow-300 transition-colors duration-300">
+                <CardTitle className="text-xl font-medium text-white group-hover:text-yellow-300 transition-colors duration-300">
                   {feature.title}
                 </CardTitle>
               </CardHeader>

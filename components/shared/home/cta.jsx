@@ -43,7 +43,7 @@ export default function CTA() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-semibold mb-6 leading-tight"
+          className="text-4xl md:text-5xl font-medium mb-6 leading-tight"
         >
           Start booking verified services today —{" "}
           <span className="text-purple-400">fast, safe, and simple.</span>

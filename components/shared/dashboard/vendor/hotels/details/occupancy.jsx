@@ -38,13 +38,13 @@ function StatCard({ icon: Icon, label, value, sub, trend }) {
             <Icon className="h-5 w-5 text-purple-600" />
           </div>
           {trend !== undefined && (
-            <span className={`flex items-center gap-0.5 text-xs font-semibold ${up ? "text-green-600" : "text-red-500"}`}>
+            <span className={`flex items-center gap-0.5 text-xs font-medium ${up ? "text-green-600" : "text-red-500"}`}>
               {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               {Math.abs(trend)}%
             </span>
           )}
         </div>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
+        <p className="text-2xl font-medium text-gray-900">{value}</p>
         <p className="text-sm text-gray-500 mt-0.5">{label}</p>
         {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
       </CardContent>
@@ -84,7 +84,7 @@ function CalendarHeatmap({ bookedDates }) {
 
         return (
           <div key={monthStart.toISOString()}>
-            <p className="text-sm font-semibold text-gray-700 mb-2">
+            <p className="text-sm font-medium text-gray-700 mb-2">
               {format(monthStart, "MMMM yyyy")}
             </p>
             <div className="grid grid-cols-7 gap-0.5 text-center">
@@ -104,7 +104,7 @@ function CalendarHeatmap({ bookedDates }) {
                     title={`${key}${isBooked ? " — booked" : ""}`}
                     className={`
                       aspect-square rounded text-[10px] flex items-center justify-center
-                      ${isBooked ? "bg-purple-500 text-white font-semibold" : "bg-gray-100 text-gray-400"}
+                      ${isBooked ? "bg-purple-500 text-white font-medium" : "bg-gray-100 text-gray-400"}
                       ${isPast && !isBooked ? "opacity-40" : ""}
                     `}
                   >

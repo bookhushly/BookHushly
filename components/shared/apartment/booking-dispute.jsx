@@ -63,7 +63,7 @@ export default function BookingDispute({ bookingId, bookingStatus }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+        <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
           <ShieldAlert className="h-4 w-4 text-red-400" />
           Issues & disputes
         </p>
@@ -81,7 +81,7 @@ export default function BookingDispute({ bookingId, bookingStatus }) {
         <div key={d.id} className={`p-3 rounded-xl border text-xs ${STATUS_STYLES[d.status]}`}>
           <div className="flex justify-between items-start gap-2">
             <div>
-              <p className="font-semibold capitalize">{TYPE_LABELS[d.type] || d.type} — {d.status.replace("_", " ")}</p>
+              <p className="font-medium capitalize">{TYPE_LABELS[d.type] || d.type} — {d.status.replace("_", " ")}</p>
               <p className="mt-0.5 opacity-80 line-clamp-2">{d.description}</p>
               {d.amount_claimed && <p className="mt-0.5 font-medium">Claimed: ₦{parseFloat(d.amount_claimed).toLocaleString()}</p>}
               {d.resolution_note && <p className="mt-1 italic border-t border-current/20 pt-1">Resolution: {d.resolution_note}</p>}
@@ -93,7 +93,7 @@ export default function BookingDispute({ bookingId, bookingStatus }) {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="p-3 bg-red-50 rounded-xl border border-red-100 space-y-3">
-          <p className="text-xs font-semibold text-gray-700">Describe your issue</p>
+          <p className="text-xs font-medium text-gray-700">Describe your issue</p>
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}

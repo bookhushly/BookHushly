@@ -312,7 +312,7 @@ export default function AgentConversationList({
   return (
     <div className="w-80 flex-shrink-0 flex flex-col border-r border-gray-100 bg-white">
       <div className="px-4 py-3 border-b border-gray-100">
-        <h2 className="text-sm font-semibold text-gray-900">Conversations</h2>
+        <h2 className="text-sm font-medium text-gray-900">Conversations</h2>
       </div>
 
       <Tabs

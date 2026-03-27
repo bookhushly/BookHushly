@@ -426,7 +426,7 @@ export default function ApartmentCreationForm() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <h2 className="text-xl font-medium mb-2">Access Denied</h2>
           <p className="text-gray-600 mb-4">
             Complete vendor verification to access this page.
           </p>
@@ -451,7 +451,7 @@ export default function ApartmentCreationForm() {
           {/* Header row */}
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-lg sm:text-2xl font-medium text-gray-900 leading-tight">
                 Create Serviced Apartment
               </h1>
               <p className="text-sm text-gray-500 mt-0.5">
@@ -526,7 +526,7 @@ export default function ApartmentCreationForm() {
           ) : (
             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Step Under Construction
               </h3>
             </div>

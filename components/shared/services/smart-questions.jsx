@@ -145,9 +145,9 @@ const SmartQuestions = memo(function SmartQuestions({ category, filters, onFilte
       >
         <div className="flex items-center gap-2.5">
           <Lightbulb className="h-4 w-4 text-violet-500" />
-          <span className="text-sm font-semibold text-violet-900">Tell us what you need</span>
+          <span className="text-sm font-medium text-violet-900">Tell us what you need</span>
           {activeCount > 0 && (
-            <span className="text-[10px] font-bold bg-violet-600 text-white px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium bg-violet-600 text-white px-1.5 py-0.5 rounded-full">
               {activeCount} set
             </span>
           )}
@@ -165,7 +165,7 @@ const SmartQuestions = memo(function SmartQuestions({ category, filters, onFilte
             const active = getActiveValue(q, filters);
             return (
               <div key={q.id} className="pt-4">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-2.5">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400 mb-2.5">
                   {q.question}
                 </p>
                 <div className="flex flex-wrap gap-2">

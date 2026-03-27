@@ -201,7 +201,7 @@ export function RoomStatusTab({ hotelId, onUpdate }) {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl font-bold">
+                        <span className="text-2xl font-medium">
                           {room.room_number}
                         </span>
                         {statusIcons[room.status]}

@@ -27,7 +27,7 @@ export default function PrivacyPage() {
             <Badge variant="secondary" className="mb-4">
               Privacy & Security
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl lg:text-6xl font-medium mb-6">
               Privacy Policy
             </h1>
             <p className="text-xl text-primary-foreground/90">
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h4 className="font-semibold mb-3">2.1 Personal Information</h4>
+                <h4 className="font-medium mb-3">2.1 Personal Information</h4>
                 <p className="mb-4">
                   We collect information you provide directly to us, including:
                 </p>
@@ -122,7 +122,7 @@ export default function PrivacyPage() {
               </div>
 
               <div>
-                <h4 className="font-semibold mb-3">2.2 Usage Information</h4>
+                <h4 className="font-medium mb-3">2.2 Usage Information</h4>
                 <p>
                   We automatically collect certain information about your use of
                   our services:
@@ -151,7 +151,7 @@ export default function PrivacyPage() {
               </div>
 
               <div>
-                <h4 className="font-semibold mb-3">2.3 Payment Information</h4>
+                <h4 className="font-medium mb-3">2.3 Payment Information</h4>
                 <p>
                   Payment information is processed by our secure payment
                   partners (Paystack and Flutterwave). We do not store complete

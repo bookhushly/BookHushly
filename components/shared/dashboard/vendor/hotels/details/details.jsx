@@ -406,7 +406,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Enable "Pay at Hotel"</p>
+              <p className="text-sm font-medium text-gray-900">Enable "Pay at Hotel"</p>
               <p className="text-xs text-gray-500 mt-0.5">
                 Guests can reserve a room and pay cash or bank transfer on arrival.
                 Reservations auto-expire if the guest does not check in within 24 hours of their check-in date.
@@ -444,7 +444,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Enable Airport Transfer add-on</p>
+              <p className="text-sm font-medium text-gray-900">Enable Airport Transfer add-on</p>
               <p className="text-xs text-gray-500 mt-0.5">
                 Guests can request a transfer when booking. You will contact them to confirm details.
               </p>
@@ -499,7 +499,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">NIHOTOUR Certified</p>
+              <p className="text-sm font-medium text-gray-900">NIHOTOUR Certified</p>
               <p className="text-xs text-gray-500 mt-0.5">
                 Show the certified badge on your hotel listing to build guest trust.
               </p>

@@ -234,7 +234,7 @@ export function CheckInTab({ hotelId, onUpdate }) {
                       <div className="flex items-start justify-between">
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-3">
-                            <h3 className="font-semibold text-lg">
+                            <h3 className="font-medium text-lg">
                               {booking.guest_name}
                             </h3>
                             <Badge

@@ -27,7 +27,7 @@ export const VendorRevenue = memo(({ vendorId }) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-medium text-gray-900">
                 {formatCurrency(revenue.totalRevenue || 0)}
               </p>
             </div>
@@ -41,7 +41,7 @@ export const VendorRevenue = memo(({ vendorId }) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Bookings</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-medium text-gray-900">
                 {revenue.totalBookings || 0}
               </p>
             </div>
@@ -53,7 +53,7 @@ export const VendorRevenue = memo(({ vendorId }) => {
       revenue.apartmentRevenue ||
       revenue.eventRevenue ? (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Revenue by Category
           </h3>
           <div className="space-y-3">
@@ -65,7 +65,7 @@ export const VendorRevenue = memo(({ vendorId }) => {
                     {revenue.hotelBookings || 0} bookings
                   </p>
                 </div>
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-lg font-medium text-gray-900">
                   {formatCurrency(revenue.hotelRevenue)}
                 </span>
               </div>
@@ -79,7 +79,7 @@ export const VendorRevenue = memo(({ vendorId }) => {
                     {revenue.apartmentBookings || 0} bookings
                   </p>
                 </div>
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-lg font-medium text-gray-900">
                   {formatCurrency(revenue.apartmentRevenue)}
                 </span>
               </div>
@@ -93,7 +93,7 @@ export const VendorRevenue = memo(({ vendorId }) => {
                     {revenue.eventBookings || 0} bookings
                   </p>
                 </div>
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-lg font-medium text-gray-900">
                   {formatCurrency(revenue.eventRevenue)}
                 </span>
               </div>
@@ -111,19 +111,19 @@ export const VendorRevenue = memo(({ vendorId }) => {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-sm text-gray-600">Hotels</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl font-medium text-gray-900 mt-1">
                 {revenue.hotelsCount || 0}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Apartments</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl font-medium text-gray-900 mt-1">
                 {revenue.apartmentsCount || 0}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Events</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl font-medium text-gray-900 mt-1">
                 {revenue.eventsCount || 0}
               </p>
             </div>

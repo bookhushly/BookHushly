@@ -558,7 +558,7 @@ const ServiceDetails = ({
     return (
       <Card className="border border-gray-200">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Menu Items</CardTitle>
+          <CardTitle className="text-lg font-medium">Menu Items</CardTitle>
           <p className="text-sm text-gray-600">
             Add your menu items with descriptions and prices
           </p>
@@ -702,7 +702,7 @@ const ServiceDetails = ({
     return (
       <Card className="border border-gray-200">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">
+          <CardTitle className="text-lg font-medium">
             Ticket Packages
           </CardTitle>
           <p className="text-sm text-gray-600">
@@ -872,7 +872,7 @@ const ServiceDetails = ({
     return (
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-medium text-gray-900">
             Service Details
           </CardTitle>
           <p className="text-gray-600">Loading service configuration...</p>
@@ -884,7 +884,7 @@ const ServiceDetails = ({
   return (
     <Card className="border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-gray-900">
+        <CardTitle className="text-2xl font-medium text-gray-900">
           {categoryConfig.title}
         </CardTitle>
         <p className="text-gray-600">{categoryConfig.description}</p>

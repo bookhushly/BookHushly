@@ -6,7 +6,7 @@ const AnalyticsTab = () => {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-1">
+        <h2 className="text-2xl font-medium text-slate-900 mb-1">
           Analytics & Insights
         </h2>
         <p className="text-slate-600 text-sm">
@@ -19,7 +19,7 @@ const AnalyticsTab = () => {
           <div className="w-20 h-20 rounded-2xl bg-purple-100 flex items-center justify-center mb-5">
             <BarChart3 className="h-10 w-10 text-purple-600" />
           </div>
-          <h3 className="text-2xl font-bold mb-2 text-slate-900">
+          <h3 className="text-2xl font-medium mb-2 text-slate-900">
             Analytics Coming Soon
           </h3>
           <p className="text-slate-500 max-w-md">

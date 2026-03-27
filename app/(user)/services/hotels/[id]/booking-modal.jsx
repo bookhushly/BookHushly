@@ -69,7 +69,7 @@ export default function BookingModal({
         {/* Header */}
         <div className="flex items-start justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-gray-100">
           <div>
-            <h2 className="text-[17px] font-semibold text-gray-900">
+            <h2 className="text-[17px] font-medium text-gray-900">
               Book {roomType.name}
             </h2>
             <p className="text-[13px] text-gray-500 mt-0.5">
@@ -133,7 +133,7 @@ export default function BookingModal({
                   >
                     <Minus className="h-3.5 w-3.5" />
                   </button>
-                  <span className="w-6 text-center text-[15px] font-semibold text-gray-900 tabular-nums select-none">
+                  <span className="w-6 text-center text-[15px] font-medium text-gray-900 tabular-nums select-none">
                     {bookingData[field]}
                   </span>
                   <button
@@ -156,13 +156,13 @@ export default function BookingModal({
             <div className="rounded-xl bg-violet-50 border border-violet-100 p-4 space-y-2">
               <div className="flex justify-between text-[13px] text-gray-600">
                 <span>Duration</span>
-                <span className="font-semibold text-gray-900">
+                <span className="font-medium text-gray-900">
                   {nights} night{nights !== 1 ? "s" : ""}
                 </span>
               </div>
               <div className="flex justify-between text-[13px]">
                 <span className="text-gray-600">Estimated total</span>
-                <span className="font-bold text-violet-700">
+                <span className="font-medium text-violet-700">
                   ₦{Number(estimatedTotal).toLocaleString()}
                 </span>
               </div>
@@ -170,7 +170,7 @@ export default function BookingModal({
           )}
 
           <Button
-            className="w-full h-11 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-semibold"
+            className="w-full h-11 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-medium"
             onClick={handleProceed}
             disabled={!bookingData.checkIn || !bookingData.checkOut}
           >

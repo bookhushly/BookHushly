@@ -129,7 +129,7 @@ export default function LogisticsRequestsAdmin() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Logistics Requests</h1>
+        <h1 className="text-2xl font-medium">Logistics Requests</h1>
         <p className="text-gray-600">
           Manage and quote logistics service requests
         </p>
@@ -209,7 +209,7 @@ export default function LogisticsRequestsAdmin() {
                               <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
                                 <CheckCircle2 className="w-12 h-12 text-green-600" />
                               </div>
-                              <h3 className="text-2xl font-bold text-gray-900">
+                              <h3 className="text-2xl font-medium text-gray-900">
                                 Quote Sent Successfully!
                               </h3>
                               <div className="flex items-center gap-2 text-gray-600">
@@ -228,7 +228,7 @@ export default function LogisticsRequestsAdmin() {
                               {/* Request Details */}
                               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                                 <div>
-                                  <h3 className="font-semibold mb-2">
+                                  <h3 className="font-medium mb-2">
                                     Customer Information
                                   </h3>
                                   <div className="space-y-1 text-sm">
@@ -253,7 +253,7 @@ export default function LogisticsRequestsAdmin() {
                                   </div>
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold mb-2">
+                                  <h3 className="font-medium mb-2">
                                     Service Details
                                   </h3>
                                   <div className="space-y-1 text-sm">
@@ -281,7 +281,7 @@ export default function LogisticsRequestsAdmin() {
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <h3 className="font-semibold mb-2">
+                                  <h3 className="font-medium mb-2">
                                     Pickup Location
                                   </h3>
                                   <div className="space-y-1 text-sm">
@@ -305,7 +305,7 @@ export default function LogisticsRequestsAdmin() {
                                   </div>
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold mb-2">
+                                  <h3 className="font-medium mb-2">
                                     Delivery Location
                                   </h3>
                                   <div className="space-y-1 text-sm">
@@ -333,7 +333,7 @@ export default function LogisticsRequestsAdmin() {
                               </div>
 
                               <div>
-                                <h3 className="font-semibold mb-2">
+                                <h3 className="font-medium mb-2">
                                   Item Information
                                 </h3>
                                 <div className="space-y-2 text-sm">
@@ -385,7 +385,7 @@ export default function LogisticsRequestsAdmin() {
                                 request.fragile_items ||
                                 request.perishable_items) && (
                                 <div>
-                                  <h3 className="font-semibold mb-2">
+                                  <h3 className="font-medium mb-2">
                                     Special Requirements
                                   </h3>
                                   <div className="flex flex-wrap gap-2">
@@ -412,7 +412,7 @@ export default function LogisticsRequestsAdmin() {
 
                               {request.special_instructions && (
                                 <div>
-                                  <h3 className="font-semibold mb-2">
+                                  <h3 className="font-medium mb-2">
                                     Special Instructions
                                   </h3>
                                   <p className="text-sm text-gray-700">
@@ -425,7 +425,7 @@ export default function LogisticsRequestsAdmin() {
                               {request.status === "pending" && (
                                 <div className="border-t pt-6">
                                   <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold">
+                                    <h3 className="text-lg font-medium">
                                       Create Quote
                                     </h3>
                                     <button
@@ -454,7 +454,7 @@ export default function LogisticsRequestsAdmin() {
                                           setAiDrafting(false);
                                         }
                                       }}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold hover:bg-violet-100 disabled:opacity-50 transition-colors"
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-200 text-violet-700 text-xs font-medium hover:bg-violet-100 disabled:opacity-50 transition-colors"
                                     >
                                       {aiDrafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
                                       AI Draft
@@ -556,7 +556,7 @@ export default function LogisticsRequestsAdmin() {
                                     </div>
 
                                     <div className="p-4 bg-purple-50 rounded-lg">
-                                      <div className="flex justify-between items-center text-lg font-semibold">
+                                      <div className="flex justify-between items-center text-lg font-medium">
                                         <span>Total Amount:</span>
                                         <span>
                                           ₦{calculateTotal().toLocaleString()}
@@ -619,7 +619,7 @@ export default function LogisticsRequestsAdmin() {
                               {request.status !== "pending" &&
                                 request.quoted_amount && (
                                   <div className="border-t pt-6">
-                                    <h3 className="text-lg font-semibold mb-4">
+                                    <h3 className="text-lg font-medium mb-4">
                                       Quote Details
                                     </h3>
                                     <div className="space-y-2">
@@ -642,7 +642,7 @@ export default function LogisticsRequestsAdmin() {
                                             </span>
                                           </div>
                                         ))}
-                                      <div className="flex justify-between text-lg font-semibold pt-2 border-t">
+                                      <div className="flex justify-between text-lg font-medium pt-2 border-t">
                                         <span>Total:</span>
                                         <span>
                                           ₦

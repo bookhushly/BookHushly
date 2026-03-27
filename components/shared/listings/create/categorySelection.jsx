@@ -50,7 +50,7 @@ export default function CategorySelection({
     return (
       <Card className="border-none shadow-lg rounded-2xl bg-white">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-medium text-gray-900">
             Select Category
           </CardTitle>
         </CardHeader>
@@ -67,7 +67,7 @@ export default function CategorySelection({
     return (
       <Card className="border-none shadow-lg rounded-2xl bg-white">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-medium text-gray-900">
             Select Category
           </CardTitle>
         </CardHeader>
@@ -87,7 +87,7 @@ export default function CategorySelection({
     return (
       <Card className="border-none shadow-lg rounded-2xl bg-white">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-medium text-gray-900">
             Select Category
           </CardTitle>
         </CardHeader>
@@ -107,7 +107,7 @@ export default function CategorySelection({
   return (
     <Card className="border-none shadow-lg rounded-2xl bg-white">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-gray-900">
+        <CardTitle className="text-2xl font-medium text-gray-900">
           Select Category
         </CardTitle>
       </CardHeader>

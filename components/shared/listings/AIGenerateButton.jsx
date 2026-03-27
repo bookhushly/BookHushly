@@ -62,7 +62,7 @@ export function AIGenerateButton({ category, formData, onGenerated }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Pencil className="h-3.5 w-3.5 text-violet-600" />
-          <span className="text-xs font-semibold text-violet-700">
+          <span className="text-xs font-medium text-violet-700">
             Generate with AI
           </span>
           <span className="text-xs text-violet-400">

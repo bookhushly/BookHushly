@@ -205,7 +205,7 @@ export default function ServicesPage() {
               <span className="text-sm font-medium">Back</span>
             </button>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">
+          <h1 className="text-2xl md:text-3xl font-medium text-center mb-2">
             {showSuccess ? "Request Submitted" : "Request a Service"}
           </h1>
           <p className="text-gray-600 text-center text-sm md:text-base max-w-2xl mx-auto">
@@ -255,7 +255,7 @@ export default function ServicesPage() {
                       />
                     </svg>
                     <div className="text-left">
-                      <div className="font-semibold text-sm md:text-base">
+                      <div className="font-medium text-sm md:text-base">
                         Logistics
                       </div>
                     </div>
@@ -280,7 +280,7 @@ export default function ServicesPage() {
                       />
                     </svg>
                     <div className="text-left">
-                      <div className="font-semibold text-sm md:text-base">
+                      <div className="font-medium text-sm md:text-base">
                         Security
                       </div>
                     </div>
@@ -304,7 +304,7 @@ export default function ServicesPage() {
                           <div className="text-purple-600">{feature.icon}</div>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-sm mb-1">
+                          <h3 className="font-medium text-sm mb-1">
                             {feature.title}
                           </h3>
                           <p className="text-xs text-gray-600">
@@ -338,7 +338,7 @@ export default function ServicesPage() {
                           <div className="text-purple-600">{feature.icon}</div>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-sm mb-1">
+                          <h3 className="font-medium text-sm mb-1">
                             {feature.title}
                           </h3>
                           <p className="text-xs text-gray-600">

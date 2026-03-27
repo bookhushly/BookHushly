@@ -97,7 +97,7 @@ export function SecurityClient({ userId, initialData }) {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="font-medium text-gray-900">
                           {SERVICE_LABELS[req.service_type] || req.service_type}
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">

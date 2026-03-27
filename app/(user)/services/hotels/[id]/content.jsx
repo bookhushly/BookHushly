@@ -43,7 +43,7 @@ function DateSelectionPanel({ dates, onChange, roomTypes, panelRef }) {
     <div ref={panelRef} className="mb-8 scroll-mt-24">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[18px] font-semibold text-gray-900 flex items-center gap-2">
+        <h2 className="text-[18px] font-medium text-gray-900 flex items-center gap-2">
           <Calendar className="h-4.5 w-4.5 text-violet-500" />
           When are you staying?
         </h2>
@@ -63,7 +63,7 @@ function DateSelectionPanel({ dates, onChange, roomTypes, panelRef }) {
         <div className="flex items-center gap-3 p-4 bg-violet-50 border border-violet-200 rounded-2xl">
           <CalendarCheck className="h-5 w-5 text-violet-600 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-gray-900">
+            <p className="text-[14px] font-medium text-gray-900">
               {format(parseISO(dates.checkIn), "EEE d MMM")}
               <span className="text-gray-400 mx-2">→</span>
               {format(parseISO(dates.checkOut), "EEE d MMM")}
@@ -89,7 +89,7 @@ function DateSelectionPanel({ dates, onChange, roomTypes, panelRef }) {
               <Calendar className="h-5 w-5 text-violet-600" />
             </div>
             <div className="text-left">
-              <p className="text-[14px] font-semibold text-gray-800">Select your dates</p>
+              <p className="text-[14px] font-medium text-gray-800">Select your dates</p>
               <p className="text-[12px] text-gray-400 mt-0.5">
                 Pick arrival and departure to see which rooms are available
               </p>
@@ -112,7 +112,7 @@ function DateSelectionPanel({ dates, onChange, roomTypes, panelRef }) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="mt-3 w-full h-10 bg-violet-600 hover:bg-violet-700 text-white text-[13px] font-semibold rounded-xl transition-colors"
+              className="mt-3 w-full h-10 bg-violet-600 hover:bg-violet-700 text-white text-[13px] font-medium rounded-xl transition-colors"
             >
               Done — show availability
             </button>
@@ -131,12 +131,12 @@ function AvailBadge({ status }) {
     </span>
   );
   if (status === "available") return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-green-50 text-green-700 border border-green-200">
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-green-50 text-green-700 border border-green-200">
       <Check className="h-3 w-3" /> Available
     </span>
   );
   if (status === "unavailable") return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-red-50 text-red-600 border border-red-200">
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-red-50 text-red-600 border border-red-200">
       <Ban className="h-3 w-3" /> Fully booked
     </span>
   );
@@ -197,7 +197,7 @@ const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }
         <div className="relative h-52 md:h-full overflow-hidden">
           {unavailable && (
             <div className="absolute inset-0 z-10 bg-black/30 flex items-center justify-center">
-              <span className="bg-white/90 text-red-600 font-semibold text-[13px] px-3 py-1.5 rounded-xl shadow">
+              <span className="bg-white/90 text-red-600 font-medium text-[13px] px-3 py-1.5 rounded-xl shadow">
                 Fully booked for these dates
               </span>
             </div>
@@ -231,7 +231,7 @@ const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }
         <div className="flex flex-col p-6">
           <div className="flex-1">
             <div className="flex items-start justify-between gap-3 mb-2">
-              <h3 className="text-[17px] font-semibold text-gray-900">{roomType.name}</h3>
+              <h3 className="text-[17px] font-medium text-gray-900">{roomType.name}</h3>
               <AvailBadge status={datesSet ? availStatus : null} />
             </div>
 
@@ -288,7 +288,7 @@ const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }
                 {nights > 0 ? `${nights} night${nights !== 1 ? "s" : ""} total` : "Per night"}
               </p>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="text-2xl font-medium text-gray-900">
                   ₦{nights > 0
                     ? (parseFloat(roomType.base_price) * nights).toLocaleString()
                     : parseFloat(roomType.base_price).toLocaleString()}
@@ -306,7 +306,7 @@ const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }
               onClick={handleReserve}
               disabled={unavailable}
               className={cn(
-                "h-10 px-5 rounded-xl text-sm font-semibold shrink-0",
+                "h-10 px-5 rounded-xl text-sm font-medium shrink-0",
                 unavailable
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : datesSet
@@ -478,14 +478,14 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                 <MapPin className="h-3.5 w-3.5 text-violet-500 shrink-0" />
                 <span className="text-[13px] text-gray-500">{location}</span>
               </div>
-              <h1 className="font-fraunces text-[2.2rem] sm:text-[2.8rem] font-semibold text-gray-900 leading-tight tracking-tight">
+              <h1 className="font-fraunces text-[2.2rem] sm:text-[2.8rem] font-medium text-gray-900 leading-tight tracking-tight">
                 {hotel.name}
               </h1>
 
               {hotel.nihotour_certified && (
                 <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-xl">
                   <span className="text-base leading-none">🏅</span>
-                  <span className="text-[13px] font-semibold text-amber-800">NIHOTOUR Certified</span>
+                  <span className="text-[13px] font-medium text-amber-800">NIHOTOUR Certified</span>
                   {hotel.nihotour_number && (
                     <span className="text-[11px] text-amber-600">· {hotel.nihotour_number}</span>
                   )}
@@ -496,7 +496,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                 <div className="flex items-center gap-3 mt-3">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl">
                     <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                    <span className="text-[15px] font-bold text-gray-900">{avgRating}</span>
+                    <span className="text-[15px] font-medium text-gray-900">{avgRating}</span>
                     <span className="text-[13px] text-gray-500">
                       {avgRating >= 4.8 ? "Exceptional" : avgRating >= 4.5 ? "Excellent" : avgRating >= 4.0 ? "Very Good" : avgRating >= 3.5 ? "Good" : "Okay"}
                     </span>
@@ -525,7 +525,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
             {hotelAmenities.length > 0 && (
               <section className="mb-10">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-[18px] font-semibold text-gray-900">What's included</h2>
+                  <h2 className="text-[18px] font-medium text-gray-900">What's included</h2>
                   {hotelAmenities.length > 6 && (
                     <button onClick={() => setShowAllAmenities((v) => !v)} className="text-[13px] font-medium text-violet-600 hover:text-violet-700">
                       {showAllAmenities ? "Show less" : `Show all ${hotelAmenities.length}`}
@@ -550,7 +550,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
               hotel.breakfast_offered !== "none" || hotel.check_in_time ||
               hotel.check_out_time || hotel.vat_inclusive || hotel.whatsapp_number) && (
               <section className="mb-10">
-                <h2 className="text-[18px] font-semibold text-gray-900 mb-5">Hotel essentials</h2>
+                <h2 className="text-[18px] font-medium text-gray-900 mb-5">Hotel essentials</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {hotel.generator_available && (
                     <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
@@ -558,7 +558,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                         <Zap className="h-4 w-4 text-amber-500" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800">Generator</p>
+                        <p className="text-[13px] font-medium text-gray-800">Generator</p>
                         <p className="text-[12px] text-gray-500 mt-0.5">
                           {hotel.generator_available === "24hrs" ? "24-hour generator" : hotel.generator_available === "partial" ? `Available ${hotel.generator_hours || "select hours"}` : "Generator available"}
                         </p>
@@ -571,7 +571,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                         <ZapOff className="h-4 w-4 text-gray-400" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800">NEPA supply only</p>
+                        <p className="text-[13px] font-medium text-gray-800">NEPA supply only</p>
                         <p className="text-[12px] text-gray-500 mt-0.5">No backup power listed</p>
                       </div>
                     </div>
@@ -582,7 +582,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                         <Battery className="h-4 w-4 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800">Inverter / Solar</p>
+                        <p className="text-[13px] font-medium text-gray-800">Inverter / Solar</p>
                         <p className="text-[12px] text-gray-500 mt-0.5">Backup power available</p>
                       </div>
                     </div>
@@ -593,7 +593,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                         <Coffee className="h-4 w-4 text-orange-500" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800">Breakfast included</p>
+                        <p className="text-[13px] font-medium text-gray-800">Breakfast included</p>
                         <p className="text-[12px] text-gray-500 mt-0.5 capitalize">{hotel.breakfast_type || hotel.breakfast_offered}</p>
                       </div>
                     </div>
@@ -604,7 +604,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                         <UtensilsCrossed className="h-4 w-4 text-gray-400" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800">No breakfast</p>
+                        <p className="text-[13px] font-medium text-gray-800">No breakfast</p>
                         <p className="text-[12px] text-gray-500 mt-0.5">Room-only rate</p>
                       </div>
                     </div>
@@ -615,7 +615,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                         <Clock className="h-4 w-4 text-violet-600" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800">Check-in / Check-out</p>
+                        <p className="text-[13px] font-medium text-gray-800">Check-in / Check-out</p>
                         <p className="text-[12px] text-gray-500 mt-0.5">
                           {hotel.check_in_time && `From ${hotel.check_in_time}`}
                           {hotel.check_in_time && hotel.check_out_time && " · "}
@@ -630,7 +630,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                         <BadgePercent className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800">VAT inclusive</p>
+                        <p className="text-[13px] font-medium text-gray-800">VAT inclusive</p>
                         <p className="text-[12px] text-gray-500 mt-0.5">Prices shown include 7.5% VAT</p>
                       </div>
                     </div>
@@ -642,13 +642,13 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
             {/* Things to know */}
             {(hotel.checkout_policy || hotel.policies) && (
               <section className="mb-10">
-                <h2 className="text-[18px] font-semibold text-gray-900 mb-5">Things to know</h2>
+                <h2 className="text-[18px] font-medium text-gray-900 mb-5">Things to know</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {hotel.checkout_policy && (
                     <div className="flex gap-3 p-4 bg-white rounded-xl border border-gray-100">
                       <Info className="h-4 w-4 text-violet-500 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800 mb-1">Check-out policy</p>
+                        <p className="text-[13px] font-medium text-gray-800 mb-1">Check-out policy</p>
                         <p className="text-[13px] text-gray-500">
                           {hotel.checkout_policy === "fixed_time" ? "Fixed time checkout at 12:00 PM" : "24-hour checkout from check-in time"}
                         </p>
@@ -659,7 +659,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                     <div className="flex gap-3 p-4 bg-white rounded-xl border border-gray-100">
                       <AlertCircle className="h-4 w-4 text-violet-500 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-[13px] font-semibold text-gray-800 mb-1">House rules</p>
+                        <p className="text-[13px] font-medium text-gray-800 mb-1">House rules</p>
                         {isHtml(hotel.policies)
                           ? <RichContentRenderer content={hotel.policies} className="text-[13px] text-gray-500" />
                           : <p className="text-[13px] text-gray-500 whitespace-pre-line">{hotel.policies}</p>}
@@ -672,7 +672,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
 
             {/* ── DATE SELECTION — single point of entry ──────────────────── */}
             <section>
-              <h2 className="text-[18px] font-semibold text-gray-900 mb-5">Choose your room</h2>
+              <h2 className="text-[18px] font-medium text-gray-900 mb-5">Choose your room</h2>
 
               <DateSelectionPanel
                 dates={dates}
@@ -718,7 +718,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
 
             {/* Reviews */}
             <section id="reviews" className="mt-10">
-              <h2 className="text-[18px] font-semibold text-gray-900 mb-5">
+              <h2 className="text-[18px] font-medium text-gray-900 mb-5">
                 Guest Reviews
                 {avgRating !== null && reviewCount > 0 && (
                   <span className="ml-2 inline-flex items-center gap-1 text-[14px] font-normal text-amber-600">
@@ -738,7 +738,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                 <div className="mb-5">
                   <p className="text-[11px] text-gray-400 uppercase tracking-[0.12em] mb-1">Rooms from</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-gray-900">₦{lowestPrice.toLocaleString()}</span>
+                    <span className="text-3xl font-medium text-gray-900">₦{lowestPrice.toLocaleString()}</span>
                     <span className="text-sm text-gray-400">/night</span>
                   </div>
                 </div>
@@ -749,16 +749,16 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                 <div className="mb-5 p-3.5 bg-violet-50 rounded-xl border border-violet-100 space-y-2">
                   <div className="flex justify-between text-[13px] text-gray-600">
                     <span>Check-in</span>
-                    <span className="font-semibold text-gray-900">{format(parseISO(dates.checkIn), "d MMM")}</span>
+                    <span className="font-medium text-gray-900">{format(parseISO(dates.checkIn), "d MMM")}</span>
                   </div>
                   <div className="flex justify-between text-[13px] text-gray-600">
                     <span>Check-out</span>
-                    <span className="font-semibold text-gray-900">{format(parseISO(dates.checkOut), "d MMM")}</span>
+                    <span className="font-medium text-gray-900">{format(parseISO(dates.checkOut), "d MMM")}</span>
                   </div>
                   {nights > 0 && lowestPrice && (
                     <div className="flex justify-between text-[13px] pt-2 border-t border-violet-200">
                       <span className="text-gray-600">{nights} night{nights !== 1 ? "s" : ""} (from)</span>
-                      <span className="font-bold text-violet-700">₦{(nights * lowestPrice).toLocaleString()}</span>
+                      <span className="font-medium text-violet-700">₦{(nights * lowestPrice).toLocaleString()}</span>
                     </div>
                   )}
                   <button onClick={scrollToDatePanel} className="text-[11px] text-violet-500 hover:text-violet-700 w-full text-center mt-1">
@@ -776,7 +776,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
               )}
 
               <Button
-                className="w-full h-11 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-semibold"
+                className="w-full h-11 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-medium"
                 onClick={scrollToDatePanel}
                 disabled={roomTypes.length === 0}
               >
@@ -809,7 +809,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
           <div>
             <p className="text-[11px] text-gray-400">{nights > 0 ? `${nights} nights` : "From"}</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-xl font-medium text-gray-900">
                 ₦{nights > 0 ? (nights * lowestPrice).toLocaleString() : lowestPrice.toLocaleString()}
               </span>
               {nights === 0 && <span className="text-xs text-gray-400">/night</span>}
@@ -819,7 +819,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
         <Button
           onClick={scrollToDatePanel}
           disabled={roomTypes.length === 0}
-          className="h-11 px-8 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-semibold"
+          className="h-11 px-8 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-medium"
         >
           {dates.checkIn && dates.checkOut ? "View rooms ↓" : "Check availability"}
         </Button>

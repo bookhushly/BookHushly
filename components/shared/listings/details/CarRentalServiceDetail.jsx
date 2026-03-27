@@ -78,7 +78,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
 
       {/* Vehicle Categories */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Vehicle Categories
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -113,7 +113,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
 
       {/* Available Vehicles */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Available Vehicles
         </h3>
         <div className="grid gap-4">
@@ -122,7 +122,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
               <Car className="h-6 w-6 text-purple-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">Toyota Camry 2022</h4>
+              <h4 className="font-medium text-gray-900">Toyota Camry 2022</h4>
               <p className="text-sm text-gray-600">
                 Automatic • 4 seats • Full AC
               </p>
@@ -137,7 +137,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
               <Car className="h-6 w-6 text-purple-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">Honda Accord 2021</h4>
+              <h4 className="font-medium text-gray-900">Honda Accord 2021</h4>
               <p className="text-sm text-gray-600">
                 Automatic • 4 seats • Premium
               </p>
@@ -152,7 +152,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
               <Car className="h-6 w-6 text-purple-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">
+              <h4 className="font-medium text-gray-900">
                 Toyota Highlander 2023
               </h4>
               <p className="text-sm text-gray-600">SUV • 7 seats • Luxury</p>
@@ -167,14 +167,14 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
 
       {/* Rental Options */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Rental Options
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
             <div className="flex items-center mb-3">
               <Key className="h-5 w-5 text-purple-600 mr-2" />
-              <h4 className="font-semibold text-gray-900">Self-Drive</h4>
+              <h4 className="font-medium text-gray-900">Self-Drive</h4>
             </div>
             <p className="text-sm text-gray-600 mb-2">
               Drive yourself with our well-maintained vehicles
@@ -188,7 +188,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
           <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
             <div className="flex items-center mb-3">
               <Users className="h-5 w-5 text-purple-600 mr-2" />
-              <h4 className="font-semibold text-gray-900">With Driver</h4>
+              <h4 className="font-medium text-gray-900">With Driver</h4>
             </div>
             <p className="text-sm text-gray-600 mb-2">
               Professional driver included with vehicle
@@ -204,7 +204,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
 
       {/* Vehicle Details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Rental Details
         </h3>
         <div className="bg-purple-50 rounded-lg p-4">
@@ -241,7 +241,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
         <div className="mb-6">
           <div className="flex items-baseline mb-2">
-            <span className="text-3xl font-bold text-gray-900">
+            <span className="text-3xl font-medium text-gray-900">
               ₦{service.price.toLocaleString()}
             </span>
             <span className="text-sm text-gray-600 ml-2">
@@ -259,7 +259,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
         <Button
           asChild={service.availability === "available"}
           disabled={service.availability !== "available"}
-          className={`w-full mb-4 h-12 text-base font-semibold ${
+          className={`w-full mb-4 h-12 text-base font-medium ${
             service.availability === "available"
               ? "bg-purple-600 hover:bg-purple-700 text-white"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -289,7 +289,7 @@ const CarRentalServiceDetail = ({ service, categoryData }) => {
 
         {/* Rental info */}
         <div className="bg-purple-50 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold text-gray-900 mb-2">Rental Info</h4>
+          <h4 className="font-medium text-gray-900 mb-2">Rental Info</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-center justify-between">
               <span>Driver Option:</span>

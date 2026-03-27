@@ -302,7 +302,7 @@ export default function KYCPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-3xl font-medium mb-2">
             {authData?.vendor ? "Update" : "Complete"} KYC Verification
           </h1>
           <p className="text-gray-500">
@@ -533,7 +533,7 @@ export default function KYCPage() {
                         <div className="flex items-center gap-2">
                           <Label
                             htmlFor="business_registration_number"
-                            className="text-sm font-semibold"
+                            className="text-sm font-medium"
                           >
                             CAC Registration Number
                           </Label>
@@ -562,7 +562,7 @@ export default function KYCPage() {
                         <div className="flex items-center gap-2">
                           <Label
                             htmlFor="nin"
-                            className="text-sm font-semibold"
+                            className="text-sm font-medium"
                           >
                             National Identification Number (NIN)
                           </Label>

@@ -55,7 +55,7 @@ export function PushNotificationOptIn({ userId }) {
         <button
           onClick={subscribe}
           disabled={isLoading}
-          className="shrink-0 text-violet-600 font-semibold hover:text-violet-700 disabled:opacity-60 transition-colors"
+          className="shrink-0 text-violet-600 font-medium hover:text-violet-700 disabled:opacity-60 transition-colors"
         >
           {isLoading ? "Enabling…" : "Enable"}
         </button>
@@ -86,7 +86,7 @@ export function PushNotificationOptIn({ userId }) {
         {/* Copy */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-sm font-medium text-gray-900">
               Stay in the loop
             </p>
             <BellDot className="h-3.5 w-3.5 text-violet-500 shrink-0" />
@@ -100,7 +100,7 @@ export function PushNotificationOptIn({ userId }) {
             <button
               onClick={subscribe}
               disabled={isLoading}
-              className="flex items-center justify-center gap-1.5 h-8 px-4 rounded-xl bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 transition-colors disabled:opacity-60 active:scale-95"
+              className="flex items-center justify-center gap-1.5 h-8 px-4 rounded-xl bg-violet-600 text-white text-xs font-medium hover:bg-violet-700 transition-colors disabled:opacity-60 active:scale-95"
             >
               <Bell className="h-3.5 w-3.5 shrink-0" />
               {isLoading ? "Enabling…" : "Enable notifications"}

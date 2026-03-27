@@ -181,7 +181,7 @@ AlertDialogFooter.displayName = 'AlertDialogFooter';
 // ─── Title ────────────────────────────────────────────────────────────────────
 const AlertDialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h2 ref={ref} className={cn('text-lg font-semibold', className)} {...props} />
+    <h2 ref={ref} className={cn('text-lg font-medium', className)} {...props} />
   )
 );
 AlertDialogTitle.displayName = 'AlertDialogTitle';

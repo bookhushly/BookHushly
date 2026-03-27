@@ -202,7 +202,7 @@ export default function EditListingPage() {
         <Card>
           <CardContent className="text-center py-12">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
+            <h3 className="text-lg font-medium mb-2">
               Error Loading Listing
             </h3>
             <p className="text-muted-foreground mb-4">
@@ -224,7 +224,7 @@ export default function EditListingPage() {
         <Card>
           <CardContent className="text-center py-12">
             <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Listing Not Found</h3>
+            <h3 className="text-lg font-medium mb-2">Listing Not Found</h3>
             <p className="text-muted-foreground mb-4">
               The listing you&apos;re trying to edit could not be found.
             </p>
@@ -249,7 +249,7 @@ export default function EditListingPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Listings
           </Link>
-          <h1 className="text-3xl font-bold mb-2">Edit Event</h1>
+          <h1 className="text-3xl font-medium mb-2">Edit Event</h1>
           <p className="text-muted-foreground">Update your event details</p>
         </div>
         <EventListingEditor
@@ -272,7 +272,7 @@ export default function EditListingPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold mb-2">Edit Listing</h1>
+        <h1 className="text-3xl font-medium mb-2">Edit Listing</h1>
         <p className="text-muted-foreground">Update your service information</p>
       </div>
 

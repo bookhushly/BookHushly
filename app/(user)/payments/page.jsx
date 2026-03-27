@@ -502,7 +502,7 @@ export default function PaymentPage() {
         <Card>
           <CardContent className="text-center py-12">
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Booking Not Found</h3>
+            <h3 className="text-lg font-medium mb-2">Booking Not Found</h3>
             <p className="text-muted-foreground mb-4">
               The booking you're trying to pay for could not be found.
             </p>
@@ -557,7 +557,7 @@ export default function PaymentPage() {
                         <CreditCard className="h-6 w-6 text-purple-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold">Paystack</h3>
+                        <h3 className="font-medium">Paystack</h3>
                         <p className="text-sm text-muted-foreground">
                           Card, Bank Transfer, USSD
                         </p>
@@ -587,7 +587,7 @@ export default function PaymentPage() {
                           <Bitcoin className="h-6 w-6 text-orange-600" />
                         </div>
                         <div>
-                          <h3 className="font-semibold">Pay with Crypto</h3>
+                          <h3 className="font-medium">Pay with Crypto</h3>
                           <p className="text-sm text-muted-foreground">
                             Bitcoin, Ethereum, USDT & 200+ more
                           </p>
@@ -758,7 +758,7 @@ export default function PaymentPage() {
                                   <span className="text-sm font-medium">
                                     Amount to Pay:
                                   </span>
-                                  <span className="font-mono text-sm font-semibold">
+                                  <span className="font-mono text-sm font-medium">
                                     {parseFloat(
                                       estimatedAmount.estimated_amount
                                     ).toFixed(8)}{" "}
@@ -947,7 +947,7 @@ export default function PaymentPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold">{booking.listings?.title}</h3>
+                <h3 className="font-medium">{booking.listings?.title}</h3>
                 <p className="text-sm text-muted-foreground">
                   by {booking.listings?.vendors?.business_name}
                 </p>
@@ -979,7 +979,7 @@ export default function PaymentPage() {
                   </span>
                 </div>
 
-                <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                <div className="flex justify-between font-medium text-lg border-t pt-2">
                   <span>Total:</span>
                   <span>₦{booking.total_amount?.toLocaleString()}</span>
                 </div>

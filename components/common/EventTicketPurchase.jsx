@@ -391,7 +391,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
           {/* Event Info Overlay */}
           <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 py-6 sm:py-8">
             <div className="max-w-7xl mx-auto">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white mb-3">
                 {service?.title || "Event"}
               </h1>
               <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base text-white/90 mb-4">
@@ -482,7 +482,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
             {/* Step 1: Ticket Selection */}
             {step === 1 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-medium text-gray-900 mb-4">
                   Select Tickets
                 </h2>
 
@@ -493,13 +493,13 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                       <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-4">
                         <Bell className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-sm font-semibold text-green-700">You're on the waitlist!</p>
+                          <p className="text-sm font-medium text-green-700">You're on the waitlist!</p>
                           <p className="text-xs text-green-600 mt-0.5">We'll notify you at {waitlistEmail} if tickets become available.</p>
                         </div>
                       </div>
                     ) : (
                       <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
-                        <p className="text-sm font-semibold text-orange-700">All tickets are sold out</p>
+                        <p className="text-sm font-medium text-orange-700">All tickets are sold out</p>
                         <p className="text-xs text-gray-600">Join the waitlist to be notified if spots open up.</p>
                         <Input
                           type="text"
@@ -543,7 +543,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                   <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">
                     <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-red-700">
+                      <p className="text-sm font-medium text-red-700">
                         Age restricted event — {ageRestriction}+ only
                       </p>
                       <p className="text-xs text-red-600 mt-0.5">
@@ -558,7 +558,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                       <div key={index} className="border border-dashed border-gray-300 rounded-xl p-5 bg-gray-50">
                         <div className="flex items-center gap-2 mb-3">
                           <Lock className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-semibold text-gray-600">Hidden Ticket Tier</span>
+                          <span className="text-sm font-medium text-gray-600">Hidden Ticket Tier</span>
                           <span className="text-xs text-gray-400">— enter access code to unlock</span>
                         </div>
                         <div className="flex gap-2">
@@ -604,28 +604,28 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                       <div className="flex flex-col flex-wrap justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <h3 className="text-lg font-bold text-gray-900">
+                            <h3 className="text-lg font-medium text-gray-900">
                               {ticket.name}
                             </h3>
                             {ticket.earlyBirdActive && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                                 Early Bird
                               </span>
                             )}
                             {ticket.saleNotStarted && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
                                 Sales open {ticket.saleStart?.toLocaleDateString("en-NG", { day: "numeric", month: "short" })}
                               </span>
                             )}
                             {ticket.saleEnded && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
                                 Sales Ended
                               </span>
                             )}
                           </div>
 
                           <div className="flex items-baseline gap-2 mb-1">
-                            <p className="text-purple-600 font-bold text-xl">
+                            <p className="text-purple-600 font-medium text-xl">
                               ₦{ticket.price.toLocaleString()}
                             </p>
                             {ticket.earlyBirdActive && (
@@ -759,7 +759,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
             {/* Step 2: Contact Details */}
             {step === 2 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-medium text-gray-900 mb-4">
                   Contact Details
                 </h2>
                 <div className="space-y-4">
@@ -817,7 +817,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                   {/* Custom attendee questions */}
                   {customQuestions.length > 0 && (
                     <div className="space-y-4 pt-2 border-t border-gray-100">
-                      <p className="text-sm font-semibold text-gray-700">
+                      <p className="text-sm font-medium text-gray-700">
                         Additional Information
                       </p>
                       {customQuestions.map((q) => (
@@ -886,14 +886,14 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
             {/* Step 3: Payment or Free Confirm */}
             {step === 3 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-medium text-gray-900 mb-4">
                   {isFreeEvent ? "Confirm Registration" : "Complete Payment"}
                 </h2>
                 <div className="space-y-4">
                   {isFreeEvent ? (
                     <>
                       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                        <p className="text-sm font-semibold text-green-700 mb-1">
+                        <p className="text-sm font-medium text-green-700 mb-1">
                           🎉 This is a free event!
                         </p>
                         <p className="text-sm text-green-600">
@@ -918,7 +918,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                               .join(", ")}
                           </span>
                         </div>
-                        <div className="flex justify-between font-semibold">
+                        <div className="flex justify-between font-medium">
                           <span className="text-gray-500">Total</span>
                           <span className="text-green-600">Free</span>
                         </div>
@@ -968,7 +968,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
             {/* About this event */}
             {service?.description && (
               <div className="bg-white rounded-2xl border border-gray-200 p-6 overflow-hidden">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">About this event</h2>
+                <h2 className="text-xl font-medium text-gray-900 mb-4">About this event</h2>
                 <RichContentRenderer
                   content={service.description}
                   className="text-gray-700 [&_*]:max-w-full [&_img]:max-w-full [&_table]:table-fixed [&_pre]:whitespace-pre-wrap [&_*]:break-words"
@@ -980,12 +980,12 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
           {/* Sidebar */}
           <div className="lg:col-span-5">
             <div className="bg-white rounded-2xl border border-gray-200 p-6 lg:sticky lg:top-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">
+              <h3 className="text-xl font-medium text-gray-900 mb-6">
                 Event Summary
               </h3>
               <div className="space-y-6 mb-6">
                 <div>
-                  <h4 className="font-semibold text-lg">
+                  <h4 className="font-medium text-lg">
                     {service?.title || "Event"}
                   </h4>
                   <p className="text-gray-600">
@@ -1004,7 +1004,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                 </div>
                 {step >= 1 && (
                   <div className="border-t pt-4">
-                    <h4 className="font-semibold mb-2">Selected Tickets</h4>
+                    <h4 className="font-medium mb-2">Selected Tickets</h4>
                     {Object.entries(selectedTickets).map(([name, quantity]) =>
                       quantity > 0 ? (
                         <div
@@ -1025,7 +1025,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                         </div>
                       ) : null,
                     )}
-                    <div className="flex justify-between font-semibold text-lg mt-2 pt-2 border-t">
+                    <div className="flex justify-between font-medium text-lg mt-2 pt-2 border-t">
                       <span>Total</span>
                       <span>₦{calculateTotal().toLocaleString()}</span>
                     </div>

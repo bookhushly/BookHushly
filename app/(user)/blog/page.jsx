@@ -151,7 +151,7 @@ export default function BlogPage() {
             <Badge variant="secondary" className="mb-4">
               📝 Insights & Stories
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl lg:text-6xl font-medium mb-6">
               Bookhushly Blog
             </h1>
             <p className="text-xl text-primary-foreground/90">
@@ -169,7 +169,7 @@ export default function BlogPage() {
             <div>
               <div className="flex items-center mb-6">
                 <TrendingUp className="h-5 w-5 text-primary mr-2" />
-                <h2 className="text-2xl font-bold">Featured Article</h2>
+                <h2 className="text-2xl font-medium">Featured Article</h2>
               </div>
               
               <Card className="overflow-hidden hover:shadow-xl transition-shadow">
@@ -219,7 +219,7 @@ export default function BlogPage() {
 
             {/* Recent Posts */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">Latest Articles</h2>
+              <h2 className="text-2xl font-medium mb-6">Latest Articles</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {blogPosts.map((post) => (

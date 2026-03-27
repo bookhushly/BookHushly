@@ -51,7 +51,7 @@ function ProximityBadge({ proximity }) {
   if (!meta) return null;
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${meta.color}`}
+      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${meta.color}`}
     >
       <Navigation className="h-2.5 w-2.5" />
       {meta.text}
@@ -108,7 +108,7 @@ export default function NearbyListings() {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-violet-100 mb-5">
               <LocateFixed className="h-6 w-6 text-violet-600" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+            <h2 className="text-2xl md:text-3xl font-medium text-gray-900 mb-3">
               Services near you
             </h2>
             <p className="text-gray-500 mb-7 text-sm md:text-base">
@@ -172,9 +172,9 @@ export default function NearbyListings() {
           <div>
             <div className="flex items-center gap-2 text-violet-600 mb-2">
               <MapPin className="h-4 w-4" />
-              <span className="text-xs font-semibold uppercase tracking-widest">Near you</span>
+              <span className="text-xs font-medium uppercase tracking-widest">Near you</span>
             </div>
-            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight">
+            <h2 className="text-2xl md:text-4xl font-medium text-gray-900 leading-tight">
               Services in{" "}
               <span className="text-violet-600">
                 {displayCity || displayState || "your area"}
@@ -210,7 +210,7 @@ export default function NearbyListings() {
               <Navigation className="h-2.5 w-2.5 text-white" />
             </span>
             <span className="text-gray-400 text-xs">Detected location:</span>
-            <span className="font-semibold text-gray-900 text-sm">
+            <span className="font-medium text-gray-900 text-sm">
               {displayLabel || "Resolving…"}
             </span>
             {geo.lat && !displayCity && !displayState && (
@@ -248,7 +248,7 @@ export default function NearbyListings() {
                 <span>{tab.emoji}</span>
                 {tab.label}
                 {count > 0 && (
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
                     activeTab === tab.value ? "bg-white/20 text-white" : "bg-violet-100 text-violet-600"
                   }`}>
                     {count}
@@ -305,7 +305,7 @@ export default function NearbyListings() {
           >
             <Link
               href={`/services?category=${activeTab}${geo.city ? `&city=${encodeURIComponent(geo.city)}` : ""}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-violet-200 hover:border-violet-400 text-violet-700 font-semibold text-sm rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-violet-200 hover:border-violet-400 text-violet-700 font-medium text-sm rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
             >
               View all {TABS.find((t) => t.value === activeTab)?.label.toLowerCase()} near you
               <ArrowRight className="h-4 w-4" />

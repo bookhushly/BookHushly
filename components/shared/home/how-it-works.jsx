@@ -51,7 +51,7 @@ export default function HowItWorks() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16 md:mb-24"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-[#1A0D4D] mb-3">
+          <h2 className="text-3xl md:text-5xl font-medium text-[#1A0D4D] mb-3">
             How It Works
           </h2>
           <p className="text-base md:text-lg text-[#5F5F7A] max-w-2xl mx-auto leading-relaxed">
@@ -105,7 +105,7 @@ function StepCard({ step, index }) {
           transition={{ delay: index * 0.2, type: "spring", stiffness: 200 }}
           className="w-12 h-12 rounded-full bg-white border-3 border-[#1A0D4D] flex items-center justify-center shadow-md"
         >
-          <span className="text-lg font-bold text-[#1A0D4D]">{index + 1}</span>
+          <span className="text-lg font-medium text-[#1A0D4D]">{index + 1}</span>
         </motion.div>
       </div>
 
@@ -122,7 +122,7 @@ function StepCard({ step, index }) {
           }}
           className="w-14 h-14 rounded-full bg-white border-4 border-[#1A0D4D] flex items-center justify-center shadow-lg z-20"
         >
-          <span className="text-xl font-bold text-[#1A0D4D]">{index + 1}</span>
+          <span className="text-xl font-medium text-[#1A0D4D]">{index + 1}</span>
         </motion.div>
       </div>
 
@@ -151,7 +151,7 @@ function StepCard({ step, index }) {
                 />
               </div>
               <div className="flex-1 text-left lg:text-left">
-                <h3 className="text-xl md:text-2xl font-semibold text-[#1A0D4D] mb-2">
+                <h3 className="text-xl md:text-2xl font-medium text-[#1A0D4D] mb-2">
                   {step.title}
                 </h3>
                 <p className="text-sm md:text-base text-[#5F5F7A] leading-relaxed">

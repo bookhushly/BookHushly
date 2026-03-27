@@ -13,7 +13,7 @@ export default function MediaUpload({
   return (
     <Card className="border-none shadow-lg rounded-2xl bg-white">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-gray-900">
+        <CardTitle className="text-2xl font-medium text-gray-900">
           Upload Media
         </CardTitle>
       </CardHeader>

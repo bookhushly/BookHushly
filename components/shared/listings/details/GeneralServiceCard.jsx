@@ -214,7 +214,7 @@ const GeneralServiceCard = React.memo(({ service, lastListingRef }) => {
           {/* Content */}
           <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
             {/* Title */}
-            <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-1 group-hover:text-violet-700 transition-colors">
+            <h3 className="font-medium text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-1 group-hover:text-violet-700 transition-colors">
               {service.title || "Untitled Service"}
             </h3>
 
@@ -260,24 +260,24 @@ const GeneralServiceCard = React.memo(({ service, lastListingRef }) => {
               {/* Mobile: price left, action right */}
               <div className="flex items-end justify-between sm:hidden">
                 <div>
-                  <span className="text-sm font-bold text-gray-900">{price}</span>
+                  <span className="text-sm font-medium text-gray-900">{price}</span>
                   {priceLabel && (
                     <span className="text-[10px] text-gray-400 ml-0.5">{priceLabel}</span>
                   )}
                 </div>
-                <span className="h-7 px-3 inline-flex items-center text-[11px] font-semibold bg-violet-600 text-white rounded-lg shrink-0">
+                <span className="h-7 px-3 inline-flex items-center text-[11px] font-medium bg-violet-600 text-white rounded-lg shrink-0">
                   {btnText}
                 </span>
               </div>
               {/* sm+: stacked */}
               <div className="hidden sm:flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <span className="text-xl font-bold text-gray-900">{price}</span>
+                  <span className="text-xl font-medium text-gray-900">{price}</span>
                   {priceLabel && (
                     <span className="text-xs text-gray-400 ml-0.5">{priceLabel}</span>
                   )}
                 </div>
-                <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
+                <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
                   {btnText}
                 </span>
               </div>

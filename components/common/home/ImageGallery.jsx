@@ -60,7 +60,7 @@ export default function ImageGallery({
                   onClick={() => setShowAllImages(true)}
                   className="absolute inset-0 bg-black/70 hover:bg-black/75 flex flex-col items-center justify-center text-white transition-all"
                 >
-                  <span className="text-xl font-semibold mb-1">+{remainingCount}</span>
+                  <span className="text-xl font-medium mb-1">+{remainingCount}</span>
                   <span className="text-sm font-medium">Show all photos</span>
                 </button>
               )}
@@ -97,7 +97,7 @@ export default function ImageGallery({
       {showAllImages && hasMoreImages && (
         <button
           onClick={() => setShowAllImages(false)}
-          className="mt-4 w-full py-3 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold rounded-lg transition-colors"
+          className="mt-4 w-full py-3 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-medium rounded-lg transition-colors"
         >
           Show less photos
         </button>

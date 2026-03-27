@@ -72,7 +72,7 @@ export function VendorInfo({ vendor }) {
       )}
 
       <div className="pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Banking Information
         </h3>
         <div className="grid grid-cols-2 gap-6">
@@ -102,7 +102,7 @@ export function VendorInfo({ vendor }) {
       {(vendor.business_registration_number ||
         vendor.tax_identification_number) && (
         <div className="pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Legal Information
           </h3>
           <div className="grid grid-cols-2 gap-6">

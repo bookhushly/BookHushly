@@ -83,7 +83,7 @@ function StatCard({ label, value, sub, iconBg, Icon, iconColor }) {
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-gray-600 text-sm font-medium mb-2">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-3xl font-medium text-gray-900">{value}</p>
           {sub && <p className="text-sm mt-1">{sub}</p>}
         </div>
         <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center shrink-0`}>
@@ -110,7 +110,7 @@ function TicketEditor({ current, onSave, onCancel, isSaving, error }) {
         ))}
         <input type="text" inputMode="numeric" value={count} disabled={isSaving}
           onChange={(e) => setCount(Math.max(0, parseInt(e.target.value) || 0))}
-          className="w-20 text-center text-2xl font-bold border-2 border-purple-200 rounded-lg py-1 focus:outline-none focus:ring-2 focus:ring-purple-300 disabled:opacity-40" />
+          className="w-20 text-center text-2xl font-medium border-2 border-purple-200 rounded-lg py-1 focus:outline-none focus:ring-2 focus:ring-purple-300 disabled:opacity-40" />
         {[1, 10].map((d) => (
           <button key={d} onClick={() => adjust(d)} disabled={isSaving}
             className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors disabled:opacity-40">
@@ -152,7 +152,7 @@ function RemainingTicketsCard({ listing, isEditing, setIsEditing, updateTickets 
       <div className="flex items-start justify-between">
         <div>
           <p className="text-gray-600 text-sm font-medium mb-2">Remaining Tickets</p>
-          <p className="text-3xl font-bold text-gray-900">{listing.remaining_tickets.toLocaleString()}</p>
+          <p className="text-3xl font-medium text-gray-900">{listing.remaining_tickets.toLocaleString()}</p>
         </div>
         <button onClick={() => setIsEditing(true)}
           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-purple-600 text-xs font-medium">
@@ -305,10 +305,10 @@ function RefundsPanel({ listingId }) {
         }`}>
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <p className="font-semibold text-gray-900 text-sm">{r.contact_email}</p>
+              <p className="font-medium text-gray-900 text-sm">{r.contact_email}</p>
               <p className="text-xs text-gray-400">Requested {new Date(r.requested_at).toLocaleDateString("en-GB")}</p>
             </div>
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
               r.status === "pending" ? "bg-amber-50 text-amber-700 border-amber-200" :
               r.status === "approved" ? "bg-green-50 text-green-700 border-green-200" :
               "bg-gray-50 text-gray-600 border-gray-200"
@@ -387,7 +387,7 @@ function EmailAttendeesPanel({ listingId }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl space-y-5">
       <div>
-        <h3 className="font-bold text-gray-900 mb-1">Email All Attendees</h3>
+        <h3 className="font-medium text-gray-900 mb-1">Email All Attendees</h3>
         <p className="text-sm text-gray-500">
           Send a custom email directly to all confirmed attendees' inboxes. Max 5 blasts per event per day.
         </p>
@@ -441,7 +441,7 @@ function EmailAttendeesPanel({ listingId }) {
       <button
         onClick={handleSend}
         disabled={isSending || !subject.trim() || !message.trim()}
-        className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+        className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors"
       >
         {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
         {isSending ? "Sending emails..." : "Send Email to All Attendees"}
@@ -481,7 +481,7 @@ function BroadcastPanel({ listingId }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl space-y-5">
       <div>
-        <h3 className="font-bold text-gray-900 mb-1">Broadcast to Attendees</h3>
+        <h3 className="font-medium text-gray-900 mb-1">Broadcast to Attendees</h3>
         <p className="text-sm text-gray-500">
           Send a notification to all confirmed ticket holders for this event.
         </p>
@@ -529,7 +529,7 @@ function BroadcastPanel({ listingId }) {
       <button
         onClick={handleSend}
         disabled={status === "sending" || !title.trim() || !message.trim()}
-        className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors"
+        className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors"
       >
         {status === "sending" ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -622,7 +622,7 @@ function PromoCodesPanel({ listingId, vendorId }) {
             <div key={c.id} className={`flex items-center justify-between p-4 border rounded-xl transition-opacity ${c.active ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50 opacity-60"}`}>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-purple-700 text-sm tracking-wider">{c.code}</span>
+                  <span className="font-mono font-medium text-purple-700 text-sm tracking-wider">{c.code}</span>
                   <button onClick={() => copyCode(c.code)} className="text-gray-400 hover:text-gray-600">
                     <Copy className="w-3.5 h-3.5" />
                   </button>
@@ -649,7 +649,7 @@ function PromoCodesPanel({ listingId, vendorId }) {
 
       {/* Create new */}
       <div className="space-y-3 p-4 border-2 border-dashed border-gray-200 rounded-xl">
-        <h4 className="font-semibold text-gray-800 text-sm">Create Promo Code</h4>
+        <h4 className="font-medium text-gray-800 text-sm">Create Promo Code</h4>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -804,7 +804,7 @@ const EventManagementDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{listing.title}</h1>
+              <h1 className="text-3xl font-medium text-gray-900">{listing.title}</h1>
               <p className="text-gray-600 mt-1">{listing.location}</p>
             </div>
             <button
@@ -881,7 +881,7 @@ const EventManagementDashboard = () => {
             <div className="px-6 py-5 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Event Bookings</h2>
+                  <h2 className="text-xl font-medium text-gray-900">Event Bookings</h2>
                   <p className="text-gray-600 text-sm mt-1">{bookings.length} total bookings</p>
                 </div>
                 <button
@@ -925,7 +925,7 @@ const EventManagementDashboard = () => {
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
                       {["Customer", "Contact", "Date", "Tickets", "Amount", "Status", "Payment", "Check-in"].map((col) => (
-                        <th key={col} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th key={col} className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                           {col}
                         </th>
                       ))}
@@ -937,7 +937,7 @@ const EventManagementDashboard = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                              <span className="text-purple-700 font-semibold text-sm">
+                              <span className="text-purple-700 font-medium text-sm">
                                 {(booking.users?.name || booking.contact_email || "U").charAt(0).toUpperCase()}
                               </span>
                             </div>
@@ -969,7 +969,7 @@ const EventManagementDashboard = () => {
                             {booking.ticket_details?.quantity || booking.guests} tickets
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-semibold text-gray-900">
+                        <td className="px-6 py-4 font-medium text-gray-900">
                           ₦{parseFloat(booking.total_amount).toLocaleString()}
                         </td>
                         <td className="px-6 py-4"><StatusBadge status={booking.status} /></td>
@@ -981,7 +981,7 @@ const EventManagementDashboard = () => {
                             }
                             disabled={checkIn.isPending}
                             title={booking.checked_in ? "Mark as not checked in" : "Mark as checked in"}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                               booking.checked_in
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                                 : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200"
@@ -1008,7 +1008,7 @@ const EventManagementDashboard = () => {
           <div className="space-y-6">
             {/* Sales velocity */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <h3 className="font-bold text-gray-900 mb-1">Ticket Sales Velocity</h3>
+              <h3 className="font-medium text-gray-900 mb-1">Ticket Sales Velocity</h3>
               <p className="text-sm text-gray-500 mb-6">
                 Cumulative tickets sold over time (solid) vs. daily new sales (dashed)
               </p>
@@ -1018,7 +1018,7 @@ const EventManagementDashboard = () => {
             {/* Ticket tier breakdown */}
             {listing.ticket_packages?.length > 0 && (
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-bold text-gray-900 mb-4">Ticket Tier Breakdown</h3>
+                <h3 className="font-medium text-gray-900 mb-4">Ticket Tier Breakdown</h3>
                 <div className="space-y-3">
                   {listing.ticket_packages.map((pkg, i) => {
                     const sold = bookings
@@ -1045,7 +1045,7 @@ const EventManagementDashboard = () => {
 
             {/* Booking status breakdown */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <h3 className="font-bold text-gray-900 mb-4">Booking Status Breakdown</h3>
+              <h3 className="font-medium text-gray-900 mb-4">Booking Status Breakdown</h3>
               {["confirmed", "pending", "completed", "cancelled"].map((status) => {
                 const count = bookings.filter((b) => b.status === status).length;
                 const pct = bookings.length > 0 ? ((count / bookings.length) * 100).toFixed(0) : 0;
@@ -1082,7 +1082,7 @@ const EventManagementDashboard = () => {
         {/* ── Promo Codes Tab ── */}
         {activeTab === "promo" && (
           <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl">
-            <h3 className="font-bold text-gray-900 mb-1">Promo Codes</h3>
+            <h3 className="font-medium text-gray-900 mb-1">Promo Codes</h3>
             <p className="text-sm text-gray-500 mb-6">
               Create discount codes for your attendees. Share them via social media or email.
             </p>

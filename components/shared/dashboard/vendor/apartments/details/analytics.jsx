@@ -30,7 +30,7 @@ function StatCard({ icon: Icon, label, value, sub, color = "purple" }) {
       </div>
       <div>
         <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-2xl font-bold text-gray-900 mt-0.5">{value}</p>
+        <p className="text-2xl font-medium text-gray-900 mt-0.5">{value}</p>
         {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
       </div>
     </div>
@@ -201,7 +201,7 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
 
       {/* Monthly revenue chart */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-purple-500" />
           Monthly revenue
         </h3>
@@ -217,7 +217,7 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
 
       {/* Booking status breakdown */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-blue-500" />
           Booking status breakdown
         </h3>
@@ -248,7 +248,7 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
           </div>
           <div>
             <p className="text-xs text-gray-500">View-to-booking conversion</p>
-            <p className="text-2xl font-bold text-gray-900">{conversionPct}%</p>
+            <p className="text-2xl font-medium text-gray-900">{conversionPct}%</p>
             <p className="text-xs text-gray-400">
               {bookings.length} booking{bookings.length !== 1 ? "s" : ""} from {views?.toLocaleString()} views
             </p>

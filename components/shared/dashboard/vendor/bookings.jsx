@@ -7,7 +7,7 @@ const BookingsTab = ({filteredBookings}) => {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-1">
+        <h2 className="text-2xl font-medium text-slate-900 mb-1">
           Booking Requests
         </h2>
         <p className="text-slate-600 text-sm">
@@ -27,19 +27,19 @@ const BookingsTab = ({filteredBookings}) => {
             <table className="w-full">
               <thead className="bg-slate-50/80 sticky top-0 backdrop-blur-sm border-b-2 border-slate-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Listing
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Schedule
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Guests
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
@@ -54,7 +54,7 @@ const BookingsTab = ({filteredBookings}) => {
                     }}
                   >
                     <td className="px-6 py-4">
-                      <div className="text-sm font-semibold text-slate-900">
+                      <div className="text-sm font-medium text-slate-900">
                         {booking.listings?.title}
                       </div>
                     </td>
@@ -75,14 +75,14 @@ const BookingsTab = ({filteredBookings}) => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-slate-900">
+                      <div className="text-sm font-medium text-slate-900">
                         ₦{booking.total_amount?.toLocaleString()}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <Badge
                         variant="outline"
-                        className="capitalize font-semibold"
+                        className="capitalize font-medium"
                       >
                         {booking.status}
                       </Badge>

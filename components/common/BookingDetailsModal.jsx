@@ -61,7 +61,7 @@ const HotelBookingDetails = ({ booking }) => (
   <div className="space-y-6">
     {/* Room Information */}
     <div className="bg-purple-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center">
+      <h3 className="text-lg font-medium mb-4 flex items-center">
         <Home className="h-5 w-5 mr-2 text-blue-600" />
         Accommodation Details
       </h3>
@@ -103,7 +103,7 @@ const HotelBookingDetails = ({ booking }) => (
 
     {/* Check-in/out Information */}
     <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4">Stay Details</h3>
+      <h3 className="text-lg font-medium mb-4">Stay Details</h3>
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
           <span className="text-sm text-gray-500">Check-in</span>
@@ -136,7 +136,7 @@ const HotelBookingDetails = ({ booking }) => (
     {/* Amenities */}
     {booking.listings?.features && (
       <div className="bg-green-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
+        <h3 className="text-lg font-medium mb-4 flex items-center">
           <Wifi className="h-5 w-5 mr-2 text-green-600" />
           Amenities Included
         </h3>
@@ -154,7 +154,7 @@ const HotelBookingDetails = ({ booking }) => (
     {/* Cancellation Policy */}
     {booking.listings?.cancellation_policy && (
       <div className="bg-yellow-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
           <AlertCircle className="h-5 w-5 mr-2 text-yellow-600" />
           Cancellation Policy
         </h3>
@@ -168,7 +168,7 @@ const FoodBookingDetails = ({ booking }) => (
   <div className="space-y-6">
     {/* Restaurant Information */}
     <div className="bg-orange-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center">
+      <h3 className="text-lg font-medium mb-4 flex items-center">
         <Utensils className="h-5 w-5 mr-2 text-orange-600" />
         Restaurant Details
       </h3>
@@ -204,7 +204,7 @@ const FoodBookingDetails = ({ booking }) => (
 
     {/* Reservation Details */}
     <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4">Reservation Details</h3>
+      <h3 className="text-lg font-medium mb-4">Reservation Details</h3>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <span className="text-sm text-gray-500">Date & Time</span>
@@ -221,7 +221,7 @@ const FoodBookingDetails = ({ booking }) => (
     {/* Special Dietary Options */}
     {booking.listings?.category_data?.special_diets && (
       <div className="bg-green-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
           <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
           Dietary Options Available
         </h3>
@@ -234,7 +234,7 @@ const FoodBookingDetails = ({ booking }) => (
     {/* Delivery Information */}
     {booking.listings?.category_data?.service_type?.includes("delivery") && (
       <div className="bg-purple-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
           <Truck className="h-5 w-5 mr-2 text-blue-600" />
           Delivery Information
         </h3>
@@ -253,7 +253,7 @@ const EventsBookingDetails = ({ booking }) => (
   <div className="space-y-6">
     {/* Event Information */}
     <div className="bg-purple-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center">
+      <h3 className="text-lg font-medium mb-4 flex items-center">
         <PartyPopper className="h-5 w-5 mr-2 text-purple-600" />
         Event Details
       </h3>
@@ -284,7 +284,7 @@ const EventsBookingDetails = ({ booking }) => (
     {/* Services Included */}
     {booking.listings?.category_data?.services_included && (
       <div className="bg-purple-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
+        <h3 className="text-lg font-medium mb-4 flex items-center">
           <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
           Services Included
         </h3>
@@ -297,7 +297,7 @@ const EventsBookingDetails = ({ booking }) => (
     {/* Equipment Provided */}
     {booking.listings?.category_data?.equipment_provided && (
       <div className="bg-green-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
+        <h3 className="text-lg font-medium mb-4 flex items-center">
           <Package className="h-5 w-5 mr-2 text-green-600" />
           Equipment & Items Provided
         </h3>
@@ -310,7 +310,7 @@ const EventsBookingDetails = ({ booking }) => (
     {/* Portfolio Link */}
     {booking.listings?.category_data?.portfolio_link && (
       <div className="bg-yellow-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
           <Camera className="h-5 w-5 mr-2 text-yellow-600" />
           Portfolio
         </h3>
@@ -331,7 +331,7 @@ const LogisticsBookingDetails = ({ booking }) => (
   <div className="space-y-6">
     {/* Service Information */}
     <div className="bg-purple-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center">
+      <h3 className="text-lg font-medium mb-4 flex items-center">
         <Truck className="h-5 w-5 mr-2 text-blue-600" />
         Logistics Service Details
       </h3>
@@ -366,7 +366,7 @@ const LogisticsBookingDetails = ({ booking }) => (
 
     {/* Delivery Information */}
     <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4">Delivery Information</h3>
+      <h3 className="text-lg font-medium mb-4">Delivery Information</h3>
       <div className="space-y-3">
         {booking.listings?.category_data?.weight_limit && (
           <div>
@@ -397,7 +397,7 @@ const LogisticsBookingDetails = ({ booking }) => (
 
     {/* Tracking & Insurance */}
     <div className="bg-green-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4">Additional Services</h3>
+      <h3 className="text-lg font-medium mb-4">Additional Services</h3>
       <div className="grid grid-cols-2 gap-4">
         {booking.listings?.category_data?.tracking_available && (
           <div className="flex items-center">
@@ -434,7 +434,7 @@ const SecurityBookingDetails = ({ booking }) => (
   <div className="space-y-6">
     {/* Security Service Information */}
     <div className="bg-red-50 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center">
+      <h3 className="text-lg font-medium mb-4 flex items-center">
         <Shield className="h-5 w-5 mr-2 text-red-600" />
         Security Service Details
       </h3>
@@ -468,7 +468,7 @@ const SecurityBookingDetails = ({ booking }) => (
     {/* Qualifications */}
     {booking.listings?.category_data?.certifications && (
       <div className="bg-purple-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
+        <h3 className="text-lg font-medium mb-4 flex items-center">
           <CheckCircle className="h-5 w-5 mr-2 text-blue-600" />
           Certifications & Qualifications
         </h3>
@@ -481,7 +481,7 @@ const SecurityBookingDetails = ({ booking }) => (
     {/* Equipment */}
     {booking.listings?.category_data?.equipment && (
       <div className="bg-green-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
+        <h3 className="text-lg font-medium mb-4 flex items-center">
           <Package className="h-5 w-5 mr-2 text-green-600" />
           Equipment & Technology
         </h3>
@@ -494,7 +494,7 @@ const SecurityBookingDetails = ({ booking }) => (
     {/* Response Time */}
     {booking.listings?.category_data?.response_time && (
       <div className="bg-yellow-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
           <Timer className="h-5 w-5 mr-2 text-yellow-600" />
           Emergency Response
         </h3>
@@ -623,7 +623,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
                   {getCategoryIcon(booking.listings?.category)}
                 </div>
               )}
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-medium text-gray-900">
                 Booking Details
               </h2>
             </div>
@@ -664,7 +664,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
             <div className="p-6 space-y-8 pb-6">
               {/* Service Overview */}
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <h3 className="text-lg font-medium mb-4 flex items-center">
                   {getCategoryIcon(booking.listings?.category)}
                   <span className="ml-2">Service Overview</span>
                 </h3>
@@ -697,7 +697,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-2xl font-bold text-green-600">
+                      <span className="text-2xl font-medium text-green-600">
                         ₦{booking.total_amount?.toLocaleString()}
                       </span>
                     </div>
@@ -711,7 +711,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
               {/* Special Requests */}
               {booking.special_requests && (
                 <div className="bg-purple-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-3 flex items-center">
+                  <h3 className="text-lg font-medium mb-3 flex items-center">
                     <FileText className="h-5 w-5 mr-2 text-purple-600" />
                     Special Requests
                   </h3>
@@ -723,7 +723,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
 
               {/* Vendor Information */}
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <h3 className="text-lg font-medium mb-4 flex items-center">
                   <Building className="h-5 w-5 mr-2 text-purple-600" />
                   Vendor Information
                 </h3>
@@ -747,14 +747,14 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
 
               {/* Payment Information */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <h3 className="text-lg font-medium mb-4 flex items-center">
                   <CreditCard className="h-5 w-5 mr-2 text-green-600" />
                   Payment Information
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Total Amount:</span>
-                    <span className="text-2xl font-bold text-green-600">
+                    <span className="text-2xl font-medium text-green-600">
                       ₦{booking.total_amount?.toLocaleString()}
                     </span>
                   </div>
@@ -771,7 +771,7 @@ export const BookingDetailsModal = ({ isOpen, onClose, bookingId }) => {
 
               {/* Booking Timeline */}
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <h3 className="text-lg font-medium mb-4 flex items-center">
                   <Clock className="h-5 w-5 mr-2 text-gray-600" />
                   Booking Timeline
                 </h3>

@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useUnreadCount } from "@/hooks/use-notifications";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 const NAV = [
   {
@@ -93,7 +94,7 @@ function ProfilePopover({ admin, onLogout, onClose, isLoggingOut }) {
       className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-xl border border-gray-200 shadow-xl shadow-black/10 overflow-hidden z-50"
     >
       <div className="px-4 py-3 border-b border-violet-100 bg-violet-50/60">
-        <p className="text-[13px] font-semibold text-gray-900 truncate">
+        <p className="text-[13px] font-medium text-gray-900 truncate">
           {displayName}
         </p>
         <p className="text-[11px] text-violet-600 font-medium truncate">
@@ -164,7 +165,7 @@ export function AdminSidebar({ isOpen, onClose }) {
     NAV.map(({ section, items }) => (
       <div key={section} className="space-y-0.5">
         {(!collapsed || isMobile) && (
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
             {section}
           </p>
         )}
@@ -199,7 +200,7 @@ export function AdminSidebar({ isOpen, onClose }) {
                   strokeWidth={2}
                 />
                 {showBadge && (
-                  <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] font-medium flex items-center justify-center">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -208,7 +209,7 @@ export function AdminSidebar({ isOpen, onClose }) {
                 <span className="flex-1 truncate">{label}</span>
               )}
               {(!collapsed || isMobile) && showBadge && (
-                <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"}`}>
+                <span className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"}`}>
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
@@ -241,7 +242,7 @@ export function AdminSidebar({ isOpen, onClose }) {
             onClick={() => setProfileOpen((p) => !p)}
             className="w-full flex justify-center py-3.5 hover:bg-violet-200/40 transition-colors"
           >
-            <div className="h-8 w-8 rounded-full bg-violet-200 text-violet-800 flex items-center justify-center text-sm font-bold">
+            <div className="h-8 w-8 rounded-full bg-violet-200 text-violet-800 flex items-center justify-center text-sm font-medium">
               {initial}
             </div>
           </button>
@@ -254,11 +255,11 @@ export function AdminSidebar({ isOpen, onClose }) {
             isMobile ? "px-5 py-4" : "px-4 py-3.5",
           )}
         >
-          <div className="h-8 w-8 rounded-full bg-violet-200 text-violet-800 flex items-center justify-center text-sm font-bold shrink-0">
+          <div className="h-8 w-8 rounded-full bg-violet-200 text-violet-800 flex items-center justify-center text-sm font-medium shrink-0">
             {initial}
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-[13px] font-semibold text-gray-900 truncate">
+            <p className="text-[13px] font-medium text-gray-900 truncate">
               {displayName}
             </p>
             <p className="text-[11px] text-violet-500 font-medium truncate">
@@ -285,7 +286,7 @@ export function AdminSidebar({ isOpen, onClose }) {
           w,
         )}
         style={{
-          background: "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)",
+          background: "var(--sidebar-bg)",
         }}
       >
         <div
@@ -306,15 +307,15 @@ export function AdminSidebar({ isOpen, onClose }) {
               </div>
             </Link>
           )}
-          <button
-            onClick={() => setCollapsed((p) => !p)}
-            className={cn(
-              "h-6 w-6 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-200/50 hover:text-violet-700 transition-colors text-xs font-bold",
-              collapsed && "mx-auto",
-            )}
-          >
-            {collapsed ? "›" : "‹"}
-          </button>
+          <div className={cn("flex items-center gap-1", collapsed && "mx-auto")}>
+            {!collapsed && <ThemeToggle />}
+            <button
+              onClick={() => setCollapsed((p) => !p)}
+              className="h-6 w-6 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-200/50 hover:text-violet-700 transition-colors text-xs font-medium"
+            >
+              {collapsed ? "›" : "‹"}
+            </button>
+          </div>
         </div>
         <nav
           className={cn(
@@ -344,7 +345,7 @@ export function AdminSidebar({ isOpen, onClose }) {
           <aside
             className="fixed left-0 top-0 h-full w-[260px] z-50 lg:hidden flex flex-col shadow-2xl border-r border-violet-100"
             style={{
-              background: "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)",
+              background: "var(--sidebar-bg)",
             }}
           >
             <div className="h-16 flex items-center justify-between px-5 border-b border-violet-100 shrink-0">
@@ -356,12 +357,15 @@ export function AdminSidebar({ isOpen, onClose }) {
                   className="object-contain object-left scale-150"
                 />
               </div>
-              <button
-                onClick={onClose}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-200/50 transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <ThemeToggle />
+                <button
+                  onClick={onClose}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-200/50 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <nav className="flex-1 px-3 py-3 overflow-y-auto">
               {renderNav(true)}

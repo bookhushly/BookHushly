@@ -119,7 +119,7 @@ export default function BookingMessages({ bookingId }) {
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50">
         <MessageCircle className="h-4 w-4 text-violet-500" />
-        <span className="text-sm font-semibold text-gray-800">
+        <span className="text-sm font-medium text-gray-800">
           Messages {myRole ? `· as ${myRole}` : ""}
         </span>
       </div>
@@ -142,7 +142,7 @@ export default function BookingMessages({ bookingId }) {
                   : "bg-gray-100 text-gray-800 rounded-bl-sm"
               }`}>
                 {!isMine && (
-                  <p className="text-[10px] font-semibold mb-1 capitalize opacity-60">{msg.sender_role}</p>
+                  <p className="text-[10px] font-medium mb-1 capitalize opacity-60">{msg.sender_role}</p>
                 )}
                 <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{msg.message}</p>
                 <p className={`text-[10px] mt-1 text-right ${isMine ? "text-violet-200" : "text-gray-400"}`}>

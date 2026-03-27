@@ -62,7 +62,7 @@ export function VendorInsightsPanel({ analytics, range }) {
             <TrendingUp className="h-4 w-4 text-violet-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-800">AI Business Insights</p>
+            <p className="text-sm font-medium text-gray-800">AI Business Insights</p>
             <p className="text-[11px] text-gray-400">Based on your {range} performance</p>
           </div>
         </div>

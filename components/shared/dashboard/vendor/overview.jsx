@@ -24,7 +24,7 @@ const OverviewTab = ({ user, vendor }) => {
       {/* Welcome Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 mb-1">
+          <h2 className="text-3xl font-medium text-slate-900 mb-1">
             Welcome back, {user?.user_metadata?.name || "there"}! 👋
           </h2>
           <p className="text-slate-600">
@@ -71,7 +71,7 @@ const OverviewTab = ({ user, vendor }) => {
                   <div className="absolute left-1/2 top-full h-8 w-px bg-slate-200 -translate-x-1/2"></div>
                 </div>
                 <div className="flex-1 -mt-1">
-                  <p className="text-sm font-semibold text-slate-900 mb-1">
+                  <p className="text-sm font-medium text-slate-900 mb-1">
                     Account Created
                   </p>
                   <p className="text-xs text-slate-500">
@@ -92,7 +92,7 @@ const OverviewTab = ({ user, vendor }) => {
                     )}
                   </div>
                   <div className="flex-1 -mt-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-1">
+                    <p className="text-sm font-medium text-slate-900 mb-1">
                       KYC Verification Submitted
                     </p>
                     <p className="text-xs text-slate-500">
@@ -114,7 +114,7 @@ const OverviewTab = ({ user, vendor }) => {
                   </div>
                   <div className="flex-1 -mt-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-medium text-slate-900">
                         Vendor Account Approved
                       </p>
                       <Badge className="bg-green-100 text-green-700 border-0">
@@ -146,7 +146,7 @@ const OverviewTab = ({ user, vendor }) => {
             <CardContent className="space-y-3">
               <Button
                 asChild
-                className="w-full justify-start bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg shadow-purple-600/30 font-semibold h-12"
+                className="w-full justify-start bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg shadow-purple-600/30 font-medium h-12"
                 disabled={!vendor?.approved}
               >
                 <Link href="/vendor/dashboard/listings/create">
@@ -183,24 +183,24 @@ const OverviewTab = ({ user, vendor }) => {
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">Performance</h3>
+                  <h3 className="font-medium text-lg">Performance</h3>
                   <p className="text-xs text-blue-100">This month</p>
                 </div>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-blue-100">Profile Views</span>
-                  <span className="text-lg font-bold">1,234</span>
+                  <span className="text-lg font-medium">1,234</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-blue-100">Conversion Rate</span>
-                  <span className="text-lg font-bold">12.5%</span>
+                  <span className="text-lg font-medium">12.5%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-blue-100">
                     Avg Response Time
                   </span>
-                  <span className="text-lg font-bold">2.3h</span>
+                  <span className="text-lg font-medium">2.3h</span>
                 </div>
               </div>
             </CardContent>

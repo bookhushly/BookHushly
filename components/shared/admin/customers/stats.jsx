@@ -62,7 +62,7 @@ export const CustomerStats = memo(({ stats, loading }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">{stat.label}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl font-medium text-gray-900 mt-1">
                 {stat.value}
               </p>
             </div>

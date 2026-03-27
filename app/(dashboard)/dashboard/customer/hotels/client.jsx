@@ -112,7 +112,7 @@ export function HotelBookingsClient({ userId, initialData }) {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-medium text-gray-900">
                             {booking.hotel?.name || "Hotel Booking"}
                           </h3>
                           {renderStars(booking.hotel?.star_rating)}

@@ -80,7 +80,7 @@ export default function Services() {
           variants={fadeUp}
           className="text-center mb-12 md:mb-16"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-3">
+          <h2 className="text-3xl md:text-5xl font-medium text-gray-900 mb-3">
             Explore Trusted Categories
           </h2>
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
@@ -136,7 +136,7 @@ export default function Services() {
               <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 text-white">
                 <div className="flex items-center gap-2 mb-2">
                   {/* <span className="text-xl md:text-2xl">{cat.icon}</span> */}
-                  <h3 className="text-lg md:text-xl font-semibold drop-shadow-md">
+                  <h3 className="text-lg md:text-xl font-medium drop-shadow-md">
                     {cat.label}
                   </h3>
                 </div>

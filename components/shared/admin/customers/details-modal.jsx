@@ -55,7 +55,7 @@ export function CustomerDetailsModal({ customerId, onClose }) {
             <DialogHeader>
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-medium text-lg shrink-0">
                     {customer.name?.charAt(0).toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0">

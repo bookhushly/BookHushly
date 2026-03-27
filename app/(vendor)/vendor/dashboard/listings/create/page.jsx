@@ -675,7 +675,7 @@ export default function CreateListingPage() {
       ) : selectedCategory === "events" && eventType === "event_organizer" ? (
         <>
           <div className="mb-10">
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            <h1 className="text-4xl font-medium text-gray-900 mb-3">
               Create Event Listing
             </h1>
             <p className="text-lg text-gray-600">
@@ -692,7 +692,7 @@ export default function CreateListingPage() {
       ) : (
         <>
           <div className="mb-10">
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            <h1 className="text-4xl font-medium text-gray-900 mb-3">
               Create New Listing
             </h1>
             <p className="text-lg text-gray-600">

@@ -59,14 +59,14 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
 
           {/* Type label */}
           <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-gray-950/70 text-white backdrop-blur-sm px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg">
+            <span className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider bg-gray-950/70 text-white backdrop-blur-sm px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg">
               {typeLabel}
             </span>
           </div>
 
           {/* Discount badge */}
           {bestPct >= 5 && (
-            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-green-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-lg">
+            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-green-500 text-white text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded-lg">
               Save {bestPct}%
             </div>
           )}
@@ -74,7 +74,7 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
           {/* Price badge — sm+ only (shown in content on mobile) */}
           <div className="hidden sm:block absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg">
             <p className="text-[10px] text-gray-400">From</p>
-            <p className="text-base font-bold text-gray-900">
+            <p className="text-base font-medium text-gray-900">
               ₦{apt.price?.toLocaleString()}
               <span className="text-xs font-normal text-gray-400">/night</span>
             </p>
@@ -85,7 +85,7 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
         <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
           {/* Title + verified badge */}
           <div className="flex items-start gap-1.5 mb-1">
-            <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 group-hover:text-violet-700 transition-colors">
+            <h3 className="font-medium text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 group-hover:text-violet-700 transition-colors">
               {apt.title}
             </h3>
             {apt.is_verified && (
@@ -105,7 +105,7 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
           {apt.avg_rating > 0 && (
             <div className="flex items-center gap-1 mb-2">
               <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-400 fill-amber-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs font-semibold text-gray-700">
+              <span className="text-[11px] sm:text-xs font-medium text-gray-700">
                 {apt.avg_rating.toFixed(1)}
               </span>
               <span className="text-[11px] sm:text-xs text-gray-400">
@@ -190,18 +190,18 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
               <div>
                 <p className="text-[10px] text-gray-400">From</p>
                 <div className="flex items-baseline gap-0.5">
-                  <span className="text-sm font-bold text-gray-900">
+                  <span className="text-sm font-medium text-gray-900">
                     ₦{apt.price?.toLocaleString()}
                   </span>
                   <span className="text-[10px] text-gray-400">/night</span>
                 </div>
               </div>
-              <span className="h-7 px-3 inline-flex items-center text-[11px] font-semibold bg-violet-600 text-white rounded-lg shrink-0">
+              <span className="h-7 px-3 inline-flex items-center text-[11px] font-medium bg-violet-600 text-white rounded-lg shrink-0">
                 Book
               </span>
             </div>
             {/* sm+: full-width button */}
-            <div className="hidden sm:flex w-full h-10 items-center justify-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 cursor-pointer">
+            <div className="hidden sm:flex w-full h-10 items-center justify-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors duration-150 cursor-pointer">
               View details
             </div>
           </div>

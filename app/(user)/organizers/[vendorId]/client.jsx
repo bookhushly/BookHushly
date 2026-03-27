@@ -46,15 +46,15 @@ function EventCard({ listing }) {
         )}
         {isPast && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="text-white text-sm font-semibold bg-black/50 px-3 py-1 rounded-full">Past Event</span>
+            <span className="text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">Past Event</span>
           </div>
         )}
         {listing.category_data?.is_online && (
-          <span className="absolute top-2 left-2 text-xs font-semibold bg-blue-600 text-white px-2 py-0.5 rounded-full">Virtual</span>
+          <span className="absolute top-2 left-2 text-xs font-medium bg-blue-600 text-white px-2 py-0.5 rounded-full">Virtual</span>
         )}
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{listing.title}</h3>
+        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{listing.title}</h3>
         {listing.event_date && (
           <p className="text-sm text-gray-500 flex items-center gap-1 mb-1">
             <Calendar className="w-3.5 h-3.5" />
@@ -71,7 +71,7 @@ function EventCard({ listing }) {
           </p>
         )}
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-          <span className="text-purple-700 font-bold text-sm">
+          <span className="text-purple-700 font-medium text-sm">
             {lowestPrice === 0 ? "Free" : `From ₦${lowestPrice.toLocaleString()}`}
           </span>
           {listing.remaining_tickets != null && (
@@ -161,12 +161,12 @@ export default function OrganizerProfileClient({ vendor, listings, followerCount
               {vendor.avatar_url ? (
                 <Image src={vendor.avatar_url} alt={vendor.business_name} width={80} height={80} className="object-cover w-full h-full" />
               ) : (
-                <span className="text-3xl font-bold text-purple-600">{vendor.business_name?.[0]?.toUpperCase()}</span>
+                <span className="text-3xl font-medium text-purple-600">{vendor.business_name?.[0]?.toUpperCase()}</span>
               )}
             </div>
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900">{vendor.business_name}</h1>
+              <h1 className="text-2xl font-medium text-gray-900">{vendor.business_name}</h1>
               {(vendor.city || vendor.state) && (
                 <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                   <MapPin className="w-3.5 h-3.5" />
@@ -209,7 +209,7 @@ export default function OrganizerProfileClient({ vendor, listings, followerCount
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Upcoming events */}
-        <h2 className="text-lg font-bold text-gray-900 mb-4">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
           Upcoming Events <span className="text-sm font-normal text-gray-400">({upcomingEvents.length})</span>
         </h2>
         {upcomingEvents.length === 0 ? (

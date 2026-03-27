@@ -59,13 +59,13 @@ function parseInline(text, codeStyle) {
       );
     } else if (m.startsWith("***")) {
       nodes.push(
-        <strong key={key++} className="font-semibold italic">
+        <strong key={key++} className="font-medium italic">
           {m.slice(3, -3)}
         </strong>,
       );
     } else if (m.startsWith("**")) {
       nodes.push(
-        <strong key={key++} className="font-semibold text-gray-900">
+        <strong key={key++} className="font-medium text-gray-900">
           {m.slice(2, -2)}
         </strong>,
       );
@@ -143,7 +143,7 @@ function FormattedMessage({ content, variant = "bot" }) {
       blocks.push(
         <p
           key={`h3-${i}`}
-          className="text-xs font-semibold text-gray-700 mt-2.5 mb-0.5"
+          className="text-xs font-medium text-gray-700 mt-2.5 mb-0.5"
         >
           {parseInline(line.slice(4), codeStyle)}
         </p>,
@@ -155,7 +155,7 @@ function FormattedMessage({ content, variant = "bot" }) {
       blocks.push(
         <p
           key={`h2-${i}`}
-          className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mt-3 mb-1"
+          className="text-[11px] font-medium text-gray-500 uppercase tracking-widest mt-3 mb-1"
         >
           {parseInline(line.slice(3), codeStyle)}
         </p>,
@@ -167,7 +167,7 @@ function FormattedMessage({ content, variant = "bot" }) {
       blocks.push(
         <p
           key={`h1-${i}`}
-          className="text-sm font-bold text-gray-900 mt-1 mb-1.5"
+          className="text-sm font-medium text-gray-900 mt-1 mb-1.5"
         >
           {parseInline(line.slice(2), codeStyle)}
         </p>,
@@ -232,7 +232,7 @@ function FormattedMessage({ content, variant = "bot" }) {
         <ol key={`ol-${i}`} className="space-y-2 my-1.5">
           {items.map((item, idx) => (
             <li key={idx} className="flex items-start gap-2.5">
-              <span className="w-[18px] h-[18px] rounded-full bg-violet-100 text-violet-600 text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5 ring-1 ring-violet-200">
+              <span className="w-[18px] h-[18px] rounded-full bg-violet-100 text-violet-600 text-[10px] font-medium flex items-center justify-center flex-shrink-0 mt-0.5 ring-1 ring-violet-200">
                 {idx + 1}
               </span>
               <span className="text-sm leading-relaxed flex-1">
@@ -296,7 +296,7 @@ function AgentAvatar({ name }) {
         .slice(0, 2)
     : "AG";
   return (
-    <div className="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center flex-shrink-0 text-white text-xs font-semibold shadow-sm ring-2 ring-violet-100">
+    <div className="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center flex-shrink-0 text-white text-xs font-medium shadow-sm ring-2 ring-violet-100">
       {initials}
     </div>
   );
@@ -865,7 +865,7 @@ export default function ChatWidget() {
           >
             <MessageCircle size={22} className="text-white" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 ring-2 ring-white rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 ring-2 ring-white rounded-full flex items-center justify-center text-white text-[10px] font-medium">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
@@ -904,7 +904,7 @@ export default function ChatWidget() {
                     <MessageCircle size={17} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold text-sm leading-tight">
+                    <p className="text-white font-medium text-sm leading-tight">
                       Nora — BookHushly Support
                     </p>
                     {/* Status line — only one shown at a time */}
@@ -992,7 +992,7 @@ export default function ChatWidget() {
                   <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center mb-3">
                     <MessageCircle size={22} className="text-violet-500" />
                   </div>
-                  <p className="text-sm font-semibold text-gray-800 mb-1">
+                  <p className="text-sm font-medium text-gray-800 mb-1">
                     How can we help?
                   </p>
                   <p className="text-xs text-gray-400 leading-relaxed mb-4">

@@ -75,7 +75,7 @@ const FoodServiceDetail = ({ service, categoryData }) => {
 
       {/* Service Types */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Service Options
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -102,7 +102,7 @@ const FoodServiceDetail = ({ service, categoryData }) => {
       {service.category_data?.meals &&
         service.category_data.meals.length > 0 && (
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-6">
               Featured Menu Items
             </h3>
             <div className="grid gap-4">
@@ -121,10 +121,10 @@ const FoodServiceDetail = ({ service, categoryData }) => {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-900 truncate">
+                    <h4 className="font-medium text-gray-900 truncate">
                       {meal.name}
                     </h4>
-                    <p className="text-lg font-bold text-orange-600">
+                    <p className="text-lg font-medium text-orange-600">
                       ₦{meal.price?.toLocaleString()}
                     </p>
                     {meal.description && (
@@ -155,7 +155,7 @@ const FoodServiceDetail = ({ service, categoryData }) => {
 
       {/* Restaurant Details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Restaurant Details
         </h3>
         <div className="bg-orange-50 rounded-lg p-4">
@@ -195,7 +195,7 @@ const FoodServiceDetail = ({ service, categoryData }) => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
         <div className="mb-6">
           <div className="flex items-baseline mb-2">
-            <span className="text-3xl font-bold text-gray-900">
+            <span className="text-3xl font-medium text-gray-900">
               ₦{service.price.toLocaleString()}
             </span>
             <span className="text-sm text-gray-600 ml-2">
@@ -211,7 +211,7 @@ const FoodServiceDetail = ({ service, categoryData }) => {
         <Button
           asChild={service.availability === "available"}
           disabled={service.availability !== "available"}
-          className={`w-full mb-4 h-12 text-base font-semibold ${
+          className={`w-full mb-4 h-12 text-base font-medium ${
             service.availability === "available"
               ? "bg-orange-600 hover:bg-orange-700 text-white"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -232,7 +232,7 @@ const FoodServiceDetail = ({ service, categoryData }) => {
 
         {/* Delivery info */}
         <div className="bg-orange-50 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold text-gray-900 mb-2">Delivery Info</h4>
+          <h4 className="font-medium text-gray-900 mb-2">Delivery Info</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-center justify-between">
               <span>Delivery Fee:</span>

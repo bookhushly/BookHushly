@@ -91,7 +91,7 @@ export default function ServicePaymentPage() {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold mb-2">Quote Not Found</h2>
+          <h2 className="text-xl font-medium mb-2">Quote Not Found</h2>
           <p className="text-gray-600">
             The quote you're looking for doesn't exist or has expired.
           </p>
@@ -106,7 +106,7 @@ export default function ServicePaymentPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Complete Your Payment</h1>
+          <h1 className="text-3xl font-medium mb-2">Complete Your Payment</h1>
           <p className="text-gray-600">
             Review your quote and proceed with payment
           </p>
@@ -116,7 +116,7 @@ export default function ServicePaymentPage() {
           {/* Quote Summary */}
           <div className="md:col-span-2 space-y-6">
             <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Service Details</h2>
+              <h2 className="text-xl font-medium mb-4">Service Details</h2>
 
               <div className="space-y-3">
                 <div className="flex justify-between">
@@ -169,7 +169,7 @@ export default function ServicePaymentPage() {
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+              <h2 className="text-xl font-medium mb-4">Payment Method</h2>
 
               <RadioGroup
                 value={paymentMethod}
@@ -188,7 +188,7 @@ export default function ServicePaymentPage() {
                             Pay with debit/credit card or bank transfer
                           </div>
                         </div>
-                        <div className="text-sm font-semibold text-purple-600">
+                        <div className="text-sm font-medium text-purple-600">
                           Paystack
                         </div>
                       </div>
@@ -205,7 +205,7 @@ export default function ServicePaymentPage() {
                             Pay with Bitcoin, USDT, or other crypto
                           </div>
                         </div>
-                        <div className="text-sm font-semibold text-purple-600">
+                        <div className="text-sm font-medium text-purple-600">
                           NOWPayments
                         </div>
                       </div>
@@ -229,7 +229,7 @@ export default function ServicePaymentPage() {
           {/* Price Summary */}
           <div className="md:col-span-1">
             <Card className="p-6 sticky top-6">
-              <h2 className="text-lg font-semibold mb-4">Quote Summary</h2>
+              <h2 className="text-lg font-medium mb-4">Quote Summary</h2>
 
               {isExpired && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -262,8 +262,8 @@ export default function ServicePaymentPage() {
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <span className="text-lg font-semibold">Total Amount:</span>
-                <span className="text-2xl font-bold text-purple-600">
+                <span className="text-lg font-medium">Total Amount:</span>
+                <span className="text-2xl font-medium text-purple-600">
                   ₦{parseFloat(quote.total_amount).toLocaleString()}
                 </span>
               </div>

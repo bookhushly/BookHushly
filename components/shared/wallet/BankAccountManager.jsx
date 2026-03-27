@@ -153,7 +153,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Bank Accounts</h3>
+        <h3 className="text-lg font-medium text-gray-900">Bank Accounts</h3>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
@@ -169,7 +169,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
           <p className="text-gray-600 mb-4">No bank accounts added yet</p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+            className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
           >
             <Plus className="h-5 w-5" />
             Add Your First Account
@@ -206,7 +206,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="font-medium text-gray-900">
                         {account.bank_name}
                       </h4>
                       {account.is_default && (
@@ -253,7 +253,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-medium text-gray-900">
                 Add Bank Account
               </h3>
               <button
@@ -266,7 +266,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Bank
                 </label>
                 <select
@@ -284,7 +284,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Account Number
                 </label>
                 <input
@@ -300,7 +300,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Account Name
                 </label>
                 <input
@@ -338,7 +338,7 @@ const BankAccountManager = ({ onSelectAccount, selectedAccountId }) => {
               <button
                 onClick={handleAddAccount}
                 disabled={addingAccount}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed"
+                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white py-4 px-6 rounded-xl font-medium transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed"
               >
                 {addingAccount ? "Adding Account..." : "Add Bank Account"}
               </button>

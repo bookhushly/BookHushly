@@ -121,7 +121,7 @@ export default function LoginPage() {
             <p className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-5">
               Nigeria&apos;s booking platform
             </p>
-            <h2 className="font-fraunces text-white text-[3.2rem] font-semibold leading-[1.1] mb-6">
+            <h2 className="font-fraunces text-white text-[3.2rem] font-medium leading-[1.1] mb-6">
               Every booking,
               <br />
               effortlessly done.
@@ -162,7 +162,7 @@ export default function LoginPage() {
 
         <div className="flex-1 flex flex-col justify-center px-6 py-10 sm:px-10 lg:px-16 xl:px-24 max-w-lg lg:max-w-none mx-auto w-full lg:mx-0">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Sign in</h1>
+            <h1 className="text-2xl font-medium text-gray-900 mb-1">Sign in</h1>
             <p className="text-gray-500 text-sm">
               Don&apos;t have an account?{" "}
               <Link
@@ -256,7 +256,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-1"
+              className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-1"
             >
               {loginMutation.isPending ? (
                 <>

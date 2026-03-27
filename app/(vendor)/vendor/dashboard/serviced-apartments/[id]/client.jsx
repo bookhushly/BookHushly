@@ -212,7 +212,7 @@ export default function ApartmentDetailsPage({
           </div>
 
           <div className="mt-4">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-medium text-gray-900">
               {apartment.name}
             </h1>
             <p className="text-gray-600 mt-1">
@@ -302,7 +302,7 @@ export default function ApartmentDetailsPage({
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base pt-2">
               Are you sure you want to delete &quot;
-              <span className="font-semibold text-gray-900">
+              <span className="font-medium text-gray-900">
                 {apartment.name}
               </span>
               &quot;? This action cannot be undone and all related data will be

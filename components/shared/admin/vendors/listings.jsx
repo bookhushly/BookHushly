@@ -26,7 +26,7 @@ export function VendorListings({ vendorId }) {
     <div className="space-y-6">
       {listings.hotels.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Hotels ({listings.hotels.length})
           </h3>
           <div className="space-y-3">
@@ -62,7 +62,7 @@ export function VendorListings({ vendorId }) {
 
       {listings.apartments.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Serviced Apartments ({listings.apartments.length})
           </h3>
           <div className="space-y-3">
@@ -108,7 +108,7 @@ export function VendorListings({ vendorId }) {
 
       {listings.events.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Event Centers ({listings.events.length})
           </h3>
           <div className="space-y-3">

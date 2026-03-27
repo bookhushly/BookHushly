@@ -91,7 +91,7 @@ export default function CustomerNotificationsPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-medium text-gray-900 flex items-center gap-2">
             <Bell className="h-5 w-5 text-violet-600" />
             Notifications
           </h1>
@@ -117,7 +117,7 @@ export default function CustomerNotificationsPage() {
             { label: "Unread", value: unreadCount,           colour: "text-violet-600" },
           ].map((s) => (
             <div key={s.label} className="flex-1 bg-white rounded-xl border border-gray-100 px-4 py-3">
-              <p className={`text-xl font-bold ${s.colour}`}>{s.value}</p>
+              <p className={`text-xl font-medium ${s.colour}`}>{s.value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
             </div>
           ))}
@@ -159,7 +159,7 @@ export default function CustomerNotificationsPage() {
           <div className="w-16 h-16 rounded-full bg-violet-50 flex items-center justify-center">
             <BellOff className="h-7 w-7 text-violet-300" />
           </div>
-          <p className="text-base font-semibold text-gray-600">No notifications</p>
+          <p className="text-base font-medium text-gray-600">No notifications</p>
           <p className="text-sm text-center max-w-xs text-gray-400">
             {filter !== "all"
               ? "Nothing in this category yet. Try switching to All."
@@ -197,7 +197,7 @@ export default function CustomerNotificationsPage() {
                 {/* Body */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className={`text-sm font-semibold leading-snug ${isNew ? "text-gray-900" : "text-gray-700"}`}>
+                    <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900" : "text-gray-700"}`}>
                       {n.title}
                     </p>
                     <span className="text-[11px] text-gray-400 shrink-0 mt-0.5 whitespace-nowrap">

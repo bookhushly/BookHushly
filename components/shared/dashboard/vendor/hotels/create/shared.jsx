@@ -13,7 +13,7 @@ export const StepIndicator = memo(({ steps, currentStep }) => (
           style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
         />
       </div>
-      <span className="text-xs font-semibold text-purple-600 shrink-0">
+      <span className="text-xs font-medium text-purple-600 shrink-0">
         {currentStep} / {steps.length}
       </span>
     </div>

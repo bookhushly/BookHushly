@@ -46,10 +46,10 @@ const CategoryTabs = memo(
         <div className="container mx-auto px-4 sm:px-6">
           {/* Header */}
           <div className="pt-10 pb-7">
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-violet-600 mb-3">
+            <p className="text-xs font-medium tracking-[0.2em] uppercase text-violet-600 mb-3">
               Browse Services
             </p>
-            <h1 className="font-fraunces text-4xl sm:text-5xl font-semibold text-gray-900 leading-[1.1]">
+            <h1 className="font-fraunces text-4xl sm:text-5xl font-medium text-gray-900 leading-[1.1]">
               {activeLabel}
             </h1>
           </div>
@@ -82,7 +82,7 @@ const CategoryTabs = memo(
                   {cat.label}
                   {isDirect && (
                     <span
-                      className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                      className={`text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${
                         isActive
                           ? "bg-violet-200 text-violet-700"
                           : "bg-gray-100 text-gray-400"

@@ -53,7 +53,7 @@ const AmenitiesDisplay = ({
 
   return (
     <div className="border-t border-gray-200 py-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
       <div className="grid grid-cols-2 gap-3">
         {displayAmenities.map((amenity, index) => (
           <div key={index} className="flex items-center text-sm">

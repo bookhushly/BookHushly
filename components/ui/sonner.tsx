@@ -27,7 +27,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             'data-[type=warning]:!border-l-[3px] data-[type=warning]:!border-l-amber-400',
             'data-[type=info]:!border-l-[3px] data-[type=info]:!border-l-blue-500',
           ].join(' '),
-          title:       '!text-[13.5px] !font-semibold !text-gray-900 !leading-snug',
+          title:       '!text-[13.5px] !font-medium !text-gray-900 !leading-snug',
           description: '!text-[12px] !text-gray-500 !mt-0.5 !leading-snug',
           icon:        '!shrink-0',
           closeButton: [
@@ -39,7 +39,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           ].join(' '),
           actionButton: [
             '!bg-violet-600 hover:!bg-violet-700 !text-white',
-            '!h-7 !px-3 !text-[12px] !font-semibold !rounded-lg !transition-colors',
+            '!h-7 !px-3 !text-[12px] !font-medium !rounded-lg !transition-colors',
           ].join(' '),
           cancelButton: [
             '!bg-gray-100 hover:!bg-gray-200 !text-gray-600',

@@ -120,7 +120,7 @@ function ChartTooltip({ active, payload, label, formatter }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-lg shadow-black/8 p-3.5">
-      <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">
+      <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2">
         {label}
       </p>
       {payload.map((p, i) => (
@@ -135,7 +135,7 @@ function ChartTooltip({ active, payload, label, formatter }) {
             />
             <span className="text-gray-600">{p.name}</span>
           </span>
-          <span className="font-semibold text-gray-900">
+          <span className="font-medium text-gray-900">
             {formatter ? formatter(p.value, p.name) : p.value.toLocaleString()}
           </span>
         </div>
@@ -166,16 +166,16 @@ function KpiCard({ label, value, sub, isCurrency, trend, trendLabel }) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-purple-200 transition-colors">
-      <p className="text-[12px] font-semibold text-gray-400 uppercase tracking-wider">
+      <p className="text-[12px] font-medium text-gray-400 uppercase tracking-wider">
         {label}
       </p>
-      <p className="text-[28px] font-bold text-gray-900 mt-2 leading-tight">
+      <p className="text-[28px] font-medium text-gray-900 mt-2 leading-tight">
         {displayVal}
       </p>
       <div className="flex items-center gap-2 mt-2">
         {trend !== undefined && (
           <span
-            className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+            className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
               trend >= 0
                 ? "bg-green-50 text-green-700"
                 : "bg-red-50 text-red-700"
@@ -203,7 +203,7 @@ function ChartCard({ title, sub, children, className = "" }) {
       className={`bg-white border border-gray-200 rounded-2xl p-5 hover:border-purple-200 transition-colors ${className}`}
     >
       <div className="mb-5">
-        <h3 className="text-[15px] font-bold text-gray-900">{title}</h3>
+        <h3 className="text-[15px] font-medium text-gray-900">{title}</h3>
         {sub && <p className="text-[12px] text-gray-400 mt-0.5">{sub}</p>}
       </div>
       {children}
@@ -265,7 +265,7 @@ export default function VendorAnalyticsPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-8xl mx-auto px-0 sm:px-2 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+            <h1 className="text-2xl font-medium text-gray-900">Analytics</h1>
             <p className="text-[13px] text-gray-400 mt-0.5">
               Track growth, revenue and booking trends
             </p>
@@ -351,7 +351,7 @@ export default function VendorAnalyticsPage() {
                           <span className="text-[12px] text-gray-600 font-medium capitalize">
                             {item.listing_type} · {item.listing_id.slice(0, 8)}…
                           </span>
-                          <span className="flex items-center gap-1 text-[12px] font-semibold text-gray-900">
+                          <span className="flex items-center gap-1 text-[12px] font-medium text-gray-900">
                             <Eye className="h-3.5 w-3.5 text-violet-500" />
                             {item.views.toLocaleString()}
                           </span>
@@ -669,7 +669,7 @@ export default function VendorAnalyticsPage() {
                                       {STATUS_LABELS[item.name]}
                                     </span>
                                   </span>
-                                  <span className="text-[13px] font-bold text-gray-900">
+                                  <span className="text-[13px] font-medium text-gray-900">
                                     {item.value}
                                   </span>
                                 </div>
@@ -691,10 +691,10 @@ export default function VendorAnalyticsPage() {
                           .filter((d) => d.value > 0)
                           .map((item) => (
                             <div key={item.name} className="text-center">
-                              <p className="text-[18px] font-bold text-gray-900">
+                              <p className="text-[18px] font-medium text-gray-900">
                                 {item.value}
                               </p>
-                              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mt-0.5">
+                              <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mt-0.5">
                                 {STATUS_LABELS[item.name]}
                               </p>
                             </div>

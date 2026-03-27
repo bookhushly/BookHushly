@@ -166,7 +166,7 @@ export function PaymentsClient({ userId, initialData }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-gray-900">
+                    <p className="text-sm font-medium text-gray-900">
                       ₦{parseFloat(payment.amount || 0).toLocaleString("en-NG")}
                     </p>
                     <span

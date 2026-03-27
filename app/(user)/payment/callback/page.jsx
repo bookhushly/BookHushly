@@ -146,7 +146,7 @@ export default function PaymentCallbackPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="w-20 h-20 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-2xl font-medium text-gray-900 mb-2">
             Verifying Payment
           </h2>
           <p className="text-gray-600">
@@ -197,7 +197,7 @@ export default function PaymentCallbackPage() {
                 </svg>
               </div>
 
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-medium text-gray-900 mb-2">
                 Request Confirmed!
               </h2>
               <p className="text-gray-600 mb-6">
@@ -244,7 +244,7 @@ export default function PaymentCallbackPage() {
             </svg>
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-2xl font-medium text-gray-900 mb-2">
             Payment Successful!
           </h2>
           <p className="text-gray-600 mb-6">
@@ -283,7 +283,7 @@ export default function PaymentCallbackPage() {
             </svg>
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-2xl font-medium text-gray-900 mb-2">
             Payment Pending
           </h2>
           <p className="text-gray-600 mb-6">
@@ -354,7 +354,7 @@ export default function PaymentCallbackPage() {
           </svg>
         </div>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-2xl font-medium text-gray-900 mb-2">
           Payment Failed
         </h2>
         <p className="text-gray-600 mb-6">

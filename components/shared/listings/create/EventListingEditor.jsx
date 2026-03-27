@@ -184,7 +184,7 @@ function BasicInfoTab({ formData, setFormData, errors, eventType }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Event Details</h2>
+        <h2 className="text-xl font-medium text-gray-900 mb-1">Event Details</h2>
         <p className="text-sm text-gray-500">
           Fill in the core information about your event. You can come back and edit these at any time before publishing.
         </p>
@@ -461,7 +461,7 @@ function TicketsTab({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Ticket Setup</h2>
+        <h2 className="text-xl font-medium text-gray-900 mb-1">Ticket Setup</h2>
         <p className="text-sm text-gray-500">
           Set a single price or create multiple ticket tiers. Add early bird pricing to drive early sales.
         </p>
@@ -540,7 +540,7 @@ function TicketsTab({
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-gray-900">{ticket.name}</p>
+                      <p className="font-medium text-gray-900">{ticket.name}</p>
                       <Badge variant="secondary" className="text-xs">
                         {parseInt(ticket.quantity).toLocaleString()} tickets
                       </Badge>
@@ -579,7 +579,7 @@ function TicketsTab({
 
           {tickets.length < MAX_TICKETS && (
             <div className="space-y-4 p-5 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
-              <h4 className="font-semibold text-gray-800">Add Ticket Tier</h4>
+              <h4 className="font-medium text-gray-800">Add Ticket Tier</h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="space-y-1">
@@ -828,7 +828,7 @@ function MediaTab({ images, imagePreviews, onImageChange, errors, coverIndex, on
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Event Photos</h2>
+        <h2 className="text-xl font-medium text-gray-900 mb-1">Event Photos</h2>
         <p className="text-sm text-gray-500">
           Upload up to 5 high-quality images. Click any image to set it as your cover photo.
         </p>
@@ -944,7 +944,7 @@ function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestrict
       {/* Visibility */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Visibility</h2>
+          <h2 className="text-xl font-medium text-gray-900 mb-1">Visibility</h2>
           <p className="text-sm text-gray-500">
             Control who can discover and access your event.
           </p>
@@ -967,7 +967,7 @@ function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestrict
               >
                 <Icon className={`w-5 h-5 shrink-0 ${isSelected ? opt.color : "text-gray-400"}`} />
                 <div>
-                  <p className={`font-semibold text-sm ${isSelected ? opt.color : "text-gray-700"}`}>
+                  <p className={`font-medium text-sm ${isSelected ? opt.color : "text-gray-700"}`}>
                     {opt.label}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
@@ -984,7 +984,7 @@ function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestrict
       {/* Age Restriction */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Age Restriction</h2>
+          <h2 className="text-xl font-medium text-gray-900 mb-1">Age Restriction</h2>
           <p className="text-sm text-gray-500">
             Set the minimum age for attendees. This will be shown on your event listing and at checkout.
           </p>
@@ -1003,7 +1003,7 @@ function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestrict
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
-                <span className={`text-sm font-semibold ${selected ? "text-brand-700" : "text-gray-700"}`}>
+                <span className={`text-sm font-medium ${selected ? "text-brand-700" : "text-gray-700"}`}>
                   {opt.label}
                 </span>
                 <span className="text-xs text-gray-500 mt-0.5">{opt.desc}</span>
@@ -1017,7 +1017,7 @@ function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestrict
       {/* Custom Attendee Questions */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">
+          <h2 className="text-xl font-medium text-gray-900 mb-1">
             Custom Attendee Questions
           </h2>
           <p className="text-sm text-gray-500">
@@ -1142,7 +1142,7 @@ function SettingsTab({ visibility, setVisibility, ageRestriction, setAgeRestrict
       {/* Recurring Event */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Recurring Event</h2>
+          <h2 className="text-xl font-medium text-gray-900 mb-1">Recurring Event</h2>
           <p className="text-sm text-gray-500">
             Mark this event as recurring so attendees can see upcoming dates.
           </p>
@@ -1242,7 +1242,7 @@ function PublishTab({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">
+        <h2 className="text-xl font-medium text-gray-900 mb-1">
           {isEditMode ? "Review & Save Changes" : "Ready to Publish?"}
         </h2>
         <p className="text-sm text-gray-500">
@@ -1272,7 +1272,7 @@ function PublishTab({
       <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="font-bold text-gray-900 text-lg leading-tight">
+            <h3 className="font-medium text-gray-900 text-lg leading-tight">
               {formData.title || "—"}
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">{formData.location || "—"}</p>
@@ -1315,7 +1315,7 @@ function PublishTab({
           </div>
           <div>
             <p className="text-xs text-gray-400 uppercase tracking-wide">Starting from</p>
-            <p className="font-bold text-purple-700">
+            <p className="font-medium text-purple-700">
               {lowestPrice > 0 ? `₦${lowestPrice.toLocaleString()}` : "Free"}
             </p>
           </div>
@@ -1377,7 +1377,7 @@ function PublishTab({
         <Button
           type="submit"
           disabled={!allReady || loading}
-          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3"
+          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3"
           onClick={onPublish}
         >
           {loading ? (
@@ -1432,7 +1432,7 @@ function CopyPastEventModal({ vendorId, onSelect, onClose }) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between p-5 border-b border-gray-200">
-          <h3 className="font-bold text-gray-900">Copy from Past Event</h3>
+          <h3 className="font-medium text-gray-900">Copy from Past Event</h3>
           <button
             type="button"
             onClick={onClose}

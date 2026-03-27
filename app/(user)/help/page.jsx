@@ -202,7 +202,7 @@ export default function HelpPage() {
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <HelpCircle className="h-16 w-16 mx-auto mb-6 opacity-90" />
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl lg:text-6xl font-medium mb-6">
               How Can We Help?
             </h1>
             <p className="text-xl text-primary-foreground/90">
@@ -217,7 +217,7 @@ export default function HelpPage() {
       <section className="py-16 bg-muted/50">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Need Immediate Help?</h2>
+            <h2 className="text-3xl font-medium mb-4">Need Immediate Help?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Choose the best way to reach our support team
             </p>
@@ -250,7 +250,7 @@ export default function HelpPage() {
       <section className="py-16">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-3xl font-medium mb-4">
               Frequently Asked Questions
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -294,7 +294,7 @@ export default function HelpPage() {
       <section className="py-16 bg-muted/50">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Additional Resources</h2>
+            <h2 className="text-3xl font-medium mb-4">Additional Resources</h2>
             <p className="text-muted-foreground">
               More ways to get the help you need
             </p>
@@ -367,7 +367,7 @@ export default function HelpPage() {
       {/* Contact CTA */}
       <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="container text-center">
-          <h2 className="text-3xl font-bold mb-4">Still Need Help?</h2>
+          <h2 className="text-3xl font-medium mb-4">Still Need Help?</h2>
           <p className="text-white/90 mb-8 max-w-2xl mx-auto">
             Can't find what you're looking for? Our support team is here to help
             you with any questions or issues.

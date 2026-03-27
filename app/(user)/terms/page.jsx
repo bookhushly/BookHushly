@@ -26,7 +26,7 @@ export default function TermsPage() {
             <Badge variant="secondary" className="mb-4">
               Legal Document
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl lg:text-6xl font-medium mb-6">
               Terms of Service
             </h1>
             <p className="text-xl text-primary-foreground/90">
@@ -89,7 +89,7 @@ export default function TermsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <h4 className="font-semibold">2.1 Account Creation</h4>
+                <h4 className="font-medium">2.1 Account Creation</h4>
                 <p>
                   To use certain features of our Service, you must register for
                   an account. You may be required to provide certain personal
@@ -97,7 +97,7 @@ export default function TermsPage() {
                   address, and phone number.
                 </p>
 
-                <h4 className="font-semibold">2.2 Account Security</h4>
+                <h4 className="font-medium">2.2 Account Security</h4>
                 <p>
                   You are responsible for safeguarding the password and for
                   maintaining the confidentiality of your account. You agree to
@@ -105,7 +105,7 @@ export default function TermsPage() {
                   account.
                 </p>
 
-                <h4 className="font-semibold">2.3 User Types</h4>
+                <h4 className="font-medium">2.3 User Types</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="border rounded-lg p-4">
                     <h5 className="font-medium text-primary">Customers</h5>
@@ -133,7 +133,7 @@ export default function TermsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <h4 className="font-semibold">3.1 KYC Verification</h4>
+                <h4 className="font-medium">3.1 KYC Verification</h4>
                 <p>
                   All vendors must complete Know Your Customer (KYC)
                   verification before listing services. This includes providing
@@ -141,14 +141,14 @@ export default function TermsPage() {
                   other required documentation.
                 </p>
 
-                <h4 className="font-semibold">3.2 Service Listings</h4>
+                <h4 className="font-medium">3.2 Service Listings</h4>
                 <p>
                   Vendors are responsible for providing accurate, complete, and
                   up-to-date information about their services, including
                   pricing, availability, and service descriptions.
                 </p>
 
-                <h4 className="font-semibold">3.3 Service Delivery</h4>
+                <h4 className="font-medium">3.3 Service Delivery</h4>
                 <p>
                   Vendors must deliver services as described and agreed upon
                   with customers. Failure to deliver services may result in
@@ -182,21 +182,21 @@ export default function TermsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <h4 className="font-semibold">4.1 Platform Fees</h4>
+                <h4 className="font-medium">4.1 Platform Fees</h4>
                 <p>
                   Bookhushly charges a platform fee of 5% on all successful
                   bookings. This fee is added to the service price and paid by
                   the customer.
                 </p>
 
-                <h4 className="font-semibold">4.2 Payment Processing</h4>
+                <h4 className="font-medium">4.2 Payment Processing</h4>
                 <p>
                   All payments are processed through our secure payment partners
                   (Paystack and Flutterwave). We do not store payment
                   information on our servers.
                 </p>
 
-                <h4 className="font-semibold">4.3 Refunds</h4>
+                <h4 className="font-medium">4.3 Refunds</h4>
                 <p>
                   Refund policies are set by individual vendors. Customers
                   should review the cancellation policy before booking. Platform

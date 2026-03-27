@@ -25,6 +25,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth, useLogout } from "@/hooks/use-auth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 const NAV = [
   {
@@ -92,7 +93,7 @@ function ProfilePopover({ vendor, onLogout, onClose, isLoggingOut }) {
                  shadow-xl shadow-black/10 overflow-hidden z-50"
     >
       <div className="px-4 py-3 border-b border-gray-100 bg-violet-50/60">
-        <p className="text-[13px] font-semibold text-gray-900 truncate">
+        <p className="text-[13px] font-medium text-gray-900 truncate">
           {vendor?.business_name || "Vendor"}
         </p>
         <p className="text-[11px] text-violet-600 font-medium truncate capitalize">
@@ -163,7 +164,7 @@ export function VendorSidebar({ isOpen, onClose }) {
     NAV.map(({ section, items }) => (
       <div key={section} className="space-y-0.5">
         {(!collapsed || isMobile) && (
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
             {section}
           </p>
         )}
@@ -239,20 +240,19 @@ export function VendorSidebar({ isOpen, onClose }) {
               </div>
             </Link>
           )}
-          <button
-            onClick={() => setCollapsed((p) => !p)}
-            className={cn(
-              "h-6 w-6 rounded-lg flex items-center justify-center text-gray-400",
-              "hover:bg-violet-50 hover:text-violet-600 transition-colors",
-              collapsed && "mx-auto",
-            )}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
+          <div className={cn("flex items-center gap-1", collapsed && "mx-auto")}>
+            {!collapsed && <ThemeToggle />}
+            <button
+              onClick={() => setCollapsed((p) => !p)}
+              className="h-6 w-6 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-50 hover:text-violet-600 transition-colors"
+            >
+              {collapsed ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <ChevronLeft className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         <nav
@@ -279,7 +279,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                 onClick={() => setProfileOpen((p) => !p)}
                 className="w-full flex justify-center py-3.5 hover:bg-violet-50 transition-colors"
               >
-                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold shrink-0">
+                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-medium shrink-0">
                   {initial}
                 </div>
               </button>
@@ -289,11 +289,11 @@ export function VendorSidebar({ isOpen, onClose }) {
               onClick={() => setProfileOpen((p) => !p)}
               className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-violet-50/60 transition-colors"
             >
-              <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold shrink-0">
+              <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-medium shrink-0">
                 {initial}
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold text-gray-900 truncate">
+                <p className="text-[13px] font-medium text-gray-900 truncate">
                   {vendor?.business_name || "Vendor"}
                 </p>
                 <p className="text-[11px] text-gray-400 truncate">
@@ -335,12 +335,15 @@ export function VendorSidebar({ isOpen, onClose }) {
                   className="object-contain object-left scale-150"
                 />
               </div>
-              <button
-                onClick={onClose}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <ThemeToggle />
+                <button
+                  onClick={onClose}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0">
               {renderNav(true)}
@@ -358,11 +361,11 @@ export function VendorSidebar({ isOpen, onClose }) {
                 onClick={() => setProfileOpen((p) => !p)}
                 className="w-full flex items-center gap-3 px-5 py-4 hover:bg-violet-50/60 transition-colors"
               >
-                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold shrink-0">
+                <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-medium shrink-0">
                   {initial}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-[13px] font-semibold text-gray-900 truncate">
+                  <p className="text-[13px] font-medium text-gray-900 truncate">
                     {vendor?.business_name || "Vendor"}
                   </p>
                   <p className="text-[11px] text-gray-400 truncate">

@@ -134,7 +134,7 @@ export function AdminAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold">Analytics Dashboard</h2>
+          <h2 className="text-3xl font-medium">Analytics Dashboard</h2>
           <p className="text-muted-foreground">Platform performance and insights</p>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
@@ -158,7 +158,7 @@ export function AdminAnalytics() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(analytics.overview.totalRevenue)}</div>
+            <div className="text-2xl font-medium">{formatCurrency(analytics.overview.totalRevenue)}</div>
             <div className="flex items-center text-xs text-muted-foreground">
               {analytics.overview.revenueGrowth > 0 ? (
                 <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
@@ -179,7 +179,7 @@ export function AdminAnalytics() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.overview.totalBookings.toLocaleString()}</div>
+            <div className="text-2xl font-medium">{analytics.overview.totalBookings.toLocaleString()}</div>
             <div className="flex items-center text-xs text-muted-foreground">
               <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
               <span className="text-green-600">
@@ -196,7 +196,7 @@ export function AdminAnalytics() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.overview.totalUsers.toLocaleString()}</div>
+            <div className="text-2xl font-medium">{analytics.overview.totalUsers.toLocaleString()}</div>
             <div className="flex items-center text-xs text-muted-foreground">
               <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
               <span className="text-green-600">
@@ -213,7 +213,7 @@ export function AdminAnalytics() {
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.overview.totalVendors}</div>
+            <div className="text-2xl font-medium">{analytics.overview.totalVendors}</div>
             <div className="flex items-center text-xs text-muted-foreground">
               <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
               <span className="text-green-600">
@@ -343,7 +343,7 @@ export function AdminAnalytics() {
                   <div key={vendor.name} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-primary">#{index + 1}</span>
+                        <span className="text-sm font-medium text-primary">#{index + 1}</span>
                       </div>
                       <div>
                         <h4 className="font-medium">{vendor.name}</h4>
@@ -353,7 +353,7 @@ export function AdminAnalytics() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold">{formatCurrency(vendor.revenue)}</div>
+                      <div className="font-medium">{formatCurrency(vendor.revenue)}</div>
                       <Badge variant="secondary" className="text-xs">
                         Top Performer
                       </Badge>
@@ -469,7 +469,7 @@ export function AdminAnalytics() {
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{locationData.totalGrants.toLocaleString()}</div>
+                    <div className="text-2xl font-medium">{locationData.totalGrants.toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">Last {locationData.days} days</p>
                   </CardContent>
                 </Card>
@@ -479,7 +479,7 @@ export function AdminAnalytics() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{locationData.uniqueUsers.toLocaleString()}</div>
+                    <div className="text-2xl font-medium">{locationData.uniqueUsers.toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">Distinct logged-in users</p>
                   </CardContent>
                 </Card>
@@ -489,7 +489,7 @@ export function AdminAnalytics() {
                     <Activity className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{locationData.topState || '—'}</div>
+                    <div className="text-2xl font-medium">{locationData.topState || '—'}</div>
                     <p className="text-xs text-muted-foreground">Highest location requests</p>
                   </CardContent>
                 </Card>

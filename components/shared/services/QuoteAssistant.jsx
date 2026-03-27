@@ -93,7 +93,7 @@ export function QuoteAssistant({ serviceType, onFormData, onCancel }) {
             <Pencil className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">AI Quote Assistant</p>
+            <p className="text-sm font-medium text-white">AI Quote Assistant</p>
             <p className="text-[10px] text-violet-200">
               Tell me what you need — I'll fill the form for you
             </p>

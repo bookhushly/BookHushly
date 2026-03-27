@@ -254,7 +254,7 @@ export default function ServicesPage() {
               </p>
               <button
                 onClick={handleNearMeToggle}
-                className="text-sm font-semibold text-violet-700 hover:text-violet-900 transition-colors shrink-0"
+                className="text-sm font-medium text-violet-700 hover:text-violet-900 transition-colors shrink-0"
               >
                 Enable location →
               </button>
@@ -365,7 +365,7 @@ export default function ServicesPage() {
                 <p className="text-sm text-gray-500">
                   {listings.length > 0 ? (
                     <>
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-medium text-gray-900">
                         {totalCount}
                       </span>{" "}
                       {totalCount === 1 ? "result" : "results"}

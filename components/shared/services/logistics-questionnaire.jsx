@@ -280,7 +280,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
         <button
           type="button"
           onClick={() => setAiMode(true)}
-          className="text-xs font-semibold text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+          className="text-xs font-medium text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
         >
           Use AI Assistant instead
         </button>
@@ -322,7 +322,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
           {/* Step 1: Service Type */}
           {step === 1 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-xl font-medium">
                 Select Logistics Service
               </h2>
 
@@ -387,7 +387,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
           {/* Step 2: Contact Information */}
           {step === 2 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Contact Information</h2>
+              <h2 className="text-xl font-medium">Contact Information</h2>
 
               <div>
                 <Label htmlFor="full_name">Full Name *</Label>
@@ -430,7 +430,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
           {/* Step 3: Pickup Details */}
           {step === 3 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Pickup Details</h2>
+              <h2 className="text-xl font-medium">Pickup Details</h2>
 
               <div>
                 <Label htmlFor="pickup_address">Pickup Address *</Label>
@@ -520,7 +520,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
           {/* Step 4: Delivery Details */}
           {step === 4 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Delivery Details</h2>
+              <h2 className="text-xl font-medium">Delivery Details</h2>
 
               <div>
                 <Label htmlFor="delivery_address">Delivery Address *</Label>
@@ -616,7 +616,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
           {/* Step 5: Item Details */}
           {step === 5 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-xl font-medium">
                 Item Details & Requirements
               </h2>
 
@@ -857,7 +857,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-red-900 mb-1">
+                  <h4 className="font-medium text-red-900 mb-1">
                     Submission Failed
                   </h4>
                   <p className="text-sm text-red-700">{errors.submit}</p>

@@ -89,7 +89,7 @@ export default function AdminDashboard() {
   return (
     <div className="container py-6 md:py-8">
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-purple-800">
+        <h1 className="text-2xl md:text-3xl font-medium text-purple-800">
           Admin Dashboard
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold">
+            <div className="text-xl md:text-2xl font-medium">
               {stats.totalUsers}
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
             <Building className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold">
+            <div className="text-xl md:text-2xl font-medium">
               {stats.totalVendors}
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -141,7 +141,7 @@ export default function AdminDashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold">
+            <div className="text-xl md:text-2xl font-medium">
               {stats.totalBookings}
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold">
+            <div className="text-xl md:text-2xl font-medium">
               ₦{stats.totalRevenue.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
             <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="text-xl md:text-2xl font-bold">
+            <div className="text-xl md:text-2xl font-medium">
               {(viewStats?.total ?? 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
         {/* ── Vendors ── */}
         <TabsContent value="vendors" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            <h2 className="text-xl md:text-2xl font-bold">Vendor Management</h2>
+            <h2 className="text-xl md:text-2xl font-medium">Vendor Management</h2>
             <Button className="bg-purple-700 w-full sm:w-auto">
               <Bell className="mr-2 h-4 w-4" />
               Send Notification
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                       <CardContent className="p-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                           <div className="space-y-1.5 min-w-0">
-                            <h3 className="font-semibold">
+                            <h3 className="font-medium">
                               {vendor.business_name}
                             </h3>
                             <p className="text-sm text-muted-foreground">
@@ -414,7 +414,7 @@ export default function AdminDashboard() {
 
         {/* ── Users ── */}
         <TabsContent value="users" className="space-y-6">
-          <h2 className="text-xl md:text-2xl font-bold">User Management</h2>
+          <h2 className="text-xl md:text-2xl font-medium">User Management</h2>
           <Card>
             <CardHeader>
               <CardTitle>Recent Users</CardTitle>
@@ -448,7 +448,7 @@ export default function AdminDashboard() {
 
         {/* ── Bookings ── */}
         <TabsContent value="bookings" className="space-y-6">
-          <h2 className="text-xl md:text-2xl font-bold">Booking Management</h2>
+          <h2 className="text-xl md:text-2xl font-medium">Booking Management</h2>
           <Card>
             <CardHeader>
               <CardTitle>Recent Bookings</CardTitle>
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
 
         {/* ── Reports ── */}
         <TabsContent value="reports" className="space-y-6">
-          <h2 className="text-xl md:text-2xl font-bold">Reports & Exports</h2>
+          <h2 className="text-xl md:text-2xl font-medium">Reports & Exports</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
               <CardHeader>

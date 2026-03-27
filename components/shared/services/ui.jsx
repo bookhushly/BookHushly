@@ -51,12 +51,12 @@ export const EmptyState = memo(
       <div className="h-16 w-16 flex items-center justify-center rounded-full bg-purple-100 mb-4">
         <Icon className="h-8 w-8 text-purple-600" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">{title}</h3>
+      <h3 className="text-lg font-medium text-gray-700 mb-2">{title}</h3>
       <p className="text-sm text-gray-500 mb-5 max-w-xs">{subtitle}</p>
       {hasFilters && onClearFilters && (
         <button
           onClick={onClearFilters}
-          className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors"
+          className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors"
         >
           Clear all filters
         </button>

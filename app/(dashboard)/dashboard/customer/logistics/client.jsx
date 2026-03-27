@@ -99,7 +99,7 @@ export function LogisticsClient({ userId, initialData }) {
                           {VEHICLE_ICONS[req.vehicle_type] || "📦"}
                         </span>
                         <div>
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-medium text-gray-900">
                             {SERVICE_LABELS[req.service_type] ||
                               req.service_type}
                           </h3>

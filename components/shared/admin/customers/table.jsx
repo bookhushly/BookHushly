@@ -20,7 +20,7 @@ const CustomerRow = memo(({ customer, onSelect }) => {
       <TableRow className="hidden lg:table-row hover:bg-gray-50">
         <TableCell className="font-medium max-w-[200px]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold text-sm">
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-medium text-sm">
               {customer.name?.charAt(0).toUpperCase() || "?"}
             </div>
             <div className="truncate">{customer.name}</div>
@@ -54,7 +54,7 @@ const CustomerRow = memo(({ customer, onSelect }) => {
       <TableRow className="hidden md:table-row lg:hidden hover:bg-gray-50">
         <TableCell className="font-medium">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold text-sm">
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-medium text-sm">
               {customer.name?.charAt(0).toUpperCase() || "?"}
             </div>
             <div>
@@ -93,11 +93,11 @@ const CustomerRow = memo(({ customer, onSelect }) => {
             <div className="space-y-3">
               {/* Name & Email */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold shrink-0">
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-medium shrink-0">
                   {customer.name?.charAt(0).toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-base text-gray-900 truncate">
+                  <h3 className="font-medium text-base text-gray-900 truncate">
                     {customer.name}
                   </h3>
                   <p className="text-sm text-gray-500 truncate">

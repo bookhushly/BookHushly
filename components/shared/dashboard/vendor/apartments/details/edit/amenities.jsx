@@ -54,7 +54,7 @@ export default function EditAmenities({ formData, updateFormData }) {
 
       {/* Security Features */}
       <div className="space-y-3">
-        <p className="text-sm font-semibold text-gray-900">Security Features</p>
+        <p className="text-sm font-medium text-gray-900">Security Features</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
             <input
@@ -114,7 +114,7 @@ export default function EditAmenities({ formData, updateFormData }) {
 
         return (
           <div key={category.key} className="space-y-3">
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-sm font-medium text-gray-900">
               {category.label}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

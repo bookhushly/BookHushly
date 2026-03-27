@@ -120,7 +120,7 @@ export default function SecurityRequestsAdmin() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Security Requests</h1>
+        <h1 className="text-2xl font-medium">Security Requests</h1>
         <p className="text-gray-600">
           Manage and quote security service requests
         </p>
@@ -198,7 +198,7 @@ export default function SecurityRequestsAdmin() {
                           {/* Request Details */}
                           <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                             <div>
-                              <h3 className="font-semibold mb-2">
+                              <h3 className="font-medium mb-2">
                                 Customer Information
                               </h3>
                               <div className="space-y-1 text-sm">
@@ -217,7 +217,7 @@ export default function SecurityRequestsAdmin() {
                               </div>
                             </div>
                             <div>
-                              <h3 className="font-semibold mb-2">
+                              <h3 className="font-medium mb-2">
                                 Service Overview
                               </h3>
                               <div className="space-y-1 text-sm">
@@ -242,7 +242,7 @@ export default function SecurityRequestsAdmin() {
                           </div>
 
                           <div>
-                            <h3 className="font-semibold mb-2">
+                            <h3 className="font-medium mb-2">
                               Service Location
                             </h3>
                             <div className="space-y-1 text-sm">
@@ -260,7 +260,7 @@ export default function SecurityRequestsAdmin() {
 
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <h3 className="font-semibold mb-2">Schedule</h3>
+                              <h3 className="font-medium mb-2">Schedule</h3>
                               <div className="space-y-1 text-sm">
                                 <div>
                                   <span className="text-gray-600">Start:</span>{" "}
@@ -289,7 +289,7 @@ export default function SecurityRequestsAdmin() {
                               </div>
                             </div>
                             <div>
-                              <h3 className="font-semibold mb-2">
+                              <h3 className="font-medium mb-2">
                                 Personnel Requirements
                               </h3>
                               <div className="space-y-1 text-sm">
@@ -313,7 +313,7 @@ export default function SecurityRequestsAdmin() {
 
                           {request.service_type === "event_security" && (
                             <div>
-                              <h3 className="font-semibold mb-2">
+                              <h3 className="font-medium mb-2">
                                 Event Details
                               </h3>
                               <div className="space-y-1 text-sm">
@@ -349,7 +349,7 @@ export default function SecurityRequestsAdmin() {
                           {(request.service_type === "residential" ||
                             request.service_type === "corporate") && (
                             <div>
-                              <h3 className="font-semibold mb-2">
+                              <h3 className="font-medium mb-2">
                                 Property Details
                               </h3>
                               <div className="space-y-1 text-sm">
@@ -380,7 +380,7 @@ export default function SecurityRequestsAdmin() {
                           )}
 
                           <div>
-                            <h3 className="font-semibold mb-2">
+                            <h3 className="font-medium mb-2">
                               Risk Assessment
                             </h3>
                             <div className="space-y-2 text-sm">
@@ -423,7 +423,7 @@ export default function SecurityRequestsAdmin() {
                           </div>
 
                           <div>
-                            <h3 className="font-semibold mb-2">Requirements</h3>
+                            <h3 className="font-medium mb-2">Requirements</h3>
                             <div className="flex flex-wrap gap-2">
                               {request.requires_background_check && (
                                 <Badge variant="outline">
@@ -451,7 +451,7 @@ export default function SecurityRequestsAdmin() {
 
                           {request.special_instructions && (
                             <div>
-                              <h3 className="font-semibold mb-2">
+                              <h3 className="font-medium mb-2">
                                 Special Instructions
                               </h3>
                               <p className="text-sm text-gray-700">
@@ -464,7 +464,7 @@ export default function SecurityRequestsAdmin() {
                           {request.status === "pending" && (
                             <div className="border-t pt-6">
                               <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold">
+                                <h3 className="text-lg font-medium">
                                   Create Quote
                                 </h3>
                                 <button
@@ -493,7 +493,7 @@ export default function SecurityRequestsAdmin() {
                                       setAiDrafting(false);
                                     }
                                   }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold hover:bg-violet-100 disabled:opacity-50 transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-200 text-violet-700 text-xs font-medium hover:bg-violet-100 disabled:opacity-50 transition-colors"
                                 >
                                   {aiDrafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
                                   AI Draft
@@ -595,7 +595,7 @@ export default function SecurityRequestsAdmin() {
                                 </div>
 
                                 <div className="p-4 bg-purple-50 rounded-lg">
-                                  <div className="flex justify-between items-center text-lg font-semibold">
+                                  <div className="flex justify-between items-center text-lg font-medium">
                                     <span>Total Amount:</span>
                                     <span>
                                       ₦{calculateTotal().toLocaleString()}
@@ -658,7 +658,7 @@ export default function SecurityRequestsAdmin() {
                           {request.status !== "pending" &&
                             request.quoted_amount && (
                               <div className="border-t pt-6">
-                                <h3 className="text-lg font-semibold mb-4">
+                                <h3 className="text-lg font-medium mb-4">
                                   Quote Details
                                 </h3>
                                 <div className="space-y-2">
@@ -679,7 +679,7 @@ export default function SecurityRequestsAdmin() {
                                         </div>
                                       ),
                                     )}
-                                  <div className="flex justify-between text-lg font-semibold pt-2 border-t">
+                                  <div className="flex justify-between text-lg font-medium pt-2 border-t">
                                     <span>Total:</span>
                                     <span>
                                       ₦

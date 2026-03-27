@@ -110,7 +110,7 @@ export function EmptyState({
       <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
         <Icon className="h-6 w-6 text-gray-400" />
       </div>
-      <h3 className="text-base font-semibold text-gray-900 mb-1">{title}</h3>
+      <h3 className="text-base font-medium text-gray-900 mb-1">{title}</h3>
       <p className="text-sm text-gray-500 max-w-sm mb-6">{description}</p>
       {actionLabel && (actionHref || onAction) && (
         onAction ? (
@@ -163,7 +163,7 @@ export function PageHeader({ title, description, action, breadcrumbs }) {
       )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          <h1 className="text-2xl font-medium text-gray-900">{title}</h1>
           {description && (
             <p className="text-sm text-gray-500 mt-0.5">{description}</p>
           )}
@@ -223,7 +223,7 @@ export function StatCard({
       </div>
       <p
         className={cn(
-          "text-3xl font-bold tracking-tight",
+          "text-3xl font-medium tracking-tight",
           isPurple ? "text-white" : "text-gray-900",
         )}
       >
@@ -321,7 +321,7 @@ export function SectionCard({
       {(title || action) && (
         <div className="flex items-center justify-between px-6 py-4 border-b border-purple-50">
           <div>
-            <h3 className="font-semibold text-gray-900">{title}</h3>
+            <h3 className="font-medium text-gray-900">{title}</h3>
             {description && (
               <p className="text-xs text-gray-500 mt-0.5">{description}</p>
             )}
@@ -343,8 +343,8 @@ export function Amount({ value, className, size = "md" }) {
 
   const sizes = {
     sm: "text-sm font-medium",
-    md: "text-base font-semibold",
-    lg: "text-xl font-bold",
+    md: "text-base font-medium",
+    lg: "text-xl font-medium",
   };
 
   return (

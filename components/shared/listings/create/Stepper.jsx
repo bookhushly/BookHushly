@@ -7,7 +7,7 @@ export default function Stepper({ steps, currentStep }) {
         <div key={step.id} className="flex items-center flex-1">
           <div className="flex flex-col items-center">
             <motion.div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold shadow-md ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-medium shadow-md ${
                 currentStep >= step.id
                   ? "bg-gradient-to-r from-purple-700 to-purple-800 text-white"
                   : "bg-gray-100 text-gray-500"

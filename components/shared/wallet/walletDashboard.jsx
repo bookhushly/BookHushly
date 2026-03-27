@@ -37,7 +37,7 @@ const WalletBalanceCard = ({
           <Wallet className="h-7 w-7 text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Main Wallet</h3>
+          <h3 className="text-lg font-medium text-gray-900">Main Wallet</h3>
           <p className="text-sm text-gray-500">Available Balance</p>
         </div>
       </div>
@@ -55,7 +55,7 @@ const WalletBalanceCard = ({
     </div>
 
     <div className="mb-8">
-      <div className="text-4xl font-bold text-gray-900 mb-3">
+      <div className="text-4xl font-medium text-gray-900 mb-3">
         {isHidden
           ? "••••••••"
           : `${currency}${balance.toLocaleString("en-US", {
@@ -73,7 +73,7 @@ const WalletBalanceCard = ({
     <div className="grid grid-cols-1 gap-3">
       <button
         onClick={onFund}
-        className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg"
+        className="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-4 px-6 rounded-xl font-medium transition-all duration-300 hover:shadow-lg"
       >
         <Plus className="h-5 w-5" />
         Fund Wallet
@@ -87,7 +87,7 @@ const StatsCard = ({ title, value, icon: Icon, bgColor, iconColor }) => (
     <div className="flex items-start justify-between mb-4">
       <div className="flex-1">
         <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-        <h3 className="text-2xl font-bold text-gray-900">
+        <h3 className="text-2xl font-medium text-gray-900">
           ₦{value.toLocaleString()}
         </h3>
       </div>
@@ -167,7 +167,7 @@ const TransactionItem = ({ transaction }) => {
 
         {/* Transaction Info */}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm sm:text-base text-gray-900 truncate pr-2">
+          <p className="font-medium text-sm sm:text-base text-gray-900 truncate pr-2">
             {transaction.description}
           </p>
 
@@ -190,7 +190,7 @@ const TransactionItem = ({ transaction }) => {
       <div className="flex items-center justify-between sm:block sm:text-right sm:ml-4 flex-shrink-0 pl-11 sm:pl-0">
         <div>
           <p
-            className={`text-base sm:text-lg font-bold ${
+            className={`text-base sm:text-lg font-medium ${
               isCredit ? "text-green-600" : "text-gray-900"
             }`}
           >
@@ -260,7 +260,7 @@ const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-2xl font-bold text-gray-900">Fund Wallet</h3>
+          <h3 className="text-2xl font-medium text-gray-900">Fund Wallet</h3>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
@@ -279,7 +279,7 @@ const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Amount in Naira
             </label>
             <input
@@ -295,7 +295,7 @@ const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
               Payment Method
             </label>
             <div className="space-y-3">
@@ -317,7 +317,7 @@ const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
                   }`}
                 />
                 <div className="flex-1 text-left">
-                  <p className="font-semibold text-gray-900">Paystack</p>
+                  <p className="font-medium text-gray-900">Paystack</p>
                   <p className="text-xs text-gray-500">
                     Card, Bank Transfer, USSD
                   </p>
@@ -345,7 +345,7 @@ const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
                   }`}
                 />
                 <div className="flex-1 text-left">
-                  <p className="font-semibold text-gray-900">Cryptocurrency</p>
+                  <p className="font-medium text-gray-900">Cryptocurrency</p>
                   <p className="text-xs text-gray-500">
                     BTC, ETH, USDT - Auto convert to NGN
                   </p>
@@ -360,7 +360,7 @@ const FundWalletModal = ({ isOpen, onClose, onSuccess }) => {
           <button
             onClick={handleFund}
             disabled={loading || !amount}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed"
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white py-4 px-6 rounded-xl font-medium transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -385,7 +385,7 @@ const ErrorDisplay = ({ error, onRetry }) => (
           <AlertCircle className="h-8 w-8 text-red-600" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-gray-900">
+          <h3 className="text-xl font-medium text-gray-900">
             Error Loading Wallet
           </h3>
           <p className="text-sm text-gray-600">Something went wrong</p>
@@ -396,7 +396,7 @@ const ErrorDisplay = ({ error, onRetry }) => (
       </div>
       <button
         onClick={onRetry}
-        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-xl font-medium transition-all flex items-center justify-center gap-2"
       >
         <RefreshCw className="h-5 w-5" />
         Try Again
@@ -514,7 +514,7 @@ export default function WalletDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Wallet</h1>
+            <h1 className="text-3xl font-medium text-gray-900">Wallet</h1>
             <p className="text-gray-600 mt-1">
               Manage your funds and transactions
             </p>
@@ -567,7 +567,7 @@ export default function WalletDashboard() {
         <div className="bg-white border border-purple-100 rounded-3xl p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-medium text-gray-900">
                 Transaction History
               </h3>
               <p className="text-sm text-gray-500">
@@ -599,7 +599,7 @@ export default function WalletDashboard() {
                 <button
                   key={filter}
                   onClick={() => setFilterType(filter.toLowerCase())}
-                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0 min-h-[44px] sm:min-h-0 ${
+                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 min-h-[44px] sm:min-h-0 ${
                     filterType === filter.toLowerCase()
                       ? "bg-white text-purple-700 shadow-sm"
                       : "text-gray-600 hover:text-purple-600 active:bg-white/50"

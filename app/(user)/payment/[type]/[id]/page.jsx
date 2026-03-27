@@ -247,7 +247,7 @@ export default function PaymentPage({ params }) {
             </svg>
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-2xl font-medium text-gray-900 mb-2">
             Already Paid
           </h2>
           <p className="text-gray-600 mb-6">
@@ -330,7 +330,7 @@ export default function PaymentPage({ params }) {
             </svg>
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-2xl font-medium text-gray-900 mb-2">
             Pending Payment Exists
           </h2>
           <p className="text-gray-600 mb-6">
@@ -419,7 +419,7 @@ export default function PaymentPage({ params }) {
                 d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414"
               />
             </svg>
-            <h2 className="text-lg font-semibold text-orange-900">
+            <h2 className="text-lg font-medium text-orange-900">
               No Internet Connection
             </h2>
           </div>
@@ -479,7 +479,7 @@ export default function PaymentPage({ params }) {
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <h2 className="text-lg font-semibold text-red-900">
+            <h2 className="text-lg font-medium text-red-900">
               {isNetworkError ? "Connection Error" : "Error"}
             </h2>
           </div>
@@ -568,7 +568,7 @@ export default function PaymentPage({ params }) {
                 </svg>
                 Back
               </button>
-              <h1 className="text-2xl font-semibold text-gray-900">
+              <h1 className="text-2xl font-medium text-gray-900">
                 Complete Payment
               </h1>
               <p className="text-sm text-gray-600 mt-1">

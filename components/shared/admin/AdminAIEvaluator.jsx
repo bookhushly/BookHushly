@@ -57,7 +57,7 @@ function ScoreRing({ score }) {
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-2xl font-bold text-gray-900">{score}</span>
+        <span className="text-2xl font-medium text-gray-900">{score}</span>
         <span className="text-[10px] text-gray-400 font-medium">/100</span>
       </div>
     </div>
@@ -96,7 +96,7 @@ export function AdminAIEvaluator() {
   return (
     <Card className="border border-violet-100">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900">
+        <CardTitle className="flex items-center gap-2 text-base font-medium text-gray-900">
           <ClipboardCheck className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
           AI Platform Evaluator
         </CardTitle>
@@ -119,7 +119,7 @@ export function AdminAIEvaluator() {
               }`}
             >
               <Icon className={`h-4 w-4 ${focus === value ? "text-violet-600" : "text-gray-400"}`} strokeWidth={1.75} />
-              <span className={`text-[12px] font-semibold ${focus === value ? "text-violet-700" : "text-gray-700"}`}>
+              <span className={`text-[12px] font-medium ${focus === value ? "text-violet-700" : "text-gray-700"}`}>
                 {label}
               </span>
               <span className="text-[10px] text-gray-400 leading-tight">{description}</span>
@@ -160,7 +160,7 @@ export function AdminAIEvaluator() {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-bold text-gray-900">Platform Health Score</p>
+                  <p className="text-sm font-medium text-gray-900">Platform Health Score</p>
                   <Badge
                     variant="outline"
                     className={
@@ -179,32 +179,32 @@ export function AdminAIEvaluator() {
                 {/* Quick meta stats */}
                 <div className="flex flex-wrap gap-3 mt-3">
                   <span className="text-[11px] text-gray-500">
-                    <span className="font-semibold text-gray-800">{meta.totalVendors}</span> vendors
+                    <span className="font-medium text-gray-800">{meta.totalVendors}</span> vendors
                     ({meta.approvedVendors} approved)
                   </span>
                   <span className="text-[11px] text-gray-500">
-                    <span className="font-semibold text-gray-800">{meta.totalListings}</span> active listings
+                    <span className="font-medium text-gray-800">{meta.totalListings}</span> active listings
                   </span>
                   <span className="text-[11px] text-gray-500">
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-medium text-gray-800">
                       ₦{(meta.totalRevenue30d || 0).toLocaleString()}
                     </span> revenue (30d)
                   </span>
                   <span className="text-[11px] text-gray-500 flex items-center gap-1">
                     <TrendingUp className={`h-3 w-3 ${meta.revenueGrowth >= 0 ? "text-emerald-500" : "text-red-500"}`} />
-                    <span className={`font-semibold ${meta.revenueGrowth >= 0 ? "text-emerald-700" : "text-red-700"}`}>
+                    <span className={`font-medium ${meta.revenueGrowth >= 0 ? "text-emerald-700" : "text-red-700"}`}>
                       {meta.revenueGrowth >= 0 ? "+" : ""}{meta.revenueGrowth}%
                     </span>
                     <span>7d change</span>
                   </span>
                   <span className="text-[11px] text-gray-500">
-                    <span className="font-semibold text-gray-800">{meta.paymentSuccessRate ?? "—"}%</span> payment success
+                    <span className="font-medium text-gray-800">{meta.paymentSuccessRate ?? "—"}%</span> payment success
                   </span>
                   <span className="text-[11px] text-gray-500">
-                    <span className="font-semibold text-gray-800">{meta.confirmedCount}/{meta.totalBookings}</span> bookings confirmed
+                    <span className="font-medium text-gray-800">{meta.confirmedCount}/{meta.totalBookings}</span> bookings confirmed
                   </span>
                   <span className="text-[11px] text-gray-500">
-                    <span className="font-semibold text-gray-800">{meta.totalViews}</span> listing views (30d)
+                    <span className="font-medium text-gray-800">{meta.totalViews}</span> listing views (30d)
                   </span>
                 </div>
               </div>
@@ -226,7 +226,7 @@ export function AdminAIEvaluator() {
                       <TypeIcon className={`h-4 w-4 shrink-0 mt-0.5 ${typeConf.color}`} strokeWidth={2} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="text-[12px] font-bold text-gray-900 leading-tight">
+                          <p className="text-[12px] font-medium text-gray-900 leading-tight">
                             {insight.title}
                           </p>
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${priorityConf.dot}`} />

@@ -129,14 +129,14 @@ export default function ResetPasswordPage() {
             <div className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center">
               <CheckCircle2 className="h-7 w-7 text-green-500" />
             </div>
-            <h1 className="font-fraunces text-2xl font-semibold text-gray-900 mb-2">
+            <h1 className="font-fraunces text-2xl font-medium text-gray-900 mb-2">
               Password updated
             </h1>
             <p className="text-gray-500 text-sm leading-relaxed mb-6">
               Your password has been changed. Redirecting you to sign in…
             </p>
             <Link href="/login">
-              <Button className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm">
+              <Button className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm">
                 Go to sign in
               </Button>
             </Link>
@@ -157,7 +157,7 @@ export default function ResetPasswordPage() {
             <div className="mb-5 h-12 w-12 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
               <KeyRound className="h-5 w-5 text-violet-600" />
             </div>
-            <h1 className="font-fraunces text-2xl font-semibold text-gray-900 mb-1.5">
+            <h1 className="font-fraunces text-2xl font-medium text-gray-900 mb-1.5">
               Set new password
             </h1>
             <p className="text-gray-500 text-sm leading-relaxed">
@@ -286,7 +286,7 @@ export default function ResetPasswordPage() {
             <Button
               type="submit"
               disabled={mutation.isPending || !allMet || !passwordsMatch}
-              className="w-full h-11 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
+              className="w-full h-11 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-medium text-sm transition-all flex items-center justify-center gap-2"
             >
               {mutation.isPending ? (
                 <>

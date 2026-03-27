@@ -196,7 +196,7 @@ export default function BookingsTab({ apartmentId }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Bookings</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-medium text-gray-900">
                   {stats.total}
                 </p>
               </div>
@@ -210,7 +210,7 @@ export default function BookingsTab({ apartmentId }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Upcoming</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-medium text-blue-600">
                   {stats.upcoming}
                 </p>
               </div>
@@ -224,7 +224,7 @@ export default function BookingsTab({ apartmentId }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Active Now</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-medium text-green-600">
                   {stats.active}
                 </p>
               </div>
@@ -238,7 +238,7 @@ export default function BookingsTab({ apartmentId }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-purple-600">
+                <p className="text-2xl font-medium text-purple-600">
                   ₦{stats.revenue.toLocaleString()}
                 </p>
               </div>
@@ -311,7 +311,7 @@ export default function BookingsTab({ apartmentId }) {
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="flex items-center gap-3 mb-2">
-                                <h4 className="font-semibold text-lg text-gray-900">
+                                <h4 className="font-medium text-lg text-gray-900">
                                   {booking.guest_name}
                                 </h4>
                                 <StatusBadge status={booking.booking_status} />
@@ -347,7 +347,7 @@ export default function BookingsTab({ apartmentId }) {
                           <div className="flex flex-wrap items-center gap-4 text-sm">
                             <div>
                               <span className="text-gray-600">Check-in:</span>
-                              <span className="font-semibold ml-2">
+                              <span className="font-medium ml-2">
                                 {new Date(
                                   booking.check_in_date
                                 ).toLocaleDateString()}
@@ -355,7 +355,7 @@ export default function BookingsTab({ apartmentId }) {
                             </div>
                             <div>
                               <span className="text-gray-600">Check-out:</span>
-                              <span className="font-semibold ml-2">
+                              <span className="font-medium ml-2">
                                 {new Date(
                                   booking.check_out_date
                                 ).toLocaleDateString()}
@@ -363,7 +363,7 @@ export default function BookingsTab({ apartmentId }) {
                             </div>
                             <div>
                               <span className="text-gray-600">Total:</span>
-                              <span className="font-bold text-purple-600 ml-2">
+                              <span className="font-medium text-purple-600 ml-2">
                                 ₦
                                 {parseFloat(
                                   booking.total_amount

@@ -44,7 +44,7 @@ export function ReviewForm({ listingId, listingType, listingTitle, onReviewSubmi
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+      <h3 className="font-medium text-gray-900 flex items-center gap-2">
         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
         Write a Review
         {listingTitle && <span className="text-gray-400 font-normal text-sm">for {listingTitle}</span>}

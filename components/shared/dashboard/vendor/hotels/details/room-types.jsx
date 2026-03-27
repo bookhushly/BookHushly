@@ -211,7 +211,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Room Types</h2>
+            <h2 className="text-xl font-medium text-gray-900">Room Types</h2>
             <p className="text-sm text-gray-600 mt-1">
               Define the different types of rooms available at your hotel
             </p>
@@ -232,7 +232,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                 <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Plus className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No room types yet
                 </h3>
                 <p className="text-gray-600 mb-6">
@@ -302,7 +302,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Base Price</p>
-                        <p className="text-lg font-semibold text-purple-600">
+                        <p className="text-lg font-medium text-purple-600">
                           {formatPrice(type.base_price)}
                           <span className="text-xs text-gray-500 font-normal">
                             /night
@@ -357,7 +357,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-medium text-gray-900">
                 {editingType ? "Edit Room Type" : "Create Room Type"}
               </h2>
               <p className="text-sm text-gray-500 mt-1">
@@ -499,7 +499,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
             className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            <h2 className="text-lg font-medium text-gray-900 mb-2">
               Delete Room Type
             </h2>
             <p className="text-sm text-gray-600 mb-6">

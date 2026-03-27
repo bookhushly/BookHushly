@@ -143,7 +143,7 @@ const ShowAllOverlay = ({ remaining, onClick }) => (
     }}
   >
     <Grid3X3 className="h-5 w-5 text-white" />
-    <span className="text-white text-xs font-semibold">
+    <span className="text-white text-xs font-medium">
       +{remaining} photos
     </span>
   </button>

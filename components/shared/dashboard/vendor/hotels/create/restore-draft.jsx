@@ -27,7 +27,7 @@ export default function RestoreDraftModal({ onRestore, onDiscard, savedAt }) {
           </div>
 
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
               Draft Found
             </h3>
             <p className="text-sm text-gray-600 mb-4">

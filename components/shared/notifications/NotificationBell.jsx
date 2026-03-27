@@ -52,7 +52,7 @@ export function NotificationBell({ userId, align = "right" }) {
 
         {unreadCount > 0 && (
           <span
-            className={`absolute flex items-center justify-center rounded-full bg-violet-600 text-white font-bold leading-none
+            className={`absolute flex items-center justify-center rounded-full bg-violet-600 text-white font-medium leading-none
               ${displayCount === "99+"
                 ? "text-[8px] h-4 w-5 -top-0.5 -right-1"
                 : unreadCount > 9

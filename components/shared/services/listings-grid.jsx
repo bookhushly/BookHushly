@@ -27,7 +27,7 @@ const PROXIMITY_LABEL = {
 function ProximityBadge({ proximity }) {
   if (!proximity || !PROXIMITY_STYLE[proximity]) return null;
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border mb-1.5 ${PROXIMITY_STYLE[proximity]}`}>
+    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border mb-1.5 ${PROXIMITY_STYLE[proximity]}`}>
       <Navigation className="h-2.5 w-2.5" />
       {PROXIMITY_LABEL[proximity]}
     </span>

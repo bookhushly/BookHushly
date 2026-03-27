@@ -190,7 +190,7 @@ export default function UnderConstruction({
 
       {/* ── copy block ────────────────────────────────────────────────── */}
       <div className="mt-10 text-center max-w-md reveal-1">
-        <h1 className="text-[32px] font-bold text-gray-900 tracking-tight reveal-1">
+        <h1 className="text-[32px] font-medium text-gray-900 tracking-tight reveal-1">
           {title}
         </h1>
         <p className="text-[14px] text-gray-400 mt-3 leading-relaxed reveal-2">
@@ -210,10 +210,10 @@ export default function UnderConstruction({
           />
         </div>
         <div className="flex items-center justify-between mt-2.5">
-          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
+          <p className="text-[11px] font-medium text-gray-400 uppercase tracking-widest">
             In Progress
           </p>
-          <p className="text-[11px] font-semibold text-purple-500 uppercase tracking-widest">
+          <p className="text-[11px] font-medium text-purple-500 uppercase tracking-widest">
             Building…
           </p>
         </div>

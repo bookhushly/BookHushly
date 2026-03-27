@@ -507,7 +507,7 @@ export default function SupportStaffPanel() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Support Staff</h2>
+          <h2 className="text-xl font-medium text-gray-900">Support Staff</h2>
           <p className="text-sm text-gray-500 mt-0.5">
             Manage logins for staff who handle the customer support inbox.
           </p>

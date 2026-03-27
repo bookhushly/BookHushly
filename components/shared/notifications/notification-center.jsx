@@ -109,7 +109,7 @@ export function NotificationCenter({ userId, onClose }) {
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
           <Bell className="h-4 w-4 text-gray-700" />
-          <span className="font-semibold text-[14px] text-gray-900">Notifications</span>
+          <span className="font-medium text-[14px] text-gray-900">Notifications</span>
           {unreadCount > 0 && (
             <Badge className="h-5 px-1.5 text-[11px] bg-violet-600 hover:bg-violet-600">
               {unreadCount}
@@ -201,7 +201,7 @@ export function NotificationCenter({ userId, onClose }) {
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-[13px] font-semibold leading-tight ${isNew ? "text-gray-900" : "text-gray-700"}`}>
+                      <p className={`text-[13px] font-medium leading-tight ${isNew ? "text-gray-900" : "text-gray-700"}`}>
                         {n.title}
                       </p>
                       <p className="text-[12px] text-gray-500 mt-0.5 leading-snug line-clamp-2">

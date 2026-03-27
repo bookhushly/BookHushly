@@ -23,7 +23,7 @@ const ProfileTab = ({ vendor, user }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-1">
+        <h2 className="text-2xl font-medium text-slate-900 mb-1">
           Vendor Profile
         </h2>
         <p className="text-slate-600 text-sm">
@@ -52,7 +52,7 @@ const ProfileTab = ({ vendor, user }) => {
             {vendor ? (
               <>
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">
                     Business Name
                   </label>
                   <p className="text-base text-slate-900 font-medium">
@@ -60,7 +60,7 @@ const ProfileTab = ({ vendor, user }) => {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">
                     Verification Status
                   </label>
                   <Badge
@@ -87,7 +87,7 @@ const ProfileTab = ({ vendor, user }) => {
                 <Button
                   variant="outline"
                   asChild
-                  className="w-full h-11 font-semibold"
+                  className="w-full h-11 font-medium"
                 >
                   <Link href="/vendor/dashboard/kyc">
                     <Edit className="mr-2 h-4 w-4" />
@@ -134,7 +134,7 @@ const ProfileTab = ({ vendor, user }) => {
           </CardHeader>
           <CardContent className="space-y-5 pt-6">
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
                 Email Address
               </label>
               <p className="text-base text-slate-900 font-medium">
@@ -142,7 +142,7 @@ const ProfileTab = ({ vendor, user }) => {
               </p>
             </div>
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
                 Full Name
               </label>
               <p className="text-base text-slate-900 font-medium">
@@ -150,7 +150,7 @@ const ProfileTab = ({ vendor, user }) => {
               </p>
             </div>
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
                 Account Type
               </label>
               <Badge className="bg-purple-100 text-purple-800 border-purple-200 px-4 py-2">

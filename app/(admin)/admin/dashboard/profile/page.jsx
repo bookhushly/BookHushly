@@ -32,7 +32,7 @@ function Card({ title, action, children }) {
       {(title || action) && (
         <div className="flex items-center justify-between">
           {title && (
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+            <h3 className="text-sm font-medium text-gray-900">{title}</h3>
           )}
           {action}
         </div>
@@ -145,7 +145,7 @@ export default function AdminProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Admin Profile</h1>
+        <h1 className="text-2xl font-medium text-gray-900">Admin Profile</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           Manage your account information and security
         </p>
@@ -156,13 +156,13 @@ export default function AdminProfilePage() {
         <Card>
           <div className="flex flex-col items-center text-center gap-3">
             <Avatar className="h-20 w-20 border-4 border-violet-100">
-              <AvatarFallback className="bg-violet-700 text-white text-2xl font-bold">
+              <AvatarFallback className="bg-violet-700 text-white text-2xl font-medium">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
             <div>
-              <h2 className="text-base font-semibold text-gray-900">
+              <h2 className="text-base font-medium text-gray-900">
                 {profile.name || "—"}
               </h2>
               <p className="text-xs text-gray-400">{profile.email}</p>

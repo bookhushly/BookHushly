@@ -73,7 +73,7 @@ export function ProfileClient({ userId, initialProfile, stats }) {
   return (
     <div className="space-y-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+        <h1 className="text-2xl font-medium text-gray-900">Profile</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           Manage your account information
         </p>
@@ -87,12 +87,12 @@ export function ProfileClient({ userId, initialProfile, stats }) {
               <div className="relative mb-4">
                 <Avatar className="h-20 w-20 border-4 border-purple-100">
                   <AvatarImage src={initialProfile.avatar} />
-                  <AvatarFallback className="bg-purple-600 text-white text-2xl font-bold">
+                  <AvatarFallback className="bg-purple-600 text-white text-2xl font-medium">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-medium text-gray-900">
                 {initialProfile.name}
               </h2>
               <p className="text-sm text-gray-500 mt-0.5">
@@ -290,7 +290,7 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                       <item.icon className="h-3.5 w-3.5 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-gray-900">
+                      <p className="text-lg font-medium text-gray-900">
                         {item.count}
                       </p>
                       <p className="text-xs text-gray-500">{item.label}</p>

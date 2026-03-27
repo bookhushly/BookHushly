@@ -52,7 +52,7 @@ export default function PaymentMethodSelector({
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-medium text-gray-900 mb-1">
                   Card / Bank Transfer
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">
@@ -114,7 +114,7 @@ export default function PaymentMethodSelector({
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-medium text-gray-900 mb-1">
                   Cryptocurrency
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">
@@ -155,7 +155,7 @@ export default function PaymentMethodSelector({
           {/* Crypto Selection */}
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-medium text-gray-900">
                 Select Cryptocurrency
               </h3>
               <button
@@ -181,7 +181,7 @@ export default function PaymentMethodSelector({
                   }`}
                 >
                   <div className="text-2xl mb-2">{crypto.symbol}</div>
-                  <div className="text-sm font-semibold text-gray-900">
+                  <div className="text-sm font-medium text-gray-900">
                     {crypto.name}
                   </div>
                   <div className="text-xs text-gray-500 uppercase">

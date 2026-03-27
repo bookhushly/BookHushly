@@ -242,7 +242,7 @@ SheetFooter.displayName = 'SheetFooter';
 // ─── Title ────────────────────────────────────────────────────────────────────
 const SheetTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h2 ref={ref} className={cn('text-lg font-semibold text-foreground', className)} {...props} />
+    <h2 ref={ref} className={cn('text-lg font-medium text-foreground', className)} {...props} />
   )
 );
 SheetTitle.displayName = 'SheetTitle';

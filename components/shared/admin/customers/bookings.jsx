@@ -45,7 +45,7 @@ export function CustomerBookings({ customerId }) {
     <div className="space-y-6">
       {bookings.hotels.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Hotel Bookings ({bookings.hotels.length})
           </h3>
           <div className="space-y-3">
@@ -95,7 +95,7 @@ export function CustomerBookings({ customerId }) {
 
       {bookings.apartments.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Apartment Bookings ({bookings.apartments.length})
           </h3>
           <div className="space-y-3">
@@ -146,7 +146,7 @@ export function CustomerBookings({ customerId }) {
 
       {bookings.events.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Event Bookings ({bookings.events.length})
           </h3>
           <div className="space-y-3">

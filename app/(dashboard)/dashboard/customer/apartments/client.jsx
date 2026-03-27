@@ -97,7 +97,7 @@ export function ApartmentBookingsClient({ userId, initialData }) {
                     <div className="flex-1 p-5">
                       <div className="flex justify-between gap-3 mb-3">
                         <div>
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-medium text-gray-900">
                             {booking.apartment?.name || "Apartment"}
                           </h3>
                           {booking.apartment?.city && (

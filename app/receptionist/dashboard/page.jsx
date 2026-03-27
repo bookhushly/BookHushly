@@ -135,7 +135,7 @@ export default function ReceptionistDashboardPage() {
         <Card className="w-full max-w-md border-0 shadow-lg">
           <CardContent className="text-center py-12">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <h3 className="text-lg font-medium mb-2">Access Denied</h3>
             <p className="text-gray-600">
               You are not authorized to access the receptionist portal
             </p>
@@ -229,7 +229,7 @@ export default function ReceptionistDashboardPage() {
                 Welcome back
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-medium text-white mb-3 tracking-tight">
               {hotel.name}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-white/90">
@@ -261,12 +261,12 @@ export default function ReceptionistDashboardPage() {
                 <div className="p-3 bg-gray-50 rounded-xl">
                   <DoorOpen className="h-6 w-6 text-gray-700" />
                 </div>
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Occupied
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="text-4xl font-bold text-gray-900">
+                <div className="text-4xl font-medium text-gray-900">
                   {stats.occupied}
                 </div>
                 <p className="text-sm text-gray-500">Rooms in use</p>
@@ -280,12 +280,12 @@ export default function ReceptionistDashboardPage() {
                 <div className="p-3 bg-green-50 rounded-xl">
                   <DoorOpen className="h-6 w-6 text-green-600" />
                 </div>
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Available
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="text-4xl font-bold text-green-600">
+                <div className="text-4xl font-medium text-green-600">
                   {stats.available}
                 </div>
                 <p className="text-sm text-gray-500">Ready to book</p>
@@ -299,12 +299,12 @@ export default function ReceptionistDashboardPage() {
                 <div className="p-3 bg-yellow-50 rounded-xl">
                   <FaBroom className="h-6 w-6 text-yellow-600" />
                 </div>
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Cleaning
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="text-4xl font-bold text-yellow-600">
+                <div className="text-4xl font-medium text-yellow-600">
                   {stats.dirty}
                 </div>
                 <p className="text-sm text-gray-500">Needs attention</p>
@@ -318,12 +318,12 @@ export default function ReceptionistDashboardPage() {
                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                   <Clock className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs font-semibold text-purple-100 uppercase tracking-wider">
+                <span className="text-xs font-medium text-purple-100 uppercase tracking-wider">
                   Today
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="text-4xl font-bold text-white">
+                <div className="text-4xl font-medium text-white">
                   {stats.checkingInToday}
                 </div>
                 <p className="text-sm text-purple-100">Checking in today</p>

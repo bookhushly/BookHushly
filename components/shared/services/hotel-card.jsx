@@ -97,12 +97,12 @@ const HotelCard = ({ service }) => {
           {/* Badges — sm+ only */}
           <div className="hidden sm:flex absolute top-3 left-3 z-10 flex-col gap-1">
             {service.checkout_policy && (
-              <span className="text-[10px] font-semibold bg-green-500 text-white px-2 py-1 rounded-lg">
+              <span className="text-[10px] font-medium bg-green-500 text-white px-2 py-1 rounded-lg">
                 Free cancellation
               </span>
             )}
             {service.nihotour_certified && (
-              <span className="text-[10px] font-semibold bg-amber-500 text-white px-2 py-1 rounded-lg flex items-center gap-0.5">
+              <span className="text-[10px] font-medium bg-amber-500 text-white px-2 py-1 rounded-lg flex items-center gap-0.5">
                 🏅 NIHOTOUR
               </span>
             )}
@@ -111,7 +111,7 @@ const HotelCard = ({ service }) => {
           {/* Rating badge — sm+ only */}
           {service.avg_rating && (
             <div className="hidden sm:block absolute top-3 right-3 z-10">
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-white/95 text-gray-900 px-2 py-1 rounded-lg shadow-sm">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-white/95 text-gray-900 px-2 py-1 rounded-lg shadow-sm">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                 {service.avg_rating}
               </span>
@@ -122,7 +122,7 @@ const HotelCard = ({ service }) => {
         {/* Content */}
         <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
           {/* Title */}
-          <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-1 group-hover:text-violet-700 transition-colors">
+          <h3 className="font-medium text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-1 group-hover:text-violet-700 transition-colors">
             {service.title}
           </h3>
 
@@ -137,7 +137,7 @@ const HotelCard = ({ service }) => {
           {/* Mobile-only: rating + free cancel inline */}
           <div className="flex sm:hidden items-center gap-2 mb-2 flex-wrap">
             {service.avg_rating && (
-              <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-gray-700">
+              <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-gray-700">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                 {service.avg_rating}
               </span>
@@ -195,13 +195,13 @@ const HotelCard = ({ service }) => {
                   <div>
                     <p className="text-[10px] text-gray-400">From</p>
                     <div className="flex items-baseline gap-0.5">
-                      <span className="text-sm font-bold text-gray-900">
+                      <span className="text-sm font-medium text-gray-900">
                         ₦{service.price.toLocaleString()}
                       </span>
                       <span className="text-[10px] text-gray-400">/night</span>
                     </div>
                   </div>
-                  <span className="h-7 px-3 inline-flex items-center text-[11px] font-semibold bg-violet-600 text-white rounded-lg shrink-0">
+                  <span className="h-7 px-3 inline-flex items-center text-[11px] font-medium bg-violet-600 text-white rounded-lg shrink-0">
                     Book
                   </span>
                 </div>
@@ -210,13 +210,13 @@ const HotelCard = ({ service }) => {
                   <div>
                     <p className="text-[11px] text-gray-400 mb-0.5">Starting from</p>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold text-gray-900">
+                      <span className="text-xl font-medium text-gray-900">
                         ₦{service.price.toLocaleString()}
                       </span>
                       <span className="text-xs text-gray-400">/night</span>
                     </div>
                   </div>
-                  <span className="h-9 px-4 inline-flex items-center justify-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
+                  <span className="h-9 px-4 inline-flex items-center justify-center text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
                     See rooms
                   </span>
                 </div>

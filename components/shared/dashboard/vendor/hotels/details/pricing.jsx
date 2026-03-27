@@ -219,7 +219,7 @@ export function HotelPricingTab({ hotelId }) {
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-sm font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
+                      <span className="text-sm font-medium text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
                         {formatAdj(rule)}
                       </span>
                       <Button
@@ -249,7 +249,7 @@ export function HotelPricingTab({ hotelId }) {
         <Card className="bg-amber-50 border-amber-200">
           <CardContent className="pt-5 pb-4">
             <p className="text-sm text-amber-800">
-              <span className="font-semibold">How it works:</span> When a guest books within a rule&apos;s date
+              <span className="font-medium">How it works:</span> When a guest books within a rule&apos;s date
               range, each night&apos;s price is increased by the rule&apos;s adjustment. If multiple rules
               overlap, the largest adjustment wins. Base prices remain unchanged outside rule windows.
             </p>
@@ -268,7 +268,7 @@ export function HotelPricingTab({ hotelId }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-medium text-gray-900">
                 {editingRule ? "Edit Pricing Rule" : "New Pricing Rule"}
               </h2>
             </div>

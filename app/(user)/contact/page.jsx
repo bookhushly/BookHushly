@@ -156,7 +156,7 @@ export default function ContactPage() {
 
         <div className="container relative z-10">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
-            <h1 className="text-4xl lg:text-6xl font-display font-bold mb-6 text-balance">
+            <h1 className="text-4xl lg:text-6xl font-display font-medium mb-6 text-balance">
               Get in Touch
             </h1>
             <p className="text-xl text-white/90 font-body text-balance">
@@ -378,7 +378,7 @@ export default function ContactPage() {
       <section className="py-16 bg-hospitality-comfort">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-4 text-foreground">
+            <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
               Frequently Asked Questions
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto font-body text-balance">

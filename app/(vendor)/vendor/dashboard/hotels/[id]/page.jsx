@@ -87,7 +87,7 @@ export default function HotelManagementPage() {
                 <Building2 className="h-8 w-8 text-purple-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-semibold text-gray-900">
+                <h1 className="text-3xl font-medium text-gray-900">
                   {hotel.name}
                 </h1>
                 <p className="text-gray-600 mt-1">

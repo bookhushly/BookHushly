@@ -31,7 +31,7 @@ function Steps({ current }) {
               className={`flex items-center gap-2 ${active || done ? "" : "opacity-40"}`}
             >
               <div
-                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
                   done
                     ? "bg-violet-600 text-white"
                     : active
@@ -145,7 +145,7 @@ export default function ForgotPasswordPage() {
                 <div className="mb-5 h-12 w-12 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
                   <MailCheck className="h-5 w-5 text-violet-600" />
                 </div>
-                <h1 className="font-fraunces text-2xl font-semibold text-gray-900 mb-1.5">
+                <h1 className="font-fraunces text-2xl font-medium text-gray-900 mb-1.5">
                   Forgot your password?
                 </h1>
                 <p className="text-gray-500 text-sm leading-relaxed">
@@ -184,7 +184,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm transition-all flex items-center justify-center gap-2"
                 >
                   {isPending ? (
                     <>
@@ -204,7 +204,7 @@ export default function ForgotPasswordPage() {
                 <div className="mb-5 h-12 w-12 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center">
                   <ShieldCheck className="h-5 w-5 text-violet-600" />
                 </div>
-                <h1 className="font-fraunces text-2xl font-semibold text-gray-900 mb-1.5">
+                <h1 className="font-fraunces text-2xl font-medium text-gray-900 mb-1.5">
                   Enter your OTP
                 </h1>
                 <p className="text-gray-500 text-sm leading-relaxed">
@@ -246,7 +246,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm transition-all flex items-center justify-center gap-2"
                 >
                   {isPending ? (
                     <>

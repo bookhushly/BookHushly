@@ -75,7 +75,7 @@ export default function InstallPrompt() {
             <Smartphone className="w-5 h-5 text-white" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 text-sm">
+            <p className="font-medium text-gray-900 text-sm">
               Add to Home Screen
             </p>
             {hasNativePrompt ? (
@@ -107,7 +107,7 @@ export default function InstallPrompt() {
             <button
               onClick={install}
               disabled={isInstalling}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-70"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-70"
             >
               <Download className="w-4 h-4" />
               {isInstalling ? "Installing…" : "Install"}
@@ -115,7 +115,7 @@ export default function InstallPrompt() {
           ) : (
             <button
               onClick={handleDismiss}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 transition-colors"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition-colors"
             >
               Got it
             </button>

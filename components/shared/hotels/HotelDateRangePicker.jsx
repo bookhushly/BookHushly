@@ -137,10 +137,10 @@ export default function HotelDateRangePicker({
       <div className={`flex items-start gap-3 rounded-xl border px-3.5 py-3 mb-3 ${stepCfg.color}`}>
         <span className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${stepCfg.dot} mt-1.5`} />
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-0.5">
+          <p className="text-[10px] font-medium uppercase tracking-widest opacity-70 mb-0.5">
             {stepCfg.label}
           </p>
-          <p className="text-[13px] sm:text-[14px] font-semibold leading-snug">
+          <p className="text-[13px] sm:text-[14px] font-medium leading-snug">
             {stepCfg.instruction}
           </p>
         </div>
@@ -159,17 +159,17 @@ export default function HotelDateRangePicker({
             ? "border-amber-300 bg-amber-50 animate-pulse"
             : "border-gray-200 bg-gray-50"
         }`}>
-          <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5 flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] items-center justify-center font-bold shrink-0">1</span>
+          <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-0.5 flex items-center gap-1">
+            <span className="inline-flex h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] items-center justify-center font-medium shrink-0">1</span>
             Arrival
           </p>
-          <p className={`text-[12px] sm:text-[14px] font-bold leading-tight ${checkIn ? "text-gray-900" : "text-gray-400"}`}>
+          <p className={`text-[12px] sm:text-[14px] font-medium leading-tight ${checkIn ? "text-gray-900" : "text-gray-400"}`}>
             {checkIn ? format(parseISO(checkIn), "EEE, d MMM") : "Not set yet"}
           </p>
         </div>
 
         {/* Arrow divider */}
-        <div className="flex items-center text-gray-300 text-lg font-light select-none shrink-0">→</div>
+        <div className="flex items-center text-gray-300 text-lg font-normal select-none shrink-0">→</div>
 
         {/* Departure chip */}
         <div className={`flex-1 rounded-xl border-2 px-3 py-2.5 transition-all ${
@@ -179,11 +179,11 @@ export default function HotelDateRangePicker({
             ? "border-violet-300 bg-violet-50 animate-pulse"
             : "border-gray-200 bg-gray-50"
         }`}>
-          <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5 flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] items-center justify-center font-bold shrink-0">2</span>
+          <p className="text-[9px] sm:text-[10px] font-medium uppercase tracking-widest text-gray-400 mb-0.5 flex items-center gap-1">
+            <span className="inline-flex h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] items-center justify-center font-medium shrink-0">2</span>
             Departure
           </p>
-          <p className={`text-[12px] sm:text-[14px] font-bold leading-tight ${checkOut ? "text-gray-900" : "text-gray-400"}`}>
+          <p className={`text-[12px] sm:text-[14px] font-medium leading-tight ${checkOut ? "text-gray-900" : "text-gray-400"}`}>
             {checkOut ? format(parseISO(checkOut), "EEE, d MMM") : "Not set yet"}
           </p>
         </div>
@@ -203,14 +203,14 @@ export default function HotelDateRangePicker({
             months:              "flex flex-col sm:flex-row gap-4",
             month:               "space-y-2 sm:space-y-3 w-full",
             caption:             "flex justify-center pt-1 relative items-center mb-1",
-            caption_label:       "text-[13px] sm:text-[14px] font-bold text-gray-800",
+            caption_label:       "text-[13px] sm:text-[14px] font-medium text-gray-800",
             nav:                 "space-x-1 flex items-center",
             nav_button:          "h-7 w-7 sm:h-8 sm:w-8 bg-white border border-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors",
             nav_button_previous: "absolute left-1",
             nav_button_next:     "absolute right-1",
             table:               "w-full border-collapse",
             head_row:            "flex",
-            head_cell:           "text-gray-500 rounded-md flex-1 font-semibold text-[10px] sm:text-[11px] text-center py-1",
+            head_cell:           "text-gray-500 rounded-md flex-1 font-medium text-[10px] sm:text-[11px] text-center py-1",
             row:                 "flex w-full mt-0.5 sm:mt-1",
             cell: [
               "flex-1 h-9 sm:h-10 text-center p-0 relative",
@@ -221,10 +221,10 @@ export default function HotelDateRangePicker({
               "last:[&:has([aria-selected])]:rounded-r-md",
             ].join(" "),
             day:              "w-full h-9 sm:h-10 p-0 font-medium text-[12px] sm:text-[13px] rounded-lg hover:bg-violet-100 hover:text-violet-800 transition-colors aria-selected:opacity-100",
-            day_range_start:  "bg-violet-600 text-white hover:bg-violet-700 hover:text-white rounded-l-lg font-bold",
-            day_range_end:    "day-range-end bg-violet-600 text-white hover:bg-violet-700 hover:text-white rounded-r-lg font-bold",
-            day_selected:     "bg-violet-600 text-white hover:bg-violet-700 hover:text-white font-bold",
-            day_today:        "ring-2 ring-violet-300 ring-inset font-bold text-violet-700",
+            day_range_start:  "bg-violet-600 text-white hover:bg-violet-700 hover:text-white rounded-l-lg font-medium",
+            day_range_end:    "day-range-end bg-violet-600 text-white hover:bg-violet-700 hover:text-white rounded-r-lg font-medium",
+            day_selected:     "bg-violet-600 text-white hover:bg-violet-700 hover:text-white font-medium",
+            day_today:        "ring-2 ring-violet-300 ring-inset font-medium text-violet-700",
             day_outside:      "text-gray-300 opacity-50",
             day_disabled:     "text-gray-300 opacity-30 cursor-not-allowed line-through",
             day_range_middle: "aria-selected:bg-violet-100 aria-selected:text-violet-800 rounded-none",

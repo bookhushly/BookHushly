@@ -129,7 +129,7 @@ export default function RegisterPage() {
             <div className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center">
               <MailCheck className="h-7 w-7 text-violet-600" />
             </div>
-            <h1 className="font-fraunces text-2xl font-semibold text-gray-900 mb-2">
+            <h1 className="font-fraunces text-2xl font-medium text-gray-900 mb-2">
               Check your email
             </h1>
             <p className="text-gray-500 text-sm leading-relaxed mb-6">
@@ -140,7 +140,7 @@ export default function RegisterPage() {
               . Verify your address to activate your account.
             </p>
             <Link href="/login">
-              <Button className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm">
+              <Button className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm">
                 Go to sign in
               </Button>
             </Link>
@@ -206,7 +206,7 @@ export default function RegisterPage() {
             <p className="text-violet-400 text-sm font-medium tracking-widest uppercase mb-5">
               Join thousands of users
             </p>
-            <h2 className="font-fraunces text-white text-[3.2rem] font-semibold leading-[1.1] mb-6">
+            <h2 className="font-fraunces text-white text-[3.2rem] font-medium leading-[1.1] mb-6">
               List, book, and
               <br />
               get things done.
@@ -245,7 +245,7 @@ export default function RegisterPage() {
 
         <div className="flex-1 flex flex-col justify-center px-6 py-10 sm:px-10 lg:px-16 xl:px-24 max-w-lg lg:max-w-none mx-auto w-full lg:mx-0">
           <div className="mb-7">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1 className="text-2xl font-medium text-gray-900 mb-1">
               Create your account
             </h1>
             <p className="text-gray-500 text-sm">
@@ -302,7 +302,7 @@ export default function RegisterPage() {
                       className={`h-4 w-4 mb-0.5 ${formData.role === value ? "text-violet-600" : "text-gray-400"}`}
                     />
                     <span
-                      className={`text-sm font-semibold ${formData.role === value ? "text-violet-700" : "text-gray-700"}`}
+                      className={`text-sm font-medium ${formData.role === value ? "text-violet-700" : "text-gray-700"}`}
                     >
                       {label}
                     </span>
@@ -468,7 +468,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-1"
+              className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-1"
             >
               {isPending ? (
                 <>

@@ -298,7 +298,7 @@ export default function HotelBookingPage() {
         <Card className="max-w-md">
           <CardContent className="text-center py-12">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Booking Not Found</h3>
+            <h3 className="text-lg font-medium mb-2">Booking Not Found</h3>
             <p className="text-gray-600 mb-4">We couldn't find this booking</p>
             <Button onClick={() => router.push("/services?category=hotels")}>
               Back to Hotels
@@ -385,7 +385,7 @@ export default function HotelBookingPage() {
             {step === 1 && (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                  <h2 className="text-2xl font-medium text-gray-900 mb-6">
                     Select Your Dates
                   </h2>
 
@@ -443,7 +443,7 @@ export default function HotelBookingPage() {
                       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-700">Total nights:</span>
-                          <span className="font-semibold text-purple-600">
+                          <span className="font-medium text-purple-600">
                             {nights} {nights === 1 ? "night" : "nights"}
                           </span>
                         </div>
@@ -476,7 +476,7 @@ export default function HotelBookingPage() {
             {step === 2 && (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                  <h2 className="text-2xl font-medium text-gray-900 mb-6">
                     Guest Information
                   </h2>
 
@@ -582,7 +582,7 @@ export default function HotelBookingPage() {
                           onClick={(e) => e.stopPropagation()}
                         />
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-gray-900">
+                          <p className="text-sm font-medium text-gray-900">
                             🚗 Add Airport Transfer
                           </p>
                           <p className="text-xs text-gray-500 mt-0.5">
@@ -660,7 +660,7 @@ export default function HotelBookingPage() {
                             }`}
                           >
                             <p className="text-lg mb-1">{opt.icon}</p>
-                            <p className="text-sm font-semibold text-gray-900">{opt.title}</p>
+                            <p className="text-sm font-medium text-gray-900">{opt.title}</p>
                             <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
                           </button>
                         ))}
@@ -697,7 +697,7 @@ export default function HotelBookingPage() {
           <div className="lg:col-span-5">
             <Card className="border-0 shadow-sm lg:sticky lg:top-24">
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">
+                <h3 className="text-xl font-medium text-gray-900 mb-6">
                   Booking Summary
                 </h3>
 
@@ -712,14 +712,14 @@ export default function HotelBookingPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-lg">{hotel.name}</h4>
+                    <h4 className="font-medium text-lg">{hotel.name}</h4>
                     <p className="text-sm text-gray-600">
                       {hotel.city}, {hotel.state}
                     </p>
                   </div>
 
                   <div className="border-t pt-4">
-                    <h5 className="font-semibold mb-2">{roomType.name}</h5>
+                    <h5 className="font-medium mb-2">{roomType.name}</h5>
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
@@ -826,7 +826,7 @@ export default function HotelBookingPage() {
                           </span>
                         </div>
                       )}
-                      <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                      <div className="flex justify-between font-medium text-lg pt-2 border-t">
                         <span>Total</span>
                         <span className="text-purple-600">
                           ₦{total.toLocaleString()}

@@ -118,22 +118,22 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
             {/* Badges */}
             <div className="absolute top-3 left-3 flex items-center gap-1.5">
               {isPast ? (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-gray-600/80 text-white">
+                <span className="text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-gray-600/80 text-white">
                   Ended
                 </span>
               ) : (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-violet-600/90 text-white">
+                <span className="text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-violet-600/90 text-white">
                   Event
                 </span>
               )}
               {service.category_data?.recurrence?.enabled && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-indigo-600/90 text-white">
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-indigo-600/90 text-white">
                   <Repeat2 className="h-2.5 w-2.5" />
                   {service.category_data.recurrence.type}
                 </span>
               )}
               {service.category_data?.age_restriction && (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-red-600/90 text-white">
+                <span className="text-[10px] font-medium uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-sm bg-red-600/90 text-white">
                   {service.category_data.age_restriction}+
                 </span>
               )}
@@ -143,7 +143,7 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
           {/* Content */}
           <div className="p-3 sm:p-4 flex-1 flex flex-col">
             {/* Title */}
-            <h3 className={`font-semibold text-sm sm:text-base leading-snug line-clamp-2 mb-1.5 transition-colors ${
+            <h3 className={`font-medium text-sm sm:text-base leading-snug line-clamp-2 mb-1.5 transition-colors ${
               isPast ? "text-gray-400" : "text-gray-900 group-hover:text-violet-700"
             }`}>
               {service.title || "Event"}
@@ -196,7 +196,7 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
                   countdown.urgent ? "bg-red-500" : "bg-brand-600"
                 }`}>
                   <Timer className="h-2.5 w-2.5 text-white/80" />
-                  <span className="text-[9px] font-semibold uppercase tracking-widest text-white/80">
+                  <span className="text-[9px] font-medium uppercase tracking-widest text-white/80">
                     Starts in
                   </span>
                 </div>
@@ -214,7 +214,7 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
                         <div className={`w-full rounded-lg py-1 text-center bg-white border ${
                           countdown.urgent ? "border-red-100" : "border-brand-100"
                         }`}>
-                          <span className={`text-sm font-bold tabular-nums leading-none tracking-tight ${
+                          <span className={`text-sm font-medium tabular-nums leading-none tracking-tight ${
                             countdown.urgent ? "text-red-600" : "text-brand-700"
                           }`}>
                             {String(val).padStart(2, "0")}
@@ -227,7 +227,7 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
                         </span>
                       </div>
                       {i < 3 && (
-                        <span className={`text-sm font-bold leading-none mt-0.5 select-none ${
+                        <span className={`text-sm font-medium leading-none mt-0.5 select-none ${
                           countdown.urgent ? "text-red-400" : "text-brand-500"
                         }`}>
                           :
@@ -242,17 +242,17 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
             {/* Price + CTA */}
             <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-gray-100">
               <div>
-                <span className="text-base sm:text-xl font-bold text-gray-900">
+                <span className="text-base sm:text-xl font-medium text-gray-900">
                   {isPast ? "—" : price}
                 </span>
                 {!isPast && <span className="text-xs text-gray-400 ml-1">per ticket</span>}
               </div>
               {isPast ? (
-                <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center gap-1.5 text-sm font-semibold bg-gray-100 text-gray-400 rounded-xl cursor-default">
+                <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-gray-100 text-gray-400 rounded-xl cursor-default">
                   Event Ended
                 </span>
               ) : (
-                <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center gap-1.5 text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
+                <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center gap-1.5 text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
                   <Ticket className="h-3.5 w-3.5" />
                   Get Tickets
                 </span>

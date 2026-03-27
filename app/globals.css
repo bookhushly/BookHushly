@@ -39,30 +39,31 @@
     --radius: 0.5rem;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /* Deep purple-tinted dark — used by shadcn/ui components inside dashboards */
+    --background: 244 33% 7%;
+    --foreground: 250 50% 95%;
+    --card: 244 25% 11%;
+    --card-foreground: 250 50% 95%;
+    --popover: 244 25% 13%;
+    --popover-foreground: 250 50% 95%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 244 20% 18%;
+    --secondary-foreground: 250 30% 85%;
+    --muted: 244 20% 18%;
+    --muted-foreground: 244 15% 65%;
+    --accent: 244 20% 18%;
+    --accent-foreground: 250 50% 95%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --border: 244 20% 16%;
+    --input: 244 20% 16%;
+    --ring: 262 83% 58%;
+    --chart-1: 220 70% 55%;
+    --chart-2: 160 60% 48%;
+    --chart-3: 30 80% 58%;
+    --chart-4: 280 65% 62%;
+    --chart-5: 340 75% 58%;
   }
 }
 
@@ -70,8 +71,10 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: #ffffff;
+    color: #0a0a0f;
     font-size: 16px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
@@ -79,15 +82,39 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Improved base typography */
+  /* ── Typography ──────────────────────────────────────────────────────────── */
+
+  /* Cap font weight at 500 everywhere — hierarchy via size and spacing, not weight */
+  strong, b { font-weight: 500; }
+
   h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    line-height: 1.3;
     letter-spacing: -0.01em;
   }
 
-  /* Ensure small text stays readable — raise minimum from text-xs (12px) to readable sizes */
+  /* Raise text-xs to 13px — 12px is below comfortable reading threshold */
   .text-xs {
-    font-size: 0.8125rem !important; /* 13px instead of 12px */
-    line-height: 1.5 !important;
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.5;
+  }
+
+  /* Minimum interactive element size — 16px floor for anything the user acts on */
+  button, [role="button"],
+  input, select, textarea,
+  label,
+  nav a {
+    font-size: max(16px, 1em);
+  }
+
+  /* Keep compact UI labels (badges, metadata chips) below 16px intentionally */
+  .text-\[10px\], .text-\[11px\], .text-\[12px\], .text-\[13px\] {
+    font-size: inherit; /* let the explicit class win */
+  }
+
+  /* No italic for UI elements — only prose/quoted content */
+  button, input, select, textarea, nav, [role="navigation"] {
+    font-style: normal;
   }
 
   /* Sharper placeholder text */
@@ -96,32 +123,10 @@
     opacity: 1;
   }
 
-  /* Custom animations and effects */
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-20px);
-    }
-  }
-
-  @keyframes glow {
-    from {
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-    }
-    to {
-      box-shadow: 0 0 30px rgba(147, 51, 234, 0.8);
-    }
+  /* Focus rings — visible to keyboard and AT users */
+  :focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   /* Gradient text utilities */
@@ -129,35 +134,175 @@
     @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
   }
 
-  /* Glass morphism effect */
+  /* Glass morphism — 0.5px border to match system default */
   .glass {
     backdrop-filter: blur(16px) saturate(180%);
     background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.125);
+    border: 0.5px solid rgba(255, 255, 255, 0.125);
   }
 
   /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
-  }
+  html { scroll-behavior: smooth; }
 
   /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  /* Animations */
+  .animate-float { animation: float 6s ease-in-out infinite; }
+  .animate-glow  { animation: glow 2s ease-in-out infinite alternate; }
 
-  ::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 999px;
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-20px); }
   }
+  @keyframes glow {
+    from { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+    to   { box-shadow: 0 0 30px rgba(147, 51, 234, 0.8); }
+  }
+}
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+/* ── Dashboard shell CSS variables ───────────────────────────────────────────
+   Set light defaults; .dark overrides apply only inside dashboard layouts.
+   ─────────────────────────────────────────────────────────────────────────── */
+[data-theme-shell] {
+  --sidebar-bg: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+  --shell-bg: #f7f6fb;
+}
+
+.dark [data-theme-shell] {
+  --sidebar-bg: linear-gradient(180deg, #1b1729 0%, #110f1d 100%);
+  --shell-bg: #0e0e14;
+}
+
+/* ── Dashboard-scoped dark mode overrides ────────────────────────────────────
+   Only apply when .dark is on <html> AND we're inside a dashboard shell.
+   Specificity (0,3,0) > Tailwind (0,1,0). Public pages are never affected.
+   ─────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+
+  /* Surfaces */
+  .dark [data-theme-shell] .bg-white        { background-color: #16161f; }
+  .dark [data-theme-shell] .bg-gray-50      { background-color: #1a1a25; }
+  .dark [data-theme-shell] .bg-gray-100     { background-color: #222230; }
+  .dark [data-theme-shell] .bg-gray-200     { background-color: #2a2a3c; }
+  .dark [data-theme-shell] .bg-slate-50     { background-color: #1a1a25; }
+  .dark [data-theme-shell] .bg-slate-100    { background-color: #222230; }
+
+  /* Text */
+  .dark [data-theme-shell] .text-gray-900   { color: #f0effe; }
+  .dark [data-theme-shell] .text-gray-800   { color: #dddaf5; }
+  .dark [data-theme-shell] .text-gray-700   { color: #c5c2df; }
+  .dark [data-theme-shell] .text-gray-600   { color: #a09dc0; }
+  .dark [data-theme-shell] .text-gray-500   { color: #7e7b9a; }
+  .dark [data-theme-shell] .text-gray-400   { color: #5e5b77; }
+  .dark [data-theme-shell] .text-gray-300   { color: #3f3d54; }
+  .dark [data-theme-shell] .text-slate-900  { color: #f0effe; }
+  .dark [data-theme-shell] .text-slate-800  { color: #dddaf5; }
+  .dark [data-theme-shell] .text-slate-700  { color: #c5c2df; }
+  .dark [data-theme-shell] .text-slate-600  { color: #a09dc0; }
+  .dark [data-theme-shell] .text-slate-500  { color: #7e7b9a; }
+
+  /* Borders */
+  .dark [data-theme-shell] .border-gray-50  { border-color: rgba(255,255,255,0.04); }
+  .dark [data-theme-shell] .border-gray-100 { border-color: rgba(255,255,255,0.07); }
+  .dark [data-theme-shell] .border-gray-200 { border-color: rgba(255,255,255,0.11); }
+  .dark [data-theme-shell] .border-gray-300 { border-color: rgba(255,255,255,0.16); }
+  .dark [data-theme-shell] .border-slate-100{ border-color: rgba(255,255,255,0.07); }
+  .dark [data-theme-shell] .border-slate-200{ border-color: rgba(255,255,255,0.11); }
+
+  /* Violet / purple accents */
+  .dark [data-theme-shell] .bg-violet-50    { background-color: rgba(139,92,246,0.10); }
+  .dark [data-theme-shell] .bg-violet-100   { background-color: rgba(139,92,246,0.18); }
+  .dark [data-theme-shell] .bg-violet-200   { background-color: rgba(139,92,246,0.26); }
+  .dark [data-theme-shell] .bg-purple-50    { background-color: rgba(139,92,246,0.10); }
+  .dark [data-theme-shell] .bg-purple-100   { background-color: rgba(139,92,246,0.18); }
+  .dark [data-theme-shell] .bg-indigo-50    { background-color: rgba(99,102,241,0.10); }
+  .dark [data-theme-shell] .border-violet-50  { border-color: rgba(139,92,246,0.12); }
+  .dark [data-theme-shell] .border-violet-100 { border-color: rgba(139,92,246,0.20); }
+  .dark [data-theme-shell] .border-violet-200 { border-color: rgba(139,92,246,0.30); }
+  .dark [data-theme-shell] .border-purple-50  { border-color: rgba(139,92,246,0.12); }
+  .dark [data-theme-shell] .border-purple-100 { border-color: rgba(139,92,246,0.20); }
+  .dark [data-theme-shell] .border-purple-200 { border-color: rgba(139,92,246,0.30); }
+  .dark [data-theme-shell] .border-purple-300 { border-color: rgba(139,92,246,0.40); }
+  .dark [data-theme-shell] .text-violet-700  { color: #c4b5fd; }
+  .dark [data-theme-shell] .text-violet-600  { color: #a78bfa; }
+  .dark [data-theme-shell] .text-violet-500  { color: #8b5cf6; }
+  .dark [data-theme-shell] .text-violet-400  { color: #7c3aed; }
+  .dark [data-theme-shell] .text-purple-700  { color: #c4b5fd; }
+  .dark [data-theme-shell] .text-purple-600  { color: #a78bfa; }
+  .dark [data-theme-shell] .text-purple-400  { color: #8b5cf6; }
+  .dark [data-theme-shell] .text-indigo-700  { color: #a5b4fc; }
+  .dark [data-theme-shell] .text-indigo-600  { color: #818cf8; }
+
+  /* Status: green */
+  .dark [data-theme-shell] .bg-green-50     { background-color: rgba(34,197,94,0.10); }
+  .dark [data-theme-shell] .bg-green-100    { background-color: rgba(34,197,94,0.18); }
+  .dark [data-theme-shell] .bg-emerald-50   { background-color: rgba(16,185,129,0.10); }
+  .dark [data-theme-shell] .bg-emerald-100  { background-color: rgba(16,185,129,0.18); }
+  .dark [data-theme-shell] .border-green-100  { border-color: rgba(34,197,94,0.22); }
+  .dark [data-theme-shell] .border-green-200  { border-color: rgba(34,197,94,0.32); }
+  .dark [data-theme-shell] .border-emerald-100{ border-color: rgba(16,185,129,0.22); }
+  .dark [data-theme-shell] .text-green-700  { color: #86efac; }
+  .dark [data-theme-shell] .text-green-600  { color: #4ade80; }
+  .dark [data-theme-shell] .text-emerald-700 { color: #6ee7b7; }
+  .dark [data-theme-shell] .text-emerald-600 { color: #34d399; }
+
+  /* Status: amber */
+  .dark [data-theme-shell] .bg-amber-50     { background-color: rgba(245,158,11,0.10); }
+  .dark [data-theme-shell] .bg-amber-100    { background-color: rgba(245,158,11,0.18); }
+  .dark [data-theme-shell] .bg-yellow-50    { background-color: rgba(234,179,8,0.10); }
+  .dark [data-theme-shell] .border-amber-100  { border-color: rgba(245,158,11,0.22); }
+  .dark [data-theme-shell] .border-amber-200  { border-color: rgba(245,158,11,0.32); }
+  .dark [data-theme-shell] .text-amber-700  { color: #fcd34d; }
+  .dark [data-theme-shell] .text-amber-600  { color: #fbbf24; }
+  .dark [data-theme-shell] .text-yellow-700 { color: #fde047; }
+
+  /* Status: blue */
+  .dark [data-theme-shell] .bg-blue-50      { background-color: rgba(59,130,246,0.10); }
+  .dark [data-theme-shell] .bg-blue-100     { background-color: rgba(59,130,246,0.18); }
+  .dark [data-theme-shell] .bg-sky-50       { background-color: rgba(14,165,233,0.10); }
+  .dark [data-theme-shell] .border-blue-100   { border-color: rgba(59,130,246,0.22); }
+  .dark [data-theme-shell] .border-blue-200   { border-color: rgba(59,130,246,0.32); }
+  .dark [data-theme-shell] .text-blue-700   { color: #93c5fd; }
+  .dark [data-theme-shell] .text-blue-600   { color: #60a5fa; }
+
+  /* Status: red */
+  .dark [data-theme-shell] .bg-red-50       { background-color: rgba(239,68,68,0.10); }
+  .dark [data-theme-shell] .bg-red-100      { background-color: rgba(239,68,68,0.18); }
+  .dark [data-theme-shell] .border-red-100    { border-color: rgba(239,68,68,0.22); }
+  .dark [data-theme-shell] .border-red-200    { border-color: rgba(239,68,68,0.32); }
+  .dark [data-theme-shell] .text-red-700    { color: #fca5a5; }
+  .dark [data-theme-shell] .text-red-600    { color: #f87171; }
+
+  /* Status: pink */
+  .dark [data-theme-shell] .bg-pink-50      { background-color: rgba(236,72,153,0.10); }
+  .dark [data-theme-shell] .bg-pink-100     { background-color: rgba(236,72,153,0.18); }
+  .dark [data-theme-shell] .text-pink-700   { color: #f9a8d4; }
+  .dark [data-theme-shell] .text-pink-600   { color: #f472b6; }
+
+  /* Hover states */
+  .dark [data-theme-shell] .hover\:bg-gray-100:hover  { background-color: rgba(255,255,255,0.07); }
+  .dark [data-theme-shell] .hover\:bg-gray-50:hover   { background-color: rgba(255,255,255,0.04); }
+  .dark [data-theme-shell] .hover\:bg-violet-50:hover { background-color: rgba(139,92,246,0.10); }
+  .dark [data-theme-shell] .hover\:bg-purple-50:hover { background-color: rgba(139,92,246,0.10); }
+  .dark [data-theme-shell] .hover\:bg-red-50:hover    { background-color: rgba(239,68,68,0.10); }
+  .dark [data-theme-shell] .hover\:bg-violet-200\/40:hover { background-color: rgba(139,92,246,0.16); }
+  .dark [data-theme-shell] .hover\:bg-violet-50\/60:hover  { background-color: rgba(139,92,246,0.10); }
+
+  /* Scrollbar inside dashboard */
+  .dark [data-theme-shell] ::-webkit-scrollbar-thumb       { background: rgba(255,255,255,0.10); }
+  .dark [data-theme-shell] ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+  /* Shadows */
+  .dark [data-theme-shell] .shadow-sm,
+  .dark [data-theme-shell] .shadow,
+  .dark [data-theme-shell] .shadow-md,
+  .dark [data-theme-shell] .shadow-lg,
+  .dark [data-theme-shell] .shadow-xl {
+    --tw-shadow-color: rgba(0,0,0,0.6);
   }
 }
 
@@ -214,8 +359,8 @@
 /* Headings */
 .ProseMirror h1 {
   font-size: 2rem;
-  font-weight: 700;
-  line-height: 2.5rem;
+  font-weight: 500;
+  line-height: 1.3;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
   color: #111827;
@@ -223,8 +368,8 @@
 
 .ProseMirror h2 {
   font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 2rem;
+  font-weight: 500;
+  line-height: 1.3;
   margin-top: 1.25rem;
   margin-bottom: 0.75rem;
   color: #1f2937;
@@ -232,8 +377,8 @@
 
 .ProseMirror h3 {
   font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.75rem;
+  font-weight: 500;
+  line-height: 1.3;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
   color: #1f2937;
@@ -328,7 +473,7 @@
 
 /* Text formatting */
 .ProseMirror strong {
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .ProseMirror em {
@@ -450,7 +595,7 @@
 
 .ProseMirror table th {
   background-color: #f3f4f6;
-  font-weight: 700;
+  font-weight: 500;
   text-align: left;
 }
 
@@ -520,7 +665,7 @@
 /* Headings in content */
 .prose h1 {
   font-size: 1.875rem;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 2.25rem;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
@@ -529,7 +674,7 @@
 
 .prose h2 {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 2rem;
   margin-top: 1.25rem;
   margin-bottom: 0.75rem;
@@ -538,7 +683,7 @@
 
 .prose h3 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.75rem;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
@@ -644,7 +789,7 @@
 
 /* Text formatting */
 .prose strong {
-  font-weight: 700;
+  font-weight: 500;
   color: #111827;
 }
 

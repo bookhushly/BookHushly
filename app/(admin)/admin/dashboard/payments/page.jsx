@@ -93,7 +93,7 @@ export default function AdminPaymentsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
+              <h1 className="text-2xl font-medium text-gray-900">Payments</h1>
               <p className="text-sm text-gray-600 mt-1">
                 {totalCount.toLocaleString()} total payments
               </p>
@@ -129,7 +129,7 @@ export default function AdminPaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                  <p className="text-2xl font-medium text-gray-900 mt-1">
                     {formatCurrency(stats.totalRevenue)}
                   </p>
                 </div>
@@ -155,7 +155,7 @@ export default function AdminPaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Successful</p>
-                  <p className="text-2xl font-bold text-green-600 mt-1">
+                  <p className="text-2xl font-medium text-green-600 mt-1">
                     {stats.successCount}
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export default function AdminPaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-orange-600 mt-1">
+                  <p className="text-2xl font-medium text-orange-600 mt-1">
                     {stats.pendingCount}
                   </p>
                 </div>
@@ -207,7 +207,7 @@ export default function AdminPaymentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Failed</p>
-                  <p className="text-2xl font-bold text-red-600 mt-1">
+                  <p className="text-2xl font-medium text-red-600 mt-1">
                     {stats.failedCount}
                   </p>
                 </div>
@@ -342,7 +342,7 @@ export default function AdminPaymentsPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Amount</span>
-                        <span className="font-semibold text-gray-900">
+                        <span className="font-medium text-gray-900">
                           {formatCurrency(payment.amount, payment.currency)}
                         </span>
                       </div>
@@ -510,7 +510,7 @@ export default function AdminPaymentsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-semibold text-gray-900">
+                          <span className="text-sm font-medium text-gray-900">
                             {formatCurrency(payment.amount, payment.currency)}
                           </span>
                         </td>

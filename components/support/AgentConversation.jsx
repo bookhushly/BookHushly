@@ -64,7 +64,7 @@ function MessageBubble({ msg, agentName }) {
     const name = agentName || "Agent";
     return (
       <div className="flex justify-start mb-3 gap-2">
-        <div className="w-7 h-7 rounded-full bg-violet-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold mt-1">
+        <div className="w-7 h-7 rounded-full bg-violet-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-medium mt-1">
           {getInitials(name)}
         </div>
         <div className="max-w-[75%]">
@@ -326,7 +326,7 @@ export default function AgentConversation({ conversation, currentAgent, onUpdate
       <div className="h-14 flex items-center justify-between px-5 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <div>
-            <p className="text-sm font-semibold text-gray-900 truncate">
+            <p className="text-sm font-medium text-gray-900 truncate">
               {userName}
             </p>
             {conversation.user_email && (

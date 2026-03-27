@@ -61,7 +61,7 @@ export function SupportLayoutClient({ agent, children }) {
         {/* Agent info + sign out */}
         <div className="px-4 py-4 border-t border-gray-100">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
               {initials}
             </div>
             <div className="min-w-0">

@@ -84,7 +84,7 @@ export function VendorHeader({ onMenuClick }) {
             >
               <Avatar className="h-6 w-6">
                 <AvatarImage src={undefined} alt={displayName} />
-                <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-bold">
+                <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-medium">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -97,10 +97,10 @@ export function VendorHeader({ onMenuClick }) {
 
           <DropdownMenuContent
             align="end"
-            className="w-52 shadow-lg bg-white shadow-black/10"
+            className="w-52 shadow-lg shadow-black/10"
           >
             <DropdownMenuLabel className="pb-2">
-              <p className="text-[13px] font-semibold text-gray-900">
+              <p className="text-[13px] font-medium text-gray-900">
                 {displayName}
               </p>
               <p className="text-[11px] font-normal text-gray-400 mt-0.5">

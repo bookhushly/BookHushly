@@ -51,7 +51,7 @@ function CustomerHeader({ user, onMenuClick }) {
       )?.[1] || "Dashboard";
 
   return (
-    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-5 sticky top-0 z-30 shrink-0">
+    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-5 sticky top-0 z-30 shrink-0 backdrop-blur-sm">
       {/* Left */}
       <div className="flex items-center gap-3">
         <button
@@ -62,13 +62,13 @@ function CustomerHeader({ user, onMenuClick }) {
         </button>
 
         {/* Desktop: page title (left-aligned) */}
-        <h1 className="hidden lg:block text-[15px] font-semibold text-gray-900">
+        <h1 className="hidden lg:block text-[15px] font-medium text-gray-900">
           {pageTitle}
         </h1>
       </div>
 
       {/* Mobile: page title (absolutely centered) */}
-      <span className="lg:hidden absolute left-1/2 -translate-x-1/2 text-[13px] font-semibold text-gray-800 pointer-events-none">
+      <span className="lg:hidden absolute left-1/2 -translate-x-1/2 text-[13px] font-medium text-gray-800 pointer-events-none">
         {pageTitle}
       </span>
 
@@ -81,7 +81,7 @@ function CustomerHeader({ user, onMenuClick }) {
             <button className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 transition-colors">
               <Avatar className="h-6 w-6">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-bold">
+                <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-medium">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -92,9 +92,9 @@ function CustomerHeader({ user, onMenuClick }) {
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-52 shadow-lg bg-white shadow-black/10">
+          <DropdownMenuContent align="end" className="w-52 shadow-lg shadow-black/10">
             <DropdownMenuLabel className="pb-2">
-              <p className="text-[13px] font-semibold text-gray-900">{user.name}</p>
+              <p className="text-[13px] font-medium text-gray-900">{user.name}</p>
               <p className="text-[11px] font-normal text-gray-400 mt-0.5">{user.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -131,7 +131,7 @@ export function CustomerLayoutClient({ user, children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50/60 flex">
+    <div data-theme-shell className="min-h-screen flex" style={{ background: "var(--shell-bg)" }}>
       <CustomerSidebar
         user={user}
         isOpen={mobileOpen}

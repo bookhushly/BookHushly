@@ -170,19 +170,19 @@ export default function Step4Review({
         <h4 className="font-medium text-gray-900">Summary</h4>
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-2xl font-bold text-purple-600">
+            <p className="text-2xl font-medium text-purple-600">
               {totalRoomsAllSuites || 0}
             </p>
             <p className="text-sm text-gray-600 mt-1">Total Rooms</p>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-2xl font-bold text-purple-600">
+            <p className="text-2xl font-medium text-purple-600">
               {roomConfig.floors ? roomConfig.floors.length : 0}
             </p>
             <p className="text-sm text-gray-600 mt-1">Floors</p>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-2xl font-bold text-purple-600">
+            <p className="text-2xl font-medium text-purple-600">
               {suiteTypes.length}
             </p>
             <p className="text-sm text-gray-600 mt-1">Suite Types</p>

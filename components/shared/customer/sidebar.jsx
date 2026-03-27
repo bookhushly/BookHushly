@@ -23,6 +23,7 @@ import {
 import { useUnreadCount } from "@/hooks/use-notifications";
 import { useAuth } from "@/hooks/use-auth";
 import { useInstallPrompt } from "@/hooks/use-install-prompt";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { useState, useRef, useEffect } from "react";
@@ -122,7 +123,7 @@ function ProfilePopover({ user, initials, onLogout, onClose }) {
                  shadow-xl shadow-black/10 overflow-hidden z-50"
     >
       <div className="px-4 py-3 border-b border-violet-100 bg-violet-50/60">
-        <p className="text-[13px] font-semibold text-gray-900 truncate">
+        <p className="text-[13px] font-medium text-gray-900 truncate">
           {user.name}
         </p>
         <p className="text-[11px] text-violet-600 font-medium truncate">
@@ -190,7 +191,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
     NAV.map(({ section, items }) => (
       <div key={section} className="space-y-0.5">
         {(!collapsed || isMobile) && (
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
             {section}
           </p>
         )}
@@ -226,7 +227,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
                   strokeWidth={2}
                 />
                 {showBadge && (
-                  <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] font-medium flex items-center justify-center">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -236,7 +237,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
               )}
               {(!collapsed || isMobile) && showBadge && (
                 <span
-                  className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"}`}
+                  className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "bg-violet-100 text-violet-700"}`}
                 >
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
@@ -265,7 +266,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
           w,
         )}
         style={{
-          background: "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)",
+          background: "var(--sidebar-bg)",
         }}
       >
         {/* Logo + collapse */}
@@ -287,16 +288,15 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
               </div>
             </Link>
           )}
-          <button
-            onClick={() => setCollapsed((p) => !p)}
-            className={cn(
-              "h-6 w-6 rounded-lg flex items-center justify-center text-gray-400",
-              "hover:bg-violet-50 hover:text-violet-600 transition-colors text-xs font-bold",
-              collapsed && "mx-auto",
-            )}
-          >
-            {collapsed ? "›" : "‹"}
-          </button>
+          <div className={cn("flex items-center gap-1", collapsed && "mx-auto")}>
+            {!collapsed && <ThemeToggle />}
+            <button
+              onClick={() => setCollapsed((p) => !p)}
+              className="h-6 w-6 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-50 hover:text-violet-600 transition-colors text-xs font-medium"
+            >
+              {collapsed ? "›" : "‹"}
+            </button>
+          </div>
         </div>
 
         {/* Nav */}
@@ -331,7 +331,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
               <button
                 onClick={install}
                 disabled={isInstalling}
-                className="w-full flex items-center gap-2.5 h-9 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-[13px] font-semibold hover:bg-violet-100 transition-colors disabled:opacity-60"
+                className="w-full flex items-center gap-2.5 h-9 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-[13px] font-medium hover:bg-violet-100 transition-colors disabled:opacity-60"
               >
                 <Download className="h-4 w-4 shrink-0" strokeWidth={2} />
                 {isInstalling ? "Installing…" : "Install App"}
@@ -358,7 +358,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-bold">
+                  <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-medium">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -371,12 +371,12 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
             >
               <Avatar className="h-8 w-8 shrink-0">
                 <AvatarImage src={user.avatar} />
-                <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-bold">
+                <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-medium">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold text-gray-900 truncate">
+                <p className="text-[13px] font-medium text-gray-900 truncate">
                   {user.name}
                 </p>
                 <p className="text-[11px] text-gray-400 truncate">Customer</p>
@@ -411,7 +411,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
             className="fixed left-0 top-0 h-full w-[260px] z-50 lg:hidden
                             flex flex-col shadow-2xl border-r border-violet-100"
             style={{
-              background: "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%)",
+              background: "var(--sidebar-bg)",
             }}
           >
             <div className="h-16 flex items-center justify-between px-5 border-b border-violet-100 shrink-0">
@@ -423,13 +423,15 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
                   className="object-contain object-left scale-150"
                 />
               </div>
-              <button
-                onClick={onClose}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400
-                           hover:bg-gray-100 transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <ThemeToggle />
+                <button
+                  onClick={onClose}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             <nav className="flex-1 px-3 py-3 overflow-y-auto">
@@ -441,7 +443,7 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
                 <button
                   onClick={install}
                   disabled={isInstalling}
-                  className="w-full flex items-center gap-2.5 h-9 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-[13px] font-semibold hover:bg-violet-100 transition-colors disabled:opacity-60"
+                  className="w-full flex items-center gap-2.5 h-9 px-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-[13px] font-medium hover:bg-violet-100 transition-colors disabled:opacity-60"
                 >
                   <Download className="h-4 w-4 shrink-0" strokeWidth={2} />
                   {isInstalling ? "Installing…" : "Install App"}
@@ -464,12 +466,12 @@ export function CustomerSidebar({ user, isOpen, onClose }) {
               >
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-bold">
+                  <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-medium">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-[13px] font-semibold text-gray-900 truncate">
+                  <p className="text-[13px] font-medium text-gray-900 truncate">
                     {user.name}
                   </p>
                   <p className="text-[11px] text-gray-400 truncate">Customer</p>

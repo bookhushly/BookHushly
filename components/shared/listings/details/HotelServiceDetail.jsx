@@ -322,7 +322,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                         </div>
                       </div>
 
-                      <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-3 sm:mb-4 leading-tight">
+                      <h1 className="text-2xl sm:text-4xl lg:text-6xl font-medium mb-3 sm:mb-4 leading-tight">
                         {hotel.name}
                       </h1>
 
@@ -344,7 +344,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                     {roomTypes.length > 0 && (
                       <div className="w-full lg:w-80 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl">
                         <div className="text-center mb-4 sm:mb-6">
-                          <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                          <div className="text-2xl sm:text-3xl font-medium text-gray-900 mb-1">
                             From ₦
                             {Math.min(
                               ...roomTypes.map((rt) =>
@@ -360,12 +360,12 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                         <div className="space-y-3">
                           <button
                             onClick={() => handleBookNow(roomTypes[0])}
-                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors"
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors"
                           >
                             Check Availability
                           </button>
 
-                          <button className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-xl transition-colors">
+                          <button className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-xl transition-colors">
                             Request Quote
                           </button>
                         </div>
@@ -422,7 +422,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
             {/* Description */}
             {hotel.description && (
               <section>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-6">
                   About This Hotel
                 </h2>
                 <div className="prose prose-gray prose-lg max-w-none">
@@ -444,7 +444,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
             {hotelAmenities.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  <h2 className="text-2xl sm:text-3xl font-medium text-gray-900">
                     What this place offers
                   </h2>
                   {hotelAmenities.length > 8 && (
@@ -477,7 +477,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
             {/* Policies */}
             {(hotel.checkout_policy || hotel.policies) && (
               <section>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-6">
                   Things to know
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -485,7 +485,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                     <div className="flex gap-3">
                       <Info className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-gray-900 mb-1">
+                        <p className="font-medium text-gray-900 mb-1">
                           Check-out policy
                         </p>
                         <p className="text-gray-700 text-sm">
@@ -500,7 +500,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
                     <div className="flex gap-3">
                       <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900 mb-1">
+                        <p className="font-medium text-gray-900 mb-1">
                           House rules
                         </p>
                         {isHtmlContent(hotel.policies) ? (
@@ -524,7 +524,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
 
             {/* Room Types */}
             <section>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-6">
                 Choose your room
               </h2>
 
@@ -552,7 +552,7 @@ const HotelDetails = ({ hotel, roomTypes }) => {
           {/* Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-24 lg:h-fit">
             <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">
+              <h3 className="text-xl font-medium text-gray-900 mb-6">
                 Hotel Details
               </h3>
 
@@ -753,7 +753,7 @@ const RoomTypeCard = React.memo(({ roomType, onBookNow }) => {
 
         <div className="md:col-span-2 flex flex-col">
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
+            <h3 className="text-xl font-medium text-gray-900 mb-3">
               {roomType.name}
             </h3>
 
@@ -817,7 +817,7 @@ const RoomTypeCard = React.memo(({ roomType, onBookNow }) => {
             <div>
               <p className="text-sm text-gray-600 mb-1">From</p>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="text-2xl font-medium text-gray-900">
                   ₦{parseFloat(roomType.base_price).toLocaleString()}
                 </span>
                 <span className="text-sm text-gray-600">/night</span>
@@ -930,13 +930,13 @@ const BookingModal = React.memo(
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Duration:</span>
-                  <span className="font-semibold">
+                  <span className="font-medium">
                     {nights} night{nights !== 1 ? "s" : ""}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm">Estimated total:</span>
-                  <span className="font-bold text-purple-600">
+                  <span className="font-medium text-purple-600">
                     ₦{estimatedTotal.toLocaleString()}
                   </span>
                 </div>

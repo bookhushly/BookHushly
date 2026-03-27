@@ -264,7 +264,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-600 mb-2">
+          <h2 className="text-xl font-medium text-gray-600 mb-2">
             Venue Not Found
           </h2>
           <p className="text-gray-500">
@@ -397,7 +397,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                         </div>
                       </div>
 
-                      <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-3 sm:mb-4 leading-tight">
+                      <h1 className="text-2xl sm:text-4xl lg:text-6xl font-medium mb-3 sm:mb-4 leading-tight">
                         {listing.title}
                       </h1>
 
@@ -422,7 +422,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                     {/* Booking Card */}
                     <div className="w-full lg:w-80 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl">
                       <div className="text-center mb-4 sm:mb-6">
-                        <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                        <div className="text-2xl sm:text-3xl font-medium text-gray-900 mb-1">
                           {formatPrice(listing.price, listing.price_unit)}
                         </div>
                         {listing.security_deposit && (
@@ -437,14 +437,14 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                       <div className="space-y-3">
                         <Link
                           href={`/book/${listing.id}`}
-                          className="block w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors text-center"
+                          className="block w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-colors text-center"
                         >
                           {listing.availability === "available"
                             ? "Book Now"
                             : "Check Availability"}
                         </Link>
 
-                        <button className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-xl transition-colors">
+                        <button className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-xl transition-colors">
                           Request Quote
                         </button>
                       </div>
@@ -500,7 +500,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
           <div className="lg:col-span-2 space-y-12 sm:space-y-16">
             {/* Description */}
             <section>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-4 sm:mb-6">
                 About This Venue
               </h2>
               <div className="prose prose-gray prose-lg max-w-none">
@@ -510,7 +510,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                 />
                 {listing.features && (
                   <div className="mt-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
                       Key Features
                     </h3>
                     <p className="text-gray-700">{listing.features}</p>
@@ -518,7 +518,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                 )}
                 {listing.requirements && (
                   <div className="mt-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
                       Requirements
                     </h3>
                     <p className="text-gray-700">{listing.requirements}</p>
@@ -530,7 +530,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
             {/* Amenities */}
             {amenities.length > 0 && (
               <section className="py-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 mb-6">
                   Amenities & Features
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -566,7 +566,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
             {validImages.length > 0 && (
               <section ref={galleryRef}>
                 <div className="flex items-center justify-between mb-6 sm:mb-8">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  <h2 className="text-2xl sm:text-3xl font-medium text-gray-900">
                     Photo Gallery
                   </h2>
                   <button
@@ -622,7 +622,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
                       </div>
                       {index === 5 && validImages.length > 7 && (
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                          <span className="text-white text-sm sm:text-lg font-semibold">
+                          <span className="text-white text-sm sm:text-lg font-medium">
                             +{validImages.length - 7}
                           </span>
                         </div>
@@ -638,7 +638,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
           <aside className="space-y-6 sm:space-y-8 lg:sticky lg:top-24 lg:h-fit">
             {/* Quick Actions */}
             <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-4 sm:mb-6">
                 Quick Actions
               </h3>
 
@@ -657,7 +657,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
 
             {/* Quick Details */}
             <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-4 sm:mb-6">
                 Venue Details
               </h3>
 
@@ -733,7 +733,7 @@ const EventCenterDetail = ({ listing, categoryData = {} }) => {
 
             {/* Policies & Information */}
             <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-4 sm:mb-6">
                 Booking Information
               </h3>
 

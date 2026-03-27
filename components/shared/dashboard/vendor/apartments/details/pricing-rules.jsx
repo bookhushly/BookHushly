@@ -85,7 +85,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+        <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
           <Tag className="h-4 w-4 text-violet-500" />
           Seasonal / special pricing
         </h3>
@@ -116,7 +116,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
           <div className="flex items-start gap-2 min-w-0">
             <CalendarRange className="h-4 w-4 text-violet-400 shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="font-semibold text-gray-800 truncate">{rule.label}</p>
+              <p className="font-medium text-gray-800 truncate">{rule.label}</p>
               <p className="text-xs text-gray-500">
                 {format(parseISO(rule.start_date), "d MMM yyyy")} –{" "}
                 {format(parseISO(rule.end_date), "d MMM yyyy")}
@@ -147,7 +147,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
 
       {showForm && (
         <form onSubmit={handleAdd} className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-          <p className="text-xs font-semibold text-gray-700">New pricing rule</p>
+          <p className="text-xs font-medium text-gray-700">New pricing rule</p>
           <Input
             placeholder="Label (e.g. Christmas, Easter, Peak season)"
             value={label}

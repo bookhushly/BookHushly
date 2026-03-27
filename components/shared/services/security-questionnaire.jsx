@@ -108,7 +108,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
             />
           </svg>
         </div>
-        <h3 className="text-2xl font-semibold mb-2">
+        <h3 className="text-2xl font-medium mb-2">
           Request Submitted Successfully
         </h3>
         <p className="text-gray-600 mb-6">
@@ -153,7 +153,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
         <button
           type="button"
           onClick={() => setAiMode(true)}
-          className="text-xs font-semibold text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+          className="text-xs font-medium text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
         >
           Use AI Assistant instead
         </button>
@@ -195,7 +195,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
           {/* Step 1: Service Type */}
           {step === 1 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Select Security Service</h2>
+              <h2 className="text-xl font-medium">Select Security Service</h2>
 
               <div>
                 <Label>What type of security service do you need?</Label>
@@ -275,7 +275,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
           {/* Step 2: Contact Information */}
           {step === 2 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Contact Information</h2>
+              <h2 className="text-xl font-medium">Contact Information</h2>
 
               <div>
                 <Label htmlFor="full_name">Full Name *</Label>
@@ -315,7 +315,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
           {/* Step 3: Location & Schedule */}
           {step === 3 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Location & Schedule</h2>
+              <h2 className="text-xl font-medium">Location & Schedule</h2>
 
               <div>
                 <Label htmlFor="service_address">Service Address *</Label>
@@ -463,7 +463,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
           {/* Step 4: Security Requirements */}
           {step === 4 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Security Requirements</h2>
+              <h2 className="text-xl font-medium">Security Requirements</h2>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -692,7 +692,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
           {/* Step 5: Risk Assessment & Final Details */}
           {step === 5 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-xl font-medium">
                 Risk Assessment & Requirements
               </h2>
 

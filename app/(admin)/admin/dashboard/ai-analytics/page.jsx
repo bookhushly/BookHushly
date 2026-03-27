@@ -56,10 +56,10 @@ function StatCard({ icon: Icon, label, value, sub, color = "text-violet-600" }) 
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
               {label}
             </p>
-            <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
+            <p className={`text-3xl font-medium mt-1 ${color}`}>{value}</p>
             {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
           </div>
           <div className="h-10 w-10 rounded-xl bg-violet-50 flex items-center justify-center">
@@ -109,7 +109,7 @@ function FeatureRow({ feature }) {
         </div>
       </div>
       <div className="text-right shrink-0">
-        <p className="text-sm font-bold text-gray-800">{feature.total.toLocaleString()}</p>
+        <p className="text-sm font-medium text-gray-800">{feature.total.toLocaleString()}</p>
         <p className="text-[11px] text-gray-400">{feature.unique_users} users</p>
       </div>
     </div>
@@ -120,7 +120,7 @@ const CUSTOM_TOOLTIP = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-gray-100 shadow-lg rounded-xl px-4 py-3 text-xs">
-      <p className="font-semibold text-gray-700 mb-2">{label}</p>
+      <p className="font-medium text-gray-700 mb-2">{label}</p>
       {payload.map((p) => (
         <div key={p.dataKey} className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full" style={{ background: p.color }} />
@@ -157,7 +157,7 @@ export default function AIAnalyticsPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
-              <h1 className="text-2xl font-bold text-gray-900">AI Analytics</h1>
+              <h1 className="text-2xl font-medium text-gray-900">AI Analytics</h1>
             </div>
             <p className="text-sm text-gray-500">
               Usage statistics across all AI features on the platform.
@@ -227,7 +227,7 @@ export default function AIAnalyticsPage() {
               {/* Daily trend chart */}
               <Card className="lg:col-span-2 border border-gray-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-gray-700">
+                  <CardTitle className="text-sm font-medium text-gray-700">
                     Daily Requests — All Features
                   </CardTitle>
                 </CardHeader>
@@ -283,7 +283,7 @@ export default function AIAnalyticsPage() {
               {/* Feature breakdown list */}
               <Card className="border border-gray-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-gray-700">
+                  <CardTitle className="text-sm font-medium text-gray-700">
                     Feature Breakdown
                   </CardTitle>
                 </CardHeader>
@@ -304,7 +304,7 @@ export default function AIAnalyticsPage() {
             {barData.some((d) => d.calls > 0) && (
               <Card className="border border-gray-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-gray-700">
+                  <CardTitle className="text-sm font-medium text-gray-700">
                     Requests vs Unique Users by Feature
                   </CardTitle>
                 </CardHeader>

@@ -8,7 +8,7 @@ export function VendorLayoutClient({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50/60 flex">
+    <div data-theme-shell className="min-h-screen flex" style={{ background: "var(--shell-bg)" }}>
       <VendorSidebar isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
       {/* Main column — pushed right by the sidebar spacer rendered inside VendorSidebar */}

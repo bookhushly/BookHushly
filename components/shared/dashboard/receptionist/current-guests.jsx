@@ -197,7 +197,7 @@ export function CurrentGuestsTab({ hotelId }) {
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg">
+                          <h3 className="font-medium text-lg">
                             {guest.guest_name}
                           </h3>
                           <Badge
@@ -246,7 +246,7 @@ export function CurrentGuestsTab({ hotelId }) {
                       >
                         <div className="flex items-center gap-2 mb-1">
                           <Clock className={`h-4 w-4 ${timeInfo.color}`} />
-                          <span className={`font-semibold ${timeInfo.color}`}>
+                          <span className={`font-medium ${timeInfo.color}`}>
                             {timeInfo.text}
                           </span>
                         </div>
@@ -283,7 +283,7 @@ export function CurrentGuestsTab({ hotelId }) {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-medium text-gray-900">
                 {guests.length}
               </p>
               <p className="text-sm text-gray-600 mt-1">Total Guests</p>
@@ -294,7 +294,7 @@ export function CurrentGuestsTab({ hotelId }) {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-2xl font-medium text-yellow-600">
                 {
                   guests.filter((g) => {
                     const hours = Math.ceil(
@@ -313,7 +313,7 @@ export function CurrentGuestsTab({ hotelId }) {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-2xl font-medium text-red-600">
                 {
                   guests.filter((g) => {
                     const hours = Math.ceil(

@@ -58,7 +58,7 @@ function Card({ title, action, children }) {
     <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
       {(title || action) && (
         <div className="flex items-center justify-between">
-          {title && <h3 className="text-sm font-semibold text-gray-900">{title}</h3>}
+          {title && <h3 className="text-sm font-medium text-gray-900">{title}</h3>}
           {action}
         </div>
       )}
@@ -141,7 +141,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
     <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Vendor Profile</h1>
+        <h1 className="text-2xl font-medium text-gray-900">Vendor Profile</h1>
         <p className="text-sm text-gray-500 mt-0.5">Manage your business profile and account details</p>
       </div>
 
@@ -152,13 +152,13 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
           <Card>
             <div className="flex flex-col items-center text-center gap-3">
               <Avatar className="h-20 w-20 border-4 border-violet-100">
-                <AvatarFallback className="bg-violet-600 text-white text-2xl font-bold">
+                <AvatarFallback className="bg-violet-600 text-white text-2xl font-medium">
                   {initials}
                 </AvatarFallback>
               </Avatar>
 
               <div>
-                <h2 className="text-base font-semibold text-gray-900">
+                <h2 className="text-base font-medium text-gray-900">
                   {vendor?.business_name || userRow?.name || "—"}
                 </h2>
                 <p className="text-xs text-gray-400">{email}</p>

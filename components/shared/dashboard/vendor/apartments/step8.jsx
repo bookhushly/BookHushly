@@ -74,7 +74,7 @@ export default function Step8Review({ formData, onNavigateToStep }) {
             )}
             <div className="flex-1">
               <p
-                className={`text-base font-semibold mb-2 ${allComplete ? "text-green-900" : "text-orange-900"}`}
+                className={`text-base font-medium mb-2 ${allComplete ? "text-green-900" : "text-orange-900"}`}
               >
                 {allComplete
                   ? "✓ Ready to Publish!"
@@ -166,7 +166,7 @@ export default function Step8Review({ formData, onNavigateToStep }) {
         <CardContent className="space-y-3">
           <div>
             <p className="text-sm text-gray-600">Apartment Name</p>
-            <p className="font-semibold text-gray-900">
+            <p className="font-medium text-gray-900">
               {formData.name || "Not set"}
             </p>
           </div>
@@ -179,15 +179,15 @@ export default function Step8Review({ formData, onNavigateToStep }) {
             </div>
             <div>
               <p className="text-xs text-gray-600">Bedrooms</p>
-              <p className="font-semibold">{formData.bedrooms || 0}</p>
+              <p className="font-medium">{formData.bedrooms || 0}</p>
             </div>
             <div>
               <p className="text-xs text-gray-600">Bathrooms</p>
-              <p className="font-semibold">{formData.bathrooms || 0}</p>
+              <p className="font-medium">{formData.bathrooms || 0}</p>
             </div>
             <div>
               <p className="text-xs text-gray-600">Max Guests</p>
-              <p className="font-semibold">{formData.max_guests || 0}</p>
+              <p className="font-medium">{formData.max_guests || 0}</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -219,7 +219,7 @@ export default function Step8Review({ formData, onNavigateToStep }) {
           </Button>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p className="font-semibold text-gray-900">
+          <p className="font-medium text-gray-900">
             {formData.area && `${formData.area}, `}
             {formData.city}, {formData.state}
           </p>
@@ -246,14 +246,14 @@ export default function Step8Review({ formData, onNavigateToStep }) {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Per Night:</span>
-              <span className="font-bold text-lg">
+              <span className="font-medium text-lg">
                 ₦{parseFloat(formData.price_per_night || 0).toLocaleString()}
               </span>
             </div>
             {formData.price_per_week && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Per Week:</span>
-                <span className="font-semibold">
+                <span className="font-medium">
                   ₦{parseFloat(formData.price_per_week || 0).toLocaleString()}
                 </span>
               </div>
@@ -261,7 +261,7 @@ export default function Step8Review({ formData, onNavigateToStep }) {
             {formData.price_per_month && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Per Month:</span>
-                <span className="font-semibold">
+                <span className="font-medium">
                   ₦{parseFloat(formData.price_per_month || 0).toLocaleString()}
                 </span>
               </div>
@@ -269,7 +269,7 @@ export default function Step8Review({ formData, onNavigateToStep }) {
             {formData.caution_deposit && (
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-gray-600">Security Deposit:</span>
-                <span className="font-semibold">
+                <span className="font-medium">
                   ₦{parseFloat(formData.caution_deposit || 0).toLocaleString()}
                 </span>
               </div>
@@ -397,7 +397,7 @@ export default function Step8Review({ formData, onNavigateToStep }) {
               ))}
               {images.length > 6 && (
                 <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-sm font-semibold text-gray-600">
+                  <span className="text-sm font-medium text-gray-600">
                     +{images.length - 6}
                   </span>
                 </div>
@@ -426,13 +426,13 @@ export default function Step8Review({ formData, onNavigateToStep }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-gray-600">Check-in</p>
-              <p className="font-semibold">
+              <p className="font-medium">
                 {formData.check_in_time || "Not set"}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-600">Check-out</p>
-              <p className="font-semibold">
+              <p className="font-medium">
                 {formData.check_out_time || "Not set"}
               </p>
             </div>

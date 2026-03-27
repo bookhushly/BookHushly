@@ -98,7 +98,7 @@ export default function Hero() {
         <div className="max-w-4xl">
           {/* Eyebrow */}
           <motion.div {...fadeUp(0.1)} className="mb-6">
-            <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase text-violet-400">
+            <span className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-violet-400">
               <span className="h-px w-8 bg-violet-500" />
               Nigeria&apos;s booking platform
             </span>
@@ -107,15 +107,15 @@ export default function Hero() {
           {/* Headline — mixed Fraunces + Bricolage */}
           <motion.h1
             {...fadeUp(0.25)}
-            className="text-[clamp(2.75rem,7vw,5.5rem)] leading-[1.05] font-bold text-white mb-6"
+            className="text-[clamp(2.75rem,7vw,5.5rem)] leading-[1.05] font-medium text-white mb-6"
           >
-            <span className="font-fraunces font-semibold italic">
+            <span className="font-fraunces font-medium italic">
               Everything
             </span>
             <span className="font-bricolage"> you need,</span>
             <br />
             <span className="font-bricolage text-white/60">booked in </span>
-            <span className="font-fraunces font-semibold italic text-violet-400">
+            <span className="font-fraunces font-medium italic text-violet-400">
               seconds.
             </span>
           </motion.h1>
@@ -136,14 +136,14 @@ export default function Hero() {
           >
             <Link
               href="/services"
-              className="group inline-flex items-center gap-2 h-12 px-6 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-violet-900/40"
+              className="group inline-flex items-center gap-2 h-12 px-6 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-violet-900/40"
             >
               Explore services
               <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
             </Link>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 h-12 px-6 border border-white/20 hover:border-white/40 text-white/80 hover:text-white text-sm font-semibold rounded-xl transition-all duration-200 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 h-12 px-6 border border-white/20 hover:border-white/40 text-white/80 hover:text-white text-sm font-medium rounded-xl transition-all duration-200 backdrop-blur-sm"
             >
               Create free account
             </Link>

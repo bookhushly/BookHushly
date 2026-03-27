@@ -191,7 +191,7 @@ export default function CareersPage() {
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <Briefcase className="h-16 w-16 mx-auto mb-6 opacity-90" />
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl lg:text-6xl font-medium mb-6">
               Join Our Mission
             </h1>
             <p className="text-xl text-white/90 mb-8">
@@ -200,7 +200,7 @@ export default function CareersPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="text-2xl font-medium">{stat.value}</div>
                   <div className="text-sm text-white/70">{stat.label}</div>
                 </div>
               ))}
@@ -213,7 +213,7 @@ export default function CareersPage() {
       <section className="py-16">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Our Values</h2>
+            <h2 className="text-3xl font-medium mb-4">Our Values</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               These principles guide how we work, make decisions, and treat each other
             </p>
@@ -241,7 +241,7 @@ export default function CareersPage() {
       <section className="py-16 bg-muted/50">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Open Positions</h2>
+            <h2 className="text-3xl font-medium mb-4">Open Positions</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Join our growing team and help shape the future of African hospitality
             </p>
@@ -313,7 +313,7 @@ export default function CareersPage() {
       <section className="py-16">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Work With Us?</h2>
+            <h2 className="text-3xl font-medium mb-4">Why Work With Us?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               We believe in taking care of our team so they can do their best work
             </p>
@@ -342,7 +342,7 @@ export default function CareersPage() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold mb-6">Life at Bookhushly</h2>
+              <h2 className="text-3xl font-medium mb-6">Life at Bookhushly</h2>
               <div className="space-y-4">
                 <p className="text-muted-foreground">
                   We're a diverse, passionate team working to solve real problems for millions of people across Africa. 
@@ -354,11 +354,11 @@ export default function CareersPage() {
                 </p>
                 <div className="grid grid-cols-2 gap-4 mt-6">
                   <div className="text-center p-4 bg-white rounded-lg">
-                    <div className="text-2xl font-bold text-primary">4.8/5</div>
+                    <div className="text-2xl font-medium text-primary">4.8/5</div>
                     <div className="text-sm text-muted-foreground">Employee Rating</div>
                   </div>
                   <div className="text-center p-4 bg-white rounded-lg">
-                    <div className="text-2xl font-bold text-primary">95%</div>
+                    <div className="text-2xl font-medium text-primary">95%</div>
                     <div className="text-sm text-muted-foreground">Would Recommend</div>
                   </div>
                 </div>
@@ -376,7 +376,7 @@ export default function CareersPage() {
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="container text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Make an Impact?</h2>
+          <h2 className="text-3xl font-medium mb-4">Ready to Make an Impact?</h2>
           <p className="text-white/90 mb-8 max-w-2xl mx-auto">
             Join us in building the future of African hospitality and service discovery. 
             Your work will directly impact millions of people across the continent.

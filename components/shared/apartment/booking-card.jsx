@@ -92,7 +92,7 @@ function DateSummaryBar({ checkIn, checkOut, nights, onOpen }) {
       >
         <CalendarCheck className="h-4 w-4 text-violet-600 shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-semibold text-gray-900">
+          <p className="text-[13px] font-medium text-gray-900">
             {format(parseISO(checkIn), "EEE d MMM")}
             <span className="text-gray-400 mx-2">→</span>
             {format(parseISO(checkOut), "EEE d MMM")}
@@ -115,7 +115,7 @@ function DateSummaryBar({ checkIn, checkOut, nights, onOpen }) {
         <CalendarCheck className="h-4 w-4 text-violet-600" />
       </div>
       <div className="text-left">
-        <p className="text-[13px] font-semibold text-gray-800">Select your dates</p>
+        <p className="text-[13px] font-medium text-gray-800">Select your dates</p>
         <p className="text-[11px] text-gray-400 mt-0.5">Tap to see available dates on a calendar</p>
       </div>
       <ChevronDown className="h-4 w-4 text-gray-300 ml-auto" />
@@ -252,7 +252,7 @@ export default function ApartmentBookingCard({ apartment }) {
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
-            <span className="w-6 text-center text-[15px] font-semibold tabular-nums">{guests}</span>
+            <span className="w-6 text-center text-[15px] font-medium tabular-nums">{guests}</span>
             <button
               type="button"
               onClick={() => setGuests((g) => Math.min(apartment.max_guests, g + 1))}
@@ -269,7 +269,7 @@ export default function ApartmentBookingCard({ apartment }) {
           <div className="bg-violet-50 rounded-xl border border-violet-100 p-3.5 space-y-2 text-[13px]">
             <div className="flex justify-between text-gray-600">
               <span>{priceLabel}</span>
-              <span className="font-semibold text-gray-900">₦{totalPrice.toLocaleString()}</span>
+              <span className="font-medium text-gray-900">₦{totalPrice.toLocaleString()}</span>
             </div>
             {apartment.caution_deposit > 0 && (
               <div className="flex justify-between text-gray-500">
@@ -277,7 +277,7 @@ export default function ApartmentBookingCard({ apartment }) {
                 <span>₦{apartment.caution_deposit.toLocaleString()}</span>
               </div>
             )}
-            <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-violet-200">
+            <div className="flex justify-between font-medium text-gray-900 pt-2 border-t border-violet-200">
               <span>Total due</span>
               <span className="text-violet-700">₦{(totalPrice + (apartment.caution_deposit || 0)).toLocaleString()}</span>
             </div>
@@ -288,7 +288,7 @@ export default function ApartmentBookingCard({ apartment }) {
           type="button"
           onClick={() => setStep(2)}
           disabled={!isDateValid || !isGuestValid}
-          className="w-full h-11 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold rounded-xl transition-colors text-[14px]"
+          className="w-full h-11 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-medium rounded-xl transition-colors text-[14px]"
         >
           {apartment.instant_booking ? "Continue to Book →" : "Continue to Request →"}
         </button>
@@ -315,7 +315,7 @@ export default function ApartmentBookingCard({ apartment }) {
       {/* Cancellation policy summary */}
       {apartment.cancellation_policy && (
         <div className="p-3 bg-amber-50 rounded-xl border border-amber-100">
-          <p className="text-[11px] font-semibold text-amber-800 mb-1">Cancellation policy</p>
+          <p className="text-[11px] font-medium text-amber-800 mb-1">Cancellation policy</p>
           <p className="text-[11px] text-amber-700 line-clamp-3 leading-relaxed">
             {typeof apartment.cancellation_policy === "string"
               ? apartment.cancellation_policy.replace(/<[^>]*>/g, "").slice(0, 200)
@@ -331,7 +331,7 @@ export default function ApartmentBookingCard({ apartment }) {
         { label: "Phone number", key: "guestPhone", type: "tel", required: true },
       ].map(({ label, key, type, required }) => (
         <div key={key}>
-          <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">{label}</label>
+          <label className="block text-[12px] font-medium text-gray-700 mb-1.5">{label}</label>
           <input
             type={type}
             required={required}
@@ -343,7 +343,7 @@ export default function ApartmentBookingCard({ apartment }) {
       ))}
 
       <div>
-        <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Special requests <span className="font-normal text-gray-400">(optional)</span></label>
+        <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Special requests <span className="font-normal text-gray-400">(optional)</span></label>
         <textarea
           value={details.specialRequests}
           onChange={(e) => setDetails((d) => ({ ...d, specialRequests: e.target.value }))}
@@ -356,7 +356,7 @@ export default function ApartmentBookingCard({ apartment }) {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full h-11 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-200 text-white font-semibold rounded-xl transition-colors text-[14px] flex items-center justify-center gap-2"
+        className="w-full h-11 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-200 text-white font-medium rounded-xl transition-colors text-[14px] flex items-center justify-center gap-2"
       >
         {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing…</> : (apartment.instant_booking ? "Confirm Booking →" : "Send Request →")}
       </button>

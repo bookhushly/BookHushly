@@ -125,7 +125,7 @@ export default function AboutPage() {
             <Badge className="mb-4 glass text-white border-white/30 backdrop-blur-sm">
               🇳🇬 Made in Nigeria, Built for Africa
             </Badge>
-            <h1 className="text-4xl lg:text-6xl font-display font-bold mb-6 text-balance">
+            <h1 className="text-4xl lg:text-6xl font-display font-medium mb-6 text-balance">
               About Bookhushly
             </h1>
             <p className="text-xl text-white/90 mb-8 font-body text-balance">
@@ -142,7 +142,7 @@ export default function AboutPage() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
-              <h2 className="text-3xl font-display font-bold mb-6 text-foreground">
+              <h2 className="text-3xl font-display font-medium mb-6 text-foreground">
                 Our Mission
               </h2>
               <p className="text-lg text-muted-foreground mb-6 font-body">
@@ -184,7 +184,7 @@ export default function AboutPage() {
       <section className="py-16 bg-hospitality-comfort">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-4 text-foreground">
+            <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
               Our Impact
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto font-body text-balance">
@@ -199,7 +199,7 @@ export default function AboutPage() {
                 className="text-center card-hospitality animate-fade-in"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
-                <div className="text-3xl lg:text-4xl font-display font-bold text-brand-500 mb-2">
+                <div className="text-3xl lg:text-4xl font-display font-medium text-brand-500 mb-2">
                   {stat.value}
                 </div>
                 <div className="text-sm text-muted-foreground font-body">
@@ -215,7 +215,7 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-4 text-foreground">
+            <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
               Our Values
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto font-body text-balance">
@@ -251,7 +251,7 @@ export default function AboutPage() {
       <section className="py-16 bg-hospitality-warm">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-4 text-foreground">
+            <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
               Meet Our Team
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto font-body text-balance">
@@ -300,7 +300,7 @@ export default function AboutPage() {
         <div className="container">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-display font-bold mb-4 text-foreground">
+              <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
                 Our Story
               </h2>
               <p className="text-muted-foreground font-body">
@@ -361,7 +361,7 @@ export default function AboutPage() {
         </div>
 
         <div className="container text-center relative z-10">
-          <h2 className="text-3xl font-display font-bold mb-4 text-balance">
+          <h2 className="text-3xl font-display font-medium mb-4 text-balance">
             Join Our Mission
           </h2>
           <p className="text-white/90 mb-8 max-w-2xl mx-auto font-body text-balance">

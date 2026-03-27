@@ -95,7 +95,7 @@ const PaymentMethodSelection = ({ bookingAmount, onPaymentMethodSelect }) => {
   return (
     <div className="bg-white border border-purple-100 rounded-3xl p-8 max-w-2xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-medium text-gray-900 mb-2">
           Select Payment Method
         </h2>
         <p className="text-gray-600">
@@ -109,7 +109,7 @@ const PaymentMethodSelection = ({ bookingAmount, onPaymentMethodSelect }) => {
             <p className="text-sm font-medium text-gray-700 mb-1">
               Amount to Pay
             </p>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-3xl font-medium text-gray-900">
               ₦{bookingAmount.toLocaleString()}
             </p>
           </div>
@@ -124,7 +124,7 @@ const PaymentMethodSelection = ({ bookingAmount, onPaymentMethodSelect }) => {
                 <Wallet className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Your Wallet</h3>
+                <h3 className="font-medium text-gray-900">Your Wallet</h3>
                 <p className="text-sm text-gray-600">Available balance</p>
               </div>
             </div>
@@ -140,7 +140,7 @@ const PaymentMethodSelection = ({ bookingAmount, onPaymentMethodSelect }) => {
             </button>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-medium text-gray-900">
               {hideBalance
                 ? "••••••••"
                 : `₦${walletBalance.toLocaleString("en-US", {
@@ -164,7 +164,7 @@ const PaymentMethodSelection = ({ bookingAmount, onPaymentMethodSelect }) => {
                 You need ₦{(bookingAmount - walletBalance).toLocaleString()}{" "}
                 more
               </p>
-              <button className="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors">
+              <button className="text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors">
                 Fund Wallet →
               </button>
             </div>
@@ -201,7 +201,7 @@ const PaymentMethodSelection = ({ bookingAmount, onPaymentMethodSelect }) => {
             </div>
             <div className="flex-1 text-left">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-gray-900">{method.name}</h3>
+                <h3 className="font-medium text-gray-900">{method.name}</h3>
                 {method.id === "wallet" && !method.available && (
                   <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
                     Insufficient Balance
@@ -239,7 +239,7 @@ const PaymentMethodSelection = ({ bookingAmount, onPaymentMethodSelect }) => {
           processing ||
           (selectedMethod === "wallet" && !hasSufficientBalance)
         }
-        className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white py-4 px-6 rounded-xl font-medium transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed"
       >
         {processing ? (
           <>

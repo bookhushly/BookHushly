@@ -16,7 +16,7 @@ export default function OfflinePage() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
       {/* Brand strip */}
       <div className="mb-10">
-        <span className="text-brand-purple font-fraunces text-2xl font-bold tracking-tight">
+        <span className="text-brand-purple font-fraunces text-2xl font-medium tracking-tight">
           Book<span className="text-hospitality-gold">Hushly</span>
         </span>
       </div>
@@ -32,7 +32,7 @@ export default function OfflinePage() {
       </div>
 
       {/* Copy */}
-      <h1 className="font-fraunces text-3xl font-bold text-gray-900 mb-3">
+      <h1 className="font-fraunces text-3xl font-medium text-gray-900 mb-3">
         You&apos;re offline
       </h1>
       <p className="text-gray-500 text-base max-w-xs leading-relaxed mb-10">
@@ -44,14 +44,14 @@ export default function OfflinePage() {
         <button
           onClick={handleRetry}
           disabled={isRetrying}
-          className="flex items-center justify-center gap-2 w-full py-3 px-5 rounded-xl bg-brand-purple text-white font-semibold text-sm transition-all hover:bg-brand-purple/90 active:scale-95 disabled:opacity-60"
+          className="flex items-center justify-center gap-2 w-full py-3 px-5 rounded-xl bg-brand-purple text-white font-medium text-sm transition-all hover:bg-brand-purple/90 active:scale-95 disabled:opacity-60"
         >
           <RefreshCw className={`w-4 h-4 ${isRetrying ? "animate-spin" : ""}`} />
           {isRetrying ? "Connecting…" : "Try again"}
         </button>
         <Link
           href="/"
-          className="flex items-center justify-center gap-2 w-full py-3 px-5 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm transition-all hover:bg-gray-50 active:scale-95"
+          className="flex items-center justify-center gap-2 w-full py-3 px-5 rounded-xl border border-gray-200 text-gray-700 font-medium text-sm transition-all hover:bg-gray-50 active:scale-95"
         >
           <Home className="w-4 h-4" />
           Go home

@@ -299,7 +299,7 @@ export default function VendorBookingsPage() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold mb-2">Booking Requests</h1>
+        <h1 className="text-3xl font-medium mb-2">Booking Requests</h1>
         <p className="text-muted-foreground">
           Manage your incoming booking requests and confirmed bookings
         </p>
@@ -315,7 +315,7 @@ export default function VendorBookingsPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-medium">{stats.total}</div>
           </CardContent>
         </Card>
 
@@ -325,7 +325,7 @@ export default function VendorBookingsPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
+            <div className="text-2xl font-medium">{stats.pending}</div>
           </CardContent>
         </Card>
 
@@ -335,7 +335,7 @@ export default function VendorBookingsPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.confirmed}</div>
+            <div className="text-2xl font-medium">{stats.confirmed}</div>
           </CardContent>
         </Card>
 
@@ -345,7 +345,7 @@ export default function VendorBookingsPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
+            <div className="text-2xl font-medium">{stats.completed}</div>
           </CardContent>
         </Card>
       </div>
@@ -355,7 +355,7 @@ export default function VendorBookingsPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
+            <h3 className="text-lg font-medium mb-2">
               No booking requests yet
             </h3>
             <p className="text-muted-foreground text-center mb-4">
@@ -374,7 +374,7 @@ export default function VendorBookingsPage() {
           {/* Pending Bookings */}
           {groupedBookings.pending.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <h2 className="text-xl font-medium mb-4 flex items-center">
                 <Clock className="h-5 w-5 mr-2 text-yellow-600" />
                 Pending Requests ({groupedBookings.pending.length})
               </h2>
@@ -387,7 +387,7 @@ export default function VendorBookingsPage() {
           {/* Confirmed Bookings */}
           {groupedBookings.confirmed.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <h2 className="text-xl font-medium mb-4 flex items-center">
                 <CheckCircle className="h-5 w-5 mr-2 text-blue-600" />
                 Confirmed Bookings ({groupedBookings.confirmed.length})
               </h2>
@@ -400,7 +400,7 @@ export default function VendorBookingsPage() {
           {/* Completed Bookings */}
           {groupedBookings.completed.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <h2 className="text-xl font-medium mb-4 flex items-center">
                 <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
                 Completed Bookings ({groupedBookings.completed.length})
               </h2>

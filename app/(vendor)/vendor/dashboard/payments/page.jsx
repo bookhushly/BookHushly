@@ -148,7 +148,7 @@ function StatCard({ label, value, sub, Icon, iconBg, iconColor, accent }) {
         <div className="flex-1 min-w-0">
           <p className="text-gray-500 text-[13px] font-medium">{label}</p>
           <p
-            className={`text-2xl font-bold mt-1.5 ${accent || "text-gray-900"}`}
+            className={`text-2xl font-medium mt-1.5 ${accent || "text-gray-900"}`}
           >
             {value}
           </p>
@@ -212,7 +212,7 @@ export default function VendorPaymentsPage() {
       <div className=" border-b border-gray-200">
         <div className="max-w-8xl mx-auto px-0 sm:px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
+            <h1 className="text-2xl font-medium text-gray-900">Payments</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Track every naira coming in and going out
             </p>
@@ -364,7 +364,7 @@ export default function VendorPaymentsPage() {
               <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <CreditCard className="w-7 h-7 text-gray-400" />
               </div>
-              <p className="text-gray-700 font-semibold">No payments found</p>
+              <p className="text-gray-700 font-medium">No payments found</p>
               <p className="text-gray-400 text-sm mt-1">
                 {search || statusFilter !== "all" || providerFilter !== "all"
                   ? "Try adjusting your filters"
@@ -385,7 +385,7 @@ export default function VendorPaymentsPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0 mr-3">
-                          <p className="font-semibold text-gray-900 text-sm truncate">
+                          <p className="font-medium text-gray-900 text-sm truncate">
                             {getServiceLabel(p)}
                           </p>
                           <p className="font-mono text-[11px] text-gray-400 mt-0.5">
@@ -405,7 +405,7 @@ export default function VendorPaymentsPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between mt-3">
-                        <span className="text-sm font-bold text-gray-900">
+                        <span className="text-sm font-medium text-gray-900">
                           {fmt(p.vendor_amount || p.amount)}
                         </span>
                         {p.refund_amount > 0 && (
@@ -424,25 +424,25 @@ export default function VendorPaymentsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100 bg-gray-50">
-                      <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
                         Service
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
                         Reference
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
                         Provider
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-5 py-3.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-right text-[11px] font-medium text-gray-500 uppercase tracking-wider">
                         Amount
                       </th>
                     </tr>
@@ -491,7 +491,7 @@ export default function VendorPaymentsPage() {
                           {/* amount */}
                           <td className="px-5 py-4 text-right">
                             <div className="flex flex-col items-end">
-                              <span className="text-sm font-bold text-gray-900">
+                              <span className="text-sm font-medium text-gray-900">
                                 {fmt(p.vendor_amount || p.amount)}
                               </span>
                               {p.refund_amount > 0 && (

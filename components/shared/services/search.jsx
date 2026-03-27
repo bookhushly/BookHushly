@@ -150,7 +150,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
           <div className="hidden md:flex items-center gap-0 bg-white rounded-full shadow-2xl shadow-black/10 p-2 border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
             {/* Location */}
             <div className="flex-1 px-6 py-3 border-r border-gray-200 group">
-              <label className="block text-xs font-semibold text-gray-900 mb-1">
+              <label className="block text-xs font-medium text-gray-900 mb-1">
                 {labels.where}
               </label>
               <input
@@ -167,7 +167,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
             <Popover>
               <PopoverTrigger asChild>
                 <div className="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-full transition-colors duration-200">
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">
+                  <label className="block text-xs font-medium text-gray-900 mb-1">
                     {labels.dateLabel}
                   </label>
                   <p className="text-sm text-gray-600">
@@ -193,7 +193,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
               <Popover>
                 <PopoverTrigger asChild>
                   <div className="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-full transition-colors duration-200">
-                    <label className="block text-xs font-semibold text-gray-900 mb-1">
+                    <label className="block text-xs font-medium text-gray-900 mb-1">
                       {labels.dateLabel2}
                     </label>
                     <p className="text-sm text-gray-600">
@@ -219,7 +219,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
             <Popover open={isGuestsOpen} onOpenChange={setIsGuestsOpen}>
               <PopoverTrigger asChild>
                 <div className="flex-1 px-6 py-3 cursor-pointer hover:bg-gray-50 rounded-full transition-colors duration-200">
-                  <label className="block text-xs font-semibold text-gray-900 mb-1">
+                  <label className="block text-xs font-medium text-gray-900 mb-1">
                     {labels.guestLabel}
                   </label>
                   <p className="text-sm text-gray-600">
@@ -236,7 +236,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                 <div className="p-6 space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-gray-900">Adults</p>
+                      <p className="font-medium text-gray-900">Adults</p>
                       <p className="text-sm text-gray-500">Ages 13 or above</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -247,7 +247,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                       >
                         <span className="text-gray-700">−</span>
                       </button>
-                      <span className="w-10 text-center font-semibold text-gray-900">
+                      <span className="w-10 text-center font-medium text-gray-900">
                         {guests.adults}
                       </span>
                       <button
@@ -261,7 +261,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-gray-900">Children</p>
+                      <p className="font-medium text-gray-900">Children</p>
                       <p className="text-sm text-gray-500">Ages 2-12</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -272,7 +272,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                       >
                         <span className="text-gray-700">−</span>
                       </button>
-                      <span className="w-10 text-center font-semibold text-gray-900">
+                      <span className="w-10 text-center font-medium text-gray-900">
                         {guests.children}
                       </span>
                       <button
@@ -287,7 +287,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                   {labels.showRooms && (
                     <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                       <div>
-                        <p className="font-semibold text-gray-900">Rooms</p>
+                        <p className="font-medium text-gray-900">Rooms</p>
                         <p className="text-sm text-gray-500">Number of rooms</p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -298,7 +298,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                         >
                           <span className="text-gray-700">−</span>
                         </button>
-                        <span className="w-10 text-center font-semibold text-gray-900">
+                        <span className="w-10 text-center font-medium text-gray-900">
                           {guests.rooms}
                         </span>
                         <button
@@ -353,7 +353,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                     <button className="flex items-center gap-3 px-4 py-4 rounded-xl border border-gray-200 hover:border-purple-600 hover:bg-purple-50/50 transition-all duration-200 text-left">
                       <Calendar className="h-5 w-5 text-purple-600 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 font-semibold mb-0.5">
+                        <p className="text-xs text-gray-500 font-medium mb-0.5">
                           {labels.dateLabel}
                         </p>
                         <p className="text-sm text-gray-900 font-medium truncate">
@@ -379,7 +379,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                       <button className="flex items-center gap-3 px-4 py-4 rounded-xl border border-gray-200 hover:border-purple-600 hover:bg-purple-50/50 transition-all duration-200 text-left">
                         <Calendar className="h-5 w-5 text-purple-600 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 font-semibold mb-0.5">
+                          <p className="text-xs text-gray-500 font-medium mb-0.5">
                             {labels.dateLabel2}
                           </p>
                           <p className="text-sm text-gray-900 font-medium truncate">
@@ -407,7 +407,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                   <button className="w-full flex items-center gap-3 px-4 py-4 rounded-xl border border-gray-200 hover:border-purple-600 hover:bg-purple-50/50 transition-all duration-200 text-left">
                     <Users className="h-5 w-5 text-purple-600 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-500 font-semibold mb-0.5">
+                      <p className="text-xs text-gray-500 font-medium mb-0.5">
                         {labels.guestLabel}
                       </p>
                       <p className="text-sm text-gray-900 font-medium truncate">
@@ -425,7 +425,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                   <div className="p-6 space-y-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-gray-900">Adults</p>
+                        <p className="font-medium text-gray-900">Adults</p>
                         <p className="text-sm text-gray-500">Ages 13+</p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -436,7 +436,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                         >
                           −
                         </button>
-                        <span className="w-10 text-center font-semibold text-gray-900">
+                        <span className="w-10 text-center font-medium text-gray-900">
                           {guests.adults}
                         </span>
                         <button
@@ -450,7 +450,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-gray-900">Children</p>
+                        <p className="font-medium text-gray-900">Children</p>
                         <p className="text-sm text-gray-500">Ages 2-12</p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -461,7 +461,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                         >
                           −
                         </button>
-                        <span className="w-10 text-center font-semibold text-gray-900">
+                        <span className="w-10 text-center font-medium text-gray-900">
                           {guests.children}
                         </span>
                         <button
@@ -476,7 +476,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                     {labels.showRooms && (
                       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div>
-                          <p className="font-semibold text-gray-900">Rooms</p>
+                          <p className="font-medium text-gray-900">Rooms</p>
                           <p className="text-sm text-gray-500">
                             Number of rooms
                           </p>
@@ -489,7 +489,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
                           >
                             −
                           </button>
-                          <span className="w-10 text-center font-semibold text-gray-900">
+                          <span className="w-10 text-center font-medium text-gray-900">
                             {guests.rooms}
                           </span>
                           <button
@@ -509,7 +509,7 @@ const SearchFilters = memo(({ categoryLabel = "Hotels", onSearchResults }) => {
               <Button
                 onClick={handleSearch}
                 disabled={isSearching}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl h-12 font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSearching ? (
                   <>

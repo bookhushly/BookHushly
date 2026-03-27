@@ -38,11 +38,11 @@ export default function QuoteConversionSection() {
       <div className="max-w-6xl mx-auto">
         {/* ── Header ── */}
         <div className="max-w-xl mb-16">
-          <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase text-violet-600 mb-5">
+          <span className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-violet-600 mb-5">
             <span className="h-px w-6 bg-violet-500" />
             Quote Services
           </span>
-          <h2 className="font-fraunces text-4xl md:text-5xl font-semibold text-gray-900 leading-[1.1] mb-4">
+          <h2 className="font-fraunces text-4xl md:text-5xl font-medium text-gray-900 leading-[1.1] mb-4">
             Request a quote
             <br />
             in minutes.
@@ -66,7 +66,7 @@ export default function QuoteConversionSection() {
                   <Icon className="h-4.5 w-4.5 text-white" strokeWidth={2} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                  <h3 className="text-sm font-medium text-gray-900 mb-1">
                     {title}
                   </h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
@@ -82,7 +82,7 @@ export default function QuoteConversionSection() {
             <div className="h-full bg-gray-950 rounded-2xl p-8 md:p-10 flex flex-col justify-between">
               {/* Top */}
               <div>
-                <h3 className="font-fraunces text-2xl md:text-3xl font-semibold text-white leading-tight mb-3">
+                <h3 className="font-fraunces text-2xl md:text-3xl font-medium text-white leading-tight mb-3">
                   Ready to get
                   <br />
                   started?
@@ -107,14 +107,14 @@ export default function QuoteConversionSection() {
               <div className="space-y-3">
                 <Link
                   href="/quote-services?tab=logistics"
-                  className="group flex items-center justify-between w-full px-5 py-3.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-xl transition-all duration-200"
+                  className="group flex items-center justify-between w-full px-5 py-3.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-xl transition-all duration-200"
                 >
                   Logistics quote
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
                 </Link>
                 <Link
                   href="/quote-services?tab=security"
-                  className="group flex items-center justify-between w-full px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm font-semibold rounded-xl transition-all duration-200"
+                  className="group flex items-center justify-between w-full px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm font-medium rounded-xl transition-all duration-200"
                 >
                   Security quote
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />

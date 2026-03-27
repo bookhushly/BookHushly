@@ -172,7 +172,7 @@ export default function PaymentForm({
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <h1 className="text-2xl font-medium text-gray-900">
               Complete Payment
             </h1>
             <p className="text-sm text-gray-600 mt-1">
@@ -464,10 +464,10 @@ export default function PaymentForm({
               )}
               <div className="border-t border-gray-200 pt-3 mt-3">
                 <div className="flex justify-between">
-                  <span className="text-base font-semibold text-gray-900">
+                  <span className="text-base font-medium text-gray-900">
                     Total Amount
                   </span>
-                  <span className="text-base font-bold text-purple-600">
+                  <span className="text-base font-medium text-purple-600">
                     ₦{totalAmount.toLocaleString()}
                   </span>
                 </div>
@@ -500,7 +500,7 @@ export default function PaymentForm({
                       />
                     </svg>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="text-sm font-medium text-gray-900">
                         Card / Bank Transfer
                       </p>
                       <p className="text-xs text-gray-600">
@@ -524,7 +524,7 @@ export default function PaymentForm({
                       />
                     </svg>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="text-sm font-medium text-gray-900">
                         Cryptocurrency
                         {selectedCrypto && ` (${selectedCrypto.toUpperCase()})`}
                       </p>

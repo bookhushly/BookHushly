@@ -100,14 +100,14 @@ export function ReviewSummary({ listingId, listingType = "hotel" }) {
             <div className="h-7 w-7 rounded-lg bg-violet-100 flex items-center justify-center">
               <AlignLeft className="h-3.5 w-3.5 text-violet-600" />
             </div>
-            <span className="text-[13px] font-semibold text-violet-700">
+            <span className="text-[13px] font-medium text-violet-700">
               AI Review Summary
             </span>
           </div>
           {avgRating && (
             <div className="flex items-center gap-1.5">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-sm font-bold text-gray-800">{avgRating}</span>
+              <span className="text-sm font-medium text-gray-800">{avgRating}</span>
               <span className="text-xs text-gray-400">({totalReviews} reviews)</span>
             </div>
           )}
@@ -126,7 +126,7 @@ export function ReviewSummary({ listingId, listingType = "hotel" }) {
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 mb-2">
                 <ThumbsUp className="h-3.5 w-3.5 text-emerald-600" />
-                <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
+                <span className="text-xs font-medium text-emerald-700 uppercase tracking-wide">
                   Guests loved
                 </span>
               </div>
@@ -144,7 +144,7 @@ export function ReviewSummary({ listingId, listingType = "hotel" }) {
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 mb-2">
                 <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
-                <span className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">
                   Watch out for
                 </span>
               </div>

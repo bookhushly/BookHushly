@@ -92,7 +92,7 @@ function FeatureCard({ setting, onToggle, isToggling }) {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-semibold text-gray-900">
+              <p className="text-sm font-medium text-gray-900">
                 {setting.feature_name}
               </p>
               <Badge
@@ -145,7 +145,7 @@ export default function AdminSettingsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Cpu className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
-            <h1 className="text-2xl font-bold text-gray-900">AI Settings</h1>
+            <h1 className="text-2xl font-medium text-gray-900">AI Settings</h1>
           </div>
           <p className="text-sm text-gray-500">
             Control which AI features are active on Bookhushly. Changes take
@@ -158,8 +158,8 @@ export default function AdminSettingsPage() {
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
             <div className="h-2 w-2 rounded-full bg-violet-500" />
             <p className="text-sm text-violet-700">
-              <span className="font-semibold">{enabledCount}</span> of{" "}
-              <span className="font-semibold">{settings.length}</span> AI
+              <span className="font-medium">{enabledCount}</span> of{" "}
+              <span className="font-medium">{settings.length}</span> AI
               features are currently active
             </p>
           </div>
@@ -176,7 +176,7 @@ export default function AdminSettingsPage() {
           <div className="flex items-start gap-3 px-4 py-4 rounded-xl bg-red-50 border border-red-100">
             <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-red-700">Failed to load AI settings</p>
+              <p className="text-sm font-medium text-red-700">Failed to load AI settings</p>
               <p className="text-xs text-red-600 mt-0.5">
                 The <code className="bg-red-100 px-1 rounded">ai_feature_settings</code> table may not exist yet.
                 Run <code className="bg-red-100 px-1 rounded">supabase/migrations/ai_feature_settings.sql</code> in your Supabase SQL Editor, then refresh.
@@ -205,7 +205,7 @@ export default function AdminSettingsPage() {
               <Cpu className="h-7 w-7 text-violet-400" strokeWidth={1.5} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-700">No AI settings found</p>
+              <p className="text-sm font-medium text-gray-700">No AI settings found</p>
               <p className="text-xs text-gray-400 mt-1">
                 Run <code className="bg-gray-100 px-1 rounded">supabase/migrations/ai_feature_settings.sql</code> in Supabase SQL Editor to create the table, then refresh this page.
               </p>

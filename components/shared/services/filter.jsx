@@ -51,7 +51,7 @@ import {
 // ── Shared atoms ──────────────────────────────────────────────────────────────
 
 const SectionLabel = ({ children }) => (
-  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400 mb-3">
+  <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-gray-400 mb-3">
     {children}
   </p>
 );
@@ -297,9 +297,9 @@ const Collapsible = memo(
       >
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-xs font-semibold text-gray-700">{title}</span>
+          <span className="text-xs font-medium text-gray-700">{title}</span>
           {count > 0 && (
-            <span className="text-[10px] font-bold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
               {count}
             </span>
           )}
@@ -784,11 +784,11 @@ const FilterPanel = memo(
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4 text-gray-400" />
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-medium text-gray-900">
                 Filters
               </span>
               {activeCount > 0 && (
-                <span className="text-[10px] font-bold bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-medium bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">
                   {activeCount}
                 </span>
               )}
@@ -810,7 +810,7 @@ const FilterPanel = memo(
           <SlidersHorizontal className="h-4 w-4" />
           Filters
           {activeCount > 0 && (
-            <span className="ml-1 text-[10px] font-bold bg-violet-600 text-white px-1.5 py-0.5 rounded-full">
+            <span className="ml-1 text-[10px] font-medium bg-violet-600 text-white px-1.5 py-0.5 rounded-full">
               {activeCount}
             </span>
           )}
@@ -834,7 +834,7 @@ const FilterPanel = memo(
 
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
-                <span className="font-semibold text-gray-900">Filters</span>
+                <span className="font-medium text-gray-900">Filters</span>
                 <button
                   onClick={onToggle}
                   className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
@@ -850,7 +850,7 @@ const FilterPanel = memo(
               <div className="shrink-0 px-5 py-4 border-t border-gray-100 bg-white">
                 <button
                   onClick={onToggle}
-                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm rounded-xl transition-colors"
+                  className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm rounded-xl transition-colors"
                 >
                   {totalCount != null
                     ? `Show ${totalCount.toLocaleString()} result${totalCount !== 1 ? "s" : ""}`

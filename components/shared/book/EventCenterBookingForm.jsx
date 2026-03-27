@@ -185,7 +185,7 @@ export default function EventCentersBookingForm({
       <div className="lg:col-span-2">
         <Card className="bg-white rounded-2xl border border-gray-200">
           <CardHeader>
-            <CardTitle className="text-xl md:text-2xl font-bold text-gray-900">
+            <CardTitle className="text-xl md:text-2xl font-medium text-gray-900">
               Book Event Center
             </CardTitle>
             <CardDescription className="text-gray-600">
@@ -392,13 +392,13 @@ export default function EventCentersBookingForm({
       <div className="space-y-6">
         <Card className="bg-white rounded-2xl border border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-gray-900">
+            <CardTitle className="text-lg font-medium text-gray-900">
               Booking Summary
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="font-semibold text-base">{service.title}</h4>
+              <h4 className="font-medium text-base">{service.title}</h4>
               <p className="text-sm text-gray-600">
                 by {service.vendors?.business_name || "Event Center Provider"}
               </p>
@@ -432,7 +432,7 @@ export default function EventCentersBookingForm({
 
         <Card className="bg-white rounded-2xl border border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-gray-900 flex items-center">
+            <CardTitle className="text-lg font-medium text-gray-900 flex items-center">
               <CheckCircle className="h-5 w-5 mr-2" />
               Price Details
             </CardTitle>
@@ -444,7 +444,7 @@ export default function EventCentersBookingForm({
             </div>
 
             <div className="border-t pt-3">
-              <div className="flex justify-between font-semibold text-base">
+              <div className="flex justify-between font-medium text-base">
                 <span>Total</span>
                 <span>₦{service.price?.toLocaleString()}</span>
               </div>
@@ -457,7 +457,7 @@ export default function EventCentersBookingForm({
 
         <Card className="bg-white rounded-2xl border border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-gray-900">
+            <CardTitle className="text-lg font-medium text-gray-900">
               Booking Policy
             </CardTitle>
           </CardHeader>

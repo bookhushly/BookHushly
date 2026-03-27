@@ -47,7 +47,7 @@ function TransferModal({ booking, onClose }) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900 text-lg">Transfer Ticket</h3>
+          <h3 className="font-medium text-gray-900 text-lg">Transfer Ticket</h3>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100">
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -109,7 +109,7 @@ function RefundModal({ booking, onClose }) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900 text-lg">Request Refund</h3>
+          <h3 className="font-medium text-gray-900 text-lg">Request Refund</h3>
           <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100">
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -231,7 +231,7 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
                   <div className="flex-1 p-5">
                     <div className="flex justify-between gap-3 mb-2">
                       <div>
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="font-medium text-gray-900">
                           {booking.listing?.title || "Event"}
                         </h3>
                         {booking.listing?.vendor_name && (

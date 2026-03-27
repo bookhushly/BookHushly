@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Bricolage_Grotesque, Fraunces } from "next/font/google";
 import QueryProvider from "@/components/common/QueryProvider";
+import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 const bricolage = Bricolage_Grotesque({
@@ -90,7 +91,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="font-bricolage antialiased">
-        <QueryProvider>{children}</QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
         <Analytics />
         <SpeedInsights />
       </body>

@@ -48,7 +48,7 @@ export default function VendorChangeRequests({ bookingId, onResolved }) {
 
   return (
     <div className="mt-4 space-y-3">
-      <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5">
+      <p className="text-xs font-medium text-amber-700 flex items-center gap-1.5">
         <CalendarDays className="h-3.5 w-3.5" />
         {pending.length} date change request{pending.length > 1 ? "s" : ""} pending
       </p>

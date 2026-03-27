@@ -313,7 +313,7 @@ export default function VendorDashboardClient({
           <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${cfg.bg} ${cfg.border}`}>
             <Award className={`h-5 w-5 shrink-0 ${cfg.text}`} />
             <div>
-              <p className={`text-sm font-bold ${cfg.text}`}>{cfg.label}</p>
+              <p className={`text-sm font-medium ${cfg.text}`}>{cfg.label}</p>
               <p className={`text-xs ${cfg.sub}`}>{cfg.desc}</p>
             </div>
           </div>
@@ -342,7 +342,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Total Listings
               </p>
-              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
                 {localListings.length}
               </p>
             </div>
@@ -366,7 +366,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Active Bookings
               </p>
-              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
                 {stats.activeBookings}
               </p>
             </div>
@@ -393,7 +393,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Total Revenue
               </p>
-              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
                 ₦{stats.totalRevenue.toLocaleString()}
               </p>
             </div>
@@ -419,7 +419,7 @@ export default function VendorDashboardClient({
               <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
                 Pending Requests
               </p>
-              <p className="text-2xl sm:text-[32px] font-semibold text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
                 {stats.pendingRequests}
               </p>
             </div>
@@ -433,7 +433,7 @@ export default function VendorDashboardClient({
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-[15px] font-semibold text-gray-50">
+                <h3 className="text-[15px] font-medium text-gray-50">
                   Quick Actions
                 </h3>
                 <p className="text-[13px] text-gray-100 mt-0.5">
@@ -521,7 +521,7 @@ export default function VendorDashboardClient({
                       )}
                     </div>
                     <div>
-                      <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">
                         Your Profile Link
                       </label>
                       <div className="flex items-center space-x-2">
@@ -577,7 +577,7 @@ export default function VendorDashboardClient({
         <Card className="border-gray-200/60">
           <div className="flex items-center justify-between px-6 pt-6 pb-4">
             <div>
-              <h3 className="text-[15px] font-semibold text-gray-900">
+              <h3 className="text-[15px] font-medium text-gray-900">
                 Recent Listings
               </h3>
               <p className="text-[13px] text-gray-500 mt-0.5">
@@ -710,7 +710,7 @@ export default function VendorDashboardClient({
         <Card className="border-gray-200/60">
           <div className="flex items-center justify-between px-6 pt-6 pb-4">
             <div>
-              <h3 className="text-[15px] font-semibold text-gray-900">
+              <h3 className="text-[15px] font-medium text-gray-900">
                 Recent Bookings
               </h3>
               <p className="text-[13px] text-gray-500 mt-0.5">
@@ -818,7 +818,7 @@ export default function VendorDashboardClient({
             </DialogTitle>
             <DialogDescription className="text-base pt-2">
               Are you sure you want to delete &quot;
-              <span className="font-semibold text-gray-900">
+              <span className="font-medium text-gray-900">
                 {listingToDelete?.title || listingToDelete?.name}
               </span>
               &quot;? This action cannot be undone and all related data will be
@@ -833,14 +833,14 @@ export default function VendorDashboardClient({
                 setListingToDelete(null);
               }}
               disabled={deleteMutation.isPending}
-              className="h-11 font-semibold"
+              className="h-11 font-medium"
             >
               Cancel
             </Button>
             <Button
               onClick={handleDeleteListing}
               disabled={deleteMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white h-11 font-semibold"
+              className="bg-red-600 hover:bg-red-700 text-white h-11 font-medium"
             >
               {deleteMutation.isPending ? (
                 <>

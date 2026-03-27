@@ -25,7 +25,7 @@ export function TermsAndConditionsModal() {
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[80vh] bg-white border border-gray-200 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-lg sm:text-xl font-semibold text-gray-900">
+          <DialogTitle className="flex items-center text-lg sm:text-xl font-medium text-gray-900">
             <Shield className="mr-2 h-5 w-5 text-blue-500" />
             Vendor Terms and Conditions
           </DialogTitle>
@@ -39,7 +39,7 @@ export function TermsAndConditionsModal() {
           <div className="space-y-5 text-sm text-gray-700">
             {/* Section 1 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 1. Agreement Overview
               </h3>
               <p className="leading-relaxed">
@@ -53,7 +53,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 2 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 2. Eligibility
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -78,7 +78,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 3 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 3. Commission Structure
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -97,7 +97,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 4 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 4. Payout Terms
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -119,7 +119,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 5 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 5. Taxes & Regulatory Compliance
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -140,7 +140,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 6 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 6. Cancellations & Refunds
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -161,7 +161,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 7 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 7. Vendor Conduct
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -182,7 +182,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 8 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 8. Limitation of Liability
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -202,7 +202,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 9 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 9. Account Termination
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -220,7 +220,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 10 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 10. Dispute Resolution
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">
@@ -236,7 +236,7 @@ export function TermsAndConditionsModal() {
 
             {/* Section 11 */}
             <div className="space-y-2">
-              <h3 className="font-semibold text-base text-gray-900">
+              <h3 className="font-medium text-base text-gray-900">
                 11. Amendments
               </h3>
               <ul className="list-disc list-inside space-y-1 ml-4">

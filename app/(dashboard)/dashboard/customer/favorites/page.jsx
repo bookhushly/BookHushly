@@ -115,7 +115,7 @@ function FavoriteCard({ item, onRemove, removing }) {
 
       {/* Body */}
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 line-clamp-1 mb-1">
+        <h3 className="font-medium text-gray-900 line-clamp-1 mb-1">
           {item.listing_title ?? "Untitled listing"}
         </h3>
         {item.listing_location && (
@@ -171,7 +171,7 @@ export default function FavoritesPage() {
           <Heart className="h-5 w-5 text-red-500 fill-red-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">My Favourites</h1>
+          <h1 className="text-2xl font-medium text-gray-900">My Favourites</h1>
           <p className="text-sm text-gray-500">
             {saved.length} saved {saved.length === 1 ? "listing" : "listings"}
           </p>

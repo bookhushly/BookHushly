@@ -17,7 +17,7 @@ export default function FoodMenuEntry({
 }) {
   return (
     <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-      <h4 className="text-lg font-semibold text-gray-900">
+      <h4 className="text-lg font-medium text-gray-900">
         Add Meals (up to 20)
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

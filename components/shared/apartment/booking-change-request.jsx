@@ -24,7 +24,7 @@ function ChangeRequestItem({ req }) {
     <div className={`p-3 rounded-xl border text-sm ${STATUS_STYLES[req.status]}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="font-semibold capitalize">{req.status} — Date change</p>
+          <p className="font-medium capitalize">{req.status} — Date change</p>
           <p className="text-xs mt-0.5">
             Requested: {format(parseISO(req.new_check_in), "d MMM yyyy")} → {format(parseISO(req.new_check_out), "d MMM yyyy")}
           </p>
@@ -87,7 +87,7 @@ export default function BookingChangeRequest({ bookingId, checkIn, checkOut, boo
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+        <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
           <CalendarDays className="h-4 w-4 text-violet-500" />
           Date change
         </p>
@@ -117,7 +117,7 @@ export default function BookingChangeRequest({ bookingId, checkIn, checkOut, boo
       {/* Request form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="p-3 bg-violet-50 rounded-xl border border-violet-100 space-y-3">
-          <p className="text-xs font-semibold text-gray-700">New dates</p>
+          <p className="text-xs font-medium text-gray-700">New dates</p>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[11px] text-gray-500 mb-1 block">Check-in</label>

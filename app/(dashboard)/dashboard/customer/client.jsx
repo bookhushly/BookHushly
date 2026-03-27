@@ -121,7 +121,7 @@ export function DashboardOverviewClient({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-medium text-gray-900">
             {greeting()}, {userName.split(" ")[0]} 👋
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -216,7 +216,7 @@ export function DashboardOverviewClient({
               className="bg-white border border-purple-100 rounded-xl p-4 hover:border-purple-300 hover:shadow-sm transition-all group"
             >
               <item.icon className="h-5 w-5 text-purple-400 group-hover:text-purple-600 mb-2 transition-colors" />
-              <p className="text-lg font-bold text-gray-900">{item.count}</p>
+              <p className="text-lg font-medium text-gray-900">{item.count}</p>
               <p className="text-xs text-gray-500">{item.label}</p>
             </Link>
           ))}

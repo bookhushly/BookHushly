@@ -17,7 +17,7 @@ const ListingsTab = ({ filteredListings, vendor }) => {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-1">
+          <h2 className="text-2xl font-medium text-slate-900 mb-1">
             My Listings
           </h2>
           <p className="text-slate-600 text-sm">
@@ -42,7 +42,7 @@ const ListingsTab = ({ filteredListings, vendor }) => {
             <div className="w-20 h-20 rounded-2xl bg-purple-100 flex items-center justify-center mb-5">
               <Package className="h-10 w-10 text-purple-600" />
             </div>
-            <h3 className="text-2xl font-bold mb-2 text-slate-900">
+            <h3 className="text-2xl font-medium mb-2 text-slate-900">
               No listings yet
             </h3>
             <p className="text-slate-500 mb-6 max-w-md">
@@ -69,19 +69,19 @@ const ListingsTab = ({ filteredListings, vendor }) => {
             <table className="w-full">
               <thead className="bg-slate-50/80 sticky top-0 backdrop-blur-sm border-b-2 border-slate-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Listing
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -101,7 +101,7 @@ const ListingsTab = ({ filteredListings, vendor }) => {
                           <Building className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-slate-900">
+                          <div className="text-sm font-medium text-slate-900">
                             {listing.title}
                           </div>
                           <div className="text-xs text-slate-500">
@@ -116,7 +116,7 @@ const ListingsTab = ({ filteredListings, vendor }) => {
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-bold text-slate-900">
+                      <div className="text-sm font-medium text-slate-900">
                         ₦{listing.price?.toLocaleString()}
                       </div>
                     </td>

@@ -99,7 +99,7 @@ export default function NigeriaMapView({ listings, activeState, onStateClick }) 
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">
-          <span className="font-semibold text-gray-900">{totalHotels}</span>{" "}
+          <span className="font-medium text-gray-900">{totalHotels}</span>{" "}
           hotel{totalHotels !== 1 ? "s" : ""} across Nigeria
           {activeState && (
             <span className="ml-2 text-violet-600 font-medium">
@@ -150,11 +150,11 @@ export default function NigeriaMapView({ listings, activeState, onStateClick }) 
                   ${!count ? "cursor-default opacity-60" : "cursor-pointer"}
                 `}
               >
-                <span className="text-[9px] sm:text-[10px] font-semibold leading-tight text-center px-0.5 line-clamp-2">
+                <span className="text-[9px] sm:text-[10px] font-medium leading-tight text-center px-0.5 line-clamp-2">
                   {stateName.length > 7 ? stateName.slice(0, 6) + "…" : stateName}
                 </span>
                 {count > 0 && (
-                  <span className="text-[8px] sm:text-[9px] font-bold opacity-80 mt-0.5">
+                  <span className="text-[8px] sm:text-[9px] font-medium opacity-80 mt-0.5">
                     {count}
                   </span>
                 )}
@@ -169,8 +169,8 @@ export default function NigeriaMapView({ listings, activeState, onStateClick }) 
         <div className="flex items-center gap-2 px-3 py-2 bg-violet-50 border border-violet-200 rounded-xl">
           <MapPin className="h-4 w-4 text-violet-600 shrink-0" />
           <p className="text-sm text-violet-800 flex-1">
-            Showing <span className="font-semibold">{countByState[activeState] || 0}</span> hotel{(countByState[activeState] || 0) !== 1 ? "s" : ""} in{" "}
-            <span className="font-semibold">{activeState}</span>
+            Showing <span className="font-medium">{countByState[activeState] || 0}</span> hotel{(countByState[activeState] || 0) !== 1 ? "s" : ""} in{" "}
+            <span className="font-medium">{activeState}</span>
           </p>
           <button
             onClick={() => onStateClick(null)}

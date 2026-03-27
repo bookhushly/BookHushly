@@ -8,7 +8,7 @@ export default function ServiceNotFound() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="text-center max-w-md">
         <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-6" />
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <h1 className="text-3xl font-medium text-gray-900 mb-4">
           Service Not Found
         </h1>
         <p className="text-gray-600 mb-8">

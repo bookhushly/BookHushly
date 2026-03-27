@@ -49,7 +49,7 @@ export function Footer() {
       <div className="border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 py-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <h2 className="font-fraunces text-2xl md:text-3xl font-semibold text-gray-900 leading-tight mb-1">
+            <h2 className="font-fraunces text-2xl md:text-3xl font-medium text-gray-900 leading-tight mb-1">
               Ready to book something great?
             </h2>
             <p className="text-gray-500 text-sm">
@@ -58,7 +58,7 @@ export function Footer() {
           </div>
           <Link
             href="/services"
-            className="group shrink-0 inline-flex items-center gap-2 h-11 px-6 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors duration-200"
+            className="group shrink-0 inline-flex items-center gap-2 h-11 px-6 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors duration-200"
           >
             Explore services
             <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -100,7 +100,7 @@ export function Footer() {
 
         {/* Services */}
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-400 mb-4">
+          <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-4">
             Services
           </h4>
           <ul className="space-y-2.5">
@@ -119,7 +119,7 @@ export function Footer() {
 
         {/* Company */}
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-400 mb-4">
+          <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-4">
             Company
           </h4>
           <ul className="space-y-2.5">
@@ -138,7 +138,7 @@ export function Footer() {
 
         {/* Contact */}
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-400 mb-4">
+          <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-4">
             Get in touch
           </h4>
           <p className="text-sm text-gray-500 leading-relaxed mb-5">

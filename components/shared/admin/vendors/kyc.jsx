@@ -6,7 +6,7 @@ export function VendorKYC({ vendor }) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">KYC Status</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">KYC Status</h3>
         <Badge
           variant={vendor.status === "approved" ? "success" : "warning"}
           className={
@@ -20,7 +20,7 @@ export function VendorKYC({ vendor }) {
       </div>
 
       <div className="pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Identity Documents
         </h3>
         <div className="space-y-4">
@@ -67,7 +67,7 @@ export function VendorKYC({ vendor }) {
 
       {vendor.category_data && (
         <div className="pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             Category Specific Data
           </h3>
           <pre className="bg-gray-50 p-4 rounded-lg overflow-auto text-sm">

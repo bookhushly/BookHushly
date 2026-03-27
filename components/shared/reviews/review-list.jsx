@@ -126,7 +126,7 @@ export function ReviewList({ listingId, showTitle = true }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Overall Rating */}
               <div className="text-center">
-                <div className="text-4xl font-bold mb-2">{stats.averageRating}</div>
+                <div className="text-4xl font-medium mb-2">{stats.averageRating}</div>
                 <div className="flex items-center justify-center mb-2">
                   {renderStars(Math.round(stats.averageRating))}
                 </div>

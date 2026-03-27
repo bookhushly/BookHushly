@@ -188,7 +188,7 @@ function SearchContent() {
     <div className="container py-8">
       {/* Search Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Search Results</h1>
+        <h1 className="text-3xl font-medium mb-2">Search Results</h1>
         <p className="text-muted-foreground">
           {searchQuery ? `Results for "${searchQuery}"` : 'Browse all services'}
         </p>
@@ -209,7 +209,7 @@ function SearchContent() {
             <button
               onClick={parseNaturalLanguage}
               disabled={nlParsing || !searchQuery.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white text-[11px] font-semibold transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:opacity-40 text-white text-[11px] font-medium transition-colors"
             >
               {nlParsing
                 ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -388,7 +388,7 @@ function SearchContent() {
         <Card>
           <CardContent className="text-center py-12">
             <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No results found</h3>
+            <h3 className="text-lg font-medium mb-2">No results found</h3>
             <p className="text-muted-foreground mb-4">
               Try adjusting your search terms or filters
             </p>
@@ -432,7 +432,7 @@ function SearchContent() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-lg font-bold">₦{result.price.toLocaleString()}</span>
+                      <span className="text-lg font-medium">₦{result.price.toLocaleString()}</span>
                       <span className="text-sm text-muted-foreground ml-1">/service</span>
                     </div>
                     <Button size="sm" asChild>

@@ -91,7 +91,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
 
       {/* Apartment Features */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Apartment Features
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -124,7 +124,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
 
       {/* Apartment Types */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Available Unit Types
         </h3>
         <div className="grid gap-4">
@@ -133,7 +133,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
               <Home className="h-6 w-6 text-green-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">Studio Apartment</h4>
+              <h4 className="font-medium text-gray-900">Studio Apartment</h4>
               <p className="text-sm text-gray-600">
                 1 bedroom • 1 bathroom • 2 guests
               </p>
@@ -148,7 +148,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
               <Home className="h-6 w-6 text-green-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">One Bedroom</h4>
+              <h4 className="font-medium text-gray-900">One Bedroom</h4>
               <p className="text-sm text-gray-600">
                 1 bedroom • 1 bathroom • 4 guests
               </p>
@@ -163,7 +163,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
               <Home className="h-6 w-6 text-green-600" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-gray-900">Two Bedroom</h4>
+              <h4 className="font-medium text-gray-900">Two Bedroom</h4>
               <p className="text-sm text-gray-600">
                 2 bedrooms • 2 bathrooms • 6 guests
               </p>
@@ -178,7 +178,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
 
       {/* Apartment Details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Apartment Details
         </h3>
         <div className="bg-green-50 rounded-lg p-4">
@@ -212,7 +212,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
       {/* Meet Your Host */}
       {(service.agent_name || service.agent_phone) && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
             <User className="h-5 w-5 text-violet-600" />
             Meet Your Host
           </h3>
@@ -233,7 +233,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
             )}
             <div className="flex-1 min-w-0">
               {service.agent_name && (
-                <p className="font-semibold text-gray-900 text-base">{service.agent_name}</p>
+                <p className="font-medium text-gray-900 text-base">{service.agent_name}</p>
               )}
               {service.agent_bio && (
                 <p className="text-sm text-gray-500 mt-1 leading-relaxed">{service.agent_bio}</p>
@@ -258,7 +258,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
       <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
         <div className="mb-6">
           <div className="flex items-baseline mb-2">
-            <span className="text-3xl font-bold text-gray-900">
+            <span className="text-3xl font-medium text-gray-900">
               ₦{service.price.toLocaleString()}
             </span>
             <span className="text-sm text-gray-600 ml-2">
@@ -275,7 +275,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
         <Button
           asChild={service.availability === "available"}
           disabled={service.availability !== "available"}
-          className={`w-full mb-4 h-12 text-base font-semibold ${
+          className={`w-full mb-4 h-12 text-base font-medium ${
             service.availability === "available"
               ? "bg-green-600 hover:bg-green-700 text-white"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -305,7 +305,7 @@ const ApartmentServiceDetail = ({ service, categoryData }) => {
 
         {/* Apartment info */}
         <div className="bg-green-50 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold text-gray-900 mb-2">Stay Details</h4>
+          <h4 className="font-medium text-gray-900 mb-2">Stay Details</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <div className="flex items-center justify-between">
               <span>Check-in:</span>

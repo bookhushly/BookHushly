@@ -52,7 +52,7 @@ export default function BetaAccessPage({
         <div className="w-full max-w-lg text-center">
           {/* Badge */}
           <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-purple-50 border border-purple-100 text-purple-700 text-xs font-semibold px-4 py-1.5 rounded-full">
+            <div className="inline-flex items-center gap-2 bg-purple-50 border border-purple-100 text-purple-700 text-xs font-medium px-4 py-1.5 rounded-full">
               <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
               BETA ACCESS
             </div>
@@ -71,7 +71,7 @@ export default function BetaAccessPage({
           </div>
 
           {/* Heading */}
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight leading-tight">
+          <h1 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4 tracking-tight leading-tight">
             {featureName} is{" "}
             <span className="text-purple-600">coming soon</span>
           </h1>

@@ -196,7 +196,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">
+        <h3 className="font-medium text-gray-900 text-lg mb-2 line-clamp-1">
           {listing.title}
         </h3>
 
@@ -219,7 +219,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
             {!isHotel && listing.price && (
               <div className="flex flex-col">
                 <span className="text-xs text-gray-500 mb-1">Price</span>
-                <span className="font-semibold text-purple-600">
+                <span className="font-medium text-purple-600">
                   {formatPrice(listing.price, listing.price_unit)}
                 </span>
               </div>
@@ -228,7 +228,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
             {businessCategory === "serviced_apartments" && (
               <div className="flex flex-col">
                 <span className="text-xs text-gray-500 mb-1">Bedrooms</span>
-                <span className="font-semibold text-purple-600">
+                <span className="font-medium text-purple-600">
                   {listing.bedrooms} bed
                 </span>
               </div>
@@ -237,7 +237,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
             {isEvent && listing.remaining_tickets != null && (
               <div className="flex flex-col">
                 <span className="text-xs text-gray-500 mb-1">Tickets Left</span>
-                <span className="font-semibold text-purple-600">
+                <span className="font-medium text-purple-600">
                   {listing.remaining_tickets.toLocaleString()}
                 </span>
               </div>
@@ -330,7 +330,7 @@ export function VendorListingsGrid() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
             Error Loading {labels.plural}
           </h3>
           <p className="text-gray-600 mb-4">{error.message}</p>
@@ -348,7 +348,7 @@ export function VendorListingsGrid() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <h1 className="text-2xl font-medium text-gray-900">
             My {labels.plural}
           </h1>
           <p className="text-gray-600 mt-1">{labels.sub}</p>

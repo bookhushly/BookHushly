@@ -235,7 +235,7 @@ export default function VendorProfilePage() {
         <Card className="max-w-md mx-auto">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Building className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Vendor Not Found</h3>
+            <h3 className="text-lg font-medium mb-2">Vendor Not Found</h3>
             <p className="text-muted-foreground text-center mb-4">
               This vendor profile is not available or hasn't been approved yet.
             </p>
@@ -254,7 +254,7 @@ export default function VendorProfilePage() {
       <div className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-purple-600">
+            <Link href="/" className="text-2xl font-medium text-purple-600">
               Bookhushly
             </Link>
             <div className="flex items-center space-x-4">
@@ -273,7 +273,7 @@ export default function VendorProfilePage() {
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
-                <CardTitle className="text-3xl font-bold mb-2">
+                <CardTitle className="text-3xl font-medium mb-2">
                   {vendor.business_name}
                 </CardTitle>
                 <CardDescription className="text-lg">
@@ -283,7 +283,7 @@ export default function VendorProfilePage() {
               <div className="mt-4 md:mt-0 flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                  <span className="font-semibold">4.8</span>
+                  <span className="font-medium">4.8</span>
                   <span className="text-muted-foreground">(124 reviews)</span>
                 </div>
               </div>
@@ -324,7 +324,7 @@ export default function VendorProfilePage() {
         <div className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Our Services</h2>
+              <h2 className="text-2xl font-medium mb-2">Our Services</h2>
               <p className="text-muted-foreground">
                 {filteredListings.length} of {listings.length} services
                 available
@@ -385,7 +385,7 @@ export default function VendorProfilePage() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Filter className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No services found</h3>
+              <h3 className="text-lg font-medium mb-2">No services found</h3>
               <p className="text-muted-foreground text-center">
                 {searchTerm || selectedCategory !== "All Categories"
                   ? "Try adjusting your search or filter criteria"
@@ -439,7 +439,7 @@ export default function VendorProfilePage() {
                     </p>
 
                     <div className="flex items-center justify-between mb-4">
-                      <div className="text-2xl font-bold text-purple-600">
+                      <div className="text-2xl font-medium text-purple-600">
                         ₦{listing.price?.toLocaleString() || "0"}
                         {listing.pricing_type && (
                           <span className="text-sm font-normal text-muted-foreground">
@@ -493,7 +493,7 @@ export default function VendorProfilePage() {
               {vendor.business_phone && (
                 <div className="text-center">
                   <Phone className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                  <p className="font-semibold">Call Us</p>
+                  <p className="font-medium">Call Us</p>
                   <p className="text-muted-foreground">
                     {vendor.business_phone}
                   </p>
@@ -502,7 +502,7 @@ export default function VendorProfilePage() {
               {vendor.business_email && (
                 <div className="text-center">
                   <Mail className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                  <p className="font-semibold">Email Us</p>
+                  <p className="font-medium">Email Us</p>
                   <p className="text-muted-foreground">
                     {vendor.business_email}
                   </p>
@@ -511,7 +511,7 @@ export default function VendorProfilePage() {
               {vendor.business_address && (
                 <div className="text-center">
                   <MapPin className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                  <p className="font-semibold">Visit Us</p>
+                  <p className="font-medium">Visit Us</p>
                   <p className="text-muted-foreground">
                     {vendor.business_address}
                   </p>

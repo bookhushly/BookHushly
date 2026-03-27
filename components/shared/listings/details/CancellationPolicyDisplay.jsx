@@ -112,7 +112,7 @@ const CancellationPolicyDisplay = ({ cancellationPolicy }) => {
 
   return (
     <div>
-      <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+      <h3 className="font-medium text-gray-900 mb-3 flex items-center">
         <Shield className="w-4 h-4 mr-2" />
         Cancellation Policy
       </h3>

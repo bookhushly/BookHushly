@@ -85,7 +85,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
           <div className="space-y-5">
             {/* Hotel Info */}
             <div className="bg-purple-50 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-medium text-gray-900">
                 {booking.hotel?.name}
               </h3>
               {booking.hotel?.city && (
@@ -111,13 +111,13 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-400 mb-1">Check-in</p>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-medium text-gray-900">
                   {format(new Date(booking.check_in_date), "EEE, MMM d yyyy")}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-xs text-gray-400 mb-1">Check-out</p>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-medium text-gray-900">
                   {format(new Date(booking.check_out_date), "EEE, MMM d yyyy")}
                 </p>
               </div>
@@ -125,7 +125,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
 
             {/* Guest details */}
             <div className="space-y-3">
-              <p className="text-sm font-semibold text-gray-700">
+              <p className="text-sm font-medium text-gray-700">
                 Guest Details
               </p>
               <div className="space-y-2 text-sm">
@@ -150,7 +150,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
             {/* Special requests */}
             {booking.special_requests && (
               <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
-                <p className="text-xs font-semibold text-amber-700 mb-1">
+                <p className="text-xs font-medium text-amber-700 mb-1">
                   Special Requests
                 </p>
                 <p className="text-sm text-amber-800">
@@ -163,7 +163,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
             <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
               <span className="text-sm text-gray-600">Payment Status</span>
               <span
-                className={`text-sm font-semibold ${
+                className={`text-sm font-medium ${
                   booking.payment_status === "completed"
                     ? "text-green-600"
                     : "text-amber-600"
@@ -178,7 +178,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
               booking.booking_status !== "cancelled" &&
               booking.check_in_code && (
                 <div className="rounded-xl border border-violet-100 bg-violet-50 p-4 text-center">
-                  <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider mb-3">
+                  <p className="text-[11px] font-medium text-violet-600 uppercase tracking-wider mb-3">
                     Check-in Code
                   </p>
                   <div className="flex justify-center mb-3">
@@ -190,14 +190,14 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
                       />
                     </div>
                   </div>
-                  <p className="text-2xl font-bold tracking-[0.25em] text-gray-900 mb-1">
+                  <p className="text-2xl font-medium tracking-[0.25em] text-gray-900 mb-1">
                     {booking.check_in_code}
                   </p>
                   <p className="text-[11px] text-gray-500">
                     Show this code at the front desk on arrival
                   </p>
                   {booking.checked_in && (
-                    <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
+                    <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
                       <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                       Checked in
                     </div>
@@ -210,7 +210,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2">
                 <span className="text-lg leading-none">🚗</span>
                 <div>
-                  <p className="text-sm font-semibold text-blue-900">Airport Transfer Requested</p>
+                  <p className="text-sm font-medium text-blue-900">Airport Transfer Requested</p>
                   <p className="text-xs text-blue-700 mt-0.5 capitalize">
                     {booking.airport_transfer_type === "pickup"
                       ? "Airport → Hotel"

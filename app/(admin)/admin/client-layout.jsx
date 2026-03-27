@@ -9,11 +9,9 @@ export function AdminLayoutClient({ children }) {
 
   return (
     <div
+      data-theme-shell
       className="min-h-screen flex"
-      style={{
-        background:
-          "linear-gradient(160deg, #f5f3ff 0%, #fdf8ff 45%, #faf5ff 100%)",
-      }}
+      style={{ background: "var(--shell-bg)" }}
     >
       <AdminSidebar isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 

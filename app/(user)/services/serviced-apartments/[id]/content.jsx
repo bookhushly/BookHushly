@@ -114,7 +114,7 @@ export default function ApartmentClient({ apartment }) {
         {/* Header Section */}
         <div className="mb-6">
           <div className="flex items-start justify-between mb-3">
-            <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">
+            <h1 className="text-3xl sm:text-4xl font-medium text-gray-900">
               {apartment.name}
             </h1>
             <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export default function ApartmentClient({ apartment }) {
             )}
 
             {apartment.vendors?.tier === "superhost" && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-200">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium border border-amber-200">
                 <Award className="w-3 h-3" />
                 Superhost
               </div>
@@ -209,7 +209,7 @@ export default function ApartmentClient({ apartment }) {
           <div className="lg:col-span-2 space-y-8">
             {/* Quick Overview */}
             <div className="pb-8 border-b border-gray-200">
-              <h2 className="text-2xl font-semibold mb-4">
+              <h2 className="text-2xl font-medium mb-4">
                 {apartmentTypeLabel[apartment.apartment_type]} Apartment
               </h2>
 
@@ -258,7 +258,7 @@ export default function ApartmentClient({ apartment }) {
             {/* Description */}
             {apartment.description && (
               <div className="pb-8 border-b border-gray-200">
-                <h3 className="text-xl font-semibold mb-4">About this place</h3>
+                <h3 className="text-xl font-medium mb-4">About this place</h3>
                 <RichContentRenderer
                   content={apartment.description}
                   className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
@@ -268,7 +268,7 @@ export default function ApartmentClient({ apartment }) {
 
             {/* Power & Utilities - Critical for Nigeria */}
             <div className="pb-8 border-b border-gray-200">
-              <h3 className="text-xl font-semibold mb-6">Power & Utilities</h3>
+              <h3 className="text-xl font-medium mb-6">Power & Utilities</h3>
 
               <div className="space-y-4">
                 {/* Power Supply Section */}
@@ -276,7 +276,7 @@ export default function ApartmentClient({ apartment }) {
                   <div className="flex items-start gap-3 mb-3">
                     <Zap className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-2">
+                      <h4 className="font-medium text-gray-900 mb-2">
                         Power Supply
                       </h4>
                       <div className="space-y-2 text-sm">
@@ -357,7 +357,7 @@ export default function ApartmentClient({ apartment }) {
                   <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      <span className="font-semibold text-green-900">
+                      <span className="font-medium text-green-900">
                         All utilities included in price
                       </span>
                     </div>
@@ -371,7 +371,7 @@ export default function ApartmentClient({ apartment }) {
 
             {/* Features & Furnishing */}
             <div className="pb-8 border-b border-gray-200">
-              <h3 className="text-xl font-semibold mb-6">
+              <h3 className="text-xl font-medium mb-6">
                 Features & Furnishing
               </h3>
 
@@ -415,7 +415,7 @@ export default function ApartmentClient({ apartment }) {
             {/* Amenities */}
             {selectedAmenities.length > 0 && (
               <div className="pb-8 border-b border-gray-200">
-                <h3 className="text-xl font-semibold mb-6">
+                <h3 className="text-xl font-medium mb-6">
                   Amenities ({selectedAmenities.length})
                 </h3>
 
@@ -438,7 +438,7 @@ export default function ApartmentClient({ apartment }) {
             {/* Security Features */}
             {selectedSecurityFeatures.length > 0 && (
               <div className="pb-8 border-b border-gray-200">
-                <h3 className="text-xl font-semibold mb-6">
+                <h3 className="text-xl font-medium mb-6">
                   Security Features
                 </h3>
 
@@ -459,7 +459,7 @@ export default function ApartmentClient({ apartment }) {
             {/* House Rules */}
             {apartment.house_rules && (
               <div className="pb-8 border-b border-gray-200">
-                <h3 className="text-xl font-semibold mb-4">House Rules</h3>
+                <h3 className="text-xl font-medium mb-4">House Rules</h3>
                 <RichContentRenderer
                   content={apartment.house_rules}
                   className="text-gray-700 prose prose-sm max-w-none"
@@ -470,7 +470,7 @@ export default function ApartmentClient({ apartment }) {
             {/* Cancellation Policy */}
             {apartment.cancellation_policy && (
               <div className="pb-8 border-b border-gray-200">
-                <h3 className="text-xl font-semibold mb-4">
+                <h3 className="text-xl font-medium mb-4">
                   Cancellation Policy
                 </h3>
                 <RichContentRenderer
@@ -483,7 +483,7 @@ export default function ApartmentClient({ apartment }) {
             {/* Video & Virtual Tour */}
             {(apartment.video_url || apartment.virtual_tour_url) && (
               <div className="pb-8 border-b border-gray-200">
-                <h3 className="text-xl font-semibold mb-4">
+                <h3 className="text-xl font-medium mb-4">
                   Video & Virtual Tour
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -515,7 +515,7 @@ export default function ApartmentClient({ apartment }) {
 
             {/* Location Details */}
             <div>
-              <h3 className="text-xl font-semibold mb-4">Location</h3>
+              <h3 className="text-xl font-medium mb-4">Location</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
@@ -542,7 +542,7 @@ export default function ApartmentClient({ apartment }) {
                 {/* Pricing header */}
                 <div className="mb-5 pb-5 border-b border-gray-100">
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl font-bold text-gray-900">
+                    <span className="text-2xl font-medium text-gray-900">
                       {formatPrice(apartment.price_per_night)}
                     </span>
                     <span className="text-gray-500 text-sm">/ night</span>
@@ -551,14 +551,14 @@ export default function ApartmentClient({ apartment }) {
                     {apartment.price_per_week && (
                       <div className="flex-1 p-2.5 bg-green-50 rounded-lg border border-green-100 text-[12px]">
                         <p className="text-gray-500">Weekly</p>
-                        <p className="font-semibold text-gray-900">{formatPrice(apartment.price_per_week)}</p>
+                        <p className="font-medium text-gray-900">{formatPrice(apartment.price_per_week)}</p>
                         {weeklySavings > 0 && <p className="text-green-700">Save {formatPrice(weeklySavings)}</p>}
                       </div>
                     )}
                     {apartment.price_per_month && (
                       <div className="flex-1 p-2.5 bg-green-50 rounded-lg border border-green-100 text-[12px]">
                         <p className="text-gray-500">Monthly</p>
-                        <p className="font-semibold text-gray-900">{formatPrice(apartment.price_per_month)}</p>
+                        <p className="font-medium text-gray-900">{formatPrice(apartment.price_per_month)}</p>
                         {monthlySavings > 0 && <p className="text-green-700">Save {formatPrice(monthlySavings)}</p>}
                       </div>
                     )}
@@ -616,7 +616,7 @@ export default function ApartmentClient({ apartment }) {
                     href={`https://wa.me/${waPhone}?text=${waMsg}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 flex items-center justify-center gap-2 w-full h-11 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors text-sm"
+                    className="mt-4 flex items-center justify-center gap-2 w-full h-11 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition-colors text-sm"
                   >
                     <MessageCircle className="w-4 h-4" />
                     Contact on WhatsApp
@@ -626,7 +626,7 @@ export default function ApartmentClient({ apartment }) {
 
               {/* Reviews */}
               <div className="mt-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
                   Guest Reviews
                 </h2>
                 <ReviewSection listingId={apartment.id} listingType="apartment" listingTitle={apartment.name} />

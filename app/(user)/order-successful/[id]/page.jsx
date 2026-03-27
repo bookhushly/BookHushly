@@ -318,7 +318,7 @@ const OrderSuccessful = () => {
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm text-center max-w-md w-full">
           <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-medium text-gray-900 mb-2">
             Order Not Found
           </h2>
           <p className="text-gray-600 mb-5 text-sm">
@@ -343,7 +343,7 @@ const OrderSuccessful = () => {
           <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-600 rounded-full mb-3">
             <CheckCircle className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          <h1 className="text-2xl font-medium text-gray-900 mb-1">
             Order Confirmed
           </h1>
           <p className="text-sm text-gray-600">
@@ -353,7 +353,7 @@ const OrderSuccessful = () => {
 
         {/* Booking Details */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
-          <h3 className="font-semibold text-gray-900 text-sm mb-3">
+          <h3 className="font-medium text-gray-900 text-sm mb-3">
             Booking Details
           </h3>
           <div className="space-y-2 text-sm">
@@ -490,7 +490,7 @@ const OrderSuccessful = () => {
         <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Total Paid</span>
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-medium text-gray-900">
               {payment.currency || "NGN"}{" "}
               {Number(getTotalAmount()).toLocaleString()}
             </span>
@@ -528,7 +528,7 @@ const OrderSuccessful = () => {
           <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <Video className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-800">Virtual Event — Stream Link</span>
+              <span className="text-sm font-medium text-blue-800">Virtual Event — Stream Link</span>
             </div>
             <p className="text-xs text-blue-600 mb-3">Use this link to join the event. Keep it private — it is for your ticket only.</p>
             <a
@@ -546,7 +546,7 @@ const OrderSuccessful = () => {
         {/* Contact Details */}
         <div className="grid sm:grid-cols-2 gap-4 mb-5">
           <div className="bg-white border border-gray-200 rounded-xl p-4">
-            <h3 className="font-semibold text-gray-900 text-sm mb-3">
+            <h3 className="font-medium text-gray-900 text-sm mb-3">
               Your Details
             </h3>
             <div className="space-y-2">
@@ -564,7 +564,7 @@ const OrderSuccessful = () => {
           </div>
 
           <div className="bg-white border border-gray-200 rounded-xl p-4">
-            <h3 className="font-semibold text-gray-900 text-sm mb-3">
+            <h3 className="font-medium text-gray-900 text-sm mb-3">
               Need Help?
             </h3>
             <div className="space-y-2">
@@ -584,7 +584,7 @@ const OrderSuccessful = () => {
         {/* Important Notes */}
         {bookingType === BOOKING_TYPES.EVENT && (
           <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-5">
-            <h3 className="font-semibold text-gray-900 text-sm mb-3">
+            <h3 className="font-medium text-gray-900 text-sm mb-3">
               Before You Go
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
@@ -595,7 +595,7 @@ const OrderSuccessful = () => {
                 "Check your email for updates",
               ].map((note) => (
                 <li key={note} className="flex items-start gap-2">
-                  <span className="text-purple-600 font-bold">•</span>
+                  <span className="text-purple-600 font-medium">•</span>
                   <span>{note}</span>
                 </li>
               ))}
@@ -606,7 +606,7 @@ const OrderSuccessful = () => {
         {(bookingType === BOOKING_TYPES.HOTEL ||
           bookingType === BOOKING_TYPES.APARTMENT) && (
           <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mb-5">
-            <h3 className="font-semibold text-gray-900 text-sm mb-3">
+            <h3 className="font-medium text-gray-900 text-sm mb-3">
               Important Information
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
@@ -617,7 +617,7 @@ const OrderSuccessful = () => {
                 "Contact property for early check-in/late check-out",
               ].map((note) => (
                 <li key={note} className="flex items-start gap-2">
-                  <span className="text-purple-600 font-bold">•</span>
+                  <span className="text-purple-600 font-medium">•</span>
                   <span>{note}</span>
                 </li>
               ))}
