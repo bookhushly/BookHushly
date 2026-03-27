@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ThumbsUp, AlertCircle, Star } from "lucide-react";
+import { AlignLeft, ThumbsUp, AlertCircle, Star } from "lucide-react";
 
 /**
  * ReviewSummary
@@ -80,7 +80,7 @@ export function ReviewSummary({ listingId, listingType = "hotel" }) {
     return (
       <div className="rounded-2xl border border-violet-100 bg-violet-50/40 p-5 mb-8 animate-pulse">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-4 w-4 text-violet-400" />
+          <AlignLeft className="h-4 w-4 text-violet-400" />
           <div className="h-3.5 w-36 bg-violet-200/60 rounded-full" />
         </div>
         <div className="space-y-2">
@@ -98,7 +98,7 @@ export function ReviewSummary({ listingId, listingType = "hotel" }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-lg bg-violet-100 flex items-center justify-center">
-              <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+              <AlignLeft className="h-3.5 w-3.5 text-violet-600" />
             </div>
             <span className="text-[13px] font-semibold text-violet-700">
               AI Review Summary

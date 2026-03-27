@@ -5,7 +5,6 @@ import {
   Bell,
   BellOff,
   X,
-  Sparkles,
   Mail,
   AlertCircle,
   BellDot,

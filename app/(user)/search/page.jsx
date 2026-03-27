@@ -19,7 +19,6 @@ import {
   Filter,
   SlidersHorizontal,
   X,
-  Sparkles,
   Loader2
 } from 'lucide-react'
 import { CATEGORIES } from '@/lib/constants'
@@ -214,7 +213,7 @@ function SearchContent() {
             >
               {nlParsing
                 ? <Loader2 className="h-3 w-3 animate-spin" />
-                : <Sparkles className="h-3 w-3" />}
+                : null}
               AI Search
             </button>
           </div>
@@ -238,7 +237,6 @@ function SearchContent() {
       {nlSummary && (
         <div className="mb-4 flex items-center gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-100 text-[12px] text-violet-700">
-            <Sparkles className="h-3 w-3" />
             <span>AI parsed: <strong>{nlSummary}</strong></span>
             <button onClick={clearFilters} className="ml-1 text-violet-400 hover:text-violet-700">
               <X className="h-3 w-3" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Sparkles, Bell, ArrowLeft, Zap, Shield, Star } from "lucide-react";
+import { Bell, ArrowLeft, Zap, Shield, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -62,7 +62,7 @@ export default function BetaAccessPage({
           <div className="flex justify-center mb-8">
             <div className="relative">
               <div className="w-24 h-24 bg-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200 rotate-3">
-                <Sparkles className="w-11 h-11 text-white" />
+                <Zap className="w-11 h-11 text-white" />
               </div>
               <div className="absolute -top-2 -right-2 w-7 h-7 bg-yellow-400 rounded-full flex items-center justify-center shadow-sm">
                 <Star className="w-3.5 h-3.5 text-yellow-800 fill-yellow-800" />
@@ -87,7 +87,7 @@ export default function BetaAccessPage({
             {[
               { icon: Zap, label: "Fast & Optimized" },
               { icon: Shield, label: "Secure" },
-              { icon: Sparkles, label: "Built for Nigeria" },
+              { icon: Zap, label: "Built for Nigeria" },
             ].map(({ icon: Icon, label }) => (
               <div
                 key={label}

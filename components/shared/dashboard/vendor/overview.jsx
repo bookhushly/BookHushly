@@ -14,7 +14,6 @@ import {
   Eye,
   FileText,
   Plus,
-  Sparkles,
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -140,8 +139,7 @@ const OverviewTab = ({ user, vendor }) => {
         <div className="space-y-5">
           <Card className="bg-white/60 backdrop-blur-md border-slate-200/50 shadow-xl">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="w-5 h-5 text-purple-600" />
+              <CardTitle className="text-lg">
                 Quick Links
               </CardTitle>
             </CardHeader>

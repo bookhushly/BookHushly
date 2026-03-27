@@ -142,20 +142,20 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
 
           {/* Content */}
           <div className="p-3 sm:p-4 flex-1 flex flex-col">
-            {/* Location */}
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-              <span className="text-xs text-gray-500 line-clamp-1">
-                {service.location?.split(",")[0] || "Venue TBD"}
-              </span>
-            </div>
-
             {/* Title */}
-            <h3 className={`font-semibold text-sm sm:text-base leading-snug line-clamp-2 mb-3 transition-colors ${
+            <h3 className={`font-semibold text-sm sm:text-base leading-snug line-clamp-2 mb-1.5 transition-colors ${
               isPast ? "text-gray-400" : "text-gray-900 group-hover:text-violet-700"
             }`}>
               {service.title || "Event"}
             </h3>
+
+            {/* Location */}
+            <div className="flex items-center gap-1.5 mb-3">
+              <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+              <span className="text-xs font-medium text-gray-700 line-clamp-1">
+                {service.location?.split(",")[0] || "Venue TBD"}
+              </span>
+            </div>
 
             {/* Meta */}
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-3">

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Info, Sparkles } from "lucide-react";
+import { Info } from "lucide-react";
 import {
   APARTMENT_AMENITIES,
   CATEGORY_LABELS,

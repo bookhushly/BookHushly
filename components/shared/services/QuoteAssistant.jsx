@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Send, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Pencil, Send, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 /**
@@ -90,7 +90,7 @@ export function QuoteAssistant({ serviceType, onFormData, onCancel }) {
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-600 to-violet-500">
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-lg bg-white/20 flex items-center justify-center">
-            <Sparkles className="h-3.5 w-3.5 text-white" />
+            <Pencil className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
             <p className="text-sm font-semibold text-white">AI Quote Assistant</p>
@@ -118,7 +118,7 @@ export function QuoteAssistant({ serviceType, onFormData, onCancel }) {
           >
             {m.role === "assistant" && (
               <div className="h-6 w-6 rounded-full bg-violet-100 flex items-center justify-center mr-2 mt-1 shrink-0">
-                <Sparkles className="h-3 w-3 text-violet-600" />
+                <Pencil className="h-3 w-3 text-violet-600" />
               </div>
             )}
             <div
@@ -136,7 +136,7 @@ export function QuoteAssistant({ serviceType, onFormData, onCancel }) {
         {loading && (
           <div className="flex justify-start">
             <div className="h-6 w-6 rounded-full bg-violet-100 flex items-center justify-center mr-2 mt-1 shrink-0">
-              <Sparkles className="h-3 w-3 text-violet-600" />
+              <Pencil className="h-3 w-3 text-violet-600" />
             </div>
             <div className="bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
               {[0, 150, 300].map((d) => (

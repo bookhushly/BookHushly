@@ -20,7 +20,7 @@ import { submitSecurityRequest } from "../../../app/actions/security";
 import { NIGERIAN_STATES } from "@/lib/constants";
 
 import { Card } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { QuoteAssistant } from "./QuoteAssistant";
 
 export default function SecurityQuestionnaire({ onSuccess }) {
@@ -145,7 +145,7 @@ export default function SecurityQuestionnaire({ onSuccess }) {
       {/* AI Assistant toggle */}
       <div className="mb-6 flex items-center justify-between px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-violet-600" />
+          <MessageSquare className="h-4 w-4 text-violet-600" />
           <span className="text-sm font-medium text-violet-700">
             Prefer to just describe your needs?
           </span>

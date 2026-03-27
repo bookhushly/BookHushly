@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Sparkles, RefreshCw, Loader2, Lightbulb } from "lucide-react";
+import { TrendingUp, RefreshCw, Loader2, Lightbulb } from "lucide-react";
 
 /**
  * VendorInsightsPanel
@@ -59,7 +59,7 @@ export function VendorInsightsPanel({ analytics, range }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-xl bg-violet-100 flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-violet-600" />
+            <TrendingUp className="h-4 w-4 text-violet-600" />
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-800">AI Business Insights</p>

@@ -27,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Pencil, Loader2 } from "lucide-react";
 
 export default function SecurityRequestsAdmin() {
   const queryClient = useQueryClient();
@@ -495,7 +495,7 @@ export default function SecurityRequestsAdmin() {
                                   }}
                                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold hover:bg-violet-100 disabled:opacity-50 transition-colors"
                                 >
-                                  {aiDrafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                                  {aiDrafting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
                                   AI Draft
                                 </button>
                               </div>

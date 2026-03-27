@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
-  Brain,
-  Sparkles,
+  ClipboardCheck,
+  Pencil,
   TrendingUp,
   AlertTriangle,
   CheckCircle2,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 const FOCUS_OPTIONS = [
-  { value: "overview",  label: "Platform Overview", icon: Brain,     description: "Overall health & key metrics" },
+  { value: "overview",  label: "Platform Overview", icon: ClipboardCheck, description: "Overall health & key metrics" },
   { value: "vendors",   label: "Vendors",            icon: Building,  description: "Vendor ecosystem & KYC pipeline" },
   { value: "listings",  label: "Listings",           icon: BarChart2, description: "Listing traffic & conversions" },
   { value: "payments",  label: "Payments",           icon: CreditCard,description: "Revenue trends & payment health" },
@@ -97,7 +97,7 @@ export function AdminAIEvaluator() {
     <Card className="border border-violet-100">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900">
-          <Brain className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
+          <ClipboardCheck className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
           AI Platform Evaluator
         </CardTitle>
         <p className="text-xs text-gray-400 mt-0.5">
@@ -138,7 +138,7 @@ export function AdminAIEvaluator() {
           ) : result ? (
             <><RefreshCw className="h-4 w-4 mr-2" /> Re-run {selectedFocus?.label} Evaluation</>
           ) : (
-            <><Sparkles className="h-4 w-4 mr-2" /> Evaluate {selectedFocus?.label}</>
+            <><Pencil className="h-4 w-4 mr-2" /> Evaluate {selectedFocus?.label}</>
           )}
         </Button>
 

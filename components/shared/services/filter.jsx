@@ -325,11 +325,7 @@ const AmenitiesSection = memo(
         expanded={expanded}
         onToggle={onToggleExpand}
         count={selected.length}
-        icon={
-          LucideIcons.Sparkles ? (
-            <LucideIcons.Sparkles className="h-3.5 w-3.5 text-violet-500" />
-          ) : null
-        }
+        icon={null}
       >
         <div className="grid grid-cols-2 gap-1.5 pt-1">
           {AMENITY_ICONS.map((a) => {

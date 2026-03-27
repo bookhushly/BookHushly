@@ -9,8 +9,6 @@ import {
   RefreshCw,
   Minus,
   Phone,
-  Bot,
-  Sparkles,
   WifiOff,
   AlertCircle,
 } from "lucide-react";
@@ -283,7 +281,7 @@ function FormattedMessage({ content, variant = "bot" }) {
 function BotAvatar() {
   return (
     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center flex-shrink-0 shadow-sm ring-2 ring-violet-100">
-      <Bot size={13} className="text-white" />
+      <MessageCircle size={13} className="text-white" />
     </div>
   );
 }
@@ -903,7 +901,7 @@ export default function ChatWidget() {
                 <div className="flex items-center gap-3">
                   {/* Avatar */}
                   <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-                    <Sparkles size={17} className="text-white" />
+                    <MessageCircle size={17} className="text-white" />
                   </div>
                   <div>
                     <p className="text-white font-semibold text-sm leading-tight">
@@ -992,7 +990,7 @@ export default function ChatWidget() {
               {isEmpty && !isTyping && (
                 <div className="flex flex-col items-center justify-center py-6 text-center px-4">
                   <div className="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center mb-3">
-                    <Bot size={22} className="text-violet-500" />
+                    <MessageCircle size={22} className="text-violet-500" />
                   </div>
                   <p className="text-sm font-semibold text-gray-800 mb-1">
                     How can we help?

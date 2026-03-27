@@ -213,18 +213,18 @@ const GeneralServiceCard = React.memo(({ service, lastListingRef }) => {
 
           {/* Content */}
           <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
+            {/* Title */}
+            <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-1 group-hover:text-violet-700 transition-colors">
+              {service.title || "Untitled Service"}
+            </h3>
+
             {/* Location */}
-            <div className="flex items-center gap-1 mb-1">
+            <div className="flex items-center gap-1 mb-2">
               <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs text-gray-500 truncate">
+              <span className="text-[11px] sm:text-xs font-medium text-gray-700 truncate">
                 {service.location?.split(",")[0] || "Location TBD"}
               </span>
             </div>
-
-            {/* Title */}
-            <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-2 group-hover:text-violet-700 transition-colors">
-              {service.title || "Untitled Service"}
-            </h3>
 
             {/* Features */}
             {features.length > 0 && (

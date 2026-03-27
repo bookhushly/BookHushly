@@ -14,7 +14,7 @@ import {
   MapPin,
   DollarSign,
   Zap,
-  Sparkles,
+  LayoutGrid,
   Image as ImageIcon,
   FileText,
 } from "lucide-react";
@@ -505,7 +505,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-purple-600" />
+              <LayoutGrid className="h-5 w-5 text-purple-600" />
               Amenities ({selectedAmenities.length})
             </CardTitle>
             {editingSection !== SECTIONS.AMENITIES && (

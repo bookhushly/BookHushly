@@ -25,7 +25,7 @@ import {
   Legend,
 } from "recharts";
 import {
-  Brain,
+  BarChart3,
   Zap,
   Users,
   TrendingUp,
@@ -73,7 +73,7 @@ function StatCard({ icon: Icon, label, value, sub, color = "text-violet-600" }) 
 
 function FeatureRow({ feature }) {
   const meta = FEATURE_META[feature.feature_key];
-  const Icon = meta?.icon ?? Brain;
+  const Icon = meta?.icon ?? BarChart3;
   const color = meta?.color ?? "#7c3aed";
   const pct = feature.total > 0 ? 100 : 0;
 
@@ -156,7 +156,7 @@ export default function AIAnalyticsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Brain className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
+              <BarChart3 className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
               <h1 className="text-2xl font-bold text-gray-900">AI Analytics</h1>
             </div>
             <p className="text-sm text-gray-500">
@@ -216,7 +216,7 @@ export default function AIAnalyticsPage() {
                 color="text-emerald-600"
               />
               <StatCard
-                icon={Brain}
+                icon={BarChart3}
                 label="Active Features"
                 value={`${activeFeatures.length} / ${allFeatures.length}`}
                 color="text-amber-600"

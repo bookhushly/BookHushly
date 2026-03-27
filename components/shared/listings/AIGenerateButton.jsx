@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Pencil, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 
 /**
@@ -61,7 +61,7 @@ export function AIGenerateButton({ category, formData, onGenerated }) {
     <div className="mt-2 rounded-xl border border-violet-100 bg-violet-50/60 px-4 py-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+          <Pencil className="h-3.5 w-3.5 text-violet-600" />
           <span className="text-xs font-semibold text-violet-700">
             Generate with AI
           </span>
@@ -108,7 +108,7 @@ export function AIGenerateButton({ category, formData, onGenerated }) {
           </>
         ) : (
           <>
-            <Sparkles className="h-3.5 w-3.5" />
+            <Pencil className="h-3.5 w-3.5" />
             Generate
           </>
         )}

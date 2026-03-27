@@ -13,7 +13,7 @@ import {
   BarChart2,
   Search,
   FileText,
-  Brain,
+  Cpu,
   AlertCircle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -65,7 +65,7 @@ const FEATURE_META = {
 
 function FeatureCard({ setting, onToggle, isToggling }) {
   const meta = FEATURE_META[setting.feature_key] ?? {
-    icon: Brain,
+    icon: Cpu,
     color: "text-gray-600",
     bg: "bg-gray-50",
     border: "border-gray-100",
@@ -144,7 +144,7 @@ export default function AdminSettingsPage() {
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Brain className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
+            <Cpu className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
             <h1 className="text-2xl font-bold text-gray-900">AI Settings</h1>
           </div>
           <p className="text-sm text-gray-500">
@@ -202,7 +202,7 @@ export default function AdminSettingsPage() {
         {!loading && !error && settings.length === 0 && (
           <div className="flex flex-col items-center py-16 gap-4 text-center">
             <div className="h-14 w-14 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center">
-              <Brain className="h-7 w-7 text-violet-400" strokeWidth={1.5} />
+              <Cpu className="h-7 w-7 text-violet-400" strokeWidth={1.5} />
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-700">No AI settings found</p>

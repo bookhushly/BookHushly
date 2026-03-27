@@ -18,7 +18,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { submitLogisticsRequest } from "../../../app/actions/logistics";
 import { NIGERIAN_STATES } from "@/lib/constants";
-import { AlertCircle, Sparkles } from "lucide-react";
+import { AlertCircle, MessageSquare } from "lucide-react";
 import { QuoteAssistant } from "./QuoteAssistant";
 
 const STORAGE_KEY = "logistics_form_data";
@@ -272,7 +272,7 @@ export default function LogisticsQuestionnaire({ onSuccess }) {
       {/* AI Assistant toggle */}
       <div className="mb-6 flex items-center justify-between px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-violet-600" />
+          <MessageSquare className="h-4 w-4 text-violet-600" />
           <span className="text-sm font-medium text-violet-700">
             Prefer to just describe your needs?
           </span>

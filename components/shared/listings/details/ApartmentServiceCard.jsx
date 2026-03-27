@@ -83,22 +83,22 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
 
         {/* Content */}
         <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
-          {/* Location */}
-          <div className="flex items-center gap-1 mb-1">
-            <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
-            <span className="text-[11px] sm:text-xs text-gray-500 truncate">
-              {apt.area ? `${apt.area}, ` : ""}{apt.location}
-            </span>
-          </div>
-
           {/* Title + verified badge */}
-          <div className="flex items-start gap-1.5 mb-2">
+          <div className="flex items-start gap-1.5 mb-1">
             <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 group-hover:text-violet-700 transition-colors">
               {apt.title}
             </h3>
             {apt.is_verified && (
               <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 shrink-0 mt-0.5" title="Verified property" />
             )}
+          </div>
+
+          {/* Location */}
+          <div className="flex items-center gap-1 mb-2">
+            <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
+            <span className="text-[11px] sm:text-xs font-medium text-gray-700 truncate">
+              {apt.area ? `${apt.area}, ` : ""}{apt.location}
+            </span>
           </div>
 
           {/* Rating */}
