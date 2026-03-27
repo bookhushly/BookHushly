@@ -8,6 +8,48 @@ import { differenceInCalendarDays, parseISO, format } from "date-fns";
 import HotelDateRangePicker from "@/components/shared/hotels/HotelDateRangePicker";
 import { createClient } from "@/lib/supabase/client";
 
+// ── Pricing rules fetch ───────────────────────────────────────────────────────
+function usePricingRules(apartmentId) {
+  const [rules, setRules] = useState([]);
+  useEffect(() => {
+    fetch(`/api/vendor/apartments/pricing-rules?apartment_id=${apartmentId}`)
+      .then((r) => r.json())
+      .then((d) => setRules(d.data || []))
+      .catch(() => {});
+  }, [apartmentId]);
+  return rules;
+}
+
+function calculateTotalWithRules(checkInStr, nights, apartment, rules) {
+  if (nights <= 0) return 0;
+  if (!checkInStr || !rules || rules.length === 0) {
+    // Fallback to weekly/monthly rates
+    if (apartment.price_per_month && nights >= 30) {
+      const months = Math.floor(nights / 30);
+      const rem = nights % 30;
+      return months * apartment.price_per_month + rem * apartment.price_per_night;
+    }
+    if (apartment.price_per_week && nights >= 7) {
+      const weeks = Math.floor(nights / 7);
+      const rem = nights % 7;
+      return weeks * apartment.price_per_week + rem * apartment.price_per_night;
+    }
+    return nights * apartment.price_per_night;
+  }
+
+  // Night-by-night calculation with rule overrides
+  let total = 0;
+  const base = new Date(checkInStr);
+  for (let i = 0; i < nights; i++) {
+    const night = new Date(base);
+    night.setDate(night.getDate() + i);
+    const nightStr = night.toISOString().slice(0, 10);
+    const rule = rules.find((r) => r.start_date <= nightStr && r.end_date >= nightStr);
+    total += rule ? parseFloat(rule.price_per_night) : parseFloat(apartment.price_per_night);
+  }
+  return total;
+}
+
 // ── Availability fetch (reuses hotel_bookings pattern for apartments) ─────────
 function useApartmentBlockedDates(apartmentId) {
   const supabase = createClient();
@@ -32,20 +74,6 @@ function useApartmentBlockedDates(apartmentId) {
   return blockedDates;
 }
 
-function calculateTotal(nights, apartment) {
-  if (nights <= 0) return 0;
-  if (apartment.price_per_month && nights >= 30) {
-    const months = Math.floor(nights / 30);
-    const rem = nights % 30;
-    return months * apartment.price_per_month + rem * apartment.price_per_night;
-  }
-  if (apartment.price_per_week && nights >= 7) {
-    const weeks = Math.floor(nights / 7);
-    const rem = nights % 7;
-    return weeks * apartment.price_per_week + rem * apartment.price_per_night;
-  }
-  return nights * apartment.price_per_night;
-}
 
 // ─── ApartmentDatePicker ──────────────────────────────────────────────────────
 // Wraps HotelDateRangePicker — passes apartmentId as roomTypeId so the picker
@@ -106,12 +134,17 @@ export default function ApartmentBookingCard({ apartment }) {
   const [details, setDetails] = useState({ guestName: "", guestEmail: "", guestPhone: "", specialRequests: "" });
   const [submitting, setSubmitting] = useState(false);
 
+  const pricingRules = usePricingRules(apartment.id);
+
   const nights = useMemo(() => {
     if (!checkIn || !checkOut) return 0;
     return Math.max(0, differenceInCalendarDays(parseISO(checkOut), parseISO(checkIn)));
   }, [checkIn, checkOut]);
 
-  const totalPrice = useMemo(() => calculateTotal(nights, apartment), [nights, apartment]);
+  const totalPrice = useMemo(
+    () => calculateTotalWithRules(checkIn, nights, apartment, pricingRules),
+    [checkIn, nights, apartment, pricingRules],
+  );
 
   const priceLabel = useMemo(() => {
     if (nights <= 0) return null;
@@ -278,6 +311,19 @@ export default function ApartmentBookingCard({ apartment }) {
           Change
         </button>
       </div>
+
+      {/* Cancellation policy summary */}
+      {apartment.cancellation_policy && (
+        <div className="p-3 bg-amber-50 rounded-xl border border-amber-100">
+          <p className="text-[11px] font-semibold text-amber-800 mb-1">Cancellation policy</p>
+          <p className="text-[11px] text-amber-700 line-clamp-3 leading-relaxed">
+            {typeof apartment.cancellation_policy === "string"
+              ? apartment.cancellation_policy.replace(/<[^>]*>/g, "").slice(0, 200)
+              : "See listing for details"}
+            {apartment.cancellation_policy.length > 200 ? "…" : ""}
+          </p>
+        </div>
+      )}
 
       {[
         { label: "Full name", key: "guestName", type: "text", required: true },

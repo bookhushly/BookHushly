@@ -25,6 +25,8 @@ import {
   CheckCircle2,
   PlayCircle,
   Globe,
+  MessageCircle,
+  Award,
 } from "lucide-react";
 import ImageGallery from "@/components/common/home/ImageGallery";
 import { getAmenityLabel } from "@/config/apartment-amenities";
@@ -158,6 +160,25 @@ export default function ApartmentClient({ apartment }) {
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
                 <CheckCircle2 className="w-3 h-3" />
                 Verified
+              </div>
+            )}
+
+            {apartment.vendors?.tier === "superhost" && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-200">
+                <Award className="w-3 h-3" />
+                Superhost
+              </div>
+            )}
+            {apartment.vendors?.tier === "top_vendor" && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 text-violet-700 rounded-full text-xs font-medium">
+                <Award className="w-3 h-3" />
+                Top Vendor
+              </div>
+            )}
+            {apartment.vendors?.tier === "rising_star" && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 text-sky-700 rounded-full text-xs font-medium">
+                <Award className="w-3 h-3" />
+                Rising Star
               </div>
             )}
           </div>
@@ -584,6 +605,24 @@ export default function ApartmentClient({ apartment }) {
                   </div>
                 </div>
               )}
+
+              {/* WhatsApp Contact */}
+              {apartment.agent_phone && (() => {
+                const rawPhone = apartment.agent_phone.replace(/\D/g, "");
+                const waPhone = rawPhone.startsWith("0") ? "234" + rawPhone.slice(1) : rawPhone.startsWith("234") ? rawPhone : "234" + rawPhone;
+                const waMsg = encodeURIComponent(`Hi, I'm interested in ${apartment.name}. Is it available?`);
+                return (
+                  <a
+                    href={`https://wa.me/${waPhone}?text=${waMsg}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 flex items-center justify-center gap-2 w-full h-11 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors text-sm"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Contact on WhatsApp
+                  </a>
+                );
+              })()}
 
               {/* Reviews */}
               <div className="mt-8">

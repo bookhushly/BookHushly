@@ -33,6 +33,7 @@ import {
   Share2,
   Trash2,
   Eye,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -299,6 +300,25 @@ export default function VendorDashboardClient({
           </div>
         </div>
       )}
+
+      {/* Vendor Tier Banner */}
+      {vendor?.approved && vendor?.tier && vendor.tier !== "standard" && (() => {
+        const TIER_CONFIG = {
+          superhost:   { label: "Superhost",    bg: "bg-amber-50",  border: "border-amber-200", text: "text-amber-800", sub: "text-amber-600", desc: "You've earned our highest recognition — 25+ bookings and a 4.5+ rating." },
+          top_vendor:  { label: "Top Vendor",   bg: "bg-violet-50", border: "border-violet-200",text: "text-violet-800",sub: "text-violet-600",desc: "Excellent performance — 10+ bookings and a 4.0+ rating." },
+          rising_star: { label: "Rising Star",  bg: "bg-sky-50",    border: "border-sky-200",   text: "text-sky-800",  sub: "text-sky-600",  desc: "Great start — keep booking to unlock Top Vendor status." },
+        };
+        const cfg = TIER_CONFIG[vendor.tier];
+        return (
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${cfg.bg} ${cfg.border}`}>
+            <Award className={`h-5 w-5 shrink-0 ${cfg.text}`} />
+            <div>
+              <p className={`text-sm font-bold ${cfg.text}`}>{cfg.label}</p>
+              <p className={`text-xs ${cfg.sub}`}>{cfg.desc}</p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">

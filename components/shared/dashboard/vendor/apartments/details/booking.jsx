@@ -23,9 +23,16 @@ import {
   MapPin,
   DollarSign,
   Loader2,
+  Clock,
+  CheckCircle2,
+  MessageCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import BookingMessages from "@/components/shared/apartment/booking-messages";
+import VendorChangeRequests from "@/components/shared/apartment/vendor-change-requests";
 
 
 export default function BookingsTab({ apartmentId }) {
@@ -33,6 +40,7 @@ export default function BookingsTab({ apartmentId }) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all"); // all, upcoming, active, past
   const [searchQuery, setSearchQuery] = useState("");
+  const [messagingId, setMessagingId] = useState(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -377,7 +385,7 @@ export default function BookingsTab({ apartmentId }) {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex flex-col gap-2 lg:w-40">
+                        <div className="flex flex-col gap-2 lg:w-44">
                           {booking.booking_status === "pending" && (
                             <>
                               <Button
@@ -426,8 +434,29 @@ export default function BookingsTab({ apartmentId }) {
                               Check Out
                             </Button>
                           )}
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setMessagingId(messagingId === booking.id ? null : booking.id)}
+                            className="w-full flex items-center gap-1"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            {messagingId === booking.id ? "Hide chat" : "Message guest"}
+                            {messagingId === booking.id ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                          </Button>
                         </div>
                       </div>
+                      {/* Messaging + change request panel */}
+                      {messagingId === booking.id && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                          <VendorChangeRequests
+                            bookingId={booking.id}
+                            onResolved={fetchBookings}
+                          />
+                          <BookingMessages bookingId={booking.id} />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );

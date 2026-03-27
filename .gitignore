@@ -103,6 +103,7 @@ StyleCopReport.xml
 # Chutzpah Test files
 _Chutzpah*
 
+
 # Visual C++ cache files
 ipch/
 *.aps
@@ -288,6 +289,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+supabase/migrations
 
 # Visual Studio 6 build log
 *.plg

@@ -95,8 +95,8 @@ const EventServiceCard = memo(({ service, lastListingRef }) => {
             ? "border-gray-200 opacity-60 grayscale"
             : "border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)]"
         }`}>
-          {/* Image */}
-          <div className="relative h-36 sm:h-52 overflow-hidden bg-gray-100">
+          {/* Image — taller on mobile now that it's full-width */}
+          <div className="relative h-44 sm:h-52 overflow-hidden bg-gray-100">
             {imgError ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <ImageOff className="h-8 w-8 text-gray-300 mb-2" />

@@ -196,15 +196,15 @@ const GeneralServiceCard = React.memo(({ service, lastListingRef }) => {
       className="transform transition-opacity duration-300 h-full"
     >
       <Link href={`/services/${service.id}`} className="block group h-full">
-        <div className="h-full flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
+        <div className="h-full flex flex-row sm:flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300">
           {/* Image */}
-          <div className="relative h-36 sm:h-52 overflow-hidden bg-gray-100">
+          <div className="relative w-[110px] shrink-0 self-stretch sm:self-auto sm:w-auto sm:h-52 overflow-hidden bg-gray-100">
             <Image
               src={image}
               alt={service.title || "Service"}
               fill
               className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes="(max-width: 640px) 110px, (max-width: 1024px) 50vw, 33vw"
               priority={service.index < 4}
               loading={service.index < 4 ? "eager" : "lazy"}
             />
@@ -212,27 +212,35 @@ const GeneralServiceCard = React.memo(({ service, lastListingRef }) => {
           </div>
 
           {/* Content */}
-          <div className="p-3 sm:p-4 flex-1 flex flex-col">
+          <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
             {/* Location */}
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-              <span className="text-xs text-gray-500 line-clamp-1">
+            <div className="flex items-center gap-1 mb-1">
+              <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
+              <span className="text-[11px] sm:text-xs text-gray-500 truncate">
                 {service.location?.split(",")[0] || "Location TBD"}
               </span>
             </div>
 
             {/* Title */}
-            <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
+            <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-2 group-hover:text-violet-700 transition-colors">
               {service.title || "Untitled Service"}
             </h3>
 
             {/* Features */}
             {features.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {features.map((f, i) => (
+              <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
+                {features.slice(0, 2).map((f, i) => (
                   <span
                     key={i}
-                    className="flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded-lg"
+                    className="flex items-center gap-1 text-[10px] sm:text-[11px] text-gray-500 bg-gray-50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg"
+                  >
+                    {f.icon} {f.label}
+                  </span>
+                ))}
+                {features.slice(2).map((f, i) => (
+                  <span
+                    key={`extra-${i}`}
+                    className="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded-lg"
                   >
                     {f.icon} {f.label}
                   </span>
@@ -240,26 +248,39 @@ const GeneralServiceCard = React.memo(({ service, lastListingRef }) => {
               </div>
             )}
 
-            {/* Description */}
+            {/* Description — sm+ only */}
             {service.description && (
-              <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">
+              <p className="hidden sm:block text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">
                 {service.description}
               </p>
             )}
 
             {/* Price + CTA */}
-            <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-gray-100">
-              <div>
-                <span className="text-base sm:text-xl font-bold text-gray-900">{price}</span>
-                {priceLabel && (
-                  <span className="text-xs text-gray-400 ml-0.5">
-                    {priceLabel}
-                  </span>
-                )}
+            <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-100">
+              {/* Mobile: price left, action right */}
+              <div className="flex items-end justify-between sm:hidden">
+                <div>
+                  <span className="text-sm font-bold text-gray-900">{price}</span>
+                  {priceLabel && (
+                    <span className="text-[10px] text-gray-400 ml-0.5">{priceLabel}</span>
+                  )}
+                </div>
+                <span className="h-7 px-3 inline-flex items-center text-[11px] font-semibold bg-violet-600 text-white rounded-lg shrink-0">
+                  {btnText}
+                </span>
               </div>
-              <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
-                {btnText}
-              </span>
+              {/* sm+: stacked */}
+              <div className="hidden sm:flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <span className="text-xl font-bold text-gray-900">{price}</span>
+                  {priceLabel && (
+                    <span className="text-xs text-gray-400 ml-0.5">{priceLabel}</span>
+                  )}
+                </div>
+                <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
+                  {btnText}
+                </span>
+              </div>
             </div>
           </div>
         </div>

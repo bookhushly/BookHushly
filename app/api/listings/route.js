@@ -179,6 +179,10 @@ function normalizeApartment(a) {
     available_from: a.available_from,
     available_until: a.available_until,
     instant_booking: a.instant_booking,
+    is_verified: a.is_verified || false,
+    agent_phone: a.agent_phone || null,
+    avg_rating: a.avg_rating ? parseFloat(a.avg_rating) : null,
+    review_count: a.review_count || 0,
   };
 }
 
@@ -248,7 +252,7 @@ function buildHotelQuery(supabase, p) {
 
 function buildApartmentQuery(supabase, p) {
   const offset = p.page * PAGE_SIZE;
-  const fields = `id,name,description,apartment_type,address,city,state,area,landmark,bedrooms,bathrooms,max_guests,square_meters,price_per_night,price_per_week,price_per_month,minimum_stay,utilities_included,electricity_included,generator_available,generator_hours,inverter_available,solar_power,water_supply,internet_included,internet_speed,furnished,kitchen_equipped,parking_spaces,has_balcony,has_terrace,security_features,amenities,image_urls,check_in_time,check_out_time,cancellation_policy,house_rules,caution_deposit,status,available_from,available_until,instant_booking,created_at`;
+  const fields = `id,name,description,apartment_type,address,city,state,area,landmark,bedrooms,bathrooms,max_guests,square_meters,price_per_night,price_per_week,price_per_month,minimum_stay,utilities_included,electricity_included,generator_available,generator_hours,inverter_available,solar_power,water_supply,internet_included,internet_speed,furnished,kitchen_equipped,parking_spaces,has_balcony,has_terrace,security_features,amenities,image_urls,check_in_time,check_out_time,cancellation_policy,house_rules,caution_deposit,status,available_from,available_until,instant_booking,is_verified,agent_phone,avg_rating,review_count,created_at`;
 
   let q = supabase
     .from("serviced_apartments")

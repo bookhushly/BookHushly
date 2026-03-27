@@ -35,6 +35,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -47,6 +48,7 @@ import OverviewTab from "../../../../../../components/shared/dashboard/vendor/ap
 import CalendarTab from "../../../../../../components/shared/dashboard/vendor/apartments/details/calendar";
 import SettingsTab from "../../../../../../components/shared/dashboard/vendor/apartments/details/settings";
 import BookingsTab from "../../../../../../components/shared/dashboard/vendor/apartments/details/booking";
+import AnalyticsTab from "../../../../../../components/shared/dashboard/vendor/apartments/details/analytics";
 
 export default function ApartmentDetailsPage({
   apartment: initialApartment,
@@ -228,7 +230,7 @@ export default function ApartmentDetailsPage({
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -240,6 +242,10 @@ export default function ApartmentDetailsPage({
             <TabsTrigger value="calendar" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Calendar</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -264,6 +270,11 @@ export default function ApartmentDetailsPage({
           {/* Calendar Tab */}
           <TabsContent value="calendar" className="space-y-6">
             <CalendarTab apartmentId={apartmentId} />
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6">
+            <AnalyticsTab apartmentId={apartmentId} apartment={apartment} />
           </TabsContent>
 
           {/* Settings Tab */}

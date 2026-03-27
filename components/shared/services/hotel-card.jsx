@@ -56,34 +56,34 @@ const HotelCard = ({ service }) => {
 
   return (
     <Link href={`/services/hotels/${service.id}`} className="block group h-full">
-      <div className="h-full flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] transition-all duration-300">
+      <div className="h-full flex flex-row sm:flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] transition-all duration-300">
         {/* Image */}
-        <div className="relative h-44 sm:h-52 overflow-hidden bg-gray-100">
+        <div className="relative w-[110px] shrink-0 self-stretch sm:self-auto sm:w-auto sm:h-52 overflow-hidden bg-gray-100">
           <Image
             src={images[idx]}
             alt={service.title}
             fill
             className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 640px) 110px, (max-width: 1024px) 50vw, 33vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
-          {/* Image nav */}
+          {/* Image nav — sm+ only */}
           {images.length > 1 && (
             <>
               <button
                 onClick={prev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-white/90 rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
               >
                 <ChevronLeft className="h-4 w-4 text-gray-700" />
               </button>
               <button
                 onClick={next}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
+                className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 bg-white/90 rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
               >
                 <ChevronRight className="h-4 w-4 text-gray-700" />
               </button>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+              <div className="hidden sm:flex absolute bottom-3 left-1/2 -translate-x-1/2 gap-1 z-10">
                 {images.map((_, i) => (
                   <div
                     key={i}
@@ -94,8 +94,8 @@ const HotelCard = ({ service }) => {
             </>
           )}
 
-          {/* Badges — top left stack */}
-          <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
+          {/* Badges — sm+ only */}
+          <div className="hidden sm:flex absolute top-3 left-3 z-10 flex-col gap-1">
             {service.checkout_policy && (
               <span className="text-[10px] font-semibold bg-green-500 text-white px-2 py-1 rounded-lg">
                 Free cancellation
@@ -108,9 +108,9 @@ const HotelCard = ({ service }) => {
             )}
           </div>
 
-          {/* Rating badge */}
+          {/* Rating badge — sm+ only */}
           {service.avg_rating && (
-            <div className="absolute top-3 right-3 z-10">
+            <div className="hidden sm:block absolute top-3 right-3 z-10">
               <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-white/95 text-gray-900 px-2 py-1 rounded-lg shadow-sm">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                 {service.avg_rating}
@@ -120,30 +120,58 @@ const HotelCard = ({ service }) => {
         </div>
 
         {/* Content */}
-        <div className="p-3 sm:p-4 flex-1 flex flex-col">
+        <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
           {/* Location */}
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-            <span className="text-xs text-gray-500 line-clamp-1">
+          <div className="flex items-center gap-1 mb-1">
+            <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 shrink-0" />
+            <span className="text-[11px] sm:text-xs text-gray-500 truncate">
               {service.location}
             </span>
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 mb-3 group-hover:text-violet-700 transition-colors">
+          <h3 className="font-semibold text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 mb-2 group-hover:text-violet-700 transition-colors">
             {service.title}
           </h3>
 
+          {/* Mobile-only: rating + free cancel inline */}
+          <div className="flex sm:hidden items-center gap-2 mb-2 flex-wrap">
+            {service.avg_rating && (
+              <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-gray-700">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                {service.avg_rating}
+              </span>
+            )}
+            {service.checkout_policy && (
+              <span className="text-[10px] font-medium text-green-700 bg-green-50 px-1.5 py-0.5 rounded-md">
+                Free cancel
+              </span>
+            )}
+          </div>
+
           {/* Amenities */}
           {amenities.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {amenities.map((key) => {
+            <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-2 sm:mb-4">
+              {amenities.slice(0, 2).map((key) => {
                 const a = AMENITY_CONFIG[key];
                 const Icon = LucideIcons[a.icon];
                 return (
                   <span
                     key={key}
-                    className="flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded-lg"
+                    className="flex items-center gap-1 text-[10px] sm:text-[11px] text-gray-500 bg-gray-50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg"
+                  >
+                    {Icon && <Icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
+                    {a.label}
+                  </span>
+                );
+              })}
+              {amenities.slice(2).map((key) => {
+                const a = AMENITY_CONFIG[key];
+                const Icon = LucideIcons[a.icon];
+                return (
+                  <span
+                    key={key}
+                    className="hidden sm:flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded-lg"
                   >
                     {Icon && <Icon className="h-3 w-3" />}
                     {a.label}
@@ -151,7 +179,7 @@ const HotelCard = ({ service }) => {
                 );
               })}
               {(service.amenities?.items || []).length > 4 && (
-                <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+                <span className="hidden sm:inline text-[11px] text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
                   +{service.amenities.items.length - 4}
                 </span>
               )}
@@ -159,23 +187,43 @@ const HotelCard = ({ service }) => {
           )}
 
           {/* Price + CTA */}
-          <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between pt-3 border-t border-gray-100">
+          <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-100">
             {service.price ? (
-              <div>
-                <p className="text-[11px] text-gray-400 mb-0.5">Starting from</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-base sm:text-xl font-bold text-gray-900">
-                    ₦{service.price.toLocaleString()}
+              <>
+                {/* Mobile: price left, small book button right */}
+                <div className="flex items-end justify-between sm:hidden">
+                  <div>
+                    <p className="text-[10px] text-gray-400">From</p>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-sm font-bold text-gray-900">
+                        ₦{service.price.toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-gray-400">/night</span>
+                    </div>
+                  </div>
+                  <span className="h-7 px-3 inline-flex items-center text-[11px] font-semibold bg-violet-600 text-white rounded-lg shrink-0">
+                    Book
                   </span>
-                  <span className="text-xs text-gray-400">/night</span>
                 </div>
-              </div>
+                {/* sm+: stacked price + full button */}
+                <div className="hidden sm:flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[11px] text-gray-400 mb-0.5">Starting from</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xl font-bold text-gray-900">
+                        ₦{service.price.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-gray-400">/night</span>
+                    </div>
+                  </div>
+                  <span className="h-9 px-4 inline-flex items-center justify-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
+                    See rooms
+                  </span>
+                </div>
+              </>
             ) : (
               <p className="text-xs text-gray-400 italic">View details for pricing</p>
             )}
-            <span className="h-9 w-full sm:w-auto px-4 inline-flex items-center justify-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150">
-              See rooms
-            </span>
           </div>
         </div>
       </div>

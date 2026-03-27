@@ -471,7 +471,6 @@ export default function ChatWidget() {
       localStorage.setItem("bh_session_id", sid);
     }
     sessionId.current = sid;
-
   }, []);
 
   // Fetch history on open
@@ -894,7 +893,7 @@ export default function ChatWidget() {
             <div className="flex-shrink-0 bg-violet-600 px-4 py-3.5">
               {/* Offline banner */}
               {!isOnline && (
-                <div className="flex items-center gap-2 mb-3 -mx-4 -mt-3.5 px-4 py-2 bg-amber-500/90 text-white text-xs font-medium">
+                <div className="flex items-center gap-2 mb-3 -mx-4 -mt-3.5 px-4 py-2 bg-purple-500/90 text-white text-xs font-medium">
                   <WifiOff size={12} />
                   You're offline. Messages will send when you reconnect.
                 </div>

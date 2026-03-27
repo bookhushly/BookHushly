@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+import PricingRules from "./pricing-rules";
 
 export default function SettingsTab({
   apartment,
@@ -154,6 +155,13 @@ export default function SettingsTab({
             <p className="text-sm text-gray-600">Total Views</p>
             <p className="text-sm">{apartment.views_count || 0} views</p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Pricing Rules */}
+      <Card>
+        <CardContent className="pt-5">
+          <PricingRules apartmentId={apartmentId} basePrice={apartment.price_per_night} />
         </CardContent>
       </Card>
 

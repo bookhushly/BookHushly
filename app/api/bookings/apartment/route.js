@@ -17,14 +17,41 @@ export async function POST(request) {
     const numberOfNights = Math.ceil(
       (checkOut - checkIn) / (1000 * 60 * 60 * 24),
     );
-    const pricePerNight = parseFloat(formData.get("price_per_night"));
-    const subtotal = numberOfNights * pricePerNight;
+    const apartmentId = formData.get("apartment_id");
+
+    // Fetch apartment base price and any active pricing rules (server-authoritative)
+    const { data: apt } = await supabase
+      .from("serviced_apartments")
+      .select("price_per_night, price_per_week, price_per_month")
+      .eq("id", apartmentId)
+      .single();
+
+    const { data: pricingRules } = await supabase
+      .from("apartment_pricing_rules")
+      .select("start_date, end_date, price_per_night")
+      .eq("apartment_id", apartmentId);
+
+    // Compute subtotal night-by-night, applying any matching pricing rule
+    let subtotal = 0;
+    const checkInDate = new Date(formData.get("check_in_date"));
+    for (let i = 0; i < numberOfNights; i++) {
+      const night = new Date(checkInDate);
+      night.setDate(night.getDate() + i);
+      const nightStr = night.toISOString().slice(0, 10);
+
+      const rule = (pricingRules || []).find(
+        (r) => r.start_date <= nightStr && r.end_date >= nightStr
+      );
+      subtotal += rule ? parseFloat(rule.price_per_night) : parseFloat(apt?.price_per_night || 0);
+    }
+
+    const pricePerNight = parseFloat(apt?.price_per_night || 0);
     const serviceFee = parseFloat(formData.get("service_fee") || "0");
     const cautionDeposit = parseFloat(formData.get("caution_deposit") || "0");
     const totalAmount = subtotal + serviceFee + cautionDeposit;
 
     const bookingData = {
-      apartment_id: formData.get("apartment_id"),
+      apartment_id: apartmentId,
       // user_id is nullable for guest bookings; guest identity tracked via guest_name/email/phone fields
       user_id: user?.id || null,
       guest_id: user?.id || null,

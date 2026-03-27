@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, differenceInDays } from "date-fns";
-import { Building2, MapPin, Calendar, Users, Moon } from "lucide-react";
+import { Building2, MapPin, Calendar, Users, Moon, MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getApartmentBookings } from "@/app/actions/customers";
@@ -15,6 +15,9 @@ import {
   Pagination,
   Amount,
 } from "@/components/shared/customer/shared-ui";
+import BookingMessages from "@/components/shared/apartment/booking-messages";
+import BookingChangeRequest from "@/components/shared/apartment/booking-change-request";
+import BookingDispute from "@/components/shared/apartment/booking-dispute";
 
 export function ApartmentBookingsClient({ userId, initialData }) {
   const [page, setPage] = useState(1);
@@ -165,15 +168,32 @@ export function ApartmentBookingsClient({ userId, initialData }) {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-purple-200 text-purple-700 hover:bg-purple-50"
-                            onClick={() => setSelectedId(booking.id)}
+                            className="border-purple-200 text-purple-700 hover:bg-purple-50 flex items-center gap-1"
+                            onClick={() => setSelectedId(selectedId === booking.id ? null : booking.id)}
                           >
-                            Details
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            {selectedId === booking.id ? "Hide" : "Message"}
+                            {selectedId === booking.id ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                           </Button>
                         </div>
                       </div>
                     </div>
                   </div>
+                  {/* Collapsible messaging + change request panel */}
+                  {selectedId === booking.id && (
+                    <div className="border-t border-purple-100 p-4 space-y-5">
+                      <BookingChangeRequest
+                        bookingId={booking.id}
+                        checkIn={booking.check_in_date}
+                        checkOut={booking.check_out_date}
+                        bookingStatus={booking.booking_status}
+                      />
+                        <BookingDispute bookingId={booking.id} bookingStatus={booking.booking_status} />
+                      <div className="border-t border-gray-100 pt-4">
+                        <BookingMessages bookingId={booking.id} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

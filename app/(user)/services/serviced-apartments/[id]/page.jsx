@@ -58,7 +58,7 @@ async function getApartment(id) {
 
     const { data, error } = await supabase
       .from("serviced_apartments")
-      .select(`*, vendors:vendor_id (id, business_name)`)
+      .select(`*, vendors:vendor_id (id, business_name, tier)`)
       .eq("id", id)
       .eq("status", "active")
       .single();
