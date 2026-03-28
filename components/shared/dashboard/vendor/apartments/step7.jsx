@@ -60,10 +60,10 @@ function AgentPhotoUpload({ value, onChange }) {
       const ext = file.name.split(".").pop();
       const path = `agent-photos/${Date.now()}.${ext}`;
       const { error } = await supabase.storage
-        .from("listing-images")
+        .from("apartment-images")
         .upload(path, file, { upsert: true });
       if (error) throw error;
-      const { data } = supabase.storage.from("listing-images").getPublicUrl(path);
+      const { data } = supabase.storage.from("apartment-images").getPublicUrl(path);
       onChange(data.publicUrl);
     } catch (err) {
       alert("Upload failed. Please try again.");

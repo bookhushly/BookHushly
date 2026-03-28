@@ -83,7 +83,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-NG" className={`${bricolage.variable} ${fraunces.variable}`}>
+    <html lang="en-NG" className={`${bricolage.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <head>
         <meta
           name="google-site-verification"
