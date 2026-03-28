@@ -235,7 +235,7 @@ export function VendorSidebar({ isOpen, onClose }) {
                   src="/logo.png"
                   alt="BookHushly"
                   fill
-                  className="object-contain object-left scale-150"
+                  className="object-contain object-left scale-150 pointer-events-none"
                 />
               </div>
             </Link>
