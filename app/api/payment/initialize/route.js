@@ -59,11 +59,9 @@ export async function POST(request) {
 
     const supabase = await createClient();
 
-    // Require authentication for all payment initializations
+    // Auth is optional — guests may pay without an account.
+    // Ownership checks below still prevent one user from paying for another's booking.
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     // Fetch request details based on type
     let requestData, quote, tableName;
@@ -87,7 +85,7 @@ export async function POST(request) {
       }
 
       // Ownership check: user must own this request (user_id may be null for guests who later signed in)
-      if (request.user_id && request.user_id !== user.id) {
+      if (request.user_id && user?.id && request.user_id !== user.id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
@@ -117,8 +115,8 @@ export async function POST(request) {
         );
       }
 
-      // Ownership check
-      if (data.user_id && data.user_id !== user.id) {
+      // Ownership check: only block if the booking is tied to a *different* logged-in user
+      if (data.user_id && user?.id && data.user_id !== user.id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
@@ -138,8 +136,8 @@ export async function POST(request) {
         );
       }
 
-      // Ownership check
-      if (data.user_id && data.user_id !== user.id) {
+      // Ownership check: only block if the booking is tied to a *different* logged-in user
+      if (data.user_id && user?.id && data.user_id !== user.id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
@@ -158,8 +156,8 @@ export async function POST(request) {
         );
       }
 
-      // Ownership check
-      if (data.customer_id && data.customer_id !== user.id) {
+      // Ownership check: only block if the booking is tied to a *different* logged-in user
+      if (data.customer_id && user?.id && data.customer_id !== user.id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
@@ -226,7 +224,7 @@ export async function POST(request) {
       provider: provider === "crypto" ? "nowpayments" : provider,
       status: "pending",
       customer_id:
-        requestData.user_id || requestData.customer_id || "anonymous",
+        requestData.user_id || requestData.customer_id || null,
       email: email || requestData.email,
       metadata: {
         customer_name: requestData.full_name || requestData.customer_name,
@@ -264,7 +262,11 @@ export async function POST(request) {
       : requestType === "event" ? "event"
       : null;
 
-    if (lockListingType) {
+    // Booking locks require an authenticated user (user_id NOT NULL in schema).
+    // Skip lock creation for guest payments — the availability check at booking
+    // creation time already guards against double-booking.
+    const lockUserId = requestData.user_id || requestData.customer_id || user?.id;
+    if (lockListingType && lockUserId) {
       const listingId =
         requestType === "hotel" ? requestData.hotel_id
         : requestType === "apartment" ? requestData.apartment_id
@@ -280,12 +282,12 @@ export async function POST(request) {
           .delete()
           .eq("listing_id", listingId)
           .eq("listing_type", lockListingType)
-          .eq("user_id", requestData.user_id || requestData.customer_id);
+          .eq("user_id", lockUserId);
 
         await supabase.from("booking_locks").insert({
           listing_id: listingId,
           listing_type: lockListingType,
-          user_id: requestData.user_id || requestData.customer_id,
+          user_id: lockUserId,
           booking_id: requestId,
           expires_at: lockExpiry,
         });
