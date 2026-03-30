@@ -66,7 +66,7 @@ const FEATURE_META = {
 function FeatureCard({ setting, onToggle, isToggling }) {
   const meta = FEATURE_META[setting.feature_key] ?? {
     icon: Cpu,
-    color: "text-gray-600",
+    color: "text-gray-600 dark:text-gray-400",
     bg: "bg-gray-50",
     border: "border-gray-100",
   };
@@ -92,7 +92,7 @@ function FeatureCard({ setting, onToggle, isToggling }) {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {setting.feature_name}
               </p>
               <Badge
@@ -100,17 +100,17 @@ function FeatureCard({ setting, onToggle, isToggling }) {
                 className={
                   setting.enabled
                     ? "text-emerald-700 border-emerald-200 bg-emerald-50 text-[11px]"
-                    : "text-gray-500 border-gray-200 bg-gray-50 text-[11px]"
+                    : "text-gray-500 dark:text-gray-400 border-gray-200 bg-gray-50 text-[11px]"
                 }
               >
                 {setting.enabled ? "Active" : "Disabled"}
               </Badge>
             </div>
-            <p className="text-[13px] text-gray-500 mt-0.5 leading-relaxed">
+            <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
               {setting.description}
             </p>
             {lastUpdated && (
-              <p className="text-[11px] text-gray-400 mt-2">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-2">
                 Last updated {lastUpdated}
               </p>
             )}
@@ -145,9 +145,9 @@ export default function AdminSettingsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Cpu className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
-            <h1 className="text-2xl font-medium text-gray-900">AI Settings</h1>
+            <h1 className="text-2xl font-medium text-gray-900 dark:text-white">AI Settings</h1>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Control which AI features are active on Bookhushly. Changes take
             effect immediately across the entire platform.
           </p>
@@ -205,8 +205,8 @@ export default function AdminSettingsPage() {
               <Cpu className="h-7 w-7 text-violet-400" strokeWidth={1.5} />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700">No AI settings found</p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No AI settings found</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Run <code className="bg-gray-100 px-1 rounded">supabase/migrations/ai_feature_settings.sql</code> in Supabase SQL Editor to create the table, then refresh this page.
               </p>
             </div>

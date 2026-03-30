@@ -54,9 +54,9 @@ export default function EditAmenities({ formData, updateFormData }) {
 
       {/* Security Features */}
       <div className="space-y-3">
-        <p className="text-sm font-medium text-gray-900">Security Features</p>
+        <p className="text-sm font-medium text-gray-900 dark:text-white">Security Features</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={securityFeatures["24hr_security"] || false}
@@ -66,7 +66,7 @@ export default function EditAmenities({ formData, updateFormData }) {
             <span className="text-sm font-medium">24hr Security Guard</span>
           </label>
 
-          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={securityFeatures.cctv_surveillance || false}
@@ -76,7 +76,7 @@ export default function EditAmenities({ formData, updateFormData }) {
             <span className="text-sm font-medium">CCTV Surveillance</span>
           </label>
 
-          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={securityFeatures.estate_gate || false}
@@ -86,7 +86,7 @@ export default function EditAmenities({ formData, updateFormData }) {
             <span className="text-sm font-medium">Gated Estate</span>
           </label>
 
-          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={securityFeatures.access_control || false}
@@ -96,7 +96,7 @@ export default function EditAmenities({ formData, updateFormData }) {
             <span className="text-sm font-medium">Access Control</span>
           </label>
 
-          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={securityFeatures.intercom_system || false}
@@ -114,7 +114,7 @@ export default function EditAmenities({ formData, updateFormData }) {
 
         return (
           <div key={category.key} className="space-y-3">
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
               {category.label}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -128,7 +128,7 @@ export default function EditAmenities({ formData, updateFormData }) {
                     className={`flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg transition-all ${
                       isSelected
                         ? "border-purple-600 bg-purple-50"
-                        : "border-gray-200 hover:bg-gray-50"
+                        : "border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >
                     <input
@@ -141,13 +141,13 @@ export default function EditAmenities({ formData, updateFormData }) {
                       {Icon && (
                         <Icon
                           className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
-                            isSelected ? "text-purple-600" : "text-gray-600"
+                            isSelected ? "text-purple-600" : "text-gray-600 dark:text-gray-400"
                           }`}
                         />
                       )}
                       <span
                         className={`text-sm font-medium ${
-                          isSelected ? "text-purple-900" : "text-gray-900"
+                          isSelected ? "text-purple-900" : "text-gray-900 dark:text-white"
                         }`}
                       >
                         {amenity.label}

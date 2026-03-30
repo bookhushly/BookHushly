@@ -35,11 +35,11 @@ export default function EditUtilities({ formData, updateFormData }) {
     <div className="space-y-4">
       {/* Power Supply Options */}
       <div className="space-y-3">
-        <p className="text-sm font-medium text-gray-700">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Power Supply & Backup
         </p>
 
-        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
           <input
             type="checkbox"
             checked={formData.electricity_included || false}
@@ -52,13 +52,13 @@ export default function EditUtilities({ formData, updateFormData }) {
             <span className="font-medium text-sm">
               Electricity Cost Included
             </span>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               All electricity costs covered in price
             </p>
           </div>
         </label>
 
-        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
           <input
             type="checkbox"
             checked={formData.generator_available || false}
@@ -69,7 +69,7 @@ export default function EditUtilities({ formData, updateFormData }) {
           />
           <div>
             <span className="font-medium text-sm">Generator Available</span>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Backup generator for power outages
             </p>
           </div>
@@ -98,7 +98,7 @@ export default function EditUtilities({ formData, updateFormData }) {
           </div>
         )}
 
-        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
           <input
             type="checkbox"
             checked={formData.inverter_available || false}
@@ -109,13 +109,13 @@ export default function EditUtilities({ formData, updateFormData }) {
           />
           <div>
             <span className="font-medium text-sm">Inverter Backup</span>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Inverter system for silent power
             </p>
           </div>
         </label>
 
-        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
           <input
             type="checkbox"
             checked={formData.solar_power || false}
@@ -124,7 +124,7 @@ export default function EditUtilities({ formData, updateFormData }) {
           />
           <div>
             <span className="font-medium text-sm">Solar Power System</span>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Solar panels for sustainable power
             </p>
           </div>
@@ -153,9 +153,9 @@ export default function EditUtilities({ formData, updateFormData }) {
 
       {/* Internet */}
       <div className="space-y-3">
-        <p className="text-sm font-medium text-gray-700">Internet & WiFi</p>
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Internet & WiFi</p>
 
-        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
           <input
             type="checkbox"
             checked={formData.internet_included || false}
@@ -166,7 +166,7 @@ export default function EditUtilities({ formData, updateFormData }) {
           />
           <div>
             <span className="font-medium text-sm">WiFi Included</span>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Free WiFi internet for guests
             </p>
           </div>
@@ -209,7 +209,7 @@ export default function EditUtilities({ formData, updateFormData }) {
           />
           <div>
             <span className="font-medium text-sm">All Utilities Included</span>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Electricity, water, and internet all included in booking price
             </p>
           </div>

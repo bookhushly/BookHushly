@@ -112,7 +112,7 @@ export function CurrentGuestsTab({ hotelId }) {
     const days = Math.ceil(hours / 24);
     return {
       text: `${days}d left`,
-      color: "text-gray-600",
+      color: "text-gray-600 dark:text-gray-400",
       bgColor: "bg-gray-50",
       urgent: false,
     };
@@ -162,7 +162,7 @@ export function CurrentGuestsTab({ hotelId }) {
         </CardHeader>
         <CardContent>
           <div className="relative mb-6">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <Input
               placeholder="Search by guest name, email, or room number..."
               value={searchTerm}
@@ -173,8 +173,8 @@ export function CurrentGuestsTab({ hotelId }) {
 
           {sortedGuests.length === 0 ? (
             <div className="text-center py-12">
-              <Bed className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">
+              <Bed className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">
                 {searchTerm
                   ? "No guests match your search"
                   : "No guests currently checked in"}
@@ -208,7 +208,7 @@ export function CurrentGuestsTab({ hotelId }) {
                           </Badge>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4" />
                             <span>{guest.guest_email}</span>
@@ -250,22 +250,22 @@ export function CurrentGuestsTab({ hotelId }) {
                             {timeInfo.text}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600">until checkout</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">until checkout</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 pt-3 border-t border-gray-200">
+                    <div className="flex items-center gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                       <Badge variant="outline">
                         {guest.hotel_rooms?.hotel_room_types?.name}
                       </Badge>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
                         {getStayDuration(
                           guest.check_in_date,
                           guest.check_out_date
                         )}
                       </span>
                       {guest.special_requests && (
-                        <span className="text-sm text-gray-500 italic">
+                        <span className="text-sm text-gray-500 dark:text-gray-400 italic">
                           Special: {guest.special_requests}
                         </span>
                       )}
@@ -283,10 +283,10 @@ export function CurrentGuestsTab({ hotelId }) {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-medium text-gray-900">
+              <p className="text-2xl font-medium text-gray-900 dark:text-white">
                 {guests.length}
               </p>
-              <p className="text-sm text-gray-600 mt-1">Total Guests</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Guests</p>
             </div>
           </CardContent>
         </Card>
@@ -305,7 +305,7 @@ export function CurrentGuestsTab({ hotelId }) {
                   }).length
                 }
               </p>
-              <p className="text-sm text-gray-600 mt-1">Checking Out Today</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Checking Out Today</p>
             </div>
           </CardContent>
         </Card>
@@ -324,7 +324,7 @@ export function CurrentGuestsTab({ hotelId }) {
                   }).length
                 }
               </p>
-              <p className="text-sm text-gray-600 mt-1">Urgent Checkouts</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Urgent Checkouts</p>
             </div>
           </CardContent>
         </Card>

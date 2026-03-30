@@ -675,10 +675,10 @@ export default function CreateListingPage() {
       ) : selectedCategory === "events" && eventType === "event_organizer" ? (
         <>
           <div className="mb-10">
-            <h1 className="text-4xl font-medium text-gray-900 mb-3">
+            <h1 className="text-4xl font-medium text-gray-900 dark:text-white mb-3">
               Create Event Listing
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 dark:text-gray-400">
               Set up your event, tickets, and publish when ready
             </p>
           </div>
@@ -692,10 +692,10 @@ export default function CreateListingPage() {
       ) : (
         <>
           <div className="mb-10">
-            <h1 className="text-4xl font-medium text-gray-900 mb-3">
+            <h1 className="text-4xl font-medium text-gray-900 dark:text-white mb-3">
               Create New Listing
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 dark:text-gray-400">
               Add your service in a few simple steps
             </p>
           </div>

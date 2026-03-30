@@ -32,10 +32,10 @@ const SERVICE_LABELS = {
 };
 
 const RISK_COLORS = {
-  low: "bg-green-50 text-green-700",
-  medium: "bg-amber-50 text-amber-700",
+  low: "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400",
+  medium: "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400",
   high: "bg-orange-50 text-orange-700",
-  critical: "bg-red-50 text-red-700",
+  critical: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400",
 };
 
 export function SecurityClient({ userId, initialData }) {
@@ -91,16 +91,16 @@ export function SecurityClient({ userId, initialData }) {
             {requests.map((req) => (
               <div
                 key={req.id}
-                className="bg-white border border-purple-100 rounded-2xl p-5 hover:shadow-md transition-all"
+                className="bg-white dark:bg-gray-900 border border-purple-100 dark:border-purple-900 rounded-2xl p-5 hover:shadow-md transition-all"
               >
                 <div className="flex flex-col sm:flex-row justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="font-medium text-gray-900">
+                        <h3 className="font-medium text-gray-900 dark:text-white">
                           {SERVICE_LABELS[req.service_type] || req.service_type}
                         </h3>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                           Submitted{" "}
                           {format(new Date(req.created_at), "MMM d, yyyy")}
                         </p>
@@ -110,22 +110,22 @@ export function SecurityClient({ userId, initialData }) {
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mb-3">
                       <div>
-                        <p className="text-xs text-gray-400">Location</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Location</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <MapPin className="h-3.5 w-3.5 text-purple-400" />
                           {req.lga ? `${req.lga},` : ""} {req.state}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Start Date</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Start Date</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5 text-purple-400" />
                           {format(new Date(req.start_date), "MMM d, yyyy")}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Guards</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Guards</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Users className="h-3.5 w-3.5 text-purple-400" />
                           {req.number_of_guards} guard
                           {req.number_of_guards !== 1 ? "s" : ""}
@@ -135,25 +135,25 @@ export function SecurityClient({ userId, initialData }) {
 
                     <div className="flex flex-wrap gap-2">
                       {req.guard_type && (
-                        <span className="text-xs px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full capitalize">
+                        <span className="text-xs px-2 py-0.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 rounded-full capitalize">
                           {req.guard_type} guards
                         </span>
                       )}
                       {req.risk_level && (
                         <span
-                          className={`text-xs px-2 py-0.5 rounded-full capitalize font-medium ${RISK_COLORS[req.risk_level] || "bg-gray-50 text-gray-600"}`}
+                          className={`text-xs px-2 py-0.5 rounded-full capitalize font-medium ${RISK_COLORS[req.risk_level] || "bg-gray-50 text-gray-600 dark:text-gray-400"}`}
                         >
                           <AlertTriangle className="h-3 w-3 inline mr-0.5" />
                           {req.risk_level} risk
                         </span>
                       )}
                       {req.requires_canine && (
-                        <span className="text-xs px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full">
+                        <span className="text-xs px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-full">
                           🐕 Canine
                         </span>
                       )}
                       {req.requires_vehicle && (
-                        <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">
+                        <span className="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full">
                           🚗 Vehicle
                         </span>
                       )}
@@ -163,12 +163,12 @@ export function SecurityClient({ userId, initialData }) {
                   <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 sm:min-w-[120px]">
                     {req.quoted_amount ? (
                       <div className="text-right">
-                        <p className="text-xs text-gray-400">Quote</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Quote</p>
                         <Amount value={req.quoted_amount} size="lg" />
                       </div>
                     ) : (
                       <div className="text-right">
-                        <p className="text-xs text-gray-400">Quote</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Quote</p>
                         <p className="text-sm text-amber-600 font-medium">
                           Pending
                         </p>

@@ -89,11 +89,11 @@ export function HotelBookingsClient({ userId, initialData }) {
             {bookings.map((booking) => (
               <div
                 key={booking.id}
-                className="bg-white border border-purple-100 rounded-2xl overflow-hidden hover:shadow-md transition-all"
+                className="bg-white dark:bg-gray-900 border border-purple-100 dark:border-gray-700 rounded-2xl overflow-hidden hover:shadow-md transition-all"
               >
                 <div className="flex flex-col sm:flex-row">
                   {/* Image */}
-                  <div className="sm:w-40 h-32 sm:h-auto bg-purple-50 flex-shrink-0 overflow-hidden">
+                  <div className="sm:w-40 h-32 sm:h-auto bg-purple-50 dark:bg-transparent flex-shrink-0 overflow-hidden">
                     {booking.hotel?.image_urls?.[0] ? (
                       <img
                         src={booking.hotel.image_urls[0]}
@@ -112,13 +112,13 @@ export function HotelBookingsClient({ userId, initialData }) {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-gray-900">
+                          <h3 className="font-medium text-gray-900 dark:text-white">
                             {booking.hotel?.name || "Hotel Booking"}
                           </h3>
                           {renderStars(booking.hotel?.star_rating)}
                         </div>
                         {booking.hotel?.city && (
-                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                             <MapPin className="h-3.5 w-3.5" />
                             {booking.hotel.city}, {booking.hotel.state}
                           </p>
@@ -134,8 +134,8 @@ export function HotelBookingsClient({ userId, initialData }) {
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
                       <div className="text-sm">
-                        <p className="text-xs text-gray-400 mb-0.5">Check-in</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Check-in</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5 text-purple-400" />
                           {format(
                             new Date(booking.check_in_date),
@@ -144,10 +144,10 @@ export function HotelBookingsClient({ userId, initialData }) {
                         </p>
                       </div>
                       <div className="text-sm">
-                        <p className="text-xs text-gray-400 mb-0.5">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">
                           Check-out
                         </p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5 text-purple-400" />
                           {format(
                             new Date(booking.check_out_date),
@@ -156,8 +156,8 @@ export function HotelBookingsClient({ userId, initialData }) {
                         </p>
                       </div>
                       <div className="text-sm">
-                        <p className="text-xs text-gray-400 mb-0.5">Guests</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Guests</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Users className="h-3.5 w-3.5 text-purple-400" />
                           {booking.adults} adult
                           {booking.adults !== 1 ? "s" : ""}
@@ -167,7 +167,7 @@ export function HotelBookingsClient({ userId, initialData }) {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50 dark:border-gray-800">
                       <Amount value={booking.total_price} size="lg" />
                       <div className="flex gap-2">
                         {booking.payment_status === "pending" && (

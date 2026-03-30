@@ -87,14 +87,14 @@ export default function AdminPaymentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-medium text-gray-900">Payments</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-2xl font-medium text-gray-900 dark:text-white">Payments</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 {totalCount.toLocaleString()} total payments
               </p>
             </div>
@@ -125,11 +125,11 @@ export default function AdminPaymentsPage() {
       {stats && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-medium text-gray-900 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
+                  <p className="text-2xl font-medium text-gray-900 dark:text-white mt-1">
                     {formatCurrency(stats.totalRevenue)}
                   </p>
                 </div>
@@ -151,10 +151,10 @@ export default function AdminPaymentsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Successful</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Successful</p>
                   <p className="text-2xl font-medium text-green-600 mt-1">
                     {stats.successCount}
                   </p>
@@ -177,10 +177,10 @@ export default function AdminPaymentsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Pending</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
                   <p className="text-2xl font-medium text-orange-600 mt-1">
                     {stats.pendingCount}
                   </p>
@@ -203,10 +203,10 @@ export default function AdminPaymentsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Failed</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Failed</p>
                   <p className="text-2xl font-medium text-red-600 mt-1">
                     {stats.failedCount}
                   </p>
@@ -234,11 +234,11 @@ export default function AdminPaymentsPage() {
 
       {/* Filters */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Search
               </label>
               <input
@@ -246,19 +246,19 @@ export default function AdminPaymentsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Reference, email, or customer ID..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Status
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="all">All Statuses</option>
                 <option value="success">Successful</option>
@@ -270,13 +270,13 @@ export default function AdminPaymentsPage() {
 
             {/* Provider Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Provider
               </label>
               <select
                 value={providerFilter}
                 onChange={(e) => setProviderFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="all">All Providers</option>
                 <option value="paystack">Paystack</option>
@@ -289,7 +289,7 @@ export default function AdminPaymentsPage() {
 
       {/* Table */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
@@ -301,7 +301,7 @@ export default function AdminPaymentsPage() {
           ) : payments.length === 0 ? (
             <div className="text-center py-12">
               <svg
-                className="w-16 h-16 mx-auto text-gray-400 mb-4"
+                className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -313,7 +313,7 @@ export default function AdminPaymentsPage() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <p className="text-gray-600">No payments found</p>
+              <p className="text-gray-600 dark:text-gray-400">No payments found</p>
             </div>
           ) : (
             <>
@@ -322,14 +322,14 @@ export default function AdminPaymentsPage() {
                 {payments.map((payment) => (
                   <div
                     key={payment.id}
-                    className="border-b border-gray-200 p-4 hover:bg-gray-50"
+                    className="border-b border-gray-200 p-4 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="font-mono text-sm font-medium text-gray-900">
+                        <p className="font-mono text-sm font-medium text-gray-900 dark:text-white">
                           {payment.reference}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {formatDate(payment.created_at)}
                         </p>
                       </div>
@@ -341,29 +341,29 @@ export default function AdminPaymentsPage() {
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Amount</span>
-                        <span className="font-medium text-gray-900">
+                        <span className="text-gray-600 dark:text-gray-400">Amount</span>
+                        <span className="font-medium text-gray-900 dark:text-white">
                           {formatCurrency(payment.amount, payment.currency)}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Provider</span>
-                        <span className="text-gray-900 capitalize">
+                        <span className="text-gray-600 dark:text-gray-400">Provider</span>
+                        <span className="text-gray-900 dark:text-white capitalize">
                           {payment.provider}
                         </span>
                       </div>
                       {payment.email && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Email</span>
-                          <span className="text-gray-900 truncate ml-2">
+                          <span className="text-gray-600 dark:text-gray-400">Email</span>
+                          <span className="text-gray-900 dark:text-white truncate ml-2">
                             {payment.email}
                           </span>
                         </div>
                       )}
                       {payment.request_type && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Type</span>
-                          <span className="text-gray-900 capitalize">
+                          <span className="text-gray-600 dark:text-gray-400">Type</span>
+                          <span className="text-gray-900 dark:text-white capitalize">
                             {payment.request_type}
                           </span>
                         </div>
@@ -376,11 +376,11 @@ export default function AdminPaymentsPage() {
               {/* Desktop Table */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gray-50 border-b border-gray-200 dark:border-gray-700">
                     <tr>
                       <th
                         onClick={() => handleSort("reference")}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         <div className="flex items-center gap-2">
                           Reference
@@ -403,7 +403,7 @@ export default function AdminPaymentsPage() {
                       </th>
                       <th
                         onClick={() => handleSort("amount")}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         <div className="flex items-center gap-2">
                           Amount
@@ -424,15 +424,15 @@ export default function AdminPaymentsPage() {
                           )}
                         </div>
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Type
                       </th>
                       <th
                         onClick={() => handleSort("provider")}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         <div className="flex items-center gap-2">
                           Provider
@@ -455,7 +455,7 @@ export default function AdminPaymentsPage() {
                       </th>
                       <th
                         onClick={() => handleSort("status")}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         <div className="flex items-center gap-2">
                           Status
@@ -478,7 +478,7 @@ export default function AdminPaymentsPage() {
                       </th>
                       <th
                         onClick={() => handleSort("created_at")}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         <div className="flex items-center gap-2">
                           Date
@@ -501,31 +501,31 @@ export default function AdminPaymentsPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700">
                     {payments.map((payment) => (
-                      <tr key={payment.id} className="hover:bg-gray-50">
+                      <tr key={payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="font-mono text-sm text-gray-900">
+                          <span className="font-mono text-sm text-gray-900 dark:text-white">
                             {payment.reference}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
                             {formatCurrency(payment.amount, payment.currency)}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 truncate max-w-xs">
+                          <div className="text-sm text-gray-900 dark:text-white truncate max-w-xs">
                             {payment.email || payment.customer_id}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-900 capitalize">
+                          <span className="text-sm text-gray-900 dark:text-white capitalize">
                             {payment.request_type || "N/A"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-900 capitalize">
+                          <span className="text-sm text-gray-900 dark:text-white capitalize">
                             {payment.provider}
                           </span>
                         </td>
@@ -536,7 +536,7 @@ export default function AdminPaymentsPage() {
                             {getStatusDisplay(payment.status)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {formatDate(payment.created_at)}
                         </td>
                       </tr>
@@ -549,38 +549,38 @@ export default function AdminPaymentsPage() {
               <div className="px-4 py-4 border-t border-gray-200 sm:px-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">Show</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Show</span>
                     <select
                       value={pageSize}
                       onChange={(e) => {
                         setPageSize(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
+                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
                     >
                       <option value={10}>10</option>
                       <option value={20}>20</option>
                       <option value={50}>50</option>
                       <option value={100}>100</option>
                     </select>
-                    <span className="text-sm text-gray-700">per page</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">per page</span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPage(Math.max(1, page - 1))}
                       disabled={page === 1}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Previous
                     </button>
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
                       Page {page} of {totalPages}
                     </span>
                     <button
                       onClick={() => setPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Next
                     </button>

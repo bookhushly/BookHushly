@@ -42,15 +42,15 @@ function CustomersPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-medium text-gray-900 truncate">
+            <h1 className="text-2xl sm:text-3xl font-medium text-gray-900 dark:text-white truncate">
               Customers
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               Manage customer accounts and bookings
             </p>
           </div>
@@ -64,11 +64,11 @@ function CustomersPageContent() {
         <CustomerStats stats={stats} loading={statsLoading} />
 
         {/* Main Content */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Search */}
-          <div className="p-3 sm:p-4 border-b border-gray-200">
+          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
               <Input
                 placeholder="Search customers by name or email..."
                 value={searchInput}
@@ -95,7 +95,7 @@ function CustomersPageContent() {
           </div>
 
           {hasMore && (
-            <div className="p-4 border-t border-gray-200 text-center">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 text-center">
               <Button
                 variant="outline"
                 onClick={() => setPage((p) => p + 1)}

@@ -78,10 +78,10 @@ export default function Step5Amenities({ formData, updateFormData }) {
                 these are highly valued in Nigeria.
               </p>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-white">
+                <Badge variant="secondary" className="bg-white dark:bg-gray-800 dark:text-gray-200">
                   {selectedCount} amenities selected
                 </Badge>
-                <Badge variant="secondary" className="bg-white">
+                <Badge variant="secondary" className="bg-white dark:bg-gray-800 dark:text-gray-200">
                   {selectedSecurityCount} security features
                 </Badge>
               </div>
@@ -104,13 +104,13 @@ export default function Step5Amenities({ formData, updateFormData }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Security Features</CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Highly valued in Nigerian market
           </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={securityFeatures["24hr_security"] || false}
@@ -120,7 +120,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
               <span className="text-sm font-medium">24hr Security Guard</span>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={securityFeatures.cctv_surveillance || false}
@@ -130,7 +130,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
               <span className="text-sm font-medium">CCTV Surveillance</span>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={securityFeatures.estate_gate || false}
@@ -140,7 +140,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
               <span className="text-sm font-medium">Gated Estate</span>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={securityFeatures.access_control || false}
@@ -150,7 +150,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
               <span className="text-sm font-medium">Access Control</span>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={securityFeatures.intercom_system || false}
@@ -184,7 +184,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
                       className={`flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg transition-all ${
                         isSelected
                           ? "border-purple-600 bg-purple-50"
-                          : "border-gray-200 hover:bg-gray-50"
+                          : "border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                       }`}
                     >
                       <input
@@ -197,13 +197,13 @@ export default function Step5Amenities({ formData, updateFormData }) {
                         {Icon && (
                           <Icon
                             className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
-                              isSelected ? "text-purple-600" : "text-gray-600"
+                              isSelected ? "text-purple-600" : "text-gray-600 dark:text-gray-400"
                             }`}
                           />
                         )}
                         <span
                           className={`text-sm font-medium ${
-                            isSelected ? "text-purple-900" : "text-gray-900"
+                            isSelected ? "text-purple-900" : "text-gray-900 dark:text-white"
                           }`}
                         >
                           {amenity.label}
@@ -244,7 +244,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
         filteredCategories.every((c) => c.amenities.length === 0) && (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 No amenities found for "{searchQuery}"
               </p>
             </CardContent>

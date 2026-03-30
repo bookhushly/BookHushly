@@ -25,7 +25,7 @@ const TYPE_CONFIG = {
   payment_successful: { icon: CreditCard,   colour: "text-green-600",  bg: "bg-green-100"  },
   payment_failed:     { icon: AlertCircle,  colour: "text-red-500",    bg: "bg-red-100"    },
   wallet_deposit:     { icon: Wallet,       colour: "text-green-600",  bg: "bg-green-100"  },
-  wallet_withdrawal:  { icon: Wallet,       colour: "text-gray-500",   bg: "bg-gray-100"   },
+  wallet_withdrawal:  { icon: Wallet,       colour: "text-gray-500 dark:text-gray-400",   bg: "bg-gray-100"   },
   password_changed:   { icon: Lock,         colour: "text-amber-600",  bg: "bg-amber-100"  },
   review_request:     { icon: Star,         colour: "text-yellow-500", bg: "bg-yellow-100" },
   new_logistics_request: { icon: Truck,     colour: "text-blue-500",   bg: "bg-blue-100"   },
@@ -91,11 +91,11 @@ export default function CustomerNotificationsPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-medium text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <Bell className="h-5 w-5 text-violet-600" />
             Notifications
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             Booking updates, payment confirmations, and account alerts
           </p>
         </div>
@@ -113,12 +113,12 @@ export default function CustomerNotificationsPage() {
       {!isLoading && notifications.length > 0 && (
         <div className="flex gap-3 mb-6">
           {[
-            { label: "Total",  value: notifications.length, colour: "text-gray-900" },
+            { label: "Total",  value: notifications.length, colour: "text-gray-900 dark:text-white" },
             { label: "Unread", value: unreadCount,           colour: "text-violet-600" },
           ].map((s) => (
-            <div key={s.label} className="flex-1 bg-white rounded-xl border border-gray-100 px-4 py-3">
+            <div key={s.label} className="flex-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 px-4 py-3">
               <p className={`text-xl font-medium ${s.colour}`}>{s.value}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -133,7 +133,7 @@ export default function CustomerNotificationsPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
               filter === f.key
                 ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-600/20"
-                : "bg-white text-gray-600 border-gray-200 hover:border-violet-300 hover:text-violet-600"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-violet-300 hover:text-violet-600"
             }`}
           >
             {f.label}
@@ -150,17 +150,17 @@ export default function CustomerNotificationsPage() {
 
       {/* List */}
       {isLoading ? (
-        <div className="flex flex-col items-center gap-4 py-20 text-gray-400">
+        <div className="flex flex-col items-center gap-4 py-20 text-gray-400 dark:text-gray-500">
           <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-600 animate-spin" />
           <p className="text-sm">Loading notifications…</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
-          <div className="w-16 h-16 rounded-full bg-violet-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 py-20 text-gray-400 dark:text-gray-500">
+          <div className="w-16 h-16 rounded-full bg-violet-50 dark:bg-transparent flex items-center justify-center">
             <BellOff className="h-7 w-7 text-violet-300" />
           </div>
-          <p className="text-base font-medium text-gray-600">No notifications</p>
-          <p className="text-sm text-center max-w-xs text-gray-400">
+          <p className="text-base font-medium text-gray-600 dark:text-gray-400">No notifications</p>
+          <p className="text-sm text-center max-w-xs text-gray-400 dark:text-gray-500">
             {filter !== "all"
               ? "Nothing in this category yet. Try switching to All."
               : "You're all caught up — we'll let you know when something needs your attention."}
@@ -180,8 +180,8 @@ export default function CustomerNotificationsPage() {
                 className={`relative flex items-start gap-4 p-4 rounded-xl border cursor-pointer
                   transition-all duration-150 group
                   ${isNew
-                    ? "bg-violet-50/70 border-violet-100 hover:bg-violet-50 hover:border-violet-200"
-                    : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
+                    ? "bg-violet-50/70 dark:bg-violet-950/30 border-violet-100 dark:border-violet-900 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:border-violet-200"
+                    : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-800"
                   }`}
               >
                 {/* Unread pip */}
@@ -197,14 +197,14 @@ export default function CustomerNotificationsPage() {
                 {/* Body */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900" : "text-gray-700"}`}>
+                    <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
                       {n.title}
                     </p>
-                    <span className="text-[11px] text-gray-400 shrink-0 mt-0.5 whitespace-nowrap">
+                    <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0 mt-0.5 whitespace-nowrap">
                       {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                     </span>
                   </div>
-                  <p className="text-[13px] text-gray-500 mt-1 leading-relaxed">
+                  <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     {n.message}
                   </p>
                   {n.link && (
@@ -219,7 +219,7 @@ export default function CustomerNotificationsPage() {
                   {isNew && (
                     <button
                       onClick={(e) => { e.stopPropagation(); handleMarkRead(n.id); }}
-                      className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                      className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors"
                       title="Mark as read"
                     >
                       <CheckCircle className="h-4 w-4" />
@@ -227,7 +227,7 @@ export default function CustomerNotificationsPage() {
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(n.id); }}
-                    className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
                     title="Delete"
                   >
                     <X className="h-4 w-4" />

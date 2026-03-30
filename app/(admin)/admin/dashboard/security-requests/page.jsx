@@ -103,14 +103,14 @@ export default function SecurityRequestsAdmin() {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
+      pending: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400",
       quoted: "bg-blue-100 text-blue-800",
-      paid: "bg-green-100 text-green-800",
+      paid: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400",
       in_progress: "bg-purple-100 text-purple-800",
-      completed: "bg-gray-100 text-gray-800",
-      cancelled: "bg-red-100 text-red-800",
+      completed: "bg-gray-100 text-gray-800 dark:text-gray-100",
+      cancelled: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400",
     };
-    return colors[status] || "bg-gray-100 text-gray-800";
+    return colors[status] || "bg-gray-100 text-gray-800 dark:text-gray-100";
   };
 
   if (isLoading) {
@@ -121,7 +121,7 @@ export default function SecurityRequestsAdmin() {
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-medium">Security Requests</h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Manage and quote security service requests
         </p>
       </div>
@@ -149,7 +149,7 @@ export default function SecurityRequestsAdmin() {
                 <TableCell>
                   <div>
                     <div className="font-medium">{request.full_name}</div>
-                    <div className="text-sm text-gray-600">{request.phone}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{request.phone}</div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -196,22 +196,22 @@ export default function SecurityRequestsAdmin() {
                       {selectedRequest?.id === request.id && (
                         <div className="space-y-6">
                           {/* Request Details */}
-                          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                             <div>
                               <h3 className="font-medium mb-2">
                                 Customer Information
                               </h3>
                               <div className="space-y-1 text-sm">
                                 <div>
-                                  <span className="text-gray-600">Name:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Name:</span>{" "}
                                   {request.full_name}
                                 </div>
                                 <div>
-                                  <span className="text-gray-600">Phone:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Phone:</span>{" "}
                                   {request.phone}
                                 </div>
                                 <div>
-                                  <span className="text-gray-600">Email:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Email:</span>{" "}
                                   {request.email}
                                 </div>
                               </div>
@@ -222,17 +222,17 @@ export default function SecurityRequestsAdmin() {
                               </h3>
                               <div className="space-y-1 text-sm">
                                 <div>
-                                  <span className="text-gray-600">Type:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Type:</span>{" "}
                                   {request.service_type}
                                 </div>
                                 <div>
-                                  <span className="text-gray-600">
+                                  <span className="text-gray-600 dark:text-gray-400">
                                     Duration:
                                   </span>{" "}
                                   {request.duration_type}
                                 </div>
                                 <div>
-                                  <span className="text-gray-600">
+                                  <span className="text-gray-600 dark:text-gray-400">
                                     Risk Level:
                                   </span>{" "}
                                   {request.risk_level}
@@ -248,11 +248,11 @@ export default function SecurityRequestsAdmin() {
                             <div className="space-y-1 text-sm">
                               <div>{request.service_address}</div>
                               {request.landmark && (
-                                <div className="text-gray-600">
+                                <div className="text-gray-600 dark:text-gray-400">
                                   Near: {request.landmark}
                                 </div>
                               )}
-                              <div className="text-gray-600">
+                              <div className="text-gray-600 dark:text-gray-400">
                                 {request.lga}, {request.state}
                               </div>
                             </div>
@@ -263,14 +263,14 @@ export default function SecurityRequestsAdmin() {
                               <h3 className="font-medium mb-2">Schedule</h3>
                               <div className="space-y-1 text-sm">
                                 <div>
-                                  <span className="text-gray-600">Start:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Start:</span>{" "}
                                   {new Date(
                                     request.start_date,
                                   ).toLocaleDateString()}
                                 </div>
                                 {request.end_date && (
                                   <div>
-                                    <span className="text-gray-600">End:</span>{" "}
+                                    <span className="text-gray-600 dark:text-gray-400">End:</span>{" "}
                                     {new Date(
                                       request.end_date,
                                     ).toLocaleDateString()}
@@ -278,12 +278,12 @@ export default function SecurityRequestsAdmin() {
                                 )}
                                 {request.start_time && (
                                   <div>
-                                    <span className="text-gray-600">Time:</span>{" "}
+                                    <span className="text-gray-600 dark:text-gray-400">Time:</span>{" "}
                                     {request.start_time} - {request.end_time}
                                   </div>
                                 )}
                                 <div>
-                                  <span className="text-gray-600">Shift:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Shift:</span>{" "}
                                   {request.shift_pattern}
                                 </div>
                               </div>
@@ -294,11 +294,11 @@ export default function SecurityRequestsAdmin() {
                               </h3>
                               <div className="space-y-1 text-sm">
                                 <div>
-                                  <span className="text-gray-600">Guards:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Guards:</span>{" "}
                                   {request.number_of_guards}
                                 </div>
                                 <div>
-                                  <span className="text-gray-600">Type:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Type:</span>{" "}
                                   {request.guard_type}
                                 </div>
                                 {request.requires_canine && (
@@ -319,13 +319,13 @@ export default function SecurityRequestsAdmin() {
                               <div className="space-y-1 text-sm">
                                 {request.event_type && (
                                   <div>
-                                    <span className="text-gray-600">Type:</span>{" "}
+                                    <span className="text-gray-600 dark:text-gray-400">Type:</span>{" "}
                                     {request.event_type}
                                   </div>
                                 )}
                                 {request.expected_attendance && (
                                   <div>
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       Attendance:
                                     </span>{" "}
                                     {request.expected_attendance} people
@@ -333,7 +333,7 @@ export default function SecurityRequestsAdmin() {
                                 )}
                                 {request.event_duration_hours && (
                                   <div>
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       Duration:
                                     </span>{" "}
                                     {request.event_duration_hours} hours
@@ -354,17 +354,17 @@ export default function SecurityRequestsAdmin() {
                               </h3>
                               <div className="space-y-1 text-sm">
                                 <div>
-                                  <span className="text-gray-600">Type:</span>{" "}
+                                  <span className="text-gray-600 dark:text-gray-400">Type:</span>{" "}
                                   {request.property_type}
                                 </div>
                                 {request.property_size && (
                                   <div>
-                                    <span className="text-gray-600">Size:</span>{" "}
+                                    <span className="text-gray-600 dark:text-gray-400">Size:</span>{" "}
                                     {request.property_size}
                                   </div>
                                 )}
                                 <div>
-                                  <span className="text-gray-600">
+                                  <span className="text-gray-600 dark:text-gray-400">
                                     Entrances:
                                   </span>{" "}
                                   {request.number_of_entrances}
@@ -388,12 +388,12 @@ export default function SecurityRequestsAdmin() {
                                 <Badge
                                   className={
                                     request.risk_level === "critical"
-                                      ? "bg-red-100 text-red-800"
+                                      ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400"
                                       : request.risk_level === "high"
                                         ? "bg-orange-100 text-orange-800"
                                         : request.risk_level === "medium"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-green-100 text-green-800"
+                                          ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400"
+                                          : "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
                                   }
                                 >
                                   {request.risk_level} Risk
@@ -401,7 +401,7 @@ export default function SecurityRequestsAdmin() {
                               </div>
                               {request.specific_threats && (
                                 <div>
-                                  <span className="text-gray-600">
+                                  <span className="text-gray-600 dark:text-gray-400">
                                     Threats:
                                   </span>{" "}
                                   {request.specific_threats}
@@ -413,7 +413,7 @@ export default function SecurityRequestsAdmin() {
                                     Previous Incidents Reported
                                   </span>
                                   {request.incident_details && (
-                                    <div className="mt-1 text-gray-700">
+                                    <div className="mt-1 text-gray-700 dark:text-gray-300">
                                       {request.incident_details}
                                     </div>
                                   )}
@@ -441,7 +441,7 @@ export default function SecurityRequestsAdmin() {
                             </div>
                             {request.additional_equipment && (
                               <div className="mt-2 text-sm">
-                                <span className="text-gray-600">
+                                <span className="text-gray-600 dark:text-gray-400">
                                   Additional Equipment:
                                 </span>{" "}
                                 {request.additional_equipment}
@@ -454,7 +454,7 @@ export default function SecurityRequestsAdmin() {
                               <h3 className="font-medium mb-2">
                                 Special Instructions
                               </h3>
-                              <p className="text-sm text-gray-700">
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
                                 {request.special_instructions}
                               </p>
                             </div>
@@ -669,7 +669,7 @@ export default function SecurityRequestsAdmin() {
                                           key={key}
                                           className="flex justify-between"
                                         >
-                                          <span className="text-gray-600">
+                                          <span className="text-gray-600 dark:text-gray-400">
                                             {key}:
                                           </span>
                                           <span>
@@ -702,7 +702,7 @@ export default function SecurityRequestsAdmin() {
         </Table>
 
         {!requests?.length && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             No security requests yet
           </div>
         )}

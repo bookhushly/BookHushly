@@ -102,11 +102,11 @@ export default function AdminNotificationsPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-medium text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <Bell className="h-5 w-5 text-violet-600" />
             Notifications
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             Vendor applications, payment alerts, and platform operations
           </p>
         </div>
@@ -129,11 +129,11 @@ export default function AdminNotificationsPage() {
             { label: "Vendors",  value: notifications.filter(n => VENDOR_TYPES.includes(n.type)).length  },
             { label: "Requests", value: notifications.filter(n => REQUEST_TYPES.includes(n.type)).length },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 px-3 py-3 text-center">
-              <p className={`text-lg font-medium ${s.highlight ? "text-violet-600" : "text-gray-900"}`}>
+            <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 px-3 py-3 text-center">
+              <p className={`text-lg font-medium ${s.highlight ? "text-violet-600" : "text-gray-900 dark:text-white"}`}>
                 {s.value}
               </p>
-              <p className="text-[11px] text-gray-400 mt-0.5">{s.label}</p>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -148,7 +148,7 @@ export default function AdminNotificationsPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
               filter === f.key
                 ? "bg-violet-600 text-white border-violet-600 shadow-sm shadow-violet-600/20"
-                : "bg-white text-gray-600 border-gray-200 hover:border-violet-300 hover:text-violet-600"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-violet-300 hover:text-violet-600"
             }`}
           >
             {f.label}
@@ -165,17 +165,17 @@ export default function AdminNotificationsPage() {
 
       {/* List */}
       {isLoading ? (
-        <div className="flex flex-col items-center gap-4 py-20 text-gray-400">
+        <div className="flex flex-col items-center gap-4 py-20 text-gray-400 dark:text-gray-500">
           <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-600 animate-spin" />
           <p className="text-sm">Loading notifications…</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
-          <div className="w-16 h-16 rounded-full bg-violet-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 py-20 text-gray-400 dark:text-gray-500">
+          <div className="w-16 h-16 rounded-full bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
             <BellOff className="h-7 w-7 text-violet-300" />
           </div>
-          <p className="text-base font-medium text-gray-600">No notifications</p>
-          <p className="text-sm text-center text-gray-400">
+          <p className="text-base font-medium text-gray-600 dark:text-gray-400">No notifications</p>
+          <p className="text-sm text-center text-gray-400 dark:text-gray-500">
             {filter !== "all" ? "Nothing in this category yet." : "All quiet — nothing to action right now."}
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function AdminNotificationsPage() {
               </p>
               {alerts.map((n) => <NotifRow key={n.id} n={n} onMarkRead={handleMarkRead} onDelete={handleDelete} onClick={handleClick} priority />)}
               {rest.length > 0 && (
-                <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 px-1 pt-2 mb-1">
+                <p className="text-[11px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500 px-1 pt-2 mb-1">
                   Earlier
                 </p>
               )}
@@ -232,18 +232,18 @@ function NotifRow({ n, onMarkRead, onDelete, onClick, priority }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900" : "text-gray-700"}`}>
+            <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
               {n.title}
             </p>
-            <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
               {cfg.label}
             </span>
           </div>
-          <span className="text-[11px] text-gray-400 shrink-0 mt-0.5 whitespace-nowrap">
+          <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0 mt-0.5 whitespace-nowrap">
             {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
           </span>
         </div>
-        <p className="text-[13px] text-gray-500 mt-1 leading-relaxed">{n.message}</p>
+        <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{n.message}</p>
         {n.link && (
           <span className="text-[11px] text-violet-500 font-medium mt-1.5 inline-block">
             View details →
@@ -255,7 +255,7 @@ function NotifRow({ n, onMarkRead, onDelete, onClick, priority }) {
         {isNew && (
           <button
             onClick={(e) => { e.stopPropagation(); onMarkRead(n.id); }}
-            className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+            className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors"
             title="Mark as read"
           >
             <CheckCircle className="h-4 w-4" />
@@ -263,7 +263,7 @@ function NotifRow({ n, onMarkRead, onDelete, onClick, priority }) {
         )}
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(n.id); }}
-          className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+          className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
           title="Delete"
         >
           <X className="h-4 w-4" />

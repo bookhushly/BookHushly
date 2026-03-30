@@ -112,14 +112,14 @@ export default function LogisticsRequestsAdmin() {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
-      quoted: "bg-blue-100 text-blue-800",
-      paid: "bg-green-100 text-green-800",
+      pending: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400",
+      quoted: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400",
+      paid: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400",
       in_progress: "bg-purple-100 text-purple-800",
-      completed: "bg-gray-100 text-gray-800",
-      cancelled: "bg-red-100 text-red-800",
+      completed: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 dark:text-gray-100",
+      cancelled: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400",
     };
-    return colors[status] || "bg-gray-100 text-gray-800";
+    return colors[status] || "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 dark:text-gray-100";
   };
 
   if (isLoading) {
@@ -130,7 +130,7 @@ export default function LogisticsRequestsAdmin() {
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-medium">Logistics Requests</h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Manage and quote logistics service requests
         </p>
       </div>
@@ -157,7 +157,7 @@ export default function LogisticsRequestsAdmin() {
                 <TableCell>
                   <div>
                     <div className="font-medium">{request.full_name}</div>
-                    <div className="text-sm text-gray-600">{request.phone}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{request.phone}</div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -168,7 +168,7 @@ export default function LogisticsRequestsAdmin() {
                 <TableCell>
                   <div className="text-sm">
                     <div>{request.pickup_state}</div>
-                    <div className="text-gray-600">
+                    <div className="text-gray-600 dark:text-gray-400">
                       → {request.delivery_state}
                     </div>
                   </div>
@@ -209,16 +209,16 @@ export default function LogisticsRequestsAdmin() {
                               <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
                                 <CheckCircle2 className="w-12 h-12 text-green-600" />
                               </div>
-                              <h3 className="text-2xl font-medium text-gray-900">
+                              <h3 className="text-2xl font-medium text-gray-900 dark:text-white">
                                 Quote Sent Successfully!
                               </h3>
-                              <div className="flex items-center gap-2 text-gray-600">
+                              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                 <Mail className="w-5 h-5" />
                                 <span>
                                   Email sent to {selectedRequest.email}
                                 </span>
                               </div>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
                                 The customer will receive their quote and
                                 payment link shortly
                               </p>
@@ -226,26 +226,26 @@ export default function LogisticsRequestsAdmin() {
                           ) : (
                             <div className="space-y-6">
                               {/* Request Details */}
-                              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                 <div>
                                   <h3 className="font-medium mb-2">
                                     Customer Information
                                   </h3>
                                   <div className="space-y-1 text-sm">
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Name:
                                       </span>{" "}
                                       {request.full_name}
                                     </div>
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Phone:
                                       </span>{" "}
                                       {request.phone}
                                     </div>
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Email:
                                       </span>{" "}
                                       {request.email}
@@ -258,19 +258,19 @@ export default function LogisticsRequestsAdmin() {
                                   </h3>
                                   <div className="space-y-1 text-sm">
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Type:
                                       </span>{" "}
                                       {request.service_type}
                                     </div>
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Vehicle:
                                       </span>{" "}
                                       {request.vehicle_type}
                                     </div>
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Weight:
                                       </span>{" "}
                                       {request.item_weight}
@@ -287,11 +287,11 @@ export default function LogisticsRequestsAdmin() {
                                   <div className="space-y-1 text-sm">
                                     <div>{request.pickup_address}</div>
                                     {request.pickup_landmark && (
-                                      <div className="text-gray-600">
+                                      <div className="text-gray-600 dark:text-gray-400">
                                         Near: {request.pickup_landmark}
                                       </div>
                                     )}
-                                    <div className="text-gray-600">
+                                    <div className="text-gray-600 dark:text-gray-400">
                                       {request.pickup_lga},{" "}
                                       {request.pickup_state}
                                     </div>
@@ -311,11 +311,11 @@ export default function LogisticsRequestsAdmin() {
                                   <div className="space-y-1 text-sm">
                                     <div>{request.delivery_address}</div>
                                     {request.delivery_landmark && (
-                                      <div className="text-gray-600">
+                                      <div className="text-gray-600 dark:text-gray-400">
                                         Near: {request.delivery_landmark}
                                       </div>
                                     )}
-                                    <div className="text-gray-600">
+                                    <div className="text-gray-600 dark:text-gray-400">
                                       {request.delivery_lga},{" "}
                                       {request.delivery_state}
                                     </div>
@@ -338,14 +338,14 @@ export default function LogisticsRequestsAdmin() {
                                 </h3>
                                 <div className="space-y-2 text-sm">
                                   <div>
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       Description:
                                     </span>{" "}
                                     {request.item_description}
                                   </div>
                                   {request.item_category && (
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Category:
                                       </span>{" "}
                                       {request.item_category}
@@ -353,21 +353,21 @@ export default function LogisticsRequestsAdmin() {
                                   )}
                                   {request.item_dimensions && (
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Dimensions:
                                       </span>{" "}
                                       {request.item_dimensions}
                                     </div>
                                   )}
                                   <div>
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       Quantity:
                                     </span>{" "}
                                     {request.quantity}
                                   </div>
                                   {request.item_value && (
                                     <div>
-                                      <span className="text-gray-600">
+                                      <span className="text-gray-600 dark:text-gray-400">
                                         Value:
                                       </span>{" "}
                                       ₦
@@ -415,7 +415,7 @@ export default function LogisticsRequestsAdmin() {
                                   <h3 className="font-medium mb-2">
                                     Special Instructions
                                   </h3>
-                                  <p className="text-sm text-gray-700">
+                                  <p className="text-sm text-gray-700 dark:text-gray-300">
                                     {request.special_instructions}
                                   </p>
                                 </div>
@@ -555,7 +555,7 @@ export default function LogisticsRequestsAdmin() {
                                       </div>
                                     </div>
 
-                                    <div className="p-4 bg-purple-50 rounded-lg">
+                                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                                       <div className="flex justify-between items-center text-lg font-medium">
                                         <span>Total Amount:</span>
                                         <span>
@@ -631,7 +631,7 @@ export default function LogisticsRequestsAdmin() {
                                             key={key}
                                             className="flex justify-between"
                                           >
-                                            <span className="text-gray-600">
+                                            <span className="text-gray-600 dark:text-gray-400">
                                               {key}:
                                             </span>
                                             <span>
@@ -667,7 +667,7 @@ export default function LogisticsRequestsAdmin() {
         </Table>
 
         {!requests?.length && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             No logistics requests yet
           </div>
         )}

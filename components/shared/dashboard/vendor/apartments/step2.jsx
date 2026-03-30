@@ -137,7 +137,7 @@ export default function Step2Location({ formData, updateFormData, errors }) {
                 onChange={(e) => updateFormData({ area: e.target.value })}
               />
             )}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Specific area within the city helps guests find your location
               easily
             </p>
@@ -163,7 +163,7 @@ export default function Step2Location({ formData, updateFormData, errors }) {
               value={formData.address || ""}
               onChange={(e) => updateFormData({ address: e.target.value })}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Full address shared only after booking confirmation
             </p>
           </div>
@@ -188,7 +188,7 @@ export default function Step2Location({ formData, updateFormData, errors }) {
               value={formData.landmark || ""}
               onChange={(e) => updateFormData({ landmark: e.target.value })}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Help guests find you using familiar landmarks - very important
             </p>
           </div>
@@ -238,7 +238,7 @@ export default function Step2Location({ formData, updateFormData, errors }) {
                   updateFormData({ whatsapp_number: e.target.value })
                 }
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Guests can reach you directly on WhatsApp
               </p>
             </div>
@@ -267,8 +267,8 @@ export default function Step2Location({ formData, updateFormData, errors }) {
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-4 space-y-3">
-            <p className="text-sm font-medium text-gray-700">
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-4 space-y-3">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Agent / Agency Fee
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -280,7 +280,7 @@ export default function Step2Location({ formData, updateFormData, errors }) {
                   onChange={(e) =>
                     updateFormData({ agent_fee_applies: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                 >
                   <option value="no">No agency fee</option>
                   <option value="yes">Yes — fee applies</option>
@@ -299,7 +299,7 @@ export default function Step2Location({ formData, updateFormData, errors }) {
                       updateFormData({ agent_fee_amount: e.target.value })
                     }
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     One-time fee paid separately to the agent
                   </p>
                 </div>

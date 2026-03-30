@@ -199,9 +199,9 @@ export function HotelPricingTab({ hotelId }) {
             {rules.length === 0 ? (
               <div className="text-center py-10">
                 <div className="h-14 w-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Tag className="h-7 w-7 text-gray-400" />
+                  <Tag className="h-7 w-7 text-gray-400 dark:text-gray-500" />
                 </div>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                   No pricing rules yet. Add rules for public holidays, peak seasons, or events.
                 </p>
               </div>
@@ -210,11 +210,11 @@ export function HotelPricingTab({ hotelId }) {
                 {rules.map((rule) => (
                   <div
                     key={rule.id}
-                    className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 gap-4"
+                    className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 rounded-xl px-4 py-3 gap-4"
                   >
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{rule.name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-gray-900 dark:text-white truncate">{rule.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {formatDateRange(rule.start_date, rule.end_date)}
                       </p>
                     </div>
@@ -264,11 +264,11 @@ export function HotelPricingTab({ hotelId }) {
           onClick={() => setDialogOpen(false)}
         >
           <div
-            className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden"
+            className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                 {editingRule ? "Edit Pricing Rule" : "New Pricing Rule"}
               </h2>
             </div>
@@ -368,7 +368,7 @@ export function HotelPricingTab({ hotelId }) {
                   required
                 />
                 {formData.adjustment_value && !isNaN(parseFloat(formData.adjustment_value)) && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {formData.adjustment_type === "percentage"
                       ? `Prices will be ${formData.adjustment_value}% higher during this period`
                       : `₦${Number(formData.adjustment_value).toLocaleString("en-NG")} will be added to each night`}

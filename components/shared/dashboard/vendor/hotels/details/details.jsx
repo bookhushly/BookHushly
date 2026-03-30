@@ -204,7 +204,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               minHeight="300px"
               showWordCount={true}
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Use the toolbar to format your description with headings, lists,
               links, and more.
             </p>
@@ -282,7 +282,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
                   onChange={() => handleAmenityChange(amenity)}
                   className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600"
                 />
-                <span className="text-sm text-gray-700 group-hover:text-gray-900">
+                <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:text-white">
                   {amenityLabels[amenity]}
                 </span>
               </label>
@@ -325,10 +325,10 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
                   className="mt-1"
                 />
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-gray-900 dark:text-white">
                     Fixed Time (12:00 PM)
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     Guest checks out at 12:00 PM regardless of check-in time.
                   </p>
                 </div>
@@ -353,8 +353,8 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
                   className="mt-1"
                 />
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900">24-Hour Policy</p>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="font-medium text-gray-900 dark:text-white">24-Hour Policy</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     Guest gets full 24 hours from check-in time.
                   </p>
                 </div>
@@ -371,7 +371,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               minHeight="250px"
               showWordCount={true}
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Include important information like cancellation deadlines, deposit
               requirements, and any restrictions.
             </p>
@@ -406,8 +406,8 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Enable "Pay at Hotel"</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Enable "Pay at Hotel"</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Guests can reserve a room and pay cash or bank transfer on arrival.
                 Reservations auto-expire if the guest does not check in within 24 hours of their check-in date.
               </p>
@@ -444,15 +444,15 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Enable Airport Transfer add-on</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Enable Airport Transfer add-on</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Guests can request a transfer when booking. You will contact them to confirm details.
               </p>
             </div>
           </label>
           {formData.airport_transfer_enabled && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-700">
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                 Transfer Fee per Trip (₦)
               </label>
               <input
@@ -463,9 +463,9 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, airport_transfer_fee: e.target.value }))
                 }
-                className="w-full h-9 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full h-9 px-3 rounded-lg border border-gray-300 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
-              <p className="text-xs text-gray-400">Leave blank to show "Fee to be confirmed"</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Leave blank to show "Fee to be confirmed"</p>
             </div>
           )}
         </CardContent>
@@ -499,15 +499,15 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
               <div className="absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">NIHOTOUR Certified</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">NIHOTOUR Certified</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Show the certified badge on your hotel listing to build guest trust.
               </p>
             </div>
           </label>
           {formData.nihotour_certified && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-700">
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                 NIHOTOUR Registration Number
               </label>
               <input
@@ -517,7 +517,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, nihotour_number: e.target.value }))
                 }
-                className="w-full h-9 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full h-9 px-3 rounded-lg border border-gray-300 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
           )}

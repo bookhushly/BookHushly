@@ -57,8 +57,8 @@ export function HotelRoomsTab({ hotelId }) {
             onClick={() => setActiveSubTab(tab)}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
               activeSubTab === tab
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
+                : "text-gray-600 hover:text-gray-900 dark:text-white"
             }`}
           >
             {tab === "types" ? "Room Types" : "Individual Rooms"}

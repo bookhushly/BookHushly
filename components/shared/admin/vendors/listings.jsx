@@ -16,7 +16,7 @@ export function VendorListings({ vendorId }) {
 
   if (!listings || listings.total === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         No listings found for this vendor
       </div>
     );
@@ -26,28 +26,28 @@ export function VendorListings({ vendorId }) {
     <div className="space-y-6">
       {listings.hotels.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Hotels ({listings.hotels.length})
           </h3>
           <div className="space-y-3">
             {listings.hotels.map((hotel) => (
               <div
                 key={hotel.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex gap-3">
-                    <Building2 className="w-5 h-5 text-gray-600 mt-1" />
+                    <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-1" />
                     <div>
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className="font-medium text-gray-900 dark:text-white">
                         {hotel.name}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
                         {hotel.city}, {hotel.state}
                       </p>
                       {hotel.address && (
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                           {hotel.address}
                         </p>
                       )}
@@ -62,27 +62,27 @@ export function VendorListings({ vendorId }) {
 
       {listings.apartments.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Serviced Apartments ({listings.apartments.length})
           </h3>
           <div className="space-y-3">
             {listings.apartments.map((apartment) => (
               <div
                 key={apartment.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex gap-3">
-                    <Building2 className="w-5 h-5 text-gray-600 mt-1" />
+                    <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-1" />
                     <div>
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className="font-medium text-gray-900 dark:text-white">
                         {apartment.name}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
                         {apartment.city}, {apartment.state}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         ₦{apartment.price_per_night?.toLocaleString()}/night
                       </p>
                     </div>
@@ -93,8 +93,8 @@ export function VendorListings({ vendorId }) {
                     }
                     className={
                       apartment.status === "active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
                     }
                   >
                     {apartment.status}
@@ -108,23 +108,23 @@ export function VendorListings({ vendorId }) {
 
       {listings.events.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Event Centers ({listings.events.length})
           </h3>
           <div className="space-y-3">
             {listings.events.map((event) => (
               <div
                 key={event.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex gap-3">
-                    <Calendar className="w-5 h-5 text-gray-600 mt-1" />
+                    <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-1" />
                     <div>
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className="font-medium text-gray-900 dark:text-white">
                         {event.title}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
                         {event.location}
                       </p>
@@ -134,8 +134,8 @@ export function VendorListings({ vendorId }) {
                     variant={event.active ? "success" : "secondary"}
                     className={
                       event.active
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
                     }
                   >
                     {event.active ? "Active" : "Inactive"}

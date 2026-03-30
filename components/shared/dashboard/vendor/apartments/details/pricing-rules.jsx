@@ -85,7 +85,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
           <Tag className="h-4 w-4 text-violet-500" />
           Seasonal / special pricing
         </h3>
@@ -102,13 +102,13 @@ export default function PricingRules({ apartmentId, basePrice }) {
         )}
       </div>
 
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-gray-400 dark:text-gray-500">
         Base price: ₦{parseFloat(basePrice || 0).toLocaleString()}/night.
         Rules override the base price for specific date ranges.
       </p>
 
       {rules.length === 0 && !showForm && (
-        <p className="text-xs text-gray-400 italic">No pricing rules yet.</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 italic">No pricing rules yet.</p>
       )}
 
       {rules.map((rule) => (
@@ -116,8 +116,8 @@ export default function PricingRules({ apartmentId, basePrice }) {
           <div className="flex items-start gap-2 min-w-0">
             <CalendarRange className="h-4 w-4 text-violet-400 shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="font-medium text-gray-800 truncate">{rule.label}</p>
-              <p className="text-xs text-gray-500">
+              <p className="font-medium text-gray-800 dark:text-gray-100 truncate">{rule.label}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {format(parseISO(rule.start_date), "d MMM yyyy")} –{" "}
                 {format(parseISO(rule.end_date), "d MMM yyyy")}
               </p>
@@ -134,7 +134,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
           <button
             onClick={() => handleDelete(rule)}
             disabled={deletingId === rule.id}
-            className="text-gray-400 hover:text-red-500 transition-colors shrink-0 mt-0.5"
+            className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors shrink-0 mt-0.5"
           >
             {deletingId === rule.id ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -146,8 +146,8 @@ export default function PricingRules({ apartmentId, basePrice }) {
       ))}
 
       {showForm && (
-        <form onSubmit={handleAdd} className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-          <p className="text-xs font-medium text-gray-700">New pricing rule</p>
+        <form onSubmit={handleAdd} className="p-3 bg-gray-50 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
+          <p className="text-xs font-medium text-gray-700 dark:text-gray-300">New pricing rule</p>
           <Input
             placeholder="Label (e.g. Christmas, Easter, Peak season)"
             value={label}
@@ -156,7 +156,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
           />
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[11px] text-gray-500 mb-0.5 block">Start date</label>
+              <label className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5 block">Start date</label>
               <Input
                 type="date"
                 value={startDate}
@@ -165,7 +165,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
               />
             </div>
             <div>
-              <label className="text-[11px] text-gray-500 mb-0.5 block">End date</label>
+              <label className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5 block">End date</label>
               <Input
                 type="date"
                 value={endDate}
@@ -176,7 +176,7 @@ export default function PricingRules({ apartmentId, basePrice }) {
             </div>
           </div>
           <div>
-            <label className="text-[11px] text-gray-500 mb-0.5 block">Price per night (₦)</label>
+            <label className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5 block">Price per night (₦)</label>
             <Input
               type="number"
               placeholder="e.g. 50000"

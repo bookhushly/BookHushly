@@ -78,10 +78,10 @@ export function ApartmentBookingsClient({ userId, initialData }) {
               return (
                 <div
                   key={booking.id}
-                  className="bg-white border border-purple-100 rounded-2xl overflow-hidden hover:shadow-md transition-all"
+                  className="bg-white dark:bg-gray-900 border border-purple-100 dark:border-gray-700 rounded-2xl overflow-hidden hover:shadow-md transition-all"
                 >
                   <div className="flex flex-col sm:flex-row">
-                    <div className="sm:w-40 h-32 sm:h-auto bg-purple-50 flex-shrink-0 overflow-hidden">
+                    <div className="sm:w-40 h-32 sm:h-auto bg-purple-50 dark:bg-gray-800 flex-shrink-0 overflow-hidden">
                       {booking.apartment?.image_urls?.[0] ? (
                         <img
                           src={booking.apartment.image_urls[0]}
@@ -97,11 +97,11 @@ export function ApartmentBookingsClient({ userId, initialData }) {
                     <div className="flex-1 p-5">
                       <div className="flex justify-between gap-3 mb-3">
                         <div>
-                          <h3 className="font-medium text-gray-900">
+                          <h3 className="font-medium text-gray-900 dark:text-white">
                             {booking.apartment?.name || "Apartment"}
                           </h3>
                           {booking.apartment?.city && (
-                            <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
                               <MapPin className="h-3.5 w-3.5" />
                               {booking.apartment.city},{" "}
                               {booking.apartment.state}
@@ -113,37 +113,37 @@ export function ApartmentBookingsClient({ userId, initialData }) {
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                         <div>
-                          <p className="text-xs text-gray-400">Check-in</p>
-                          <p className="font-medium text-gray-700">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">Check-in</p>
+                          <p className="font-medium text-gray-700 dark:text-gray-300">
                             {format(new Date(booking.check_in_date), "MMM d")}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Check-out</p>
-                          <p className="font-medium text-gray-700">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">Check-out</p>
+                          <p className="font-medium text-gray-700 dark:text-gray-300">
                             {format(new Date(booking.check_out_date), "MMM d")}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Duration</p>
-                          <p className="font-medium text-gray-700 flex items-center gap-1">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">Duration</p>
+                          <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                             <Moon className="h-3.5 w-3.5 text-purple-400" />
                             {nights} night{nights !== 1 ? "s" : ""}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Guests</p>
-                          <p className="font-medium text-gray-700 flex items-center gap-1">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">Guests</p>
+                          <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                             <Users className="h-3.5 w-3.5 text-purple-400" />
                             {booking.number_of_guests}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50 dark:border-gray-800">
                         <div>
                           <Amount value={booking.total_amount} size="lg" />
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
                             ₦
                             {parseFloat(
                               booking.price_per_night || 0,
@@ -189,7 +189,7 @@ export function ApartmentBookingsClient({ userId, initialData }) {
                         bookingStatus={booking.booking_status}
                       />
                         <BookingDispute bookingId={booking.id} bookingStatus={booking.booking_status} />
-                      <div className="border-t border-gray-100 pt-4">
+                      <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
                         <BookingMessages bookingId={booking.id} />
                       </div>
                     </div>

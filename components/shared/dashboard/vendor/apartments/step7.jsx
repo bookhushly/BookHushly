@@ -83,7 +83,7 @@ function AgentPhotoUpload({ value, onChange }) {
         ) : uploading ? (
           <Loader2 className="h-6 w-6 text-purple-500 animate-spin" />
         ) : (
-          <Camera className="h-6 w-6 text-gray-400" />
+          <Camera className="h-6 w-6 text-gray-400 dark:text-gray-500" />
         )}
       </div>
       <div className="flex-1 space-y-2">
@@ -99,12 +99,12 @@ function AgentPhotoUpload({ value, onChange }) {
           <button
             type="button"
             onClick={() => onChange("")}
-            className="ml-3 text-sm text-gray-400 hover:text-red-500"
+            className="ml-3 text-sm text-gray-400 dark:text-gray-500 hover:text-red-500"
           >
             <X className="h-4 w-4 inline" /> Remove
           </button>
         )}
-        <p className="text-xs text-gray-400">JPG or PNG, max 5MB</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">JPG or PNG, max 5MB</p>
       </div>
       <input
         ref={inputRef}
@@ -144,7 +144,7 @@ export default function Step7Policies({ formData, updateFormData }) {
                   updateFormData({ check_in_time: e.target.value })
                 }
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Standard check-in is 2:00 PM
               </p>
             </div>
@@ -159,7 +159,7 @@ export default function Step7Policies({ formData, updateFormData }) {
                   updateFormData({ check_out_time: e.target.value })
                 }
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Standard check-out is 12:00 PM
               </p>
             </div>
@@ -184,7 +184,7 @@ export default function Step7Policies({ formData, updateFormData }) {
           <CardTitle>Booking Preferences</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={formData.instant_booking !== false}
@@ -195,7 +195,7 @@ export default function Step7Policies({ formData, updateFormData }) {
             />
             <div className="flex-1">
               <span className="font-medium block">Enable Instant Booking</span>
-              <span className="text-xs text-gray-600 mt-1 block">
+              <span className="text-xs text-gray-600 dark:text-gray-400 mt-1 block">
                 Guests can book immediately without waiting for approval. This
                 increases your booking rate by up to 30%.
               </span>
@@ -221,7 +221,7 @@ export default function Step7Policies({ formData, updateFormData }) {
             <Calendar className="h-5 w-5 text-orange-600" />
             Cancellation Policy
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Set clear expectations for cancellations
           </p>
         </CardHeader>
@@ -233,7 +233,7 @@ export default function Step7Policies({ formData, updateFormData }) {
                 className={`flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg transition-all ${
                   formData.cancellation_policy_type === template.value
                     ? "border-purple-600 bg-purple-50"
-                    : "border-gray-200 hover:bg-gray-50"
+                    : "border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
               >
                 <input
@@ -252,7 +252,7 @@ export default function Step7Policies({ formData, updateFormData }) {
                 />
                 <div className="flex-1">
                   <span className="font-medium block">{template.label}</span>
-                  <span className="text-xs text-gray-600 mt-1 block">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 mt-1 block">
                     {template.description}
                   </span>
                 </div>
@@ -284,7 +284,7 @@ export default function Step7Policies({ formData, updateFormData }) {
             <FileText className="h-5 w-5 text-purple-600" />
             House Rules
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Set clear expectations for guest behavior
           </p>
         </CardHeader>
@@ -310,7 +310,7 @@ export default function Step7Policies({ formData, updateFormData }) {
               placeholder="List your house rules here..."
               minHeight="200px"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Be specific about smoking, parties, noise, pets, and any other
               important rules
             </p>
@@ -336,7 +336,7 @@ export default function Step7Policies({ formData, updateFormData }) {
       <Card>
         <CardHeader>
           <CardTitle>Availability Period (Optional)</CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Set specific dates when your apartment is available for booking
           </p>
         </CardHeader>
@@ -352,7 +352,7 @@ export default function Step7Policies({ formData, updateFormData }) {
                   updateFormData({ available_from: e.target.value })
                 }
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Leave empty if available now
               </p>
             </div>
@@ -367,17 +367,17 @@ export default function Step7Policies({ formData, updateFormData }) {
                   updateFormData({ available_until: e.target.value })
                 }
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Leave empty if no end date
               </p>
             </div>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <div className="bg-gray-50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <div className="flex gap-3">
-              <AlertCircle className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-5 w-5 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   <strong>Note:</strong> Setting availability dates is useful if
                   you're only renting out for a specific period or if the
                   apartment is still under construction.
@@ -395,7 +395,7 @@ export default function Step7Policies({ formData, updateFormData }) {
             <User className="h-5 w-5 text-purple-600" />
             Meet Your Host / Agent
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Help guests know who will receive them. This shows as a "Meet Your Host" section on your listing.
           </p>
         </CardHeader>

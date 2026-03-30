@@ -46,20 +46,20 @@ import {
 
 // ─── Status Helpers ──────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  confirmed: { color: "bg-green-50 text-green-700 border-green-200", icon: CheckCircle },
+  confirmed: { color: "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200", icon: CheckCircle },
   pending: { color: "bg-yellow-50 text-yellow-700 border-yellow-200", icon: Clock },
-  completed: { color: "bg-blue-50 text-blue-700 border-blue-200", icon: CheckCircle },
-  cancelled: { color: "bg-red-50 text-red-700 border-red-200", icon: XCircle },
+  completed: { color: "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200", icon: CheckCircle },
+  cancelled: { color: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200", icon: XCircle },
 };
 const PAYMENT_STATUS_COLOR = {
-  completed: "bg-green-50 text-green-700 border-green-200",
-  failed: "bg-red-50 text-red-700 border-red-200",
-  refunded: "bg-gray-50 text-gray-700 border-gray-200",
+  completed: "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200",
+  failed: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200",
+  refunded: "bg-gray-50 text-gray-700 dark:text-gray-300 border-gray-200",
   pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
 };
 
 function StatusBadge({ status }) {
-  const config = STATUS_CONFIG[status] || { color: "bg-gray-50 text-gray-700 border-gray-200", icon: AlertCircle };
+  const config = STATUS_CONFIG[status] || { color: "bg-gray-50 text-gray-700 dark:text-gray-300 border-gray-200", icon: AlertCircle };
   const Icon = config.icon;
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}>
@@ -79,11 +79,11 @@ function PaymentBadge({ status }) {
 // ─── Stat Card ───────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, iconBg, Icon, iconColor }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-purple-200 transition-colors">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:border-purple-200 transition-colors">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-gray-600 text-sm font-medium mb-2">{label}</p>
-          <p className="text-3xl font-medium text-gray-900">{value}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-2">{label}</p>
+          <p className="text-3xl font-medium text-gray-900 dark:text-white">{value}</p>
           {sub && <p className="text-sm mt-1">{sub}</p>}
         </div>
         <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center shrink-0`}>
@@ -100,12 +100,12 @@ function TicketEditor({ current, onSave, onCancel, isSaving, error }) {
   const adjust = (delta) => setCount((p) => Math.max(0, p + delta));
   return (
     <div className="flex-1">
-      <p className="text-gray-600 text-sm font-medium mb-2">Remaining Tickets</p>
+      <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-2">Remaining Tickets</p>
       <div className="flex items-center gap-2">
         {[-10, -1].map((d) => (
           <button key={d} onClick={() => adjust(d)} disabled={isSaving}
             className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors disabled:opacity-40">
-            <Minus className={d === -10 ? "w-4 h-4 text-gray-700" : "w-3 h-3 text-gray-700"} />
+            <Minus className={d === -10 ? "w-4 h-4 text-gray-700 dark:text-gray-300" : "w-3 h-3 text-gray-700 dark:text-gray-300"} />
           </button>
         ))}
         <input type="text" inputMode="numeric" value={count} disabled={isSaving}
@@ -114,7 +114,7 @@ function TicketEditor({ current, onSave, onCancel, isSaving, error }) {
         {[1, 10].map((d) => (
           <button key={d} onClick={() => adjust(d)} disabled={isSaving}
             className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors disabled:opacity-40">
-            <Plus className={d === 10 ? "w-4 h-4 text-gray-700" : "w-3 h-3 text-gray-700"} />
+            <Plus className={d === 10 ? "w-4 h-4 text-gray-700 dark:text-gray-300" : "w-3 h-3 text-gray-700 dark:text-gray-300"} />
           </button>
         ))}
       </div>
@@ -125,7 +125,7 @@ function TicketEditor({ current, onSave, onCancel, isSaving, error }) {
           {isSaving ? "Saving..." : "Save"}
         </button>
         <button onClick={onCancel} disabled={isSaving}
-          className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50">
+          className="px-3 py-1.5 bg-gray-100 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50">
           Cancel
         </button>
       </div>
@@ -136,7 +136,7 @@ function TicketEditor({ current, onSave, onCancel, isSaving, error }) {
 function RemainingTicketsCard({ listing, isEditing, setIsEditing, updateTickets }) {
   if (isEditing) {
     return (
-      <div className="bg-white border border-gray-200 rounded-2xl p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
         <TicketEditor
           current={listing.remaining_tickets}
           isSaving={updateTickets.isPending}
@@ -148,11 +148,11 @@ function RemainingTicketsCard({ listing, isEditing, setIsEditing, updateTickets 
     );
   }
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-purple-200 transition-colors">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:border-purple-200 transition-colors">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-gray-600 text-sm font-medium mb-2">Remaining Tickets</p>
-          <p className="text-3xl font-medium text-gray-900">{listing.remaining_tickets.toLocaleString()}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-2">Remaining Tickets</p>
+          <p className="text-3xl font-medium text-gray-900 dark:text-white">{listing.remaining_tickets.toLocaleString()}</p>
         </div>
         <button onClick={() => setIsEditing(true)}
           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-purple-600 text-xs font-medium">
@@ -222,7 +222,7 @@ function SalesVelocityChart({ bookings, eventDate }) {
 
   if (data.length < 2) {
     return (
-      <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-40 text-gray-400 dark:text-gray-500 text-sm">
         Sales chart will appear once bookings come in
       </div>
     );
@@ -289,9 +289,9 @@ function RefundsPanel({ listingId }) {
 
   if (!requests.length) {
     return (
-      <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center max-w-2xl">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-10 text-center max-w-2xl">
         <CheckCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500 text-sm">No refund requests for this event.</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">No refund requests for this event.</p>
       </div>
     );
   }
@@ -305,18 +305,18 @@ function RefundsPanel({ listingId }) {
         }`}>
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <p className="font-medium text-gray-900 text-sm">{r.contact_email}</p>
-              <p className="text-xs text-gray-400">Requested {new Date(r.requested_at).toLocaleDateString("en-GB")}</p>
+              <p className="font-medium text-gray-900 dark:text-white text-sm">{r.contact_email}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Requested {new Date(r.requested_at).toLocaleDateString("en-GB")}</p>
             </div>
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
-              r.status === "pending" ? "bg-amber-50 text-amber-700 border-amber-200" :
-              r.status === "approved" ? "bg-green-50 text-green-700 border-green-200" :
-              "bg-gray-50 text-gray-600 border-gray-200"
+              r.status === "pending" ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200" :
+              r.status === "approved" ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200" :
+              "bg-gray-50 text-gray-600 dark:text-gray-400 border-gray-200"
             }`}>
               {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
             </span>
           </div>
-          <p className="text-sm text-gray-700 bg-gray-50 rounded-xl px-4 py-3 mb-3">{r.reason}</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 rounded-xl px-4 py-3 mb-3">{r.reason}</p>
           {r.status === "pending" && (
             <div className="space-y-2">
               <input
@@ -325,7 +325,7 @@ function RefundsPanel({ listingId }) {
                 value={notes[r.id] || ""}
                 onChange={(e) => setNotes((p) => ({ ...p, [r.id]: e.target.value }))}
                 placeholder="Optional note to customer..."
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
               />
               <div className="flex gap-2">
                 <button
@@ -346,7 +346,7 @@ function RefundsPanel({ listingId }) {
             </div>
           )}
           {r.vendor_note && r.status !== "pending" && (
-            <p className="text-xs text-gray-500 italic mt-2">Your note: {r.vendor_note}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-2">Your note: {r.vendor_note}</p>
           )}
         </div>
       ))}
@@ -385,10 +385,10 @@ function EmailAttendeesPanel({ listingId }) {
   const isError = status === "error";
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl space-y-5">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 max-w-2xl space-y-5">
       <div>
-        <h3 className="font-medium text-gray-900 mb-1">Email All Attendees</h3>
-        <p className="text-sm text-gray-500">
+        <h3 className="font-medium text-gray-900 dark:text-white mb-1">Email All Attendees</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Send a custom email directly to all confirmed attendees' inboxes. Max 5 blasts per event per day.
         </p>
       </div>
@@ -400,7 +400,7 @@ function EmailAttendeesPanel({ listingId }) {
             Email sent to <strong>{status.sent}</strong> of <strong>{status.total}</strong> attendees.
             {status.failed > 0 && <span className="text-amber-700"> ({status.failed} failed)</span>}
             {status.remaining_today > 0 && (
-              <span className="text-gray-500"> · {status.remaining_today} blast{status.remaining_today !== 1 ? "s" : ""} left today.</span>
+              <span className="text-gray-500 dark:text-gray-400"> · {status.remaining_today} blast{status.remaining_today !== 1 ? "s" : ""} left today.</span>
             )}
           </div>
         </div>
@@ -413,29 +413,29 @@ function EmailAttendeesPanel({ listingId }) {
       )}
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-gray-700">Subject *</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Subject *</label>
         <input
           type="text"
           maxLength={150}
           value={subject}
           onChange={(e) => { setSubject(e.target.value); setStatus(null); }}
           placeholder="e.g. Important update about your ticket"
-          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
         />
-        <p className="text-xs text-gray-400 text-right">{subject.length}/150</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-right">{subject.length}/150</p>
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-gray-700">Message *</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Message *</label>
         <textarea
           rows={6}
           maxLength={2000}
           value={message}
           onChange={(e) => { setMessage(e.target.value); setStatus(null); }}
           placeholder="Write your message here. Plain text — line breaks are preserved."
-          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
         />
-        <p className="text-xs text-gray-400 text-right">{message.length}/2000</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-right">{message.length}/2000</p>
       </div>
 
       <button
@@ -479,10 +479,10 @@ function BroadcastPanel({ listingId }) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl space-y-5">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 max-w-2xl space-y-5">
       <div>
-        <h3 className="font-medium text-gray-900 mb-1">Broadcast to Attendees</h3>
-        <p className="text-sm text-gray-500">
+        <h3 className="font-medium text-gray-900 dark:text-white mb-1">Broadcast to Attendees</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Send a notification to all confirmed ticket holders for this event.
         </p>
       </div>
@@ -501,29 +501,29 @@ function BroadcastPanel({ listingId }) {
       )}
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-gray-700">Subject / Title</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Subject / Title</label>
         <input
           type="text"
           maxLength={100}
           value={title}
           onChange={(e) => { setTitle(e.target.value); setStatus(null); }}
           placeholder="e.g. Important update about the event"
-          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
         />
-        <p className="text-xs text-gray-400 text-right">{title.length}/100</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-right">{title.length}/100</p>
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-gray-700">Message</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
         <textarea
           rows={5}
           maxLength={1000}
           value={message}
           onChange={(e) => { setMessage(e.target.value); setStatus(null); }}
           placeholder="Write your message here..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
         />
-        <p className="text-xs text-gray-400 text-right">{message.length}/1000</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-right">{message.length}/1000</p>
       </div>
 
       <button
@@ -615,7 +615,7 @@ function PromoCodesPanel({ listingId, vendorId }) {
       {isLoading ? (
         <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-purple-600" /></div>
       ) : codes.length === 0 ? (
-        <p className="text-center text-gray-500 text-sm py-6">No promo codes yet. Create one below.</p>
+        <p className="text-center text-gray-500 dark:text-gray-400 text-sm py-6">No promo codes yet. Create one below.</p>
       ) : (
         <div className="space-y-3">
           {codes.map((c) => (
@@ -623,11 +623,11 @@ function PromoCodesPanel({ listingId, vendorId }) {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-medium text-purple-700 text-sm tracking-wider">{c.code}</span>
-                  <button onClick={() => copyCode(c.code)} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={() => copyCode(c.code)} className="text-gray-400 hover:text-gray-600 dark:text-gray-400">
                     <Copy className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {c.discount_type === "percentage" ? `${c.discount_value}% off` : `₦${c.discount_value} off`}
                   {c.max_uses && ` · ${c.used_count}/${c.max_uses} uses`}
                   {c.valid_until && ` · Expires ${new Date(c.valid_until).toLocaleDateString()}`}
@@ -635,7 +635,7 @@ function PromoCodesPanel({ listingId, vendorId }) {
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => toggleActive(c.id, c.active)}
-                  className={`text-xs px-2 py-1 rounded-full border font-medium transition-colors ${c.active ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"}`}>
+                  className={`text-xs px-2 py-1 rounded-full border font-medium transition-colors ${c.active ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 hover:bg-green-100" : "bg-gray-100 text-gray-500 dark:text-gray-400 border-gray-200 hover:bg-gray-200"}`}>
                   {c.active ? "Active" : "Inactive"}
                 </button>
                 <button onClick={() => deleteCode(c.id)} className="text-red-400 hover:text-red-600 transition-colors">
@@ -649,49 +649,49 @@ function PromoCodesPanel({ listingId, vendorId }) {
 
       {/* Create new */}
       <div className="space-y-3 p-4 border-2 border-dashed border-gray-200 rounded-xl">
-        <h4 className="font-medium text-gray-800 text-sm">Create Promo Code</h4>
+        <h4 className="font-medium text-gray-800 dark:text-gray-100 text-sm">Create Promo Code</h4>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-gray-600">Code *</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Code *</label>
             <input value={newCode.code}
               onChange={(e) => setNewCode((p) => ({ ...p, code: e.target.value.toUpperCase() }))}
               placeholder="e.g., EARLYBIRD20"
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-600">Discount Type</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Discount Type</label>
             <select value={newCode.discount_type}
               onChange={(e) => setNewCode((p) => ({ ...p, discount_type: e.target.value }))}
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+              className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white">
               <option value="percentage">Percentage (%)</option>
               <option value="flat">Flat Amount (₦)</option>
             </select>
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-600">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
               {newCode.discount_type === "percentage" ? "Discount %" : "Amount (₦)"} *
             </label>
             <input type="text" inputMode="decimal" value={newCode.discount_value}
               onChange={(e) => setNewCode((p) => ({ ...p, discount_value: e.target.value }))}
               placeholder={newCode.discount_type === "percentage" ? "20" : "5000"}
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-600">Max Uses (optional)</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Max Uses (optional)</label>
             <input type="text" inputMode="numeric" value={newCode.max_uses}
               onChange={(e) => setNewCode((p) => ({ ...p, max_uses: e.target.value }))}
               placeholder="e.g., 50"
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-medium text-gray-600">Expiry Date (optional)</label>
+          <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Expiry Date (optional)</label>
           <input type="date" value={newCode.valid_until}
             onChange={(e) => setNewCode((p) => ({ ...p, valid_until: e.target.value }))}
             min={new Date().toISOString().split("T")[0]}
-            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+            className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
         </div>
 
         {error && <p className="text-xs text-red-500">{error}</p>}
@@ -771,7 +771,7 @@ const EventManagementDashboard = () => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading event data...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading event data...</p>
         </div>
       </div>
     );
@@ -782,7 +782,7 @@ const EventManagementDashboard = () => {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <p className="text-gray-600">Event not found</p>
+          <p className="text-gray-600 dark:text-gray-400">Event not found</p>
         </div>
       </div>
     );
@@ -800,24 +800,24 @@ const EventManagementDashboard = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-3xl font-medium text-gray-900">{listing.title}</h1>
-              <p className="text-gray-600 mt-1">{listing.location}</p>
+              <h1 className="text-3xl font-medium text-gray-900 dark:text-white">{listing.title}</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">{listing.location}</p>
             </div>
             <button
               onClick={handleDuplicate}
               disabled={duplicating}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shrink-0"
             >
               {duplicating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
               {duplicating ? "Duplicating..." : "Duplicate Event"}
             </button>
           </div>
           {listing.event_date && (
-            <div className="flex items-center gap-2 text-gray-600 mt-3">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mt-3">
               <Calendar className="w-5 h-5 text-purple-600" />
               <span>
                 {new Date(listing.event_date).toLocaleDateString("en-US", {
@@ -844,11 +844,11 @@ const EventManagementDashboard = () => {
           <RemainingTicketsCard listing={listing} isEditing={isEditingTickets}
             setIsEditing={setIsEditingTickets} updateTickets={updateTickets} />
           <StatCard label="Total Revenue" value={`₦${stats.revenue.toLocaleString()}`}
-            sub={<span className="text-gray-500">{stats.paidBookings.length} paid bookings</span>}
+            sub={<span className="text-gray-500 dark:text-gray-400">{stats.paidBookings.length} paid bookings</span>}
             iconBg="bg-blue-50" Icon={Users} iconColor="text-blue-600" />
           <StatCard label="Scanned Tickets" value={stats.scanned.toLocaleString()}
             sub={stats.ticketsSold > 0 && (
-              <span className="text-gray-500">
+              <span className="text-gray-500 dark:text-gray-400">
                 {((stats.scanned / stats.ticketsSold) * 100).toFixed(1)}% of sold
               </span>
             )}
@@ -865,7 +865,7 @@ const EventManagementDashboard = () => {
                   className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-all ${
                     activeTab === tab.id
                       ? "border-purple-600 text-purple-700"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-300 hover:border-gray-300"
                   }`}>
                   <Icon className="w-4 h-4" />
                   {tab.label}
@@ -877,12 +877,12 @@ const EventManagementDashboard = () => {
 
         {/* ── Bookings Tab ── */}
         {activeTab === "bookings" && (
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-medium text-gray-900">Event Bookings</h2>
-                  <p className="text-gray-600 text-sm mt-1">{bookings.length} total bookings</p>
+                  <h2 className="text-xl font-medium text-gray-900 dark:text-white">Event Bookings</h2>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">{bookings.length} total bookings</p>
                 </div>
                 <button
                   onClick={() => exportToCSV(bookings, listing.title)}
@@ -893,13 +893,13 @@ const EventManagementDashboard = () => {
 
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                   <input type="text" placeholder="Search by name, email, or phone..."
                     value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" />
                 </div>
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-sm">
+                  className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-sm">
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
                   <option value="confirmed">Confirmed</option>
@@ -913,8 +913,8 @@ const EventManagementDashboard = () => {
               {filteredBookings.length === 0 ? (
                 <div className="text-center py-16">
                   <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 font-medium">No bookings found</p>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <p className="text-gray-600 dark:text-gray-400 font-medium">No bookings found</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                     {searchTerm || statusFilter !== "all"
                       ? "Try adjusting your filters"
                       : "Bookings will appear here once customers register"}
@@ -922,18 +922,18 @@ const EventManagementDashboard = () => {
                 </div>
               ) : (
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gray-50 border-b border-gray-200 dark:border-gray-700">
                     <tr>
                       {["Customer", "Contact", "Date", "Tickets", "Amount", "Status", "Payment", "Check-in"].map((col) => (
-                        <th key={col} className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        <th key={col} className="px-6 py-4 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           {col}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {filteredBookings.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
@@ -942,34 +942,34 @@ const EventManagementDashboard = () => {
                               </span>
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">{booking.users?.name || "Guest User"}</p>
+                              <p className="font-medium text-gray-900 dark:text-white">{booking.users?.name || "Guest User"}</p>
                               {booking.ticket_details?.package && (
-                                <p className="text-xs text-gray-500">{booking.ticket_details.package} Package</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{booking.ticket_details.package} Package</p>
                               )}
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Mail className="w-4 h-4 text-gray-400" />{booking.contact_email}
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />{booking.contact_email}
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Phone className="w-4 h-4 text-gray-400" />{booking.contact_phone}
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500" />{booking.contact_phone}
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                           {new Date(booking.booking_date || booking.created_at).toLocaleDateString("en-US", {
                             month: "short", day: "numeric", year: "numeric",
                           })}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
+                          <span className="px-3 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 rounded-full text-sm font-medium">
                             {booking.ticket_details?.quantity || booking.guests} tickets
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-medium text-gray-900">
+                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                           ₦{parseFloat(booking.total_amount).toLocaleString()}
                         </td>
                         <td className="px-6 py-4"><StatusBadge status={booking.status} /></td>
@@ -984,7 +984,7 @@ const EventManagementDashboard = () => {
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                               booking.checked_in
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                                : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200"
+                                : "bg-gray-50 text-gray-500 dark:text-gray-400 border-gray-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200"
                             }`}
                           >
                             {booking.checked_in ? (
@@ -1007,9 +1007,9 @@ const EventManagementDashboard = () => {
         {activeTab === "analytics" && (
           <div className="space-y-6">
             {/* Sales velocity */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <h3 className="font-medium text-gray-900 mb-1">Ticket Sales Velocity</h3>
-              <p className="text-sm text-gray-500 mb-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-1">Ticket Sales Velocity</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
                 Cumulative tickets sold over time (solid) vs. daily new sales (dashed)
               </p>
               <SalesVelocityChart bookings={bookings} eventDate={listing.event_date} />
@@ -1017,8 +1017,8 @@ const EventManagementDashboard = () => {
 
             {/* Ticket tier breakdown */}
             {listing.ticket_packages?.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-medium text-gray-900 mb-4">Ticket Tier Breakdown</h3>
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+                <h3 className="font-medium text-gray-900 dark:text-white mb-4">Ticket Tier Breakdown</h3>
                 <div className="space-y-3">
                   {listing.ticket_packages.map((pkg, i) => {
                     const sold = bookings
@@ -1029,8 +1029,8 @@ const EventManagementDashboard = () => {
                     return (
                       <div key={i}>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="font-medium text-gray-800">{pkg.name}</span>
-                          <span className="text-gray-500">{sold} / {total} sold · ₦{(sold * pkg.price).toLocaleString()} revenue</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-100">{pkg.name}</span>
+                          <span className="text-gray-500 dark:text-gray-400">{sold} / {total} sold · ₦{(sold * pkg.price).toLocaleString()} revenue</span>
                         </div>
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div className="h-full bg-purple-500 rounded-full transition-all"
@@ -1044,8 +1044,8 @@ const EventManagementDashboard = () => {
             )}
 
             {/* Booking status breakdown */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <h3 className="font-medium text-gray-900 mb-4">Booking Status Breakdown</h3>
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-4">Booking Status Breakdown</h3>
               {["confirmed", "pending", "completed", "cancelled"].map((status) => {
                 const count = bookings.filter((b) => b.status === status).length;
                 const pct = bookings.length > 0 ? ((count / bookings.length) * 100).toFixed(0) : 0;
@@ -1058,8 +1058,8 @@ const EventManagementDashboard = () => {
                 return (
                   <div key={status} className="mb-3">
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="capitalize font-medium text-gray-700">{status}</span>
-                      <span className="text-gray-500">{count} ({pct}%)</span>
+                      <span className="capitalize font-medium text-gray-700 dark:text-gray-300">{status}</span>
+                      <span className="text-gray-500 dark:text-gray-400">{count} ({pct}%)</span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div className={`h-full ${colors[status]} rounded-full`} style={{ width: `${pct}%` }} />
@@ -1081,9 +1081,9 @@ const EventManagementDashboard = () => {
 
         {/* ── Promo Codes Tab ── */}
         {activeTab === "promo" && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-2xl">
-            <h3 className="font-medium text-gray-900 mb-1">Promo Codes</h3>
-            <p className="text-sm text-gray-500 mb-6">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 max-w-2xl">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-1">Promo Codes</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               Create discount codes for your attendees. Share them via social media or email.
             </p>
             <PromoCodesPanel listingId={listingId} vendorId={listing.vendor_id} />

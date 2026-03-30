@@ -84,12 +84,12 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
         ) : booking ? (
           <div className="space-y-5">
             {/* Hotel Info */}
-            <div className="bg-purple-50 rounded-xl p-4">
-              <h3 className="font-medium text-gray-900">
+            <div className="bg-purple-50 dark:bg-transparent rounded-xl p-4">
+              <h3 className="font-medium text-gray-900 dark:text-white">
                 {booking.hotel?.name}
               </h3>
               {booking.hotel?.city && (
-                <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
                   <MapPin className="h-3.5 w-3.5 text-purple-400" />
                   {booking.hotel.city}, {booking.hotel.state}
                 </p>
@@ -109,15 +109,15 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
 
             {/* Dates */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-400 mb-1">Check-in</p>
-                <p className="text-sm font-medium text-gray-900">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Check-in</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {format(new Date(booking.check_in_date), "EEE, MMM d yyyy")}
                 </p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-400 mb-1">Check-out</p>
-                <p className="text-sm font-medium text-gray-900">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Check-out</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {format(new Date(booking.check_out_date), "EEE, MMM d yyyy")}
                 </p>
               </div>
@@ -125,22 +125,22 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
 
             {/* Guest details */}
             <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Guest Details
               </p>
               <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <Users className="h-4 w-4 text-purple-400" />
                   <span>
                     {booking.adults} adult{booking.adults !== 1 ? "s" : ""}
                     {booking.children > 0 && ` · ${booking.children} children`}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <Mail className="h-4 w-4 text-purple-400" />
                   <span>{booking.guest_email}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <Phone className="h-4 w-4 text-purple-400" />
                   <span>{booking.guest_phone}</span>
                 </div>
@@ -160,8 +160,8 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
             )}
 
             {/* Payment status */}
-            <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
-              <span className="text-sm text-gray-600">Payment Status</span>
+            <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Payment Status</span>
               <span
                 className={`text-sm font-medium ${
                   booking.payment_status === "completed"
@@ -190,10 +190,10 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
                       />
                     </div>
                   </div>
-                  <p className="text-2xl font-medium tracking-[0.25em] text-gray-900 mb-1">
+                  <p className="text-2xl font-medium tracking-[0.25em] text-gray-900 dark:text-white mb-1">
                     {booking.check_in_code}
                   </p>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
                     Show this code at the front desk on arrival
                   </p>
                   {booking.checked_in && (
@@ -305,7 +305,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
             )}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 text-center py-8">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
             Unable to load booking details.
           </p>
         )}

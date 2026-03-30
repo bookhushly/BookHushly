@@ -333,14 +333,14 @@ export default function HotelRegistration({ onComplete }) {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-medium text-gray-900 mb-2">
+              <h1 className="text-3xl font-medium text-gray-900 dark:text-white mb-2">
                 Register Your Hotel
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Set up your hotel, suite types, and rooms in just a few steps
               </p>
             </div>
-            <div className="text-xs text-gray-500 flex items-center gap-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               Auto-saving
             </div>
@@ -349,7 +349,7 @@ export default function HotelRegistration({ onComplete }) {
 
         <StepIndicator steps={STEPS} currentStep={currentStep} />
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-6">
           {renderStep()}
         </div>
 
@@ -358,7 +358,7 @@ export default function HotelRegistration({ onComplete }) {
             onClick={prevStep}
             disabled={currentStep === 1}
             type="button"
-            className="flex items-center gap-2 px-6 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 text-gray-700 dark:text-gray-300 bg-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Previous

@@ -56,7 +56,7 @@ export default function EditPolicies({ formData, updateFormData }) {
 
       {/* Instant Booking */}
       <div className="space-y-2">
-        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+        <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
           <input
             type="checkbox"
             checked={formData.instant_booking !== false}
@@ -67,7 +67,7 @@ export default function EditPolicies({ formData, updateFormData }) {
           />
           <div>
             <span className="font-medium text-sm">Enable Instant Booking</span>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Guests can book immediately without approval
             </p>
           </div>
@@ -84,7 +84,7 @@ export default function EditPolicies({ formData, updateFormData }) {
               className={`flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg transition-all ${
                 formData.cancellation_policy_type === template.value
                   ? "border-purple-600 bg-purple-50"
-                  : "border-gray-200 hover:bg-gray-50"
+                  : "border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
               <input
@@ -105,7 +105,7 @@ export default function EditPolicies({ formData, updateFormData }) {
                 <span className="font-medium text-sm block">
                   {template.label}
                 </span>
-                <span className="text-xs text-gray-600 block mt-1">
+                <span className="text-xs text-gray-600 dark:text-gray-400 block mt-1">
                   {template.description}
                 </span>
               </div>
@@ -139,7 +139,7 @@ export default function EditPolicies({ formData, updateFormData }) {
           value={formData.house_rules || ""}
           onChange={(e) => updateFormData({ house_rules: e.target.value })}
         />
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           Be specific about smoking, parties, noise, pets, and other important
           rules
         </p>
@@ -173,7 +173,7 @@ export default function EditPolicies({ formData, updateFormData }) {
             />
           </div>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           Leave empty if apartment is available indefinitely
         </p>
       </div>

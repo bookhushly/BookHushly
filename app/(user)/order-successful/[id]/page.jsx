@@ -141,7 +141,8 @@ const OrderSuccessful = () => {
           `*,
           apartment:apartment_id (
             id, name, city, state, area, address,
-            check_in_time, check_out_time, vendor_id
+            check_in_time, check_out_time, vendor_id,
+            agent_name, agent_phone, agent_image_url, agent_bio
           )`,
         )
         .eq("id", bookingId)
@@ -485,6 +486,41 @@ const OrderSuccessful = () => {
             )}
           </div>
         </div>
+
+        {/* Meet Your Host — apartment bookings only */}
+        {bookingType === BOOKING_TYPES.APARTMENT && booking.apartment?.agent_name && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
+            <h3 className="font-medium text-gray-900 text-sm mb-4">Meet Your Host</h3>
+            <div className="flex items-start gap-4">
+              {booking.apartment.agent_image_url ? (
+                <img
+                  src={booking.apartment.agent_image_url}
+                  alt={booking.apartment.agent_name}
+                  className="w-14 h-14 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center shrink-0 text-violet-600 text-xl font-medium">
+                  {booking.apartment.agent_name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm">{booking.apartment.agent_name}</p>
+                {booking.apartment.agent_bio && (
+                  <p className="text-[12px] text-gray-500 mt-0.5 line-clamp-2">{booking.apartment.agent_bio}</p>
+                )}
+                {booking.apartment.agent_phone && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span className="text-[13px] text-gray-700 font-medium">{booking.apartment.agent_phone}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <p className="mt-4 text-[12px] text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+              {booking.apartment.agent_name.split(" ")[0]} will be your host throughout your stay. You can reach them directly on the number above after check-in.
+            </p>
+          </div>
+        )}
 
         {/* Total Amount */}
         <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">

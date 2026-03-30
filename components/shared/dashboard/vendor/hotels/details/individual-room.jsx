@@ -172,12 +172,12 @@ export function IndividualRoomsSection({
   };
 
   const statusColors = {
-    available: "bg-green-100 text-green-700",
-    occupied: "bg-blue-100 text-blue-700",
+    available: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+    occupied: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
     reserved: "bg-purple-100 text-purple-700",
     dirty: "bg-yellow-100 text-yellow-700",
-    out_of_service: "bg-red-100 text-red-700",
-    under_maintenance: "bg-gray-100 text-gray-700",
+    out_of_service: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+    under_maintenance: "bg-gray-100 text-gray-700 dark:text-gray-300",
   };
 
   const statusLabels = {
@@ -213,12 +213,12 @@ export function IndividualRoomsSection({
         <CardContent className="text-center py-12">
           <div className="max-w-md mx-auto">
             <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Bed className="h-8 w-8 text-gray-400" />
+              <Bed className="h-8 w-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Create room types first
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Before adding individual rooms, you need to create at least one
               room type
             </p>
@@ -233,10 +233,10 @@ export function IndividualRoomsSection({
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-medium text-gray-900">
+            <h2 className="text-xl font-medium text-gray-900 dark:text-white">
               Individual Rooms
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Manage specific room numbers and their availability
             </p>
           </div>
@@ -254,12 +254,12 @@ export function IndividualRoomsSection({
             <CardContent className="text-center py-12">
               <div className="max-w-md mx-auto">
                 <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Plus className="h-8 w-8 text-gray-400" />
+                  <Plus className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   No rooms yet
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Start adding individual rooms to your hotel inventory
                 </p>
                 <Button
@@ -312,7 +312,7 @@ export function IndividualRoomsSection({
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 flex items-center gap-1">
+                    <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1">
                       <Building className="h-3.5 w-3.5" />
                       Floor {room.floor}
                     </span>
@@ -325,13 +325,13 @@ export function IndividualRoomsSection({
                     </span>
                   </div>
 
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     <Bed className="h-3.5 w-3.5 inline mr-1" />
                     {getBedSummary(room.beds)}
                   </div>
 
-                  <div className="pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1">
+                  <div className="pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                       Price per Night
                     </p>
                     <p className="text-lg font-medium text-purple-600">
@@ -340,7 +340,7 @@ export function IndividualRoomsSection({
                   </div>
 
                   {room.notes && (
-                    <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-800">
                       {room.notes}
                     </div>
                   )}
@@ -361,11 +361,11 @@ export function IndividualRoomsSection({
             className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                 {editingRoom ? "Edit Room" : "Add New Room"}
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Configure the details for this specific room
               </p>
             </div>
@@ -580,10 +580,10 @@ export function IndividualRoomsSection({
             className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-medium text-gray-900 mb-2">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Delete Room
             </h2>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to delete this room? This action cannot be
               undone.
             </p>

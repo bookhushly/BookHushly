@@ -100,23 +100,23 @@ export function VendorDetailsModal({ vendorId, onClose }) {
   // Get status badge
   const getStatusBadge = () => {
     const statusConfig = {
-      pending: { bg: "bg-gray-100", text: "text-gray-800", label: "Pending" },
+      pending: { bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-800 dark:text-gray-300", label: "Pending" },
       submitted: {
-        bg: "bg-blue-100",
-        text: "text-blue-800",
+        bg: "bg-blue-100 dark:bg-blue-900/30",
+        text: "text-blue-800 dark:text-blue-400",
         label: "Submitted",
       },
       reviewing: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-800",
+        bg: "bg-yellow-100 dark:bg-yellow-900/30",
+        text: "text-yellow-800 dark:text-yellow-400",
         label: "Reviewing",
       },
       approved: {
-        bg: "bg-green-100",
-        text: "text-green-800",
+        bg: "bg-green-100 dark:bg-green-900/30",
+        text: "text-green-800 dark:text-green-400",
         label: "Approved",
       },
-      rejected: { bg: "bg-red-100", text: "text-red-800", label: "Rejected" },
+      rejected: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-800 dark:text-red-400", label: "Rejected" },
     };
 
     const config = statusConfig[vendor.status] || statusConfig.pending;
@@ -135,14 +135,14 @@ export function VendorDetailsModal({ vendorId, onClose }) {
     <>
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[90vh] flex flex-col p-0">
-          <div className="px-6 pt-6 pb-4 border-b border-gray-200">
+          <div className="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <DialogHeader>
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <DialogTitle className="text-xl sm:text-2xl break-words">
                     {vendor.business_name}
                   </DialogTitle>
-                  <p className="text-sm text-gray-500 mt-1 break-words">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 break-words">
                     {vendor.users?.email}
                   </p>
                 </div>
@@ -155,7 +155,7 @@ export function VendorDetailsModal({ vendorId, onClose }) {
             <div className="space-y-4">
               {/* Approve/Reject buttons for pending vendors */}
               {canApprove && (
-                <div className="flex flex-col sm:flex-row gap-2 p-4 bg-gray-50 rounded-lg">
+                <div className="flex flex-col sm:flex-row gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                   <Button
                     onClick={handleApprove}
                     disabled={approving}
@@ -198,12 +198,12 @@ export function VendorDetailsModal({ vendorId, onClose }) {
 
               {/* Re-approve option for rejected vendors */}
               {isRejected && (
-                <div className="flex gap-2 p-4 bg-red-50 rounded-lg border border-red-200">
+                <div className="flex gap-2 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-red-800">
+                    <p className="text-sm font-medium text-red-800 dark:text-red-400">
                       This vendor was rejected
                     </p>
-                    <p className="text-xs text-red-600 mt-1">
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                       You can re-approve them if needed
                     </p>
                   </div>

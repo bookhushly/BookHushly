@@ -26,9 +26,9 @@ const FOCUS_OPTIONS = [
 ];
 
 const PRIORITY_CONFIG = {
-  high:   { color: "bg-red-50 border-red-100 text-red-700",     dot: "bg-red-500" },
-  medium: { color: "bg-amber-50 border-amber-100 text-amber-700", dot: "bg-amber-500" },
-  low:    { color: "bg-gray-50 border-gray-100 text-gray-600",  dot: "bg-gray-400" },
+  high:   { color: "bg-red-50 dark:bg-red-950 border-red-100 dark:border-red-800 text-red-700 dark:text-red-400",     dot: "bg-red-500" },
+  medium: { color: "bg-amber-50 dark:bg-amber-950 border-amber-100 dark:border-amber-800 text-amber-700 dark:text-amber-400", dot: "bg-amber-500" },
+  low:    { color: "bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400",  dot: "bg-gray-400" },
 };
 
 const TYPE_CONFIG = {
@@ -57,8 +57,8 @@ function ScoreRing({ score }) {
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-2xl font-medium text-gray-900">{score}</span>
-        <span className="text-[10px] text-gray-400 font-medium">/100</span>
+        <span className="text-2xl font-medium text-gray-900 dark:text-white">{score}</span>
+        <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">/100</span>
       </div>
     </div>
   );
@@ -96,11 +96,11 @@ export function AdminAIEvaluator() {
   return (
     <Card className="border border-violet-100">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-medium text-gray-900">
+        <CardTitle className="flex items-center gap-2 text-base font-medium text-gray-900 dark:text-white">
           <ClipboardCheck className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
           AI Platform Evaluator
         </CardTitle>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
           Claude analyses your live platform data and returns actionable insights.
         </p>
       </CardHeader>
@@ -114,15 +114,15 @@ export function AdminAIEvaluator() {
               onClick={() => { setFocus(value); setResult(null); }}
               className={`flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all ${
                 focus === value
-                  ? "border-violet-300 bg-violet-50 shadow-sm shadow-violet-100"
-                  : "border-gray-100 hover:border-violet-200 hover:bg-gray-50"
+                  ? "border-violet-300 bg-violet-50 dark:bg-violet-950 shadow-sm shadow-violet-100"
+                  : "border-gray-100 dark:border-gray-700 hover:border-violet-200 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
-              <Icon className={`h-4 w-4 ${focus === value ? "text-violet-600" : "text-gray-400"}`} strokeWidth={1.75} />
-              <span className={`text-[12px] font-medium ${focus === value ? "text-violet-700" : "text-gray-700"}`}>
+              <Icon className={`h-4 w-4 ${focus === value ? "text-violet-600" : "text-gray-400 dark:text-gray-500"}`} strokeWidth={1.75} />
+              <span className={`text-[12px] font-medium ${focus === value ? "text-violet-700" : "text-gray-700 dark:text-gray-300"}`}>
                 {label}
               </span>
-              <span className="text-[10px] text-gray-400 leading-tight">{description}</span>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">{description}</span>
             </button>
           ))}
         </div>
@@ -154,13 +154,13 @@ export function AdminAIEvaluator() {
         {result && meta && (
           <div className="space-y-5">
             {/* Score + summary */}
-            <div className="flex items-center gap-5 p-4 rounded-xl bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-100">
+            <div className="flex items-center gap-5 p-4 rounded-xl bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950 dark:to-indigo-950 border border-violet-100 dark:border-violet-800">
               <div className="relative shrink-0">
                 <ScoreRing score={result.score} />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-medium text-gray-900">Platform Health Score</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Platform Health Score</p>
                   <Badge
                     variant="outline"
                     className={
@@ -174,37 +174,37 @@ export function AdminAIEvaluator() {
                     {result.score >= 70 ? "Healthy" : result.score >= 45 ? "Needs Attention" : "Critical"}
                   </Badge>
                 </div>
-                <p className="text-[13px] text-gray-600 leading-relaxed">{result.summary}</p>
+                <p className="text-[13px] text-gray-600 dark:text-gray-400 leading-relaxed">{result.summary}</p>
 
                 {/* Quick meta stats */}
                 <div className="flex flex-wrap gap-3 mt-3">
-                  <span className="text-[11px] text-gray-500">
-                    <span className="font-medium text-gray-800">{meta.totalVendors}</span> vendors
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{meta.totalVendors}</span> vendors
                     ({meta.approvedVendors} approved)
                   </span>
-                  <span className="text-[11px] text-gray-500">
-                    <span className="font-medium text-gray-800">{meta.totalListings}</span> active listings
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{meta.totalListings}</span> active listings
                   </span>
-                  <span className="text-[11px] text-gray-500">
-                    <span className="font-medium text-gray-800">
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-100">
                       ₦{(meta.totalRevenue30d || 0).toLocaleString()}
                     </span> revenue (30d)
                   </span>
-                  <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     <TrendingUp className={`h-3 w-3 ${meta.revenueGrowth >= 0 ? "text-emerald-500" : "text-red-500"}`} />
                     <span className={`font-medium ${meta.revenueGrowth >= 0 ? "text-emerald-700" : "text-red-700"}`}>
                       {meta.revenueGrowth >= 0 ? "+" : ""}{meta.revenueGrowth}%
                     </span>
                     <span>7d change</span>
                   </span>
-                  <span className="text-[11px] text-gray-500">
-                    <span className="font-medium text-gray-800">{meta.paymentSuccessRate ?? "—"}%</span> payment success
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{meta.paymentSuccessRate ?? "—"}%</span> payment success
                   </span>
-                  <span className="text-[11px] text-gray-500">
-                    <span className="font-medium text-gray-800">{meta.confirmedCount}/{meta.totalBookings}</span> bookings confirmed
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{meta.confirmedCount}/{meta.totalBookings}</span> bookings confirmed
                   </span>
-                  <span className="text-[11px] text-gray-500">
-                    <span className="font-medium text-gray-800">{meta.totalViews}</span> listing views (30d)
+                  <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{meta.totalViews}</span> listing views (30d)
                   </span>
                 </div>
               </div>
@@ -226,12 +226,12 @@ export function AdminAIEvaluator() {
                       <TypeIcon className={`h-4 w-4 shrink-0 mt-0.5 ${typeConf.color}`} strokeWidth={2} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="text-[12px] font-medium text-gray-900 leading-tight">
+                          <p className="text-[12px] font-medium text-gray-900 dark:text-white leading-tight">
                             {insight.title}
                           </p>
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${priorityConf.dot}`} />
                         </div>
-                        <p className="text-[12px] leading-relaxed text-gray-700">
+                        <p className="text-[12px] leading-relaxed text-gray-700 dark:text-gray-300">
                           {insight.body}
                         </p>
                       </div>
@@ -241,7 +241,7 @@ export function AdminAIEvaluator() {
               })}
             </div>
 
-            <p className="text-[10px] text-gray-400 text-right">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 text-right">
               Analysis for: {selectedFocus?.label} · Powered by Claude
             </p>
           </div>

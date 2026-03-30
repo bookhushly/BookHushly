@@ -24,7 +24,7 @@ export default function Step2SuiteTypes({
 
       {suiteTypes.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Added Suite Types ({suiteTypes.length})
           </h4>
           <div className="grid gap-3">
@@ -40,7 +40,7 @@ export default function Step2SuiteTypes({
       )}
 
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 space-y-6">
-        <h4 className="text-sm font-medium text-gray-700">
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {suiteTypes.length === 0
             ? "Add Your First Suite Type"
             : "Add Another Suite Type"}
@@ -48,7 +48,7 @@ export default function Step2SuiteTypes({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Suite Name *
             </label>
             <input
@@ -57,13 +57,13 @@ export default function Step2SuiteTypes({
               onChange={(e) =>
                 setCurrentSuite((prev) => ({ ...prev, name: e.target.value }))
               }
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Deluxe Suite"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Base Price (₦) *
             </label>
             <input
@@ -75,13 +75,13 @@ export default function Step2SuiteTypes({
                   base_price: e.target.value,
                 }))
               }
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="25000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Max Occupancy
             </label>
             <input
@@ -93,13 +93,13 @@ export default function Step2SuiteTypes({
                   max_occupancy: parseInt(e.target.value) || 2,
                 }))
               }
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               min="1"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Size (m²)
             </label>
             <input
@@ -111,13 +111,13 @@ export default function Step2SuiteTypes({
                   size_sqm: e.target.value,
                 }))
               }
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="35"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Description
             </label>
             <textarea
@@ -129,13 +129,13 @@ export default function Step2SuiteTypes({
                 }))
               }
               rows={2}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
               placeholder="Describe this suite type..."
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Suite Amenities
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -151,7 +151,7 @@ export default function Step2SuiteTypes({
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Suite Images
             </label>
             <div className="space-y-3">
@@ -164,9 +164,9 @@ export default function Step2SuiteTypes({
               >
                 <div className="flex items-center gap-2">
                   <Upload
-                    className={`w-6 h-6 ${isUploading ? "text-purple-500 animate-pulse" : "text-gray-400"}`}
+                    className={`w-6 h-6 ${isUploading ? "text-purple-500 animate-pulse" : "text-gray-400 dark:text-gray-500"}`}
                   />
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {isUploading
                       ? `Uploading... ${Math.round(uploadProgress)}%`
                       : "Upload suite images"}

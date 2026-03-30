@@ -278,6 +278,7 @@ const EventOrganizerDetail = ({ service }) => {
   const [imagesLoaded, setImagesLoaded] = useState(new Set());
   const [descExpanded, setDescExpanded] = useState(false);
   const [countdown, setCountdown] = useState(null);
+  const [isPast, setIsPast] = useState(false);
 
   // Waitlist state
   const [waitlistEmail, setWaitlistEmail] = useState("");
@@ -294,7 +295,12 @@ const EventOrganizerDetail = ({ service }) => {
     if (isNaN(target.getTime())) return;
     const calc = () => {
       const diff = target - Date.now();
-      if (diff <= 0) { setCountdown(null); return; }
+      if (diff <= 0) {
+        setCountdown(null);
+        setIsPast(true);
+        return;
+      }
+      setIsPast(false);
       setCountdown({
         days: Math.floor(diff / 86400000),
         hours: Math.floor((diff / 3600000) % 24),
@@ -1006,6 +1012,14 @@ const EventOrganizerDetail = ({ service }) => {
                 const isSoldOut = hasPkgs
                   ? ticketPackages.every((p) => (parseInt(p.remaining) || 0) === 0)
                   : (parseInt(service.remaining_tickets) || 0) === 0 && service.total_tickets > 0;
+
+                if (isPast) {
+                  return (
+                    <div className="w-full h-12 flex items-center justify-center gap-2 bg-gray-100 text-gray-400 font-medium rounded-xl text-base cursor-default select-none">
+                      This event has ended
+                    </div>
+                  );
+                }
 
                 if (isSoldOut && service.availability === "available") {
                   return waitlistJoined ? (

@@ -44,9 +44,9 @@ function StatCard({ icon: Icon, label, value, sub, trend }) {
             </span>
           )}
         </div>
-        <p className="text-2xl font-medium text-gray-900">{value}</p>
-        <p className="text-sm text-gray-500 mt-0.5">{label}</p>
-        {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+        <p className="text-2xl font-medium text-gray-900 dark:text-white">{value}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
+        {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
       </CardContent>
     </Card>
   );
@@ -84,12 +84,12 @@ function CalendarHeatmap({ bookedDates }) {
 
         return (
           <div key={monthStart.toISOString()}>
-            <p className="text-sm font-medium text-gray-700 mb-2">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {format(monthStart, "MMMM yyyy")}
             </p>
             <div className="grid grid-cols-7 gap-0.5 text-center">
               {weekDays.map((d) => (
-                <div key={d} className="text-[10px] text-gray-400 pb-1">{d}</div>
+                <div key={d} className="text-[10px] text-gray-400 dark:text-gray-500 pb-1">{d}</div>
               ))}
               {Array.from({ length: startOffset }).map((_, i) => (
                 <div key={`pad-${i}`} />
@@ -104,7 +104,7 @@ function CalendarHeatmap({ bookedDates }) {
                     title={`${key}${isBooked ? " — booked" : ""}`}
                     className={`
                       aspect-square rounded text-[10px] flex items-center justify-center
-                      ${isBooked ? "bg-purple-500 text-white font-medium" : "bg-gray-100 text-gray-400"}
+                      ${isBooked ? "bg-purple-500 text-white font-medium" : "bg-gray-100 text-gray-400 dark:text-gray-500"}
                       ${isPast && !isBooked ? "opacity-40" : ""}
                     `}
                   >
@@ -328,8 +328,8 @@ export function HotelOccupancyTab({ hotelId }) {
             {data.utilisation.map((rt) => (
               <div key={rt.name}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium text-gray-700">{rt.name}</span>
-                  <span className="text-gray-500">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">{rt.name}</span>
+                  <span className="text-gray-500 dark:text-gray-400">
                     {rt.booked}/{rt.total} rooms · {rt.rate}%
                   </span>
                 </div>

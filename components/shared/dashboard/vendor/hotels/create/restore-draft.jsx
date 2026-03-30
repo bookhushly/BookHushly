@@ -20,19 +20,19 @@ export default function RestoreDraftModal({ onRestore, onDiscard, savedAt }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
             <AlertCircle className="w-6 h-6 text-purple-600" />
           </div>
 
           <div className="flex-1">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Draft Found
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               We found an unsaved draft from{" "}
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 dark:text-white">
                 {formatDate(savedAt)}
               </span>
               . Would you like to restore it or start fresh?
@@ -49,7 +49,7 @@ export default function RestoreDraftModal({ onRestore, onDiscard, savedAt }) {
 
               <button
                 onClick={onDiscard}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 Start Fresh

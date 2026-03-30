@@ -14,7 +14,7 @@ export default function EditPricing({ formData, updateFormData }) {
       <div className="space-y-2">
         <Label htmlFor="edit-price-night">Price Per Night (₦)</Label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
             ₦
           </span>
           <Input
@@ -38,7 +38,7 @@ export default function EditPricing({ formData, updateFormData }) {
       <div className="space-y-2">
         <Label htmlFor="edit-price-week">Weekly Rate (₦)</Label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
             ₦
           </span>
           <Input
@@ -62,7 +62,7 @@ export default function EditPricing({ formData, updateFormData }) {
         </div>
         {suggestedWeekly > 0 && !formData.price_per_week && (
           <div className="flex items-center gap-2">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Suggested: ₦{suggestedWeekly.toLocaleString()} (10% off)
             </p>
             <button
@@ -82,7 +82,7 @@ export default function EditPricing({ formData, updateFormData }) {
       <div className="space-y-2">
         <Label htmlFor="edit-price-month">Monthly Rate (₦)</Label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
             ₦
           </span>
           <Input
@@ -106,7 +106,7 @@ export default function EditPricing({ formData, updateFormData }) {
         </div>
         {suggestedMonthly > 0 && !formData.price_per_month && (
           <div className="flex items-center gap-2">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Suggested: ₦{suggestedMonthly.toLocaleString()} (~23% off)
             </p>
             <button
@@ -144,7 +144,7 @@ export default function EditPricing({ formData, updateFormData }) {
       <div className="space-y-2">
         <Label htmlFor="edit-deposit">Caution/Security Deposit (₦)</Label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
             ₦
           </span>
           <Input
@@ -162,7 +162,7 @@ export default function EditPricing({ formData, updateFormData }) {
             className="pl-8"
           />
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           Refundable deposit held for damages
         </p>
       </div>

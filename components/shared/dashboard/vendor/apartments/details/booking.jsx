@@ -180,7 +180,7 @@ export default function BookingsTab({ apartmentId }) {
         <CardContent className="py-12">
           <div className="flex flex-col items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-purple-600 mb-4" />
-            <p className="text-gray-600">Loading bookings...</p>
+            <p className="text-gray-600 dark:text-gray-400">Loading bookings...</p>
           </div>
         </CardContent>
       </Card>
@@ -195,12 +195,12 @@ export default function BookingsTab({ apartmentId }) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Bookings</p>
-                <p className="text-2xl font-medium text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Bookings</p>
+                <p className="text-2xl font-medium text-gray-900 dark:text-white">
                   {stats.total}
                 </p>
               </div>
-              <Calendar className="h-8 w-8 text-gray-400" />
+              <Calendar className="h-8 w-8 text-gray-400 dark:text-gray-500" />
             </div>
           </CardContent>
         </Card>
@@ -209,7 +209,7 @@ export default function BookingsTab({ apartmentId }) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Upcoming</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Upcoming</p>
                 <p className="text-2xl font-medium text-blue-600">
                   {stats.upcoming}
                 </p>
@@ -223,7 +223,7 @@ export default function BookingsTab({ apartmentId }) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Active Now</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Active Now</p>
                 <p className="text-2xl font-medium text-green-600">
                   {stats.active}
                 </p>
@@ -237,7 +237,7 @@ export default function BookingsTab({ apartmentId }) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Revenue</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
                 <p className="text-2xl font-medium text-purple-600">
                   ₦{stats.revenue.toLocaleString()}
                 </p>
@@ -260,7 +260,7 @@ export default function BookingsTab({ apartmentId }) {
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               {/* Search */}
               <div className="relative flex-1 sm:flex-none">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Search by name, email, or ID..."
                   value={searchQuery}
@@ -311,34 +311,34 @@ export default function BookingsTab({ apartmentId }) {
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="flex items-center gap-3 mb-2">
-                                <h4 className="font-medium text-lg text-gray-900">
+                                <h4 className="font-medium text-lg text-gray-900 dark:text-white">
                                   {booking.guest_name}
                                 </h4>
                                 <StatusBadge status={booking.booking_status} />
                                 <StatusBadge status={booking.payment_status} />
                               </div>
-                              <p className="text-xs text-gray-500 font-mono">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                                 ID: {booking.id.slice(0, 8)}...
                               </p>
                             </div>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                            <div className="flex items-center gap-2 text-gray-600">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                               <Mail className="h-4 w-4" />
                               {booking.guest_email}
                             </div>
                             {booking.guest_phone && (
-                              <div className="flex items-center gap-2 text-gray-600">
+                              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                 <Phone className="h-4 w-4" />
                                 {booking.guest_phone}
                               </div>
                             )}
-                            <div className="flex items-center gap-2 text-gray-600">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                               <User className="h-4 w-4" />
                               {booking.number_of_guests} guest(s)
                             </div>
-                            <div className="flex items-center gap-2 text-gray-600">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                               <Calendar className="h-4 w-4" />
                               {booking.number_of_nights} night(s)
                             </div>
@@ -346,7 +346,7 @@ export default function BookingsTab({ apartmentId }) {
 
                           <div className="flex flex-wrap items-center gap-4 text-sm">
                             <div>
-                              <span className="text-gray-600">Check-in:</span>
+                              <span className="text-gray-600 dark:text-gray-400">Check-in:</span>
                               <span className="font-medium ml-2">
                                 {new Date(
                                   booking.check_in_date
@@ -354,7 +354,7 @@ export default function BookingsTab({ apartmentId }) {
                               </span>
                             </div>
                             <div>
-                              <span className="text-gray-600">Check-out:</span>
+                              <span className="text-gray-600 dark:text-gray-400">Check-out:</span>
                               <span className="font-medium ml-2">
                                 {new Date(
                                   booking.check_out_date
@@ -362,7 +362,7 @@ export default function BookingsTab({ apartmentId }) {
                               </span>
                             </div>
                             <div>
-                              <span className="text-gray-600">Total:</span>
+                              <span className="text-gray-600 dark:text-gray-400">Total:</span>
                               <span className="font-medium text-purple-600 ml-2">
                                 ₦
                                 {parseFloat(
@@ -374,10 +374,10 @@ export default function BookingsTab({ apartmentId }) {
 
                           {booking.special_requests && (
                             <div className="text-sm">
-                              <span className="text-gray-600">
+                              <span className="text-gray-600 dark:text-gray-400">
                                 Special requests:
                               </span>
-                              <p className="text-gray-800 mt-1">
+                              <p className="text-gray-800 dark:text-gray-100 mt-1">
                                 {booking.special_requests}
                               </p>
                             </div>

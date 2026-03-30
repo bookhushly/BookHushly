@@ -64,13 +64,13 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
             <Zap className="h-5 w-5 text-yellow-600" />
             Power Supply & Backup
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Critical information for Nigerian guests
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.electricity_included || false}
@@ -83,13 +83,13 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
                 <span className="font-medium block">
                   Electricity Cost Included
                 </span>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-gray-600 dark:text-gray-400">
                   All electricity costs covered in booking price
                 </span>
               </div>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.generator_available || false}
@@ -100,13 +100,13 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
               />
               <div>
                 <span className="font-medium block">Generator Available</span>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-gray-600 dark:text-gray-400">
                   Backup generator for power outages
                 </span>
               </div>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.inverter_available || false}
@@ -117,13 +117,13 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
               />
               <div>
                 <span className="font-medium block">Inverter Backup</span>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-gray-600 dark:text-gray-400">
                   Inverter system for silent backup power
                 </span>
               </div>
             </label>
 
-            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.solar_power || false}
@@ -134,7 +134,7 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
               />
               <div>
                 <span className="font-medium block">Solar Power System</span>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-gray-600 dark:text-gray-400">
                   Solar panels for sustainable power
                 </span>
               </div>
@@ -161,7 +161,7 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Be specific about when generator is available
               </p>
             </div>
@@ -208,7 +208,7 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Important for guests to know water reliability
             </p>
           </div>
@@ -236,7 +236,7 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={formData.internet_included || false}
@@ -247,7 +247,7 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
             />
             <div className="flex-1">
               <span className="font-medium block">WiFi Included</span>
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-gray-600 dark:text-gray-400">
                 Free WiFi internet access for guests
               </span>
             </div>
@@ -273,15 +273,15 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Approximate download speed available
               </p>
             </div>
           )}
 
           {!formData.internet_included && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-sm text-gray-700">
+            <div className="bg-gray-50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 If WiFi is not included, consider mentioning this clearly in
                 your house rules. Many guests expect internet access, especially
                 for remote work.
@@ -297,7 +297,7 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
           <CardTitle>All-Inclusive Utilities?</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
             <input
               type="checkbox"
               checked={formData.utilities_included || false}
@@ -308,7 +308,7 @@ export default function Step4Utilities({ formData, updateFormData, errors }) {
             />
             <div className="flex-1">
               <span className="font-medium block">All Utilities Included</span>
-              <span className="text-xs text-gray-600 block mt-1">
+              <span className="text-xs text-gray-600 dark:text-gray-400 block mt-1">
                 Check this if electricity, water, and internet costs are all
                 included in the booking price
               </span>

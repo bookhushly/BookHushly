@@ -29,7 +29,7 @@ export default function SettingsTab({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-gray-600" />
+            <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             Listing Status
           </CardTitle>
         </CardHeader>
@@ -39,13 +39,13 @@ export default function SettingsTab({
               {isActive ? (
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-gray-400" />
+                <AlertCircle className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               )}
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 dark:text-white">
                   {isActive ? "Listing is Active" : "Listing is Inactive"}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {isActive
                     ? "Your apartment is visible to customers and can receive bookings"
                     : "Your apartment is hidden from customers and cannot receive bookings"}
@@ -56,8 +56,8 @@ export default function SettingsTab({
               variant={isActive ? "default" : "secondary"}
               className={`${
                 isActive
-                  ? "bg-green-100 text-green-700 hover:bg-green-100"
-                  : "bg-gray-100 text-gray-700"
+                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100"
+                  : "bg-gray-100 text-gray-700 dark:text-gray-300"
               }`}
             >
               {isActive ? "Active" : "Inactive"}
@@ -101,17 +101,17 @@ export default function SettingsTab({
               <>
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 <div>
-                  <p className="font-medium text-gray-900">Verified Listing</p>
+                  <p className="font-medium text-gray-900 dark:text-white">Verified Listing</p>
                 </div>
               </>
             ) : (
               <>
                 <AlertCircle className="h-5 w-5 text-orange-600" />
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-gray-900 dark:text-white">
                     Pending Verification
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Your listing is under review by our team
                   </p>
                 </div>
@@ -128,11 +128,11 @@ export default function SettingsTab({
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <p className="text-sm text-gray-600">Listing ID</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Listing ID</p>
             <p className="font-mono text-sm">{apartmentId}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Created</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Created</p>
             <p className="text-sm">
               {new Date(apartment.created_at).toLocaleDateString("en-US", {
                 year: "numeric",
@@ -142,7 +142,7 @@ export default function SettingsTab({
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Last Updated</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Last Updated</p>
             <p className="text-sm">
               {new Date(apartment.updated_at).toLocaleDateString("en-US", {
                 year: "numeric",
@@ -152,7 +152,7 @@ export default function SettingsTab({
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Total Views</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Total Views</p>
             <p className="text-sm">{apartment.views_count || 0} views</p>
           </div>
         </CardContent>

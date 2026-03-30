@@ -45,24 +45,24 @@ function TransferModal({ booking, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-gray-900 text-lg">Transfer Ticket</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100">
+          <h3 className="font-medium text-gray-900 dark:text-white text-lg">Transfer Ticket</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Transfer your ticket for <strong>{booking.listing?.title}</strong> to another person.
           Once transferred, you will no longer have access to this ticket.
         </p>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Recipient email</label>
+        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Recipient email</label>
         <input
           type="email"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           placeholder="e.g. friend@example.com"
-          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 mb-4"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 mb-4"
         />
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose} disabled={isPending}>
@@ -107,14 +107,14 @@ function RefundModal({ booking, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-gray-900 text-lg">Request Refund</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100">
+          <h3 className="font-medium text-gray-900 dark:text-white text-lg">Request Refund</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Tell the organiser why you'd like a refund for <strong>{booking.listing?.title}</strong>.
           They will review and respond within 2–3 business days.
         </p>
@@ -124,9 +124,9 @@ function RefundModal({ booking, onClose }) {
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="e.g. I can no longer attend due to travel plans..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none mb-1"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none mb-1"
         />
-        <p className="text-xs text-gray-400 text-right mb-4">{reason.length}/500</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-right mb-4">{reason.length}/500</p>
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose} disabled={isPending}>
             Cancel
@@ -205,11 +205,11 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
             {bookings.map((booking) => (
               <div
                 key={booking.id}
-                className="bg-white border border-purple-100 rounded-2xl overflow-hidden hover:shadow-md transition-all"
+                className="bg-white dark:bg-gray-900 border border-purple-100 dark:border-gray-700 rounded-2xl overflow-hidden hover:shadow-md transition-all"
               >
                 <div className="flex flex-col sm:flex-row">
                   {/* Image */}
-                  <div className="sm:w-40 h-32 sm:h-auto bg-pink-50 flex-shrink-0 overflow-hidden relative">
+                  <div className="sm:w-40 h-32 sm:h-auto bg-pink-50 dark:bg-gray-800 flex-shrink-0 overflow-hidden relative">
                     {booking.listing?.media_urls?.[0] ? (
                       <img
                         src={booking.listing.media_urls[0]}
@@ -222,7 +222,7 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
                       </div>
                     )}
                     {booking.listing?.category && (
-                      <span className="absolute top-2 left-2 text-xs font-medium bg-white/90 text-gray-700 px-2 py-0.5 rounded-full">
+                      <span className="absolute top-2 left-2 text-xs font-medium bg-white/90 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
                         {booking.listing.category}
                       </span>
                     )}
@@ -231,16 +231,16 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
                   <div className="flex-1 p-5">
                     <div className="flex justify-between gap-3 mb-2">
                       <div>
-                        <h3 className="font-medium text-gray-900">
+                        <h3 className="font-medium text-gray-900 dark:text-white">
                           {booking.listing?.title || "Event"}
                         </h3>
                         {booking.listing?.vendor_name && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             by {booking.listing.vendor_name}
                           </p>
                         )}
                         {booking.listing?.location && (
-                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
                             <MapPin className="h-3.5 w-3.5" />
                             {booking.listing.location}
                           </p>
@@ -252,7 +252,7 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm mt-3">
                       <div>
                         <p className="text-xs text-gray-400">Date</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5 text-purple-400" />
                           {format(
                             new Date(booking.booking_date),
@@ -262,14 +262,14 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Time</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5 text-purple-400" />
                           {booking.booking_time}
                         </p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Guests</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Users className="h-3.5 w-3.5 text-purple-400" />
                           {booking.guests}
                         </p>

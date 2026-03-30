@@ -139,7 +139,7 @@ export default function ApartmentDetailsPage({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-start gap-4">
@@ -147,7 +147,7 @@ export default function ApartmentDetailsPage({
                 variant="ghost"
                 size="sm"
                 asChild
-                className="text-gray-600 text-lg hover:text-gray-900"
+                className="text-gray-600 dark:text-gray-400 text-lg hover:text-gray-900 dark:text-white"
               >
                 <Link href="/vendor/dashboard">
                   <ArrowLeft className="h-4 w-4 " />
@@ -161,8 +161,8 @@ export default function ApartmentDetailsPage({
                 variant={isActive ? "default" : "secondary"}
                 className={`${
                   isActive
-                    ? "bg-green-100 text-green-700 hover:bg-green-100"
-                    : "bg-gray-100 text-gray-700"
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100"
+                    : "bg-gray-100 text-gray-700 dark:text-gray-300"
                 }`}
               >
                 {isActive ? (
@@ -212,10 +212,10 @@ export default function ApartmentDetailsPage({
           </div>
 
           <div className="mt-4">
-            <h1 className="text-2xl font-medium text-gray-900">
+            <h1 className="text-2xl font-medium text-gray-900 dark:text-white">
               {apartment.name}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               {apartment.area && `${apartment.area}, `}
               {apartment.city}, {apartment.state}
             </p>
@@ -302,7 +302,7 @@ export default function ApartmentDetailsPage({
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base pt-2">
               Are you sure you want to delete &quot;
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 dark:text-white">
                 {apartment.name}
               </span>
               &quot;? This action cannot be undone and all related data will be

@@ -6,7 +6,7 @@ export function CustomerActivity({ customerId, analytics }) {
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-lg">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           Activity Summary
         </h3>
         <div className="grid grid-cols-2 gap-4">
@@ -15,10 +15,10 @@ export function CustomerActivity({ customerId, analytics }) {
               <TrendingUp className="w-4 h-4" />
               <span className="text-sm font-medium">Total Activity</span>
             </div>
-            <p className="text-2xl font-medium text-gray-900">
+            <p className="text-2xl font-medium text-gray-900 dark:text-white">
               {analytics?.totalBookings || 0} bookings
             </p>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Worth {formatCurrency(analytics?.totalSpent || 0)}
             </p>
           </div>
@@ -27,7 +27,7 @@ export function CustomerActivity({ customerId, analytics }) {
               <Calendar className="w-4 h-4" />
               <span className="text-sm font-medium">Last Active</span>
             </div>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
               {analytics?.lastBookingDate
                 ? formatDate(analytics.lastBookingDate, "time")
                 : "No activity yet"}
@@ -36,7 +36,7 @@ export function CustomerActivity({ customerId, analytics }) {
         </div>
       </div>
 
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p>Detailed activity timeline coming soon</p>
       </div>
     </div>

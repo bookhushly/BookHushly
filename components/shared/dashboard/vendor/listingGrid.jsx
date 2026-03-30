@@ -80,22 +80,22 @@ function formatPrice(price, priceUnit) {
 
 // ─── Category badge config ──────────────────────────────────────────────────
 const CATEGORY_CONFIG = {
-  hotels: { label: "Hotel", color: "bg-blue-100 text-blue-700" },
+  hotels: { label: "Hotel", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" },
   serviced_apartments: {
     label: "Apartment",
     color: "bg-purple-100 text-purple-700",
   },
   events: { label: "Event", color: "bg-pink-100 text-pink-700" },
   food: { label: "Food", color: "bg-orange-100 text-orange-700" },
-  car_rentals: { label: "Car Rental", color: "bg-green-100 text-green-700" },
+  car_rentals: { label: "Car Rental", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" },
   logistics: { label: "Logistics", color: "bg-yellow-100 text-yellow-700" },
-  security: { label: "Security", color: "bg-red-100 text-red-700" },
+  security: { label: "Security", color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400" },
 };
 
 function CategoryBadge({ category }) {
   const config = CATEGORY_CONFIG[category] || {
     label: category,
-    color: "bg-gray-100 text-gray-700",
+    color: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 dark:text-gray-300",
   };
   return (
     <span
@@ -115,7 +115,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
   const imageUrl = listing.media_urls?.[0] || "/event-placeholder.jpg";
 
   return (
-    <div className="group bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200">
+    <div className="group bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-all duration-200">
       {/* Image */}
       <div className="relative h-48 bg-gray-100 overflow-hidden">
         <Image
@@ -127,7 +127,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
 
         {!isHotel && !listing.active && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="px-3 py-1.5 bg-white text-gray-900 text-sm font-medium rounded-full">
+            <span className="px-3 py-1.5 bg-white text-gray-900 dark:text-white text-sm font-medium rounded-full">
               Inactive
             </span>
           </div>
@@ -196,29 +196,29 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="font-medium text-gray-900 text-lg mb-2 line-clamp-1">
+        <h3 className="font-medium text-gray-900 dark:text-white text-lg mb-2 line-clamp-1">
           {listing.title}
         </h3>
 
         {isHotel && listing.location && (
-          <div className="flex items-center text-gray-600 text-sm mb-3">
+          <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm mb-3">
             <MapPin className="h-4 w-4 mr-1 shrink-0" />
             <span className="line-clamp-1">{listing.location}</span>
           </div>
         )}
 
         {!isHotel && listing.description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
             {listing.description.replace(/<[^>]*>/g, "")}
           </p>
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
           <div className="flex gap-4">
             {!isHotel && listing.price && (
               <div className="flex flex-col">
-                <span className="text-xs text-gray-500 mb-1">Price</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Price</span>
                 <span className="font-medium text-purple-600">
                   {formatPrice(listing.price, listing.price_unit)}
                 </span>
@@ -227,7 +227,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
 
             {businessCategory === "serviced_apartments" && (
               <div className="flex flex-col">
-                <span className="text-xs text-gray-500 mb-1">Bedrooms</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Bedrooms</span>
                 <span className="font-medium text-purple-600">
                   {listing.bedrooms} bed
                 </span>
@@ -236,7 +236,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
 
             {isEvent && listing.remaining_tickets != null && (
               <div className="flex flex-col">
-                <span className="text-xs text-gray-500 mb-1">Tickets Left</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Tickets Left</span>
                 <span className="font-medium text-purple-600">
                   {listing.remaining_tickets.toLocaleString()}
                 </span>
@@ -248,7 +248,7 @@ function ListingCard({ listing, businessCategory, onDelete, isDeleting }) {
             <Button
               variant="outline"
               size="sm"
-              className="h-9 hover:bg-gray-50"
+              className="h-9 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               {isHotel && <Eye className="h-4 w-4 mr-2" />}
               {isEvent && <LayoutDashboard className="h-4 w-4 mr-2" />}
@@ -330,10 +330,10 @@ export function VendorListingsGrid() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Error Loading {labels.plural}
           </h3>
-          <p className="text-gray-600 mb-4">{error.message}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error.message}</p>
           <Button onClick={() => refetch()} variant="outline">
             Try Again
           </Button>
@@ -348,10 +348,10 @@ export function VendorListingsGrid() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-medium text-gray-900">
+          <h1 className="text-2xl font-medium text-gray-900 dark:text-white">
             My {labels.plural}
           </h1>
-          <p className="text-gray-600 mt-1">{labels.sub}</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{labels.sub}</p>
         </div>
         <Link href={createRoute}>
           <Button className="bg-purple-600 hover:bg-purple-700 text-white">

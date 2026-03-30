@@ -223,7 +223,7 @@ export default function EditListingPage() {
       <div className="container max-w-2xl py-8">
         <Card>
           <CardContent className="text-center py-12">
-            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <AlertCircle className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Listing Not Found</h3>
             <p className="text-muted-foreground mb-4">
               The listing you&apos;re trying to edit could not be found.

@@ -119,8 +119,8 @@ function StaggerIn({ children, baseDelay = 80, stagger = 100 }) {
 function ChartTooltip({ active, payload, label, formatter }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-lg shadow-black/8 p-3.5">
-      <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-2">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg shadow-black/8 p-3.5">
+      <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
         {label}
       </p>
       {payload.map((p, i) => (
@@ -133,9 +133,9 @@ function ChartTooltip({ active, payload, label, formatter }) {
               className="w-2.5 h-2.5 rounded-full"
               style={{ background: p.color }}
             />
-            <span className="text-gray-600">{p.name}</span>
+            <span className="text-gray-600 dark:text-gray-400">{p.name}</span>
           </span>
-          <span className="font-medium text-gray-900">
+          <span className="font-medium text-gray-900 dark:text-white">
             {formatter ? formatter(p.value, p.name) : p.value.toLocaleString()}
           </span>
         </div>
@@ -165,11 +165,11 @@ function KpiCard({ label, value, sub, isCurrency, trend, trendLabel }) {
   const displayVal = isCurrency ? fmt(animated) : animated.toLocaleString();
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-purple-200 transition-colors">
-      <p className="text-[12px] font-medium text-gray-400 uppercase tracking-wider">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 hover:border-purple-200 dark:hover:border-purple-800 transition-colors">
+      <p className="text-[12px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">
         {label}
       </p>
-      <p className="text-[28px] font-medium text-gray-900 mt-2 leading-tight">
+      <p className="text-[28px] font-medium text-gray-900 dark:text-white mt-2 leading-tight">
         {displayVal}
       </p>
       <div className="flex items-center gap-2 mt-2">
@@ -177,8 +177,8 @@ function KpiCard({ label, value, sub, isCurrency, trend, trendLabel }) {
           <span
             className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
               trend >= 0
-                ? "bg-green-50 text-green-700"
-                : "bg-red-50 text-red-700"
+                ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400"
             }`}
           >
             {trend >= 0 ? (
@@ -190,7 +190,7 @@ function KpiCard({ label, value, sub, isCurrency, trend, trendLabel }) {
             {trend}%
           </span>
         )}
-        {sub && <p className="text-[11px] text-gray-400">{sub}</p>}
+        {sub && <p className="text-[11px] text-gray-400 dark:text-gray-500">{sub}</p>}
       </div>
     </div>
   );
@@ -200,11 +200,11 @@ function KpiCard({ label, value, sub, isCurrency, trend, trendLabel }) {
 function ChartCard({ title, sub, children, className = "" }) {
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-2xl p-5 hover:border-purple-200 transition-colors ${className}`}
+      className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 hover:border-purple-200 dark:hover:border-purple-800 transition-colors ${className}`}
     >
       <div className="mb-5">
-        <h3 className="text-[15px] font-medium text-gray-900">{title}</h3>
-        {sub && <p className="text-[12px] text-gray-400 mt-0.5">{sub}</p>}
+        <h3 className="text-[15px] font-medium text-gray-900 dark:text-white">{title}</h3>
+        {sub && <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
       </div>
       {children}
     </div>
@@ -262,16 +262,16 @@ export default function VendorAnalyticsPage() {
       `}</style>
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-[hsl(244,25%,11%)] border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-8xl mx-auto px-0 sm:px-2 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-medium text-gray-900">Analytics</h1>
-            <p className="text-[13px] text-gray-400 mt-0.5">
+            <h1 className="text-2xl font-medium text-gray-900 dark:text-white">Analytics</h1>
+            <p className="text-[13px] text-gray-400 dark:text-gray-500 mt-0.5">
               Track growth, revenue and booking trends
             </p>
           </div>
           {/* Range switcher */}
-          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1">
             {RANGE_OPTIONS.map((r) => (
               <button
                 key={r.value}
@@ -279,7 +279,7 @@ export default function VendorAnalyticsPage() {
                 className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
                   range === r.value
                     ? "bg-purple-600 text-white shadow-sm"
-                    : "text-gray-500 hover:bg-gray-50"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
               >
                 {r.label}
@@ -348,15 +348,15 @@ export default function VendorAnalyticsPage() {
                     return (
                       <div key={`${item.listing_id}-${item.listing_type}`}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[12px] text-gray-600 font-medium capitalize">
+                          <span className="text-[12px] text-gray-600 dark:text-gray-400 font-medium capitalize">
                             {item.listing_type} · {item.listing_id.slice(0, 8)}…
                           </span>
-                          <span className="flex items-center gap-1 text-[12px] font-medium text-gray-900">
+                          <span className="flex items-center gap-1 text-[12px] font-medium text-gray-900 dark:text-white">
                             <Eye className="h-3.5 w-3.5 text-violet-500" />
                             {item.views.toLocaleString()}
                           </span>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full bg-violet-500 transition-all duration-700"
                             style={{ width: `${pct}%` }}
@@ -366,7 +366,7 @@ export default function VendorAnalyticsPage() {
                     );
                   })}
                 </div>
-                <p className="text-[11px] text-gray-400 mt-4 text-right">
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-4 text-right">
                   Total all-time: {(viewStats.total ?? 0).toLocaleString()} views
                 </p>
               </ChartCard>
@@ -528,7 +528,7 @@ export default function VendorAnalyticsPage() {
                   sub="Which services earn the most"
                 >
                   {analytics.byService.length === 0 ? (
-                    <p className="text-[13px] text-gray-400 text-center py-12">
+                    <p className="text-[13px] text-gray-400 dark:text-gray-500 text-center py-12">
                       No revenue data yet
                     </p>
                   ) : (
@@ -565,7 +565,7 @@ export default function VendorAnalyticsPage() {
                         {analytics.byService.map((d) => (
                           <span
                             key={d.name}
-                            className="flex items-center gap-1.5 text-[12px] text-gray-500"
+                            className="flex items-center gap-1.5 text-[12px] text-gray-500 dark:text-gray-400"
                           >
                             <span
                               className="w-2.5 h-2.5 rounded-full"
@@ -584,7 +584,7 @@ export default function VendorAnalyticsPage() {
                   sub="Paystack vs Crypto earnings"
                 >
                   {analytics.providerSplit.length === 0 ? (
-                    <p className="text-[13px] text-gray-400 text-center py-12">
+                    <p className="text-[13px] text-gray-400 dark:text-gray-500 text-center py-12">
                       No provider data yet
                     </p>
                   ) : (
@@ -639,7 +639,7 @@ export default function VendorAnalyticsPage() {
                   sub="Across all service types"
                 >
                   {analytics.statusBreakdown.every((d) => d.value === 0) ? (
-                    <p className="text-[13px] text-gray-400 text-center py-12">
+                    <p className="text-[13px] text-gray-400 dark:text-gray-500 text-center py-12">
                       No bookings yet
                     </p>
                   ) : (
@@ -665,15 +665,15 @@ export default function VendorAnalyticsPage() {
                                         background: STATUS_COLORS[item.name],
                                       }}
                                     />
-                                    <span className="text-[13px] font-medium text-gray-700">
+                                    <span className="text-[13px] font-medium text-gray-700 dark:text-gray-300">
                                       {STATUS_LABELS[item.name]}
                                     </span>
                                   </span>
-                                  <span className="text-[13px] font-medium text-gray-900">
+                                  <span className="text-[13px] font-medium text-gray-900 dark:text-white">
                                     {item.value}
                                   </span>
                                 </div>
-                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                                   <div
                                     className="h-full rounded-full transition-all duration-1000 ease-out"
                                     style={{
@@ -686,15 +686,15 @@ export default function VendorAnalyticsPage() {
                             );
                           })}
                       </div>
-                      <div className="flex justify-center gap-5 mt-5 pt-4 border-t border-gray-100">
+                      <div className="flex justify-center gap-5 mt-5 pt-4 border-t border-gray-100 dark:border-gray-800">
                         {analytics.statusBreakdown
                           .filter((d) => d.value > 0)
                           .map((item) => (
                             <div key={item.name} className="text-center">
-                              <p className="text-[18px] font-medium text-gray-900">
+                              <p className="text-[18px] font-medium text-gray-900 dark:text-white">
                                 {item.value}
                               </p>
-                              <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mt-0.5">
+                              <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-0.5">
                                 {STATUS_LABELS[item.name]}
                               </p>
                             </div>

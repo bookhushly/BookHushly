@@ -37,22 +37,22 @@ export function AdminHeader({ onMenuClick }) {
     .slice(0, 2);
 
   return (
-    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-5 sticky top-0 z-30 shrink-0">
+    <header className="h-14 bg-white dark:bg-[hsl(244,25%,11%)] border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-5 sticky top-0 z-30 shrink-0">
       {/* Left */}
       <div className="flex items-center gap-3 flex-1 max-w-sm">
         <button
           onClick={onMenuClick}
-          className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <Menu className="h-4 w-4" />
         </button>
         <div className="relative flex-1 hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
           <input
             type="search"
             placeholder="Search vendors, bookings…"
-            className="w-full h-8 pl-8 pr-3 text-[13px] bg-gray-50 border border-gray-200 rounded-lg
-                       text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1
+            className="w-full h-8 pl-8 pr-3 text-[13px] bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg
+                       text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-1
                        focus:ring-violet-400 focus:border-violet-400 transition-colors"
           />
         </div>
@@ -64,17 +64,17 @@ export function AdminHeader({ onMenuClick }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <button className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <Avatar className="h-6 w-6">
                 <AvatarImage src={undefined} alt={displayName} />
                 <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-medium">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden sm:inline text-[13px] font-medium text-gray-700">
+              <span className="hidden sm:inline text-[13px] font-medium text-gray-700 dark:text-gray-300">
                 {displayName}
               </span>
-              <ChevronDown className="hidden sm:inline h-3 w-3 text-gray-400" />
+              <ChevronDown className="hidden sm:inline h-3 w-3 text-gray-400 dark:text-gray-500" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -82,10 +82,10 @@ export function AdminHeader({ onMenuClick }) {
             className="w-52 shadow-lg shadow-black/10"
           >
             <DropdownMenuLabel className="pb-2">
-              <p className="text-[13px] font-medium text-gray-900">
+              <p className="text-[13px] font-medium text-gray-900 dark:text-white">
                 {displayName}
               </p>
-              <p className="text-[11px] font-normal text-gray-400 mt-0.5">
+              <p className="text-[11px] font-normal text-gray-400 dark:text-gray-500 mt-0.5">
                 {user?.email}
               </p>
             </DropdownMenuLabel>
@@ -94,13 +94,13 @@ export function AdminHeader({ onMenuClick }) {
               onClick={() => router.push("/admin/dashboard/profile")}
               className="text-[13px] gap-2.5 cursor-pointer"
             >
-              <User className="h-3.5 w-3.5 text-gray-400" /> Profile
+              <User className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" /> Profile
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => router.push("/admin/dashboard/settings")}
               className="text-[13px] gap-2.5 cursor-pointer"
             >
-              <Settings className="h-3.5 w-3.5 text-gray-400" /> Settings
+              <Settings className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

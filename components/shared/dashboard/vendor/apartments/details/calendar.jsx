@@ -95,17 +95,17 @@ function BlockList({ blocked, onDelete, deleting }) {
   if (!blocked.length) return null;
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Blocked ranges</p>
+      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Blocked ranges</p>
       {blocked.map((b) => (
         <div key={b.id} className="flex items-center justify-between p-2.5 bg-red-50 border border-red-100 rounded-lg text-sm">
           <div>
-            <p className="font-medium text-gray-800">
+            <p className="font-medium text-gray-800 dark:text-gray-100">
               {format(parseISO(b.start_date), "d MMM yyyy")}
               {b.start_date !== b.end_date && (
                 <> → {format(parseISO(b.end_date), "d MMM yyyy")}</>
               )}
             </p>
-            {b.reason && <p className="text-xs text-gray-500 mt-0.5">{b.reason}</p>}
+            {b.reason && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{b.reason}</p>}
           </div>
           <button
             onClick={() => onDelete(b.id)}
@@ -165,11 +165,11 @@ function AddBlockForm({ apartmentId, onAdded, onCancel }) {
   };
 
   return (
-    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-      <p className="text-sm font-medium text-gray-800">Block date range</p>
+    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
+      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">Block date range</p>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Start date</label>
+          <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Start date</label>
           <Input
             type="date"
             value={startDate}
@@ -182,7 +182,7 @@ function AddBlockForm({ apartmentId, onAdded, onCancel }) {
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">End date</label>
+          <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">End date</label>
           <Input
             type="date"
             value={endDate}
@@ -224,7 +224,7 @@ function CalendarGrid({ month, blocked, booked, onDayClick }) {
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 mb-1">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-          <div key={d} className="text-center text-[11px] font-medium text-gray-400 py-1">{d}</div>
+          <div key={d} className="text-center text-[11px] font-medium text-gray-400 dark:text-gray-500 py-1">{d}</div>
         ))}
       </div>
       {/* Days */}
@@ -242,11 +242,11 @@ function CalendarGrid({ month, blocked, booked, onDayClick }) {
           if (past) {
             cellClass += "text-gray-300 cursor-default ";
           } else if (status.type === "booked") {
-            cellClass += "bg-blue-100 text-blue-700 cursor-default ";
+            cellClass += "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 cursor-default ";
           } else if (status.type === "blocked") {
-            cellClass += "bg-red-100 text-red-700 hover:bg-red-200 ";
+            cellClass += "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 ";
           } else {
-            cellClass += "text-gray-700 hover:bg-violet-50 hover:text-violet-700 ";
+            cellClass += "text-gray-700 dark:text-gray-300 hover:bg-violet-50 hover:text-violet-700 ";
           }
           if (isTodays) cellClass += "ring-2 ring-violet-400 ring-offset-1 ";
 
@@ -309,11 +309,11 @@ function ICalPanel({ apartmentId, onImported }) {
     <div className="flex flex-wrap gap-2">
       <button
         onClick={handleExport}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-gray-600"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
       >
         <Download className="h-3.5 w-3.5" /> Export iCal
       </button>
-      <label className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-gray-600 cursor-pointer ${importing ? "opacity-50 cursor-not-allowed" : ""}`}>
+      <label className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400 cursor-pointer ${importing ? "opacity-50 cursor-not-allowed" : ""}`}>
         {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
         Import iCal
         <input type="file" accept=".ics,text/calendar" className="hidden" disabled={importing} onChange={handleImport} />
@@ -385,7 +385,7 @@ export default function CalendarTab({ apartmentId }) {
     <div className="space-y-6">
       {/* iCal sync */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-base font-medium text-gray-900">Availability Calendar</h2>
+        <h2 className="text-base font-medium text-gray-900 dark:text-white">Availability Calendar</h2>
         <ICalPanel apartmentId={apartmentId} onImported={fetchCalendar} />
       </div>
 
@@ -408,19 +408,19 @@ export default function CalendarTab({ apartmentId }) {
               <div className="flex gap-1">
                 <button
                   onClick={() => setMonth((m) => subMonths(m, 1))}
-                  className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setMonth(new Date())}
-                  className="h-8 px-2 text-xs rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors font-medium"
+                  className="h-8 px-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
                 >
                   Today
                 </button>
                 <button
                   onClick={() => setMonth((m) => addMonths(m, 1))}
-                  className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -451,8 +451,8 @@ export default function CalendarTab({ apartmentId }) {
               <CardContent className="pt-4 pb-4">
                 <div className="flex flex-col items-center gap-1">
                   <CalendarX className="h-5 w-5 text-red-400" />
-                  <p className="text-xl font-medium text-gray-900">{blocked.length}</p>
-                  <p className="text-xs text-gray-500">Blocked</p>
+                  <p className="text-xl font-medium text-gray-900 dark:text-white">{blocked.length}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Blocked</p>
                 </div>
               </CardContent>
             </Card>
@@ -460,8 +460,8 @@ export default function CalendarTab({ apartmentId }) {
               <CardContent className="pt-4 pb-4">
                 <div className="flex flex-col items-center gap-1">
                   <CalendarCheck className="h-5 w-5 text-blue-400" />
-                  <p className="text-xl font-medium text-gray-900">{booked.length}</p>
-                  <p className="text-xs text-gray-500">Booked</p>
+                  <p className="text-xl font-medium text-gray-900 dark:text-white">{booked.length}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Booked</p>
                 </div>
               </CardContent>
             </Card>

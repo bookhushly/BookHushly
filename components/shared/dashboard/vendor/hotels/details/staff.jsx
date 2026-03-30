@@ -155,10 +155,10 @@ export function HotelStaffTab({ hotelId, hotelName }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-medium text-gray-900">
+            <h2 className="text-xl font-medium text-gray-900 dark:text-white">
               Staff Management
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Manage receptionist accounts for {hotelName}
             </p>
           </div>
@@ -185,12 +185,12 @@ export function HotelStaffTab({ hotelId, hotelName }) {
             <CardContent className="text-center py-12">
               <div className="max-w-md mx-auto">
                 <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <UserCheck className="h-8 w-8 text-gray-400" />
+                  <UserCheck className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   No staff members yet
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Add receptionists to help manage your hotel operations
                 </p>
                 <Button
@@ -240,9 +240,9 @@ export function HotelStaffTab({ hotelId, hotelName }) {
                             className="fixed inset-0 z-10"
                             onClick={() => setOpenMenuId(null)}
                           />
-                          <div className="absolute right-0 top-8 z-20 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-1">
+                          <div className="absolute right-0 top-8 z-20 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1">
                             <button
-                              className="flex w-full items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex w-full items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                               onClick={() => {
                                 setOpenMenuId(null);
                                 handleResetPassword(member);
@@ -262,7 +262,7 @@ export function HotelStaffTab({ hotelId, hotelName }) {
                               )}
                             </button>
                             <button
-                              className="flex w-full items-center px-3 py-2 text-sm text-red-600 hover:bg-gray-100"
+                              className="flex w-full items-center px-3 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800"
                               onClick={() => {
                                 setOpenMenuId(null);
                                 setDeletingStaff(member);
@@ -283,7 +283,7 @@ export function HotelStaffTab({ hotelId, hotelName }) {
                     <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
                       {member.role}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       Added {new Date(member.created_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -304,11 +304,11 @@ export function HotelStaffTab({ hotelId, hotelName }) {
             className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                 Add Receptionist
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Create a new receptionist account. A secure password will be
                 auto-generated.
               </p>
@@ -388,10 +388,10 @@ export function HotelStaffTab({ hotelId, hotelName }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4">
-              <h2 className="text-lg font-medium text-gray-900">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                 Account Credentials
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Save these credentials securely. The password cannot be
                 recovered.
               </p>
@@ -467,10 +467,10 @@ export function HotelStaffTab({ hotelId, hotelName }) {
             className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-medium text-gray-900 mb-2">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Remove Staff Member
             </h2>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to remove this staff member? They will lose
               access to the receptionist portal immediately. This action cannot
               be undone.

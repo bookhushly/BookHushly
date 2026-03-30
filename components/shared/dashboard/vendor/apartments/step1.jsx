@@ -111,7 +111,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
             {errors?.name && (
               <p className="text-sm text-red-500">{errors.name}</p>
             )}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Choose a descriptive name that highlights your apartment's best
               features
             </p>
@@ -152,7 +152,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               minHeight="250px"
               showWordCount={true}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Use formatting to make your description stand out. Mention nearby
               landmarks, shopping areas, and transportation.
             </p>
@@ -206,7 +206,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               {errors?.bathrooms && (
                 <p className="text-sm text-red-500">{errors.bathrooms}</p>
               )}
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Use 0.5 for half bathrooms (e.g., 2.5 for 2 full + 1 half)
               </p>
             </div>
@@ -247,7 +247,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
                 value={formData.square_meters || ""}
                 onChange={handleSquareMetersChange}
               />
-              <p className="text-xs text-gray-500">Optional but recommended</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Optional but recommended</p>
             </div>
           </div>
 
@@ -262,7 +262,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               value={formData.floor_number || ""}
               onChange={handleFloorNumberChange}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Helps guests know if there's elevator access needed
             </p>
           </div>
@@ -276,7 +276,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.furnished || false}
@@ -287,10 +287,10 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
                 }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
-              <span className="font-medium">Fully Furnished</span>
+              <span className="font-medium dark:text-gray-300">Fully Furnished</span>
             </label>
 
-            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.kitchen_equipped || false}
@@ -301,10 +301,10 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
                 }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
-              <span className="font-medium">Kitchen Equipped</span>
+              <span className="font-medium dark:text-gray-300">Kitchen Equipped</span>
             </label>
 
-            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.has_balcony || false}
@@ -315,10 +315,10 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
                 }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
-              <span className="font-medium">Has Balcony</span>
+              <span className="font-medium dark:text-gray-300">Has Balcony</span>
             </label>
 
-            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+            <label className="flex items-center space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 dark:border-gray-700 transition-colors">
               <input
                 type="checkbox"
                 checked={formData.has_terrace || false}
@@ -329,7 +329,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
                 }}
                 className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
               />
-              <span className="font-medium">Has Terrace</span>
+              <span className="font-medium dark:text-gray-300">Has Terrace</span>
             </label>
           </div>
 
@@ -344,7 +344,7 @@ function Step1BasicInfo({ formData, updateFormData, errors }) {
               value={formData.parking_spaces || ""}
               onChange={handleParkingSpacesChange}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Number of parking spaces included (0 if none)
             </p>
           </div>

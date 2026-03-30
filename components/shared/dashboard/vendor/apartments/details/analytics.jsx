@@ -24,14 +24,14 @@ function StatCard({ icon: Icon, label, value, sub, color = "purple" }) {
     amber: "bg-amber-50 text-amber-600",
   };
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-start gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex items-start gap-4">
       <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colors[color]}`}>
         <Icon className="h-5 w-5" />
       </div>
       <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-2xl font-medium text-gray-900 mt-0.5">{value}</p>
-        {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="text-2xl font-medium text-gray-900 dark:text-white mt-0.5">{value}</p>
+        {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -46,14 +46,14 @@ function MiniBar({ label, value, max, color }) {
   };
   return (
     <div className="flex items-center gap-3 text-xs">
-      <span className="w-16 text-gray-500 shrink-0 text-right">{label}</span>
-      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+      <span className="w-16 text-gray-500 dark:text-gray-400 shrink-0 text-right">{label}</span>
+      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
         <div
           className={`h-2 rounded-full transition-all ${barColors[color] || "bg-purple-500"}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-12 font-medium text-gray-700 text-right">{value}</span>
+      <span className="w-12 font-medium text-gray-700 dark:text-gray-300 text-right">{value}</span>
     </div>
   );
 }
@@ -83,7 +83,7 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-48 text-gray-400">
+      <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
         <Loader2 className="h-6 w-6 animate-spin mr-2" />
         Loading analytics…
       </div>
@@ -162,7 +162,7 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         Analytics for the last {MONTHS_BACK} months
         ({format(periodStart, "d MMM yyyy")} – {format(periodEnd, "d MMM yyyy")})
       </p>
@@ -200,8 +200,8 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
       </div>
 
       {/* Monthly revenue chart */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-purple-500" />
           Monthly revenue
         </h3>
@@ -211,18 +211,18 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
           ))}
         </div>
         {totalRevenue === 0 && (
-          <p className="text-xs text-gray-400 text-center mt-3">No confirmed revenue in this period</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-3">No confirmed revenue in this period</p>
         )}
       </div>
 
       {/* Booking status breakdown */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-blue-500" />
           Booking status breakdown
         </h3>
         {Object.keys(statusCount).length === 0 ? (
-          <p className="text-xs text-gray-400">No bookings yet</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">No bookings yet</p>
         ) : (
           <div className="space-y-2.5">
             {Object.entries(statusCount)
@@ -242,14 +242,14 @@ export default function AnalyticsTab({ apartmentId, apartment }) {
 
       {/* Conversion */}
       {conversionPct !== null && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex items-center gap-4">
           <div className="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
             <Eye className="h-5 w-5 text-purple-500" />
           </div>
           <div>
-            <p className="text-xs text-gray-500">View-to-booking conversion</p>
-            <p className="text-2xl font-medium text-gray-900">{conversionPct}%</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400">View-to-booking conversion</p>
+            <p className="text-2xl font-medium text-gray-900 dark:text-white">{conversionPct}%</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               {bookings.length} booking{bookings.length !== 1 ? "s" : ""} from {views?.toLocaleString()} views
             </p>
           </div>

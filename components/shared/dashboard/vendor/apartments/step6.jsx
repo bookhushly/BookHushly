@@ -314,21 +314,21 @@ export default function Step6ImagesOptimized({
                   {totalUploading > 0 ? (
                     <>
                       <div className="h-8 w-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-2" />
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         Uploading {totalUploading} file(s)...{" "}
                         {Math.round(avgProgress)}%
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Auto-retries on failure • Network resilient
                       </p>
                     </>
                   ) : (
                     <>
                       <Upload className="h-8 w-8 text-purple-600 mb-2" />
-                      <p className="text-sm text-gray-700 font-medium">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                         Click to upload or drag and drop
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         JPG, PNG or WebP • Auto-compressed for speed
                       </p>
                     </>
@@ -351,7 +351,7 @@ export default function Step6ImagesOptimized({
               ([fileId, { status, progress }]) => (
                 <div key={fileId} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 dark:text-gray-400">
                       {status === "compressing"
                         ? "Compressing..."
                         : `Uploading... ${Math.round(progress)}%`}
@@ -381,7 +381,7 @@ export default function Step6ImagesOptimized({
         <Card>
           <CardHeader>
             <CardTitle>Your Photos ({images.length})</CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Drag to reorder • First image is cover photo
             </p>
           </CardHeader>
@@ -390,7 +390,7 @@ export default function Step6ImagesOptimized({
               {images.map((url, index) => (
                 <div
                   key={index}
-                  className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden"
+                  className="relative group aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden"
                 >
                   <Image
                     src={url}
@@ -420,7 +420,7 @@ export default function Step6ImagesOptimized({
                       {index > 0 && (
                         <button
                           onClick={() => moveImage(index, index - 1)}
-                          className="flex-1 bg-white/90 hover:bg-white text-gray-900 text-xs font-medium py-1 px-2 rounded transition-colors"
+                          className="flex-1 bg-white/90 hover:bg-white text-gray-900 dark:text-white text-xs font-medium py-1 px-2 rounded transition-colors"
                         >
                           ← Move
                         </button>
@@ -436,7 +436,7 @@ export default function Step6ImagesOptimized({
                       {index < images.length - 1 && (
                         <button
                           onClick={() => moveImage(index, index + 1)}
-                          className="flex-1 bg-white/90 hover:bg-white text-gray-900 text-xs font-medium py-1 px-2 rounded transition-colors"
+                          className="flex-1 bg-white/90 hover:bg-white text-gray-900 dark:text-white text-xs font-medium py-1 px-2 rounded transition-colors"
                         >
                           Move →
                         </button>

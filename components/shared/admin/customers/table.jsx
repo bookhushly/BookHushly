@@ -17,7 +17,7 @@ const CustomerRow = memo(({ customer, onSelect }) => {
   return (
     <>
       {/* Desktop View */}
-      <TableRow className="hidden lg:table-row hover:bg-gray-50">
+      <TableRow className="hidden lg:table-row hover:bg-gray-50 dark:hover:bg-gray-800">
         <TableCell className="font-medium max-w-[200px]">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-medium text-sm">
@@ -35,12 +35,12 @@ const CustomerRow = memo(({ customer, onSelect }) => {
         <TableCell className="font-medium">
           {formatCurrency(customer.analytics?.totalSpent || 0)}
         </TableCell>
-        <TableCell className="text-sm text-gray-500">
+        <TableCell className="text-sm text-gray-500 dark:text-gray-400">
           {customer.analytics?.lastBookingDate
             ? formatDate(customer.analytics.lastBookingDate, "short")
             : "No bookings"}
         </TableCell>
-        <TableCell className="text-sm text-gray-500 whitespace-nowrap">
+        <TableCell className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
           {formatDate(customer.created_at, "short")}
         </TableCell>
         <TableCell className="text-right">
@@ -51,7 +51,7 @@ const CustomerRow = memo(({ customer, onSelect }) => {
       </TableRow>
 
       {/* Tablet View */}
-      <TableRow className="hidden md:table-row lg:hidden hover:bg-gray-50">
+      <TableRow className="hidden md:table-row lg:hidden hover:bg-gray-50 dark:hover:bg-gray-800">
         <TableCell className="font-medium">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-medium text-sm">
@@ -59,7 +59,7 @@ const CustomerRow = memo(({ customer, onSelect }) => {
             </div>
             <div>
               <div className="truncate max-w-[150px]">{customer.name}</div>
-              <div className="text-xs text-gray-500 truncate max-w-[150px]">
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
                 {customer.email}
               </div>
             </div>
@@ -69,7 +69,7 @@ const CustomerRow = memo(({ customer, onSelect }) => {
           <div className="font-medium">
             {customer.analytics?.totalBookings || 0}
           </div>
-          <div className="text-xs text-gray-500">bookings</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">bookings</div>
         </TableCell>
         <TableCell>
           <div className="font-medium">
@@ -84,10 +84,10 @@ const CustomerRow = memo(({ customer, onSelect }) => {
       </TableRow>
 
       {/* Mobile Card View */}
-      <TableRow className="md:hidden hover:bg-gray-50">
+      <TableRow className="md:hidden hover:bg-gray-50 dark:hover:bg-gray-800">
         <TableCell colSpan={7} className="p-0">
           <div
-            className="p-4 cursor-pointer active:bg-gray-100"
+            className="p-4 cursor-pointer active:bg-gray-100 dark:active:bg-gray-700"
             onClick={() => onSelect(customer)}
           >
             <div className="space-y-3">
@@ -97,10 +97,10 @@ const CustomerRow = memo(({ customer, onSelect }) => {
                   {customer.name?.charAt(0).toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-base text-gray-900 truncate">
+                  <h3 className="font-medium text-base text-gray-900 dark:text-white truncate">
                     {customer.name}
                   </h3>
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                     {customer.email}
                   </p>
                 </div>
@@ -109,21 +109,21 @@ const CustomerRow = memo(({ customer, onSelect }) => {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <ShoppingBag className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600">
+                  <ShoppingBag className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <span className="text-gray-600 dark:text-gray-400">
                     {customer.analytics?.totalBookings || 0} bookings
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600 font-medium">
+                  <DollarSign className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">
                     {formatCurrency(customer.analytics?.totalSpent || 0)}
                   </span>
                 </div>
               </div>
 
               {/* Joined Date */}
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 Joined {formatDate(customer.created_at, "short")}
               </div>
 
@@ -161,7 +161,7 @@ export function CustomersTable({ customers, loading, onSelectCustomer }) {
 
   if (customers.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-500">
+      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
         No customers found matching your criteria
       </div>
     );

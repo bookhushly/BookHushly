@@ -35,18 +35,18 @@ import { createClient } from "@/lib/supabase/client";
 function KycBadge({ approved, status }) {
   if (approved)
     return (
-      <Badge className="bg-green-50 text-green-700 border-green-200 hover:bg-green-50">
+      <Badge className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 hover:bg-green-50 dark:hover:bg-green-900/30">
         <CheckCircle2 className="h-3 w-3 mr-1" /> Verified
       </Badge>
     );
   if (status === "reviewing")
     return (
-      <Badge className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50">
+      <Badge className="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-900/30">
         <Clock className="h-3 w-3 mr-1" /> Under Review
       </Badge>
     );
   return (
-    <Badge className="bg-red-50 text-red-600 border-red-200 hover:bg-red-50">
+    <Badge className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/30">
       <AlertCircle className="h-3 w-3 mr-1" /> Not Verified
     </Badge>
   );
@@ -55,10 +55,10 @@ function KycBadge({ approved, status }) {
 // ─── Section card ─────────────────────────────────────────────────────────────
 function Card({ title, action, children }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4">
       {(title || action) && (
         <div className="flex items-center justify-between">
-          {title && <h3 className="text-sm font-medium text-gray-900">{title}</h3>}
+          {title && <h3 className="text-sm font-medium text-gray-900 dark:text-white">{title}</h3>}
           {action}
         </div>
       )}
@@ -72,9 +72,9 @@ function InfoRow({ icon: Icon, label, value, muted }) {
   return (
     <div>
       <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <div className="flex items-center gap-1.5 text-sm text-gray-800">
+      <div className="flex items-center gap-1.5 text-sm text-gray-800 dark:text-gray-100">
         <Icon className="h-3.5 w-3.5 text-violet-400 shrink-0" />
-        <span className={muted ? "text-gray-400 italic" : ""}>{value || "—"}</span>
+        <span className={muted ? "text-gray-400 dark:text-gray-500 italic" : ""}>{value || "—"}</span>
       </div>
     </div>
   );
@@ -141,8 +141,8 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
     <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-medium text-gray-900">Vendor Profile</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Manage your business profile and account details</p>
+        <h1 className="text-2xl font-medium text-gray-900 dark:text-white">Vendor Profile</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Manage your business profile and account details</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -158,10 +158,10 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
               </Avatar>
 
               <div>
-                <h2 className="text-base font-medium text-gray-900">
+                <h2 className="text-base font-medium text-gray-900 dark:text-white">
                   {vendor?.business_name || userRow?.name || "—"}
                 </h2>
-                <p className="text-xs text-gray-400">{email}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{email}</p>
               </div>
 
               {vendor && <KycBadge approved={vendor.approved} status={vendor.status} />}
@@ -173,7 +173,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
               )}
 
               {userRow?.created_at && (
-                <p className="text-xs text-gray-400 flex items-center gap-1">
+                <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   Vendor since {format(new Date(userRow.created_at), "MMMM yyyy")}
                 </p>
@@ -203,7 +203,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                   value={`****${vendor.bank_account_number.slice(-4)}`}
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 To update banking details, contact support.
               </p>
             </Card>
@@ -232,7 +232,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                     variant="outline"
                     size="sm"
                     onClick={() => setEditing(false)}
-                    className="border-gray-200 text-gray-600"
+                    className="border-gray-200 text-gray-600 dark:text-gray-400"
                   >
                     <X className="h-3.5 w-3.5 mr-1" />
                     Cancel
@@ -254,7 +254,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Your Name</Label>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Your Name</Label>
                     <Input
                       value={form.name}
                       onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -263,7 +263,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                     />
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Phone Number</Label>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</Label>
                     <Input
                       value={form.phone}
                       onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
@@ -272,7 +272,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-sm font-medium text-gray-700">Business Address</Label>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Business Address</Label>
                     <Input
                       value={form.business_address}
                       onChange={(e) => setForm((f) => ({ ...f, business_address: e.target.value }))}
@@ -281,7 +281,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-sm font-medium text-gray-700">Website</Label>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Website</Label>
                     <Input
                       value={form.website_url}
                       onChange={(e) => setForm((f) => ({ ...f, website_url: e.target.value }))}
@@ -290,7 +290,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <Label className="text-sm font-medium text-gray-700">Business Description</Label>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Business Description</Label>
                     <Textarea
                       value={form.business_description}
                       onChange={(e) => setForm((f) => ({ ...f, business_description: e.target.value }))}
@@ -315,7 +315,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                 {vendor?.business_description && (
                   <div className="sm:col-span-2">
                     <p className="text-xs text-gray-400 mb-0.5">Description</p>
-                    <p className="text-sm text-gray-700 leading-relaxed">{vendor.business_description}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{vendor.business_description}</p>
                   </div>
                 )}
               </div>
@@ -329,14 +329,14 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                 <Shield className={`h-5 w-5 ${vendor?.approved ? "text-green-500" : "text-amber-500"}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {vendor?.approved
                     ? "Your account is verified"
                     : vendor?.status === "reviewing"
                     ? "Your KYC is under review"
                     : "KYC verification required"}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {vendor?.approved
                     ? "You can accept bookings and receive payouts."
                     : vendor?.status === "reviewing"
@@ -365,8 +365,8 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Email Verified</p>
-                    <p className="text-xs text-gray-500">{email}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Email Verified</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{email}</p>
                   </div>
                 </div>
               </div>
@@ -375,7 +375,7 @@ export default function VendorProfileClient({ userId, email, userRow, vendor }) 
                   <div className="p-2 bg-violet-50 rounded-lg">
                     <Shield className="h-4 w-4 text-violet-500" />
                   </div>
-                  <p className="text-sm font-medium text-gray-900">Password</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Password</p>
                 </div>
                 <Button
                   variant="outline"

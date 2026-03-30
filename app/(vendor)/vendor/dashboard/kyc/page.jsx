@@ -65,12 +65,12 @@ const CustomProgressBar = ({ currentStep, totalSteps }) => {
                 "w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
                 currentStep >= index + 1
                   ? "bg-purple-600 text-white"
-                  : "bg-gray-200 text-gray-500",
+                  : "bg-gray-200 text-gray-500 dark:text-gray-400",
               )}
             >
               {index + 1}
             </div>
-            <p className="text-xs text-gray-500 mt-2">{step}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{step}</p>
           </div>
         ))}
       </div>
@@ -84,7 +84,7 @@ const CustomProgressBar = ({ currentStep, totalSteps }) => {
           aria-valuemax="100"
         />
       </div>
-      <p className="text-sm text-gray-500 mt-2 text-center">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
         Step {currentStep} of {totalSteps}
       </p>
     </div>
@@ -297,7 +297,7 @@ export default function KYCPage() {
         <div className="mb-8">
           <Link
             href="/vendor/dashboard"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4 py-2"
+            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-300 mb-4 py-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -305,7 +305,7 @@ export default function KYCPage() {
           <h1 className="text-3xl font-medium mb-2">
             {authData?.vendor ? "Update" : "Complete"} KYC Verification
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-400">
             {authData?.vendor
               ? "Update your business information and documents"
               : "Provide your business information to get verified and start accepting bookings"}
@@ -377,7 +377,7 @@ export default function KYCPage() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="business_category"
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300"
                     >
                       Business Category *
                     </Label>
@@ -391,19 +391,19 @@ export default function KYCPage() {
                     >
                       <SelectTrigger
                         id="business_category"
-                        className="h-11 bg-white border border-gray-200 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)] !text-black"
+                        className="h-11 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)] !text-black dark:text-white"
                       >
                         <SelectValue
                           placeholder="Select a category"
-                          className="text-black"
+                          className="text-black dark:text-white"
                         />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                      <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                         {businessCategories.map((category) => (
                           <SelectItem
                             key={category.value}
                             value={category.value}
-                            className="text-sm !text-black hover:bg-gray-50 focus:bg-gray-50 transition-colors duration-200"
+                            className="text-sm !text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 focus:bg-gray-50 transition-colors duration-200"
                           >
                             {category.label}
                           </SelectItem>
@@ -529,7 +529,7 @@ export default function KYCPage() {
 
                     <div className="space-y-4">
                       {/* CAC */}
-                      <div className="rounded-lg border border-gray-200 p-4 space-y-2">
+                      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-2">
                         <div className="flex items-center gap-2">
                           <Label
                             htmlFor="business_registration_number"
@@ -537,7 +537,7 @@ export default function KYCPage() {
                           >
                             CAC Registration Number
                           </Label>
-                          <span className="text-xs text-gray-400 font-normal">
+                          <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">
                             (optional if NIN provided)
                           </span>
                         </div>
@@ -551,14 +551,14 @@ export default function KYCPage() {
                         />
                       </div>
 
-                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
                         <div className="flex-1 h-px bg-gray-200" />
                         <span>OR</span>
                         <div className="flex-1 h-px bg-gray-200" />
                       </div>
 
                       {/* NIN */}
-                      <div className="rounded-lg border border-gray-200 p-4 space-y-4">
+                      <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-4">
                         <div className="flex items-center gap-2">
                           <Label
                             htmlFor="nin"
@@ -566,12 +566,12 @@ export default function KYCPage() {
                           >
                             National Identification Number (NIN)
                           </Label>
-                          <span className="text-xs text-gray-400 font-normal">
+                          <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">
                             (optional if CAC provided)
                           </span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-gray-400 cursor-help text-xs">
+                              <span className="text-gray-400 dark:text-gray-500 cursor-help text-xs">
                                 ⓘ
                               </span>
                             </TooltipTrigger>
@@ -631,7 +631,7 @@ export default function KYCPage() {
                         <Label htmlFor="nin">NIN</Label>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-gray-400 cursor-help text-xs">
+                            <span className="text-gray-400 dark:text-gray-500 cursor-help text-xs">
                               ⓘ
                             </span>
                           </TooltipTrigger>
@@ -785,7 +785,7 @@ export default function KYCPage() {
                       >
                         I consent to identity and document verification *
                       </Label>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         By checking this box, you agree to allow verification of
                         your CAC, NIN, and/or Driver&apos;s License through our
                         trusted partner, QoreID, in compliance with Nigeria Data
@@ -813,7 +813,7 @@ export default function KYCPage() {
                         I have read and agree to the <TermsAndConditionsModal />{" "}
                         *
                       </Label>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         By checking this box, you acknowledge that you have
                         read, understood, and agree to be bound by our Terms and
                         Conditions for listing on BOOKHUSHLY.com.
@@ -833,7 +833,7 @@ export default function KYCPage() {
                   type="button"
                   variant="outline"
                   onClick={handlePrevStep}
-                  className="border-gray-200 hover:bg-gray-50"
+                  className="border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Previous
                 </Button>
@@ -875,7 +875,7 @@ export default function KYCPage() {
                 type="button"
                 variant="outline"
                 asChild
-                className="border-gray-200 hover:bg-gray-50"
+                className="border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 <Link href="/vendor/dashboard">Cancel</Link>
               </Button>

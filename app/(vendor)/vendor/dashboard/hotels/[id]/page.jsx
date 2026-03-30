@@ -69,13 +69,13 @@ export default function HotelManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="container max-w-7xl py-6">
           <Link
             href="/vendor/dashboard"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-white mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -87,10 +87,10 @@ export default function HotelManagementPage() {
                 <Building2 className="h-8 w-8 text-purple-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-medium text-gray-900">
+                <h1 className="text-3xl font-medium text-gray-900 dark:text-white">
                   {hotel.name}
                 </h1>
-                <p className="text-gray-600 mt-1">
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
                   {hotel.city}, {hotel.state}
                 </p>
               </div>

@@ -48,7 +48,7 @@ const STATUS_STYLES = {
   },
   refunded: {
     bg: "bg-gray-50",
-    text: "text-gray-600",
+    text: "text-gray-600 dark:text-gray-400",
     border: "border-gray-200",
     dot: "bg-gray-400",
     label: "Refunded",
@@ -124,12 +124,12 @@ function StatusBadge({ rawStatus }) {
 
 function CategoryBadge({ category }) {
   const colors = {
-    event: "bg-purple-50 text-purple-700",
-    hotel: "bg-blue-50 text-blue-700",
+    event: "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400",
+    hotel: "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400",
     apartment: "bg-indigo-50 text-indigo-700",
     logistics: "bg-orange-50 text-orange-700",
-    security: "bg-red-50 text-red-700",
-    general: "bg-gray-50 text-gray-600",
+    security: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400",
+    general: "bg-gray-50 text-gray-600 dark:text-gray-400",
   };
   return (
     <span
@@ -143,16 +143,16 @@ function CategoryBadge({ category }) {
 // ─── stat card ───────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, Icon, iconBg, iconColor, accent }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-purple-200 transition-colors">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 hover:border-purple-200 transition-colors">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-gray-500 text-[13px] font-medium">{label}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-[13px] font-medium">{label}</p>
           <p
-            className={`text-2xl font-medium mt-1.5 ${accent || "text-gray-900"}`}
+            className={`text-2xl font-medium mt-1.5 ${accent || "text-gray-900 dark:text-white"}`}
           >
             {value}
           </p>
-          {sub && <p className="text-[12px] text-gray-400 mt-1">{sub}</p>}
+          {sub && <p className="text-[12px] text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
         </div>
         <div
           className={`w-10 h-10 ${iconBg} rounded-xl flex items-center justify-center shrink-0`}
@@ -209,11 +209,11 @@ export default function VendorPaymentsPage() {
   return (
     <div className="min-h-screen ">
       {/* ── Header ───────────────────────────────────────────────────────── */}
-      <div className=" border-b border-gray-200">
+      <div className=" border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-8xl mx-auto px-0 sm:px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-medium text-gray-900">Payments</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-2xl font-medium text-gray-900 dark:text-white">Payments</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               Track every naira coming in and going out
             </p>
           </div>
@@ -231,7 +231,7 @@ export default function VendorPaymentsPage() {
 
       <div className="max-w-8xl mx-auto px-0 sm:px-2 py-6 space-y-6">
         {/* ── Date range tabs ──────────────────────────────────────────── */}
-        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit">
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1 w-fit">
           {["today", "week", "month", "3months", "all"].map((r) => (
             <button
               key={r}
@@ -242,7 +242,7 @@ export default function VendorPaymentsPage() {
               className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
                 dateRange === r
                   ? "bg-purple-600 text-white shadow-sm"
-                  : "text-gray-600 hover:bg-gray-50"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
               {r === "3months"
@@ -258,7 +258,7 @@ export default function VendorPaymentsPage() {
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="bg-white border border-gray-200 rounded-2xl p-5 h-28 animate-pulse"
+                className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 h-28 animate-pulse"
               />
             ))}
           </div>
@@ -309,30 +309,30 @@ export default function VendorPaymentsPage() {
               sub={`total returned`}
               Icon={RotateCcw}
               iconBg="bg-gray-50"
-              iconColor="text-gray-500"
+              iconColor="text-gray-500 dark:text-gray-400"
             />
           </div>
         ) : null}
 
         {/* ── Filters ──────────────────────────────────────────────────── */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-4">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
           <div className="flex flex-col sm:flex-row gap-3">
             {/* search */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search by reference or email…"
                 value={search}
                 onChange={(e) => resetPage(setSearch)(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500 dark:text-gray-400"
               />
             </div>
             {/* status */}
             <select
               value={statusFilter}
               onChange={(e) => resetPage(setStatusFilter)(e.target.value)}
-              className="px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">All Statuses</option>
               <option value="completed">Completed</option>
@@ -344,7 +344,7 @@ export default function VendorPaymentsPage() {
             <select
               value={providerFilter}
               onChange={(e) => resetPage(setProviderFilter)(e.target.value)}
-              className="px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">All Providers</option>
               <option value="paystack">Paystack</option>
@@ -354,18 +354,18 @@ export default function VendorPaymentsPage() {
         </div>
 
         {/* ── Table ────────────────────────────────────────────────────── */}
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
           {paymentsLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
             </div>
           ) : payments.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <CreditCard className="w-7 h-7 text-gray-400" />
+              <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="w-7 h-7 text-gray-400 dark:text-gray-500" />
               </div>
-              <p className="text-gray-700 font-medium">No payments found</p>
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-gray-700 dark:text-gray-300 font-medium">No payments found</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
                 {search || statusFilter !== "all" || providerFilter !== "all"
                   ? "Try adjusting your filters"
                   : "Payments will appear here once customers book your services"}
@@ -374,21 +374,21 @@ export default function VendorPaymentsPage() {
           ) : (
             <>
               {/* ── mobile cards ────────────────────────────────────────── */}
-              <div className="lg:hidden divide-y divide-gray-100">
+              <div className="lg:hidden divide-y divide-gray-100 dark:divide-gray-800">
                 {payments.map((p) => {
                   const ns = normaliseStatus(p.status);
                   const category = getCategory(p);
                   return (
                     <div
                       key={p.id}
-                      className="p-4 hover:bg-gray-50 transition-colors"
+                      className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0 mr-3">
-                          <p className="font-medium text-gray-900 text-sm truncate">
+                          <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
                             {getServiceLabel(p)}
                           </p>
-                          <p className="font-mono text-[11px] text-gray-400 mt-0.5">
+                          <p className="font-mono text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
                             {p.reference}
                           </p>
                         </div>
@@ -396,16 +396,16 @@ export default function VendorPaymentsPage() {
                       </div>
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
                         <CategoryBadge category={category} />
-                        <span className="text-[11px] text-gray-400">
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500">
                           {PROVIDER_LABEL[p.provider] || p.provider}
                         </span>
-                        <span className="text-[11px] text-gray-400">•</span>
-                        <span className="text-[11px] text-gray-400">
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500">•</span>
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500">
                           {fmtDate(p.created_at)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between mt-3">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {fmt(p.vendor_amount || p.amount)}
                         </span>
                         {p.refund_amount > 0 && (
@@ -423,60 +423,60 @@ export default function VendorPaymentsPage() {
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50">
-                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                    <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Service
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Reference
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Provider
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-5 py-3.5 text-right text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-right text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Amount
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {payments.map((p) => {
                       const category = getCategory(p);
                       return (
                         <tr
                           key={p.id}
-                          className="hover:bg-gray-50 transition-colors"
+                          className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         >
                           {/* service */}
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-2.5">
                               <CategoryBadge category={category} />
-                              <span className="text-sm text-gray-800 font-medium truncate max-w-[160px]">
+                              <span className="text-sm text-gray-800 dark:text-gray-100 font-medium truncate max-w-[160px]">
                                 {getServiceLabel(p)}
                               </span>
                             </div>
                           </td>
                           {/* ref */}
                           <td className="px-5 py-4">
-                            <span className="font-mono text-[12px] text-gray-500">
+                            <span className="font-mono text-[12px] text-gray-500 dark:text-gray-400">
                               {p.reference}
                             </span>
                           </td>
                           {/* customer */}
-                          <td className="px-5 py-4 text-sm text-gray-600 truncate max-w-[140px]">
+                          <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 truncate max-w-[140px]">
                             {p.email || "—"}
                           </td>
                           {/* provider */}
                           <td className="px-5 py-4">
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
                               {PROVIDER_LABEL[p.provider] || p.provider}
                             </span>
                           </td>
@@ -485,13 +485,13 @@ export default function VendorPaymentsPage() {
                             <StatusBadge rawStatus={p.status} />
                           </td>
                           {/* date */}
-                          <td className="px-5 py-4 text-[12px] text-gray-400 whitespace-nowrap">
+                          <td className="px-5 py-4 text-[12px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
                             {fmtDate(p.created_at)}
                           </td>
                           {/* amount */}
                           <td className="px-5 py-4 text-right">
                             <div className="flex flex-col items-end">
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
                                 {fmt(p.vendor_amount || p.amount)}
                               </span>
                               {p.refund_amount > 0 && (
@@ -510,8 +510,8 @@ export default function VendorPaymentsPage() {
 
               {/* ── pagination ─────────────────────────────────────────── */}
               {totalPages > 1 && (
-                <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
-                  <p className="text-[12px] text-gray-400">
+                <div className="px-5 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                  <p className="text-[12px] text-gray-400 dark:text-gray-500">
                     Showing {(page - 1) * PAGE_SIZE + 1}–
                     {Math.min(page * PAGE_SIZE, paymentsData?.total || 0)} of{" "}
                     {paymentsData?.total || 0}
@@ -520,7 +520,7 @@ export default function VendorPaymentsPage() {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="px-3.5 py-1.5 border border-gray-200 rounded-lg text-[13px] text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="px-3.5 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-[13px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       Previous
                     </button>
@@ -542,7 +542,7 @@ export default function VendorPaymentsPage() {
                           className={`w-8 h-8 rounded-lg text-[13px] font-medium transition-colors ${
                             page === p_num
                               ? "bg-purple-600 text-white"
-                              : "text-gray-600 hover:bg-gray-50"
+                              : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                           }`}
                         >
                           {p_num}
@@ -554,7 +554,7 @@ export default function VendorPaymentsPage() {
                         setPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={page === totalPages}
-                      className="px-3.5 py-1.5 border border-gray-200 rounded-lg text-[13px] text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="px-3.5 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-[13px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       Next
                     </button>

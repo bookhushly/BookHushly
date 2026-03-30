@@ -90,12 +90,12 @@ export function RoomStatusTab({ hotelId, onUpdate }) {
   };
 
   const statusColors = {
-    available: "bg-green-100 text-green-700 border-green-200",
-    occupied: "bg-blue-100 text-blue-700 border-blue-200",
+    available: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
+    occupied: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200",
     reserved: "bg-purple-100 text-purple-700 border-purple-200",
     dirty: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    out_of_service: "bg-red-100 text-red-700 border-red-200",
-    under_maintenance: "bg-gray-100 text-gray-700 border-gray-200",
+    out_of_service: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+    under_maintenance: "bg-gray-100 text-gray-700 dark:text-gray-300 border-gray-200",
   };
 
   const statusLabels = {
@@ -185,7 +185,7 @@ export function RoomStatusTab({ hotelId, onUpdate }) {
 
           {filteredRooms.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 No rooms match the selected filters
               </p>
             </div>
@@ -296,7 +296,7 @@ export function RoomStatusTab({ hotelId, onUpdate }) {
                 <div
                   className={`w-3 h-3 rounded-full ${statusColors[status]}`}
                 />
-                <span className="text-xs text-gray-600">{label}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">{label}</span>
               </div>
             ))}
           </div>

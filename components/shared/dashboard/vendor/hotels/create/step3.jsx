@@ -230,7 +230,7 @@ export default function Step3RoomGeneration({
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium text-gray-700">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Floor Configuration
           </h4>
           <button
@@ -246,7 +246,7 @@ export default function Step3RoomGeneration({
 
         {roomConfig.floors.length === 0 && suiteTypes.length > 0 && (
           <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-            <p className="text-gray-500 mb-3">No floors configured yet</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-3">No floors configured yet</p>
             <button
               onClick={addFloor}
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -260,10 +260,10 @@ export default function Step3RoomGeneration({
           {roomConfig.floors.map((floor, floorIndex) => (
             <div
               key={floorIndex}
-              className="border border-gray-200 rounded-lg overflow-hidden"
+              className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
             >
               {/* Floor Header */}
-              <div className="bg-gray-50 p-4 flex items-center justify-between">
+              <div className="bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div>
                     <input
@@ -280,14 +280,14 @@ export default function Step3RoomGeneration({
                         }))
                       }
                       min="1"
-                      className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       Floor {floor.floor}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {getFloorRoomCount(floor)} rooms • {floor.rooms.length}{" "}
                       suite type(s)
                     </p>
@@ -308,7 +308,7 @@ export default function Step3RoomGeneration({
                         expandedFloor === floorIndex ? null : floorIndex
                       )
                     }
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
@@ -328,7 +328,7 @@ export default function Step3RoomGeneration({
                 <div className="p-4 space-y-4 bg-white">
                   {floor.rooms.length === 0 ? (
                     <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
-                      <p className="text-sm text-gray-500 mb-2">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                         No rooms configured for this floor
                       </p>
                       <button
@@ -342,10 +342,10 @@ export default function Step3RoomGeneration({
                     floor.rooms.map((roomGroup, roomGroupIndex) => (
                       <div
                         key={roomGroup.id}
-                        className="border border-gray-200 rounded-lg p-4 space-y-4"
+                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4"
                       >
                         <div className="flex items-start justify-between">
-                          <h5 className="text-sm font-medium text-gray-900">
+                          <h5 className="text-sm font-medium text-gray-900 dark:text-white">
                             Room Group {roomGroupIndex + 1}
                           </h5>
                           <button
@@ -360,7 +360,7 @@ export default function Step3RoomGeneration({
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-xs text-gray-600 mb-1">
+                            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
                               Suite Type *
                             </label>
                             <select
@@ -373,7 +373,7 @@ export default function Step3RoomGeneration({
                                   e.target.value
                                 )
                               }
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                             >
                               {suiteTypes.map((suite) => (
                                 <option key={suite.id} value={suite.id}>
@@ -385,7 +385,7 @@ export default function Step3RoomGeneration({
                           </div>
 
                           <div>
-                            <label className="block text-xs text-gray-600 mb-1">
+                            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
                               Number of Rooms *
                             </label>
                             <input
@@ -400,12 +400,12 @@ export default function Step3RoomGeneration({
                                 )
                               }
                               min="1"
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-xs text-gray-600 mb-1">
+                            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
                               Start Room # *
                             </label>
                             <input
@@ -420,7 +420,7 @@ export default function Step3RoomGeneration({
                                 )
                               }
                               min="1"
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
                           </div>
                         </div>
@@ -428,7 +428,7 @@ export default function Step3RoomGeneration({
                         {/* Bed Configuration */}
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block text-xs text-gray-600">
+                            <label className="block text-xs text-gray-600 dark:text-gray-400">
                               Bed Configuration
                             </label>
                             <button
@@ -456,7 +456,7 @@ export default function Step3RoomGeneration({
                                       e.target.value
                                     )
                                   }
-                                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                  className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                 >
                                   {BED_TYPES.map((type) => (
                                     <option key={type.value} value={type.value}>
@@ -477,7 +477,7 @@ export default function Step3RoomGeneration({
                                     )
                                   }
                                   min="1"
-                                  className="w-16 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                  className="w-16 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                 />
                                 {roomGroup.beds.length > 1 && (
                                   <button
@@ -500,7 +500,7 @@ export default function Step3RoomGeneration({
 
                         {/* Price Adjustment */}
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">
+                          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
                             Price Adjustment (₦)
                           </label>
                           <input
@@ -514,10 +514,10 @@ export default function Step3RoomGeneration({
                                 parseFloat(e.target.value) || 0
                               )
                             }
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                             placeholder="0"
                           />
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             Add or subtract from suite base price
                           </p>
                         </div>

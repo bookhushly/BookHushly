@@ -17,10 +17,10 @@ const ListingsTab = ({ filteredListings, vendor }) => {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-medium text-slate-900 mb-1">
+          <h2 className="text-2xl font-medium text-slate-900 dark:text-white mb-1">
             My Listings
           </h2>
-          <p className="text-slate-600 text-sm">
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
             Manage all your service listings
           </p>
         </div>
@@ -42,10 +42,10 @@ const ListingsTab = ({ filteredListings, vendor }) => {
             <div className="w-20 h-20 rounded-2xl bg-purple-100 flex items-center justify-center mb-5">
               <Package className="h-10 w-10 text-purple-600" />
             </div>
-            <h3 className="text-2xl font-medium mb-2 text-slate-900">
+            <h3 className="text-2xl font-medium mb-2 text-slate-900 dark:text-white">
               No listings yet
             </h3>
-            <p className="text-slate-500 mb-6 max-w-md">
+            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md">
               {vendor?.approved
                 ? "Start growing your business by creating your first listing and reaching customers"
                 : "Complete your KYC verification to unlock the ability to create listings"}
@@ -67,30 +67,30 @@ const ListingsTab = ({ filteredListings, vendor }) => {
         <Card className="bg-white/60 backdrop-blur-md border-slate-200/50 shadow-xl overflow-hidden">
           <ScrollArea className="h-[600px]">
             <table className="w-full">
-              <thead className="bg-slate-50/80 sticky top-0 backdrop-blur-sm border-b-2 border-slate-200">
+              <thead className="bg-slate-50/80 dark:bg-gray-800/80 sticky top-0 backdrop-blur-sm border-b-2 border-slate-200 dark:border-gray-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Listing
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                 {filteredListings.map((listing, idx) => (
                   <tr
                     key={listing.id}
-                    className="hover:bg-slate-50/50 transition-colors"
+                    className="hover:bg-slate-50/50 dark:hover:bg-gray-800/50 transition-colors"
                     style={{
                       animation: `fadeIn 0.3s ease-out ${idx * 0.05}s both`,
                     }}
@@ -101,10 +101,10 @@ const ListingsTab = ({ filteredListings, vendor }) => {
                           <Building className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-slate-900">
+                          <div className="text-sm font-medium text-slate-900 dark:text-white">
                             {listing.title}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
                             ID: {listing.id.substring(0, 8)}...
                           </div>
                         </div>
@@ -125,7 +125,7 @@ const ListingsTab = ({ filteredListings, vendor }) => {
                         variant={listing.active ? "default" : "secondary"}
                         className={
                           listing.active
-                            ? "bg-green-100 text-green-800 border-green-200"
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-200"
                             : "bg-slate-100 text-slate-800 border-slate-200"
                         }
                       >

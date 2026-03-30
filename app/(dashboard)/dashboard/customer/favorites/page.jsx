@@ -78,9 +78,9 @@ function FavoriteCard({ item, onRemove, removing }) {
   const TypeIcon = cfg.icon;
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.08)] transition-all duration-200 group">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:border-violet-200 hover:shadow-[0_8px_30px_rgba(124,58,237,0.08)] transition-all duration-200 group">
       {/* Image */}
-      <div className="relative h-44 bg-gray-100">
+      <div className="relative h-44 bg-gray-100 dark:bg-gray-800">
         {item.listing_image ? (
           <Image
             src={item.listing_image}
@@ -115,11 +115,11 @@ function FavoriteCard({ item, onRemove, removing }) {
 
       {/* Body */}
       <div className="p-4">
-        <h3 className="font-medium text-gray-900 line-clamp-1 mb-1">
+        <h3 className="font-medium text-gray-900 dark:text-white line-clamp-1 mb-1">
           {item.listing_title ?? "Untitled listing"}
         </h3>
         {item.listing_location && (
-          <p className="flex items-center gap-1 text-sm text-gray-500 mb-3">
+          <p className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mb-3">
             <MapPin className="w-3.5 h-3.5 shrink-0" />
             <span className="line-clamp-1">{item.listing_location}</span>
           </p>
@@ -171,8 +171,8 @@ export default function FavoritesPage() {
           <Heart className="h-5 w-5 text-red-500 fill-red-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-medium text-gray-900">My Favourites</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-medium text-gray-900 dark:text-white">My Favourites</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {saved.length} saved {saved.length === 1 ? "listing" : "listings"}
           </p>
         </div>
@@ -192,12 +192,12 @@ export default function FavoritesPage() {
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? "bg-violet-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >
               {tab.label}
               {count > 0 && (
-                <span className={`ml-1.5 text-xs ${activeTab === tab.key ? "opacity-80" : "text-gray-400"}`}>
+                <span className={`ml-1.5 text-xs ${activeTab === tab.key ? "opacity-80" : "text-gray-400 dark:text-gray-500"}`}>
                   {count}
                 </span>
               )}
@@ -210,27 +210,27 @@ export default function FavoritesPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
-              <div className="h-44 bg-gray-100" />
+            <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse">
+              <div className="h-44 bg-gray-100 dark:bg-gray-800" />
               <div className="p-4 space-y-2">
-                <div className="h-4 bg-gray-100 rounded w-3/4" />
-                <div className="h-3 bg-gray-100 rounded w-1/2" />
-                <div className="h-8 bg-gray-100 rounded-xl mt-3" />
+                <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
+                <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
+                <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-xl mt-3" />
               </div>
             </div>
           ))}
         </div>
       ) : isError ? (
         <div className="text-center py-16">
-          <p className="text-gray-500">Failed to load favourites. Please try again.</p>
+          <p className="text-gray-500 dark:text-gray-400">Failed to load favourites. Please try again.</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 space-y-3">
           <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center mx-auto">
             <Heart className="h-8 w-8 text-red-300" />
           </div>
-          <p className="text-gray-900 font-medium">No saved listings yet</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-gray-900 dark:text-white font-medium">No saved listings yet</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Tap the heart icon on any hotel, apartment, or event to save it here.
           </p>
           <Link href="/services/hotels">

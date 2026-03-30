@@ -23,7 +23,7 @@ export default function Step1HotelDetails({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Hotel Name *
           </label>
           <input
@@ -32,13 +32,13 @@ export default function Step1HotelDetails({
             onChange={(e) =>
               setHotelData((prev) => ({ ...prev, name: e.target.value }))
             }
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="The Grand Plaza Hotel"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Description
           </label>
           <RichTextEditor
@@ -50,14 +50,14 @@ export default function Step1HotelDetails({
             minHeight="300px"
             showWordCount={true}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Use the toolbar to format your description. Add headings, lists,
             links, and images to make it engaging.
           </p>
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Address *
           </label>
           <input
@@ -66,13 +66,13 @@ export default function Step1HotelDetails({
             onChange={(e) =>
               setHotelData((prev) => ({ ...prev, address: e.target.value }))
             }
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="123 Main Street"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             City *
           </label>
           <input
@@ -81,13 +81,13 @@ export default function Step1HotelDetails({
             onChange={(e) =>
               setHotelData((prev) => ({ ...prev, city: e.target.value }))
             }
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="Lagos"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             State *
           </label>
           <select
@@ -95,7 +95,7 @@ export default function Step1HotelDetails({
             onChange={(e) =>
               setHotelData((prev) => ({ ...prev, state: e.target.value }))
             }
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 dark:text-white"
           >
             <option value="">Select state</option>
             {NIGERIAN_STATES.map((s) => (
@@ -107,7 +107,7 @@ export default function Step1HotelDetails({
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Checkout Policy *
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -135,10 +135,10 @@ export default function Step1HotelDetails({
                 className="mt-1"
               />
               <div className="flex-1">
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 dark:text-white">
                   Fixed Time (12:00 PM)
                 </p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Guest checks out at 12:00 PM regardless of check-in time. If
                   guest arrives at 2:00 AM, they leave by 12:00 PM same day.
                 </p>
@@ -169,8 +169,8 @@ export default function Step1HotelDetails({
                 className="mt-1"
               />
               <div className="flex-1">
-                <p className="font-medium text-gray-900">24-Hour Policy</p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="font-medium text-gray-900 dark:text-white">24-Hour Policy</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   Guest gets full 24 hours from check-in time. If guest arrives
                   at 2:00 AM, they leave by 2:00 AM next day.
                 </p>
@@ -180,7 +180,7 @@ export default function Step1HotelDetails({
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Hotel Amenities
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -196,11 +196,11 @@ export default function Step1HotelDetails({
         </div>
 
         {/* ── Power & Generator ── */}
-        <div className="md:col-span-2 border border-gray-200 rounded-lg p-4 space-y-4">
-          <p className="text-sm font-medium text-gray-700">Power & Generator</p>
+        <div className="md:col-span-2 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Power & Generator</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Generator Available?
               </label>
               <select
@@ -211,7 +211,7 @@ export default function Step1HotelDetails({
                     generator_available: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
               >
                 <option value="">Select</option>
                 <option value="24h">24 Hours</option>
@@ -221,7 +221,7 @@ export default function Step1HotelDetails({
             </div>
             {hotelData.generator_available === "partial" && (
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                   Generator Hours
                 </label>
                 <input
@@ -233,13 +233,13 @@ export default function Step1HotelDetails({
                       generator_hours: e.target.value,
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   placeholder="e.g. 6pm – 6am"
                 />
               </div>
             )}
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Inverter / Solar?
               </label>
               <select
@@ -250,7 +250,7 @@ export default function Step1HotelDetails({
                     inverter_available: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
               >
                 <option value="">None</option>
                 <option value="inverter">Inverter</option>
@@ -262,11 +262,11 @@ export default function Step1HotelDetails({
         </div>
 
         {/* ── Breakfast ── */}
-        <div className="md:col-span-2 border border-gray-200 rounded-lg p-4 space-y-3">
-          <p className="text-sm font-medium text-gray-700">Breakfast</p>
+        <div className="md:col-span-2 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Breakfast</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Breakfast Offered?
               </label>
               <select
@@ -277,7 +277,7 @@ export default function Step1HotelDetails({
                     breakfast_offered: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
               >
                 <option value="none">Not Available</option>
                 <option value="included">Included in Price</option>
@@ -286,7 +286,7 @@ export default function Step1HotelDetails({
             </div>
             {hotelData.breakfast_offered !== "none" && (
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                   Breakfast Type
                 </label>
                 <select
@@ -297,7 +297,7 @@ export default function Step1HotelDetails({
                       breakfast_type: e.target.value,
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
                 >
                   <option value="">Select type</option>
                   <option value="continental">Continental</option>
@@ -311,13 +311,13 @@ export default function Step1HotelDetails({
         </div>
 
         {/* ── Fees & Pricing ── */}
-        <div className="md:col-span-2 border border-gray-200 rounded-lg p-4 space-y-4">
-          <p className="text-sm font-medium text-gray-700">
+        <div className="md:col-span-2 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Fees & Pricing Rules
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Early Check-in Fee (₦)
               </label>
               <input
@@ -330,15 +330,15 @@ export default function Step1HotelDetails({
                     early_checkin_fee: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="e.g. 5000"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Charged for arrivals before standard check-in time
               </p>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Late Check-out Fee (₦)
               </label>
               <input
@@ -351,15 +351,15 @@ export default function Step1HotelDetails({
                     late_checkout_fee: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="e.g. 5000"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Charged for departures after standard checkout time
               </p>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Weekend Price Adjustment
               </label>
               <select
@@ -370,7 +370,7 @@ export default function Step1HotelDetails({
                     weekend_pricing: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
               >
                 <option value="none">No adjustment</option>
                 <option value="10">+10% on Fri & Sat</option>
@@ -395,10 +395,10 @@ export default function Step1HotelDetails({
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
               <div>
-                <p className="text-sm text-gray-700 font-medium">
+                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                   VAT Inclusive (7.5%)
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Prices shown include VAT
                 </p>
               </div>
@@ -408,7 +408,7 @@ export default function Step1HotelDetails({
 
         {/* ── WhatsApp Contact ── */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             WhatsApp Number
           </label>
           <input
@@ -420,16 +420,16 @@ export default function Step1HotelDetails({
                 whatsapp_number: e.target.value,
               }))
             }
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="+2348012345678"
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Guests can reach you directly on WhatsApp for quick inquiries
           </p>
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Hotel Images
           </label>
           <div className="space-y-3">
@@ -442,9 +442,9 @@ export default function Step1HotelDetails({
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <Upload
-                  className={`w-8 h-8 mb-2 ${isUploading ? "text-purple-500 animate-pulse" : "text-gray-400"}`}
+                  className={`w-8 h-8 mb-2 ${isUploading ? "text-purple-500 animate-pulse" : "text-gray-400 dark:text-gray-500"}`}
                 />
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {isUploading
                     ? `Uploading... ${Math.round(uploadProgress)}%`
                     : "Click to upload hotel images"}
@@ -477,13 +477,13 @@ export default function Step1HotelDetails({
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Security Deposit (₦)
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">
                   ₦
                 </span>
                 <input
@@ -496,11 +496,11 @@ export default function Step1HotelDetails({
                       security_deposit: e.target.value,
                     }))
                   }
-                  className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-8 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="50000"
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Refundable deposit charged at checkout. Leave blank if none.
               </p>
             </div>
@@ -514,10 +514,10 @@ export default function Step1HotelDetails({
                     security_deposit_notes: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="e.g. Refunded within 48 hours after checkout"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Optional note about deposit refund terms.
               </p>
             </div>
@@ -525,7 +525,7 @@ export default function Step1HotelDetails({
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Policies & House Rules
           </label>
           <RichTextEditor
@@ -537,7 +537,7 @@ export default function Step1HotelDetails({
             minHeight="250px"
             showWordCount={true}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Include important information like cancellation deadlines, deposit
             requirements, and house rules.
           </p>

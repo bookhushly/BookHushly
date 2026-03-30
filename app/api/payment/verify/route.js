@@ -386,9 +386,11 @@ async function firePaymentNotifications(supabase, payment) {
     const customerId = payment.customer_id;
     const isValidUser = customerId && customerId !== "anonymous";
 
-    let serviceName  = "your booking";
-    let vendorUserId = null;
-    let guestName    = "Guest";
+    let serviceName         = "your booking";
+    let vendorUserId        = null;
+    let guestName           = "Guest";
+    let apartmentAgentName  = null;
+    let apartmentAgentPhone = null;
 
     if (payment.hotel_booking_id) {
       const { data: b } = await supabase
@@ -428,13 +430,16 @@ async function firePaymentNotifications(supabase, payment) {
     } else if (payment.apartment_booking_id) {
       const { data: b } = await supabase
         .from("apartment_bookings")
-        .select("guest_name, apartment_id, serviced_apartments!inner(name, vendor_id)")
+        .select("guest_name, apartment_id, serviced_apartments!inner(name, vendor_id, agent_name, agent_phone)")
         .eq("id", payment.apartment_booking_id)
         .single();
 
       if (b) {
         serviceName = b.serviced_apartments?.name ?? serviceName;
         guestName   = b.guest_name ?? guestName;
+        // Store agent info to include in customer notification
+        apartmentAgentName  = b.serviced_apartments?.agent_name  ?? null;
+        apartmentAgentPhone = b.serviced_apartments?.agent_phone ?? null;
 
         if (b.serviced_apartments?.vendor_id) {
           const { data: v } = await supabase
@@ -502,6 +507,8 @@ async function firePaymentNotifications(supabase, payment) {
         await notifyBookingConfirmed(customerId, {
           bookingId,
           serviceName,
+          hostName:  apartmentAgentName,
+          hostPhone: apartmentAgentPhone,
         });
       }
     }

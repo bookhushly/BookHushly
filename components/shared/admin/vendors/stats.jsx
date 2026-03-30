@@ -47,9 +47,9 @@ export const VendorStats = memo(({ stats, loading }) => {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse"
+            className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 animate-pulse"
           >
-            <div className="h-16 bg-gray-200 rounded"></div>
+            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         ))}
       </div>
@@ -61,12 +61,12 @@ export const VendorStats = memo(({ stats, loading }) => {
       {statCards.map((stat) => (
         <div
           key={stat.label}
-          className="bg-white rounded-lg border border-gray-200 p-6"
+          className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">{stat.label}</p>
-              <p className="text-2xl font-medium text-gray-900 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
+              <p className="text-2xl font-medium text-gray-900 dark:text-white mt-1">
                 {stat.value}
               </p>
             </div>

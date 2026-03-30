@@ -15,23 +15,23 @@ import { Eye, Calendar, User, Building2 } from "lucide-react";
 const VendorRow = memo(({ vendor, onSelect }) => {
   const getStatusBadge = (status, approved) => {
     const statusConfig = {
-      pending: { bg: "bg-gray-100", text: "text-gray-800", label: "Pending" },
+      pending: { bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-800 dark:text-gray-300", label: "Pending" },
       submitted: {
-        bg: "bg-blue-100",
-        text: "text-blue-800",
+        bg: "bg-blue-100 dark:bg-blue-900/30",
+        text: "text-blue-800 dark:text-blue-400",
         label: "Submitted",
       },
       reviewing: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-800",
+        bg: "bg-yellow-100 dark:bg-yellow-900/30",
+        text: "text-yellow-800 dark:text-yellow-400",
         label: "Reviewing",
       },
       approved: {
-        bg: "bg-green-100",
-        text: "text-green-800",
+        bg: "bg-green-100 dark:bg-green-900/30",
+        text: "text-green-800 dark:text-green-400",
         label: "Approved",
       },
-      rejected: { bg: "bg-red-100", text: "text-red-800", label: "Rejected" },
+      rejected: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-800 dark:text-red-400", label: "Rejected" },
     };
 
     const config = statusConfig[status] || statusConfig.pending;
@@ -46,7 +46,7 @@ const VendorRow = memo(({ vendor, onSelect }) => {
   return (
     <>
       {/* Desktop View */}
-      <TableRow className="hidden lg:table-row hover:bg-gray-50">
+      <TableRow className="hidden lg:table-row hover:bg-gray-50 dark:hover:bg-gray-800">
         <TableCell className="font-medium max-w-[200px] truncate">
           {vendor.business_name}
         </TableCell>
@@ -55,7 +55,7 @@ const VendorRow = memo(({ vendor, onSelect }) => {
             <div className="font-medium truncate max-w-[150px]">
               {vendor.users?.name || "N/A"}
             </div>
-            <div className="text-sm text-gray-500 truncate max-w-[150px]">
+            <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
               {vendor.users?.email}
             </div>
           </div>
@@ -66,7 +66,7 @@ const VendorRow = memo(({ vendor, onSelect }) => {
           </Badge>
         </TableCell>
         <TableCell>{getStatusBadge(vendor.status, vendor.approved)}</TableCell>
-        <TableCell className="text-sm text-gray-500 whitespace-nowrap">
+        <TableCell className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
           {new Date(vendor.created_at).toLocaleDateString()}
         </TableCell>
         <TableCell className="text-right">
@@ -77,10 +77,10 @@ const VendorRow = memo(({ vendor, onSelect }) => {
       </TableRow>
 
       {/* Tablet View */}
-      <TableRow className="hidden md:table-row lg:hidden hover:bg-gray-50">
+      <TableRow className="hidden md:table-row lg:hidden hover:bg-gray-50 dark:hover:bg-gray-800">
         <TableCell className="font-medium max-w-[150px]">
           <div className="truncate">{vendor.business_name}</div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             <Badge variant="outline" className="text-xs">
               {vendor.business_category || "N/A"}
             </Badge>
@@ -105,21 +105,21 @@ const VendorRow = memo(({ vendor, onSelect }) => {
       </TableRow>
 
       {/* Mobile Card View */}
-      <TableRow className="md:hidden hover:bg-gray-50">
+      <TableRow className="md:hidden hover:bg-gray-50 dark:hover:bg-gray-800">
         <TableCell colSpan={6} className="p-0">
           <div
-            className="p-4 cursor-pointer active:bg-gray-100"
+            className="p-4 cursor-pointer active:bg-gray-100 dark:active:bg-gray-800"
             onClick={() => onSelect(vendor)}
           >
             <div className="space-y-3">
               {/* Business Name & Status */}
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-base text-gray-900 break-words">
+                  <h3 className="font-medium text-base text-gray-900 dark:text-white break-words">
                     {vendor.business_name}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <Building2 className="w-3 h-3 text-gray-400 shrink-0" />
+                    <Building2 className="w-3 h-3 text-gray-400 dark:text-gray-500 shrink-0" />
                     <span className="text-xs text-gray-600 truncate">
                       {vendor.business_category || "N/A"}
                     </span>
@@ -132,7 +132,7 @@ const VendorRow = memo(({ vendor, onSelect }) => {
               <div className="flex items-start gap-2">
                 <User className="w-3 h-3 text-gray-400 mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-700 truncate">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                     {vendor.users?.name || "N/A"}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
@@ -142,7 +142,7 @@ const VendorRow = memo(({ vendor, onSelect }) => {
               </div>
 
               {/* Date */}
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <Calendar className="w-3 h-3 shrink-0" />
                 <span>
                   Joined {new Date(vendor.created_at).toLocaleDateString()}
@@ -183,7 +183,7 @@ export function VendorsTable({ vendors, loading, onSelectVendor }) {
 
   if (vendors.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-500">
+      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
         No vendors found matching your criteria
       </div>
     );

@@ -54,7 +54,7 @@ export function VendorInsightsPanel({ analytics, range }) {
   if (!analytics || analytics.totalBookings === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/70 to-white p-5">
+    <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/70 to-white dark:from-gray-800 dark:to-gray-900 dark:border-violet-900 p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -62,8 +62,8 @@ export function VendorInsightsPanel({ analytics, range }) {
             <TrendingUp className="h-4 w-4 text-violet-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-800">AI Business Insights</p>
-            <p className="text-[11px] text-gray-400">Based on your {range} performance</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">AI Business Insights</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500">Based on your {range} performance</p>
           </div>
         </div>
         <button
@@ -97,7 +97,7 @@ export function VendorInsightsPanel({ analytics, range }) {
 
       {/* Error */}
       {status === "error" && (
-        <p className="text-xs text-gray-400 text-center py-4">
+        <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
           Could not generate insights right now.{" "}
           <button onClick={generate} className="text-violet-600 underline">
             Try again
@@ -113,7 +113,7 @@ export function VendorInsightsPanel({ analytics, range }) {
               <div className="h-6 w-6 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
                 <Lightbulb className="h-3 w-3 text-violet-600" />
               </div>
-              <p className="text-[13px] text-gray-700 leading-relaxed">{insight}</p>
+              <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-relaxed">{insight}</p>
             </div>
           ))}
         </div>

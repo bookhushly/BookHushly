@@ -99,19 +99,19 @@ function PasswordBox({ label, password, onClose }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <code className="flex-1 block bg-white border border-amber-200 rounded-lg px-3 py-2 text-sm font-mono tracking-widest text-gray-900 overflow-x-auto">
+        <code className="flex-1 block bg-white dark:bg-gray-800 border border-amber-200 rounded-lg px-3 py-2 text-sm font-mono tracking-widest text-gray-900 dark:text-white overflow-x-auto">
           {visible ? password : "•".repeat(password.length)}
         </code>
         <button
           onClick={() => setVisible((v) => !v)}
-          className="p-2 text-gray-400 hover:text-gray-700 transition-colors"
+          className="p-2 text-gray-400 hover:text-gray-700 dark:text-gray-300 transition-colors"
           title={visible ? "Hide" : "Reveal"}
         >
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
         <button
           onClick={copy}
-          className="p-2 text-gray-400 hover:text-violet-600 transition-colors"
+          className="p-2 text-gray-400 dark:text-gray-500 hover:text-violet-600 transition-colors"
           title="Copy to clipboard"
         >
           {copied ? (
@@ -419,16 +419,16 @@ function StaffRow({ member, onReset, onEdit, onDelete }) {
     : "Never";
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl hover:bg-gray-50/60 transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 dark:border-gray-800 rounded-xl hover:bg-gray-50/60 transition-colors">
       {/* Info */}
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
           <HeadphonesIcon className="h-4 w-4 text-violet-600" />
         </div>
         <div className="min-w-0">
-          <p className="font-medium text-gray-900 text-sm truncate">{member.name}</p>
-          <p className="text-xs text-gray-500 truncate">{member.email}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{member.name}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{member.email}</p>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
             Last login: {lastLogin}
           </p>
         </div>
@@ -445,7 +445,7 @@ function StaffRow({ member, onReset, onEdit, onDelete }) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-gray-500 hover:text-violet-700"
+          className="h-8 px-2 text-gray-500 dark:text-gray-400 hover:text-violet-700"
           onClick={() => onEdit(member)}
           title="Edit name"
         >
@@ -454,7 +454,7 @@ function StaffRow({ member, onReset, onEdit, onDelete }) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-gray-500 hover:text-amber-700"
+          className="h-8 px-2 text-gray-500 dark:text-gray-400 hover:text-amber-700"
           onClick={() => onReset(member)}
           title="Reset password"
         >
@@ -463,7 +463,7 @@ function StaffRow({ member, onReset, onEdit, onDelete }) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-gray-500 hover:text-red-600"
+          className="h-8 px-2 text-gray-500 dark:text-gray-400 hover:text-red-600"
           onClick={() => onDelete(member)}
           title="Remove staff member"
         >
@@ -507,8 +507,8 @@ export default function SupportStaffPanel() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-medium text-gray-900">Support Staff</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h2 className="text-xl font-medium text-gray-900 dark:text-white">Support Staff</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             Manage logins for staff who handle the customer support inbox.
           </p>
         </div>
@@ -566,10 +566,10 @@ export default function SupportStaffPanel() {
           ) : data?.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                <HeadphonesIcon className="h-6 w-6 text-gray-400" />
+                <HeadphonesIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />
               </div>
-              <p className="font-medium text-gray-700">No support staff yet</p>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="font-medium text-gray-700 dark:text-gray-300">No support staff yet</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                 Add your first staff member to get started.
               </p>
               <Button

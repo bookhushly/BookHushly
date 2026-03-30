@@ -23,17 +23,17 @@ const ProfileTab = ({ vendor, user }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-medium text-slate-900 mb-1">
+        <h2 className="text-2xl font-medium text-slate-900 dark:text-white mb-1">
           Vendor Profile
         </h2>
-        <p className="text-slate-600 text-sm">
+        <p className="text-slate-600 dark:text-slate-400 text-sm">
           Manage your business information and settings
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-white/60 backdrop-blur-md border-slate-200/50 shadow-xl">
-          <CardHeader className="border-b border-slate-100">
+          <CardHeader className="border-b border-slate-100 dark:border-gray-800">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
                 <Building className="w-5 h-5 text-purple-600" />
@@ -52,22 +52,22 @@ const ProfileTab = ({ vendor, user }) => {
             {vendor ? (
               <>
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                     Business Name
                   </label>
-                  <p className="text-base text-slate-900 font-medium">
+                  <p className="text-base text-slate-900 dark:text-white font-medium">
                     {vendor.business_name}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                     Verification Status
                   </label>
                   <Badge
                     variant={vendor.approved ? "default" : "secondary"}
                     className={
                       vendor.approved
-                        ? "bg-green-100 text-green-800 border-green-200 px-4 py-2"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-200 px-4 py-2"
                         : "px-4 py-2"
                     }
                   >

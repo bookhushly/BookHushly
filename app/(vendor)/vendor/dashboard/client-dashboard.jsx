@@ -249,7 +249,7 @@ export default function VendorDashboardClient({
   };
 
   return (
-    <div className="space-y-8 bg-purple-50">
+    <div className="space-y-8 bg-purple-50 dark:bg-transparent">
       {/* KYC Status Alert */}
       {(!vendor || !vendor.approved) && (
         <div
@@ -283,7 +283,7 @@ export default function VendorDashboardClient({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-medium text-gray-900">
+                <p className="text-[14px] font-medium text-gray-900 dark:text-white">
                   {approvalStatus.message}
                 </p>
                 {approvalStatus.action && (
@@ -333,16 +333,16 @@ export default function VendorDashboardClient({
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-full px-2.5 py-1">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 rounded-full px-2.5 py-1">
                 <ArrowUpRight className="h-3 w-3" />
                 8%
               </div>
             </div>
             <div>
-              <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                 Total Listings
               </p>
-              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 dark:text-white leading-none tracking-tight">
                 {localListings.length}
               </p>
             </div>
@@ -357,16 +357,16 @@ export default function VendorDashboardClient({
                   <Calendar className="h-5 w-5 text-blue-700" strokeWidth={2} />
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-full px-2.5 py-1">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 rounded-full px-2.5 py-1">
                 <ArrowUpRight className="h-3 w-3" />
                 4%
               </div>
             </div>
             <div>
-              <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                 Active Bookings
               </p>
-              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 dark:text-white leading-none tracking-tight">
                 {stats.activeBookings}
               </p>
             </div>
@@ -384,16 +384,16 @@ export default function VendorDashboardClient({
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-full px-2.5 py-1">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 rounded-full px-2.5 py-1">
                 <ArrowUpRight className="h-3 w-3" />
                 12%
               </div>
             </div>
             <div>
-              <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                 Total Revenue
               </p>
-              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 dark:text-white leading-none tracking-tight">
                 ₦{stats.totalRevenue.toLocaleString()}
               </p>
             </div>
@@ -416,10 +416,10 @@ export default function VendorDashboardClient({
               )}
             </div>
             <div>
-              <p className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-[13px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                 Pending Requests
               </p>
-              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 leading-none tracking-tight">
+              <p className="text-2xl sm:text-[32px] font-medium text-gray-900 dark:text-white leading-none tracking-tight">
                 {stats.pendingRequests}
               </p>
             </div>
@@ -466,7 +466,7 @@ export default function VendorDashboardClient({
               <Button
                 asChild
                 variant="outline"
-                className="h-10 text-[14px] font-medium border-gray-200/60 hover:bg-gray-50"
+                className="h-10 text-[14px] font-medium border-gray-200/60 text-gray-900 dark:text-white dark:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10"
               >
                 <Link href="/vendor/dashboard/bookings">View Bookings</Link>
               </Button>
@@ -476,7 +476,7 @@ export default function VendorDashboardClient({
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-10 text-[14px] font-medium border-gray-200/60 hover:bg-gray-50"
+                    className="h-10 text-[14px] font-medium border-gray-200/60 text-gray-900 dark:text-white dark:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10"
                     onClick={generateQRCode}
                   >
                     <QrCode className="mr-2 h-4 w-4" />
@@ -577,10 +577,10 @@ export default function VendorDashboardClient({
         <Card className="border-gray-200/60">
           <div className="flex items-center justify-between px-6 pt-6 pb-4">
             <div>
-              <h3 className="text-[15px] font-medium text-gray-900">
+              <h3 className="text-[15px] font-medium text-gray-900 dark:text-white">
                 Recent Listings
               </h3>
-              <p className="text-[13px] text-gray-500 mt-0.5">
+              <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-0.5">
                 Your latest services
               </p>
             </div>
@@ -601,16 +601,16 @@ export default function VendorDashboardClient({
           <CardContent className="px-6 pb-6">
             {recentListings.length === 0 ? (
               <div className="text-center py-12">
-                <div className="h-14 w-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <div className="h-14 w-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
                   <Building2
-                    className="h-7 w-7 text-gray-400"
+                    className="h-7 w-7 text-gray-400 dark:text-gray-500"
                     strokeWidth={1.5}
                   />
                 </div>
-                <p className="text-[14px] font-medium text-gray-900 mb-1">
+                <p className="text-[14px] font-medium text-gray-900 dark:text-white mb-1">
                   No listings yet
                 </p>
-                <p className="text-[13px] text-gray-500 mb-5">
+                <p className="text-[13px] text-gray-500 dark:text-gray-400 mb-5">
                   Create your first listing to get started
                 </p>
                 {vendor?.approved && (
@@ -633,7 +633,7 @@ export default function VendorDashboardClient({
                 {recentListings.map((listing) => (
                   <div
                     key={listing.id}
-                    className="group flex items-center gap-3 p-3.5 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-all"
+                    className="group flex items-center gap-3 p-3.5 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all"
                   >
                     {(listing.media_urls?.[0] || listing.image_urls?.[0]) && (
                       <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
@@ -646,10 +646,10 @@ export default function VendorDashboardClient({
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-medium text-gray-900 truncate group-hover:text-purple-600 transition-colors">
+                      <p className="text-[14px] font-medium text-gray-900 dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                         {listing.title || listing.name}
                       </p>
-                      <p className="text-[13px] text-black mt-0.5">
+                      <p className="text-[13px] text-gray-600 dark:text-gray-400 mt-0.5">
                         {vendor?.business_category === "hotels"
                           ? `${listing.city}, ${listing.state}`
                           : vendor?.business_category === "serviced_apartments"
@@ -710,10 +710,10 @@ export default function VendorDashboardClient({
         <Card className="border-gray-200/60">
           <div className="flex items-center justify-between px-6 pt-6 pb-4">
             <div>
-              <h3 className="text-[15px] font-medium text-gray-900">
+              <h3 className="text-[15px] font-medium text-gray-900 dark:text-white">
                 Recent Bookings
               </h3>
-              <p className="text-[13px] text-gray-500 mt-0.5">
+              <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-0.5">
                 Latest reservations
               </p>
             </div>
@@ -730,16 +730,16 @@ export default function VendorDashboardClient({
           <CardContent className="px-6 pb-6">
             {recentBookings.length === 0 ? (
               <div className="text-center py-12">
-                <div className="h-14 w-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <div className="h-14 w-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
                   <Calendar
-                    className="h-7 w-7 text-gray-400"
+                    className="h-7 w-7 text-gray-400 dark:text-gray-500"
                     strokeWidth={1.5}
                   />
                 </div>
-                <p className="text-[14px] font-medium text-gray-900 mb-1">
+                <p className="text-[14px] font-medium text-gray-900 dark:text-white mb-1">
                   No bookings yet
                 </p>
-                <p className="text-[13px] text-gray-500">
+                <p className="text-[13px] text-gray-500 dark:text-gray-400">
                   Bookings will appear here once customers reserve
                 </p>
               </div>
@@ -748,7 +748,7 @@ export default function VendorDashboardClient({
                 {recentBookings.map((booking) => (
                   <div
                     key={booking.id}
-                    className="group flex items-center gap-3 p-3.5 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50/50 transition-all cursor-pointer"
+                    className="group flex items-center gap-3 p-3.5 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-all cursor-pointer"
                   >
                     {booking.listings?.media_urls?.[0] && (
                       <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
@@ -765,12 +765,12 @@ export default function VendorDashboardClient({
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-medium text-gray-900 truncate group-hover:text-purple-600 transition-colors">
+                      <p className="text-[14px] font-medium text-gray-900 dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                         {booking.listings?.title ||
                           booking.apartment_name ||
                           "Reservation"}
                       </p>
-                      <p className="text-[13px] text-gray-500 mt-0.5">
+                      <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-0.5">
                         ₦{booking.total_amount?.toLocaleString()} ·{" "}
                         {new Date(
                           booking.check_in_date || booking.booking_date,
@@ -818,7 +818,7 @@ export default function VendorDashboardClient({
             </DialogTitle>
             <DialogDescription className="text-base pt-2">
               Are you sure you want to delete &quot;
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 dark:text-white">
                 {listingToDelete?.title || listingToDelete?.name}
               </span>
               &quot;? This action cannot be undone and all related data will be

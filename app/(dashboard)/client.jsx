@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DashboardThemeShell } from "@/components/common/DashboardThemeShell";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, ChevronDown, LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -51,24 +52,24 @@ function CustomerHeader({ user, onMenuClick }) {
       )?.[1] || "Dashboard";
 
   return (
-    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-5 sticky top-0 z-30 shrink-0 backdrop-blur-sm">
+    <header className="h-14 bg-white dark:bg-[hsl(244,25%,11%)] border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-5 sticky top-0 z-30 shrink-0 backdrop-blur-sm">
       {/* Left */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
-          className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <Menu className="h-4 w-4" />
         </button>
 
         {/* Desktop: page title (left-aligned) */}
-        <h1 className="hidden lg:block text-[15px] font-medium text-gray-900">
+        <h1 className="hidden lg:block text-[15px] font-medium text-gray-900 dark:text-white">
           {pageTitle}
         </h1>
       </div>
 
       {/* Mobile: page title (absolutely centered) */}
-      <span className="lg:hidden absolute left-1/2 -translate-x-1/2 text-[13px] font-medium text-gray-800 pointer-events-none">
+      <span className="lg:hidden absolute left-1/2 -translate-x-1/2 text-[13px] font-medium text-gray-800 dark:text-gray-100 pointer-events-none">
         {pageTitle}
       </span>
 
@@ -78,31 +79,31 @@ function CustomerHeader({ user, onMenuClick }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <button className="flex items-center gap-2 h-8 pl-1.5 pr-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <Avatar className="h-6 w-6">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="bg-violet-100 text-violet-700 text-[10px] font-medium">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden sm:inline text-[13px] font-medium text-gray-700">
+              <span className="hidden sm:inline text-[13px] font-medium text-gray-700 dark:text-gray-300">
                 {user.name}
               </span>
-              <ChevronDown className="hidden sm:inline h-3 w-3 text-gray-400" />
+              <ChevronDown className="hidden sm:inline h-3 w-3 text-gray-400 dark:text-gray-500" />
             </button>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-52 shadow-lg shadow-black/10">
             <DropdownMenuLabel className="pb-2">
-              <p className="text-[13px] font-medium text-gray-900">{user.name}</p>
-              <p className="text-[11px] font-normal text-gray-400 mt-0.5">{user.email}</p>
+              <p className="text-[13px] font-medium text-gray-900 dark:text-white">{user.name}</p>
+              <p className="text-[11px] font-normal text-gray-400 dark:text-gray-500 mt-0.5">{user.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => router.push("/dashboard/customer/profile")}
               className="text-[13px] gap-2.5 cursor-pointer"
             >
-              <User className="h-3.5 w-3.5 text-gray-400" /> Profile
+              <User className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" /> Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -131,7 +132,7 @@ export function CustomerLayoutClient({ user, children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div data-theme-shell className="min-h-screen flex" style={{ background: "var(--shell-bg)" }}>
+    <DashboardThemeShell className="min-h-screen flex" style={{ background: "var(--shell-bg)" }}>
       <CustomerSidebar
         user={user}
         isOpen={mobileOpen}
@@ -143,6 +144,6 @@ export function CustomerLayoutClient({ user, children }) {
           <div className="max-w-[1400px] mx-auto px-3 sm:px-5 py-4 sm:py-6">{children}</div>
         </main>
       </div>
-    </div>
+    </DashboardThemeShell>
   );
 }

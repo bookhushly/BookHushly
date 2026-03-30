@@ -91,10 +91,10 @@ function ProfilePopover({ admin, onLogout, onClose, isLoggingOut }) {
   return (
     <div
       ref={ref}
-      className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-xl border border-gray-200 shadow-xl shadow-black/10 overflow-hidden z-50"
+      className="absolute bottom-full left-3 right-3 mb-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl shadow-black/10 overflow-hidden z-50"
     >
-      <div className="px-4 py-3 border-b border-violet-100 bg-violet-50/60">
-        <p className="text-[13px] font-medium text-gray-900 truncate">
+      <div className="px-4 py-3 border-b border-violet-100 dark:border-violet-900/50 bg-violet-50/60 dark:bg-violet-900/20">
+        <p className="text-[13px] font-medium text-gray-900 dark:text-white truncate">
           {displayName}
         </p>
         <p className="text-[11px] text-violet-600 font-medium truncate">
@@ -105,14 +105,14 @@ function ProfilePopover({ admin, onLogout, onClose, isLoggingOut }) {
         <Link
           href="/admin/dashboard/profile"
           onClick={onClose}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/30 hover:text-violet-700 transition-colors"
         >
           <User className="h-4 w-4" /> Profile
         </Link>
         <Link
           href="/admin/dashboard/settings"
           onClick={onClose}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-700 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/30 hover:text-violet-700 transition-colors"
         >
           <Cpu className="h-4 w-4" /> AI Settings
         </Link>
@@ -165,7 +165,7 @@ export function AdminSidebar({ isOpen, onClose }) {
     NAV.map(({ section, items }) => (
       <div key={section} className="space-y-0.5">
         {(!collapsed || isMobile) && (
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-gray-400 px-3 pt-3 pb-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-gray-400 dark:text-gray-500 px-3 pt-3 pb-1">
             {section}
           </p>
         )}
@@ -185,7 +185,7 @@ export function AdminSidebar({ isOpen, onClose }) {
                   : "h-9 px-3 w-full",
                 active
                   ? "bg-violet-600 text-white shadow-sm shadow-violet-600/25"
-                  : "text-gray-600 hover:bg-violet-50 hover:text-violet-700",
+                  : "text-gray-600 dark:text-gray-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 hover:text-violet-700",
               )}
             >
               <div className="relative shrink-0">
@@ -195,7 +195,7 @@ export function AdminSidebar({ isOpen, onClose }) {
                     collapsed && !isMobile ? "h-[18px] w-[18px]" : "h-4 w-4",
                     active
                       ? "text-white"
-                      : "text-gray-400 group-hover:text-violet-600",
+                      : "text-gray-400 dark:text-gray-500 group-hover:text-violet-600",
                   )}
                   strokeWidth={2}
                 />
@@ -227,7 +227,7 @@ export function AdminSidebar({ isOpen, onClose }) {
     ));
 
   const profileStrip = (isMobile = false) => (
-    <div className="border-t border-violet-100 shrink-0 relative">
+    <div className="border-t border-violet-100 dark:border-violet-900/40 shrink-0 relative">
       {profileOpen && (
         <ProfilePopover
           admin={admin}
@@ -259,7 +259,7 @@ export function AdminSidebar({ isOpen, onClose }) {
             {initial}
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-[13px] font-medium text-gray-900 truncate">
+            <p className="text-[13px] font-medium text-gray-900 dark:text-white truncate">
               {displayName}
             </p>
             <p className="text-[11px] text-violet-500 font-medium truncate">
@@ -268,7 +268,7 @@ export function AdminSidebar({ isOpen, onClose }) {
           </div>
           <ChevronUp
             className={cn(
-              "h-3.5 w-3.5 text-gray-400 shrink-0 transition-transform duration-200",
+              "h-3.5 w-3.5 text-gray-400 dark:text-gray-500 shrink-0 transition-transform duration-200",
               profileOpen && "rotate-180",
             )}
           />
@@ -282,7 +282,7 @@ export function AdminSidebar({ isOpen, onClose }) {
       {/* Desktop */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-200 ease-out border-r border-violet-100",
+          "hidden lg:flex flex-col fixed left-0 top-0 h-full z-40 transition-all duration-200 ease-out border-r border-violet-100 dark:border-violet-900/40",
           w,
         )}
         style={{
@@ -291,7 +291,7 @@ export function AdminSidebar({ isOpen, onClose }) {
       >
         <div
           className={cn(
-            "h-16 flex items-center border-b border-violet-100 shrink-0",
+            "h-16 flex items-center border-b border-violet-100 dark:border-violet-900/40 shrink-0",
             collapsed ? "justify-center px-0" : "px-4 justify-between",
           )}
         >
@@ -311,7 +311,7 @@ export function AdminSidebar({ isOpen, onClose }) {
             {!collapsed && <ThemeToggle />}
             <button
               onClick={() => setCollapsed((p) => !p)}
-              className="h-6 w-6 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-200/50 hover:text-violet-700 transition-colors text-xs font-medium"
+              className="h-6 w-6 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 hover:bg-violet-200/50 dark:hover:bg-violet-900/30 hover:text-violet-700 transition-colors text-xs font-medium"
             >
               {collapsed ? "›" : "‹"}
             </button>
@@ -343,12 +343,12 @@ export function AdminSidebar({ isOpen, onClose }) {
             onClick={onClose}
           />
           <aside
-            className="fixed left-0 top-0 h-full w-[260px] z-50 lg:hidden flex flex-col shadow-2xl border-r border-violet-100"
+            className="fixed left-0 top-0 h-full w-[260px] z-50 lg:hidden flex flex-col shadow-2xl border-r border-violet-100 dark:border-violet-900/40"
             style={{
               background: "var(--sidebar-bg)",
             }}
           >
-            <div className="h-16 flex items-center justify-between px-5 border-b border-violet-100 shrink-0">
+            <div className="h-16 flex items-center justify-between px-5 border-b border-violet-100 dark:border-violet-900/40 shrink-0">
               <div className="relative w-32 h-32">
                 <Image
                   src="/logo.png"
@@ -361,7 +361,7 @@ export function AdminSidebar({ isOpen, onClose }) {
                 <ThemeToggle />
                 <button
                   onClick={onClose}
-                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-violet-200/50 transition-colors"
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 hover:bg-violet-200/50 dark:hover:bg-violet-900/30 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>

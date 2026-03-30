@@ -121,10 +121,10 @@ export function DashboardOverviewClient({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-medium text-gray-900">
+          <h1 className="text-2xl font-medium text-gray-900 dark:text-white">
             {greeting()}, {userName.split(" ")[0]} 👋
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {memberSince
               ? `Member since ${format(new Date(memberSince), "MMMM yyyy")}`
               : "Welcome to your dashboard"}
@@ -213,11 +213,11 @@ export function DashboardOverviewClient({
             <Link
               key={item.label}
               href={item.href}
-              className="bg-white border border-purple-100 rounded-xl p-4 hover:border-purple-300 hover:shadow-sm transition-all group"
+              className="bg-white dark:bg-gray-900 border border-purple-100 dark:border-gray-700 rounded-xl p-4 hover:border-purple-300 hover:shadow-sm transition-all group"
             >
               <item.icon className="h-5 w-5 text-purple-400 group-hover:text-purple-600 mb-2 transition-colors" />
-              <p className="text-lg font-medium text-gray-900">{item.count}</p>
-              <p className="text-xs text-gray-500">{item.label}</p>
+              <p className="text-lg font-medium text-gray-900 dark:text-white">{item.count}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{item.label}</p>
             </Link>
           ))}
         </div>
@@ -241,7 +241,7 @@ export function DashboardOverviewClient({
             {activity.length === 0 ? (
               <div className="text-center py-10">
                 <Calendar className="h-10 w-10 text-purple-200 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">No activity yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No activity yet</p>
                 <Button asChild variant="link" className="text-purple-600 mt-2">
                   <Link href="/services">Browse services</Link>
                 </Button>
@@ -257,7 +257,7 @@ export function DashboardOverviewClient({
                     <Link
                       key={`${item.type}-${item.id}`}
                       href={detailHref}
-                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-purple-50 transition-all group"
+                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-purple-50 dark:hover:bg-gray-800 transition-all group"
                     >
                       <div
                         className={`p-2.5 rounded-xl flex-shrink-0 ${conf.color}`}
@@ -265,16 +265,16 @@ export function DashboardOverviewClient({
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {item.title}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                           {item.subtitle}
                         </p>
                       </div>
                       <div className="flex-shrink-0 text-right">
                         <StatusBadge status={item.status} />
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                           {formatDistanceToNow(new Date(item.created_at), {
                             addSuffix: true,
                           })}
@@ -296,15 +296,15 @@ export function DashboardOverviewClient({
                 <Link
                   key={s.href}
                   href={s.href}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-purple-50 border border-transparent hover:border-purple-100 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-purple-50 dark:hover:bg-gray-800 border border-transparent hover:border-purple-100 dark:hover:border-gray-700 transition-all group"
                 >
                   <div className={`p-2 rounded-lg ${s.color}`}>
                     <s.icon className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-purple-700 flex-1">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-700 flex-1">
                     {s.label}
                   </span>
-                  <ArrowRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-purple-400 transition-colors" />
+                  <ArrowRight className="h-3.5 w-3.5 text-gray-300 dark:text-gray-600 dark:text-gray-400 group-hover:text-purple-400 transition-colors" />
                 </Link>
               ))}
             </div>

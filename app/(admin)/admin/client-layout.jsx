@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { AdminSidebar } from "@/components/shared/admin/sidebar";
 import { AdminHeader } from "@/components/shared/admin/header";
+import { DashboardThemeShell } from "@/components/common/DashboardThemeShell";
 
 export function AdminLayoutClient({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div
-      data-theme-shell
+    <DashboardThemeShell
       className="min-h-screen flex"
       style={{ background: "var(--shell-bg)" }}
     >
@@ -21,6 +21,6 @@ export function AdminLayoutClient({ children }) {
           <div className="max-w-[1400px] mx-auto px-5 py-6">{children}</div>
         </main>
       </div>
-    </div>
+    </DashboardThemeShell>
   );
 }

@@ -85,15 +85,15 @@ export default function EditPhotos({ formData, updateFormData }) {
             {uploading ? (
               <>
                 <Loader2 className="h-8 w-8 text-purple-600 animate-spin mb-2" />
-                <p className="text-sm text-gray-600">Uploading...</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Uploading...</p>
               </>
             ) : (
               <>
                 <Upload className="h-8 w-8 text-purple-600 mb-2" />
-                <p className="text-sm text-gray-700 font-medium">
+                <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                   Click to upload or drag and drop
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   JPG, PNG or WebP (Max 5MB per image)
                 </p>
               </>
@@ -114,14 +114,14 @@ export default function EditPhotos({ formData, updateFormData }) {
       {/* Image Grid */}
       {images.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Uploaded Photos ({images.length})
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {images.map((url, index) => (
               <div
                 key={index}
-                className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden"
+                className="relative group aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden"
               >
                 <Image
                   src={url}
@@ -155,7 +155,7 @@ export default function EditPhotos({ formData, updateFormData }) {
                       <button
                         type="button"
                         onClick={() => moveImage(index, index - 1)}
-                        className="flex-1 bg-white/90 hover:bg-white text-gray-900 text-xs font-medium py-1 px-2 rounded"
+                        className="flex-1 bg-white/90 hover:bg-white text-gray-900 dark:text-white text-xs font-medium py-1 px-2 rounded"
                       >
                         ← Move
                       </button>
@@ -173,7 +173,7 @@ export default function EditPhotos({ formData, updateFormData }) {
                       <button
                         type="button"
                         onClick={() => moveImage(index, index + 1)}
-                        className="flex-1 bg-white/90 hover:bg-white text-gray-900 text-xs font-medium py-1 px-2 rounded"
+                        className="flex-1 bg-white/90 hover:bg-white text-gray-900 dark:text-white text-xs font-medium py-1 px-2 rounded"
                       >
                         Move →
                       </button>
@@ -187,7 +187,7 @@ export default function EditPhotos({ formData, updateFormData }) {
       )}
 
       {/* Video & Virtual Tour */}
-      <div className="space-y-4 pt-4 border-t">
+      <div className="space-y-4 pt-4 border-t dark:border-gray-700">
         <div className="space-y-2">
           <Label htmlFor="edit-video">Video Tour URL (Optional)</Label>
           <Input

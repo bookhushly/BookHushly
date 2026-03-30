@@ -51,7 +51,7 @@ export function CustomerDetailsModal({ customerId, onClose }) {
     <>
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[90vh] flex flex-col p-0">
-          <div className="px-6 pt-6 pb-4 border-b border-gray-200">
+          <div className="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700">
             <DialogHeader>
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -62,14 +62,14 @@ export function CustomerDetailsModal({ customerId, onClose }) {
                     <DialogTitle className="text-xl sm:text-2xl break-words">
                       {customer.name}
                     </DialogTitle>
-                    <p className="text-sm text-gray-500 mt-1 break-words">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 break-words">
                       {customer.email}
                     </p>
                   </div>
                 </div>
                 <Badge
                   variant="outline"
-                  className="bg-green-100 text-green-800 shrink-0"
+                  className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 shrink-0"
                 >
                   Active
                 </Badge>

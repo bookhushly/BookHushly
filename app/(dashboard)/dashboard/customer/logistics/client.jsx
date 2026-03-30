@@ -89,7 +89,7 @@ export function LogisticsClient({ userId, initialData }) {
             {requests.map((req) => (
               <div
                 key={req.id}
-                className="bg-white border border-purple-100 rounded-2xl p-5 hover:shadow-md transition-all"
+                className="bg-white dark:bg-gray-900 border border-purple-100 dark:border-gray-700 rounded-2xl p-5 hover:shadow-md transition-all"
               >
                 <div className="flex flex-col sm:flex-row justify-between gap-4">
                   <div className="flex-1">
@@ -99,11 +99,11 @@ export function LogisticsClient({ userId, initialData }) {
                           {VEHICLE_ICONS[req.vehicle_type] || "📦"}
                         </span>
                         <div>
-                          <h3 className="font-medium text-gray-900">
+                          <h3 className="font-medium text-gray-900 dark:text-white">
                             {SERVICE_LABELS[req.service_type] ||
                               req.service_type}
                           </h3>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             Submitted{" "}
                             {format(new Date(req.created_at), "MMM d, yyyy")}
                           </p>
@@ -113,26 +113,26 @@ export function LogisticsClient({ userId, initialData }) {
                     </div>
 
                     {/* Route */}
-                    <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3 mb-3">
+                    <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-xl p-3 mb-3">
                       <div className="text-sm">
-                        <p className="text-xs text-gray-400">From</p>
-                        <p className="font-medium text-gray-700">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">From</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300">
                           {req.pickup_lga || req.pickup_state}
                         </p>
                         {req.pickup_landmark && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {req.pickup_landmark}
                           </p>
                         )}
                       </div>
-                      <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <ArrowRight className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                       <div className="text-sm">
-                        <p className="text-xs text-gray-400">To</p>
-                        <p className="font-medium text-gray-700">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">To</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300">
                           {req.delivery_lga || req.delivery_state}
                         </p>
                         {req.delivery_landmark && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {req.delivery_landmark}
                           </p>
                         )}
@@ -141,23 +141,23 @@ export function LogisticsClient({ userId, initialData }) {
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                       <div>
-                        <p className="text-xs text-gray-400">Item</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Item</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Package className="h-3.5 w-3.5 text-purple-400" />
                           {req.item_category || "General goods"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Pickup Date</p>
-                        <p className="font-medium text-gray-700 flex items-center gap-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Pickup Date</p>
+                        <p className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5 text-purple-400" />
                           {format(new Date(req.pickup_date), "MMM d")}
                         </p>
                       </div>
                       {req.vehicle_type && (
                         <div>
-                          <p className="text-xs text-gray-400">Vehicle</p>
-                          <p className="font-medium text-gray-700 capitalize">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">Vehicle</p>
+                          <p className="font-medium text-gray-700 dark:text-gray-300 capitalize">
                             {req.vehicle_type}
                           </p>
                         </div>
@@ -168,12 +168,12 @@ export function LogisticsClient({ userId, initialData }) {
                   <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 sm:min-w-[120px]">
                     {req.quoted_amount ? (
                       <div className="text-right">
-                        <p className="text-xs text-gray-400">Quote</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Quote</p>
                         <Amount value={req.quoted_amount} size="lg" />
                       </div>
                     ) : (
                       <div className="text-right">
-                        <p className="text-xs text-gray-400">Quote</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Quote</p>
                         <p className="text-sm text-amber-600 font-medium">
                           Pending
                         </p>

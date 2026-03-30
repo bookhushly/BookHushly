@@ -73,8 +73,8 @@ export function ProfileClient({ userId, initialProfile, stats }) {
   return (
     <div className="space-y-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-medium text-gray-900">Profile</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h1 className="text-2xl font-medium text-gray-900 dark:text-white">Profile</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           Manage your account information
         </p>
       </div>
@@ -92,19 +92,19 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <h2 className="text-xl font-medium text-gray-900">
+              <h2 className="text-xl font-medium text-gray-900 dark:text-white">
                 {initialProfile.name}
               </h2>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                 {initialProfile.email}
               </p>
-              <span className="mt-2 inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 text-xs font-medium px-3 py-1 rounded-full">
+              <span className="mt-2 inline-flex items-center gap-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 text-xs font-medium px-3 py-1 rounded-full">
                 <Shield className="h-3 w-3" />
                 Customer
               </span>
 
               {initialProfile.created_at && (
-                <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 flex items-center gap-1">
                   <CalendarIcon className="h-3 w-3" />
                   Member since{" "}
                   {format(new Date(initialProfile.created_at), "MMMM yyyy")}
@@ -151,7 +151,7 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                         phone: initialProfile.phone || "",
                       });
                     }}
-                    className="border-gray-200 text-gray-600 hover:bg-gray-50"
+                    className="border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
                     <X className="h-3.5 w-3.5 mr-1" />
                     Cancel
@@ -174,7 +174,7 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                 <div>
                   <Label
                     htmlFor="name"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Full Name
                   </Label>
@@ -189,7 +189,7 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                       placeholder="Your full name"
                     />
                   ) : (
-                    <div className="mt-1.5 flex items-center gap-2 text-gray-900">
+                    <div className="mt-1.5 flex items-center gap-2 text-gray-900 dark:text-white">
                       <User className="h-4 w-4 text-purple-400" />
                       <span className="text-sm">
                         {initialProfile.name || "—"}
@@ -199,15 +199,15 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Email Address
                   </Label>
-                  <div className="mt-1.5 flex items-center gap-2 text-gray-900">
+                  <div className="mt-1.5 flex items-center gap-2 text-gray-900 dark:text-white">
                     <Mail className="h-4 w-4 text-purple-400" />
                     <span className="text-sm">{initialProfile.email}</span>
                     <CheckCircle2 className="h-3.5 w-3.5 text-green-500 ml-1" />
                   </div>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                     Email cannot be changed
                   </p>
                 </div>
@@ -215,7 +215,7 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                 <div>
                   <Label
                     htmlFor="phone"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Phone Number
                   </Label>
@@ -230,7 +230,7 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                       placeholder="+234..."
                     />
                   ) : (
-                    <div className="mt-1.5 flex items-center gap-2 text-gray-900">
+                    <div className="mt-1.5 flex items-center gap-2 text-gray-900 dark:text-white">
                       <Phone className="h-4 w-4 text-purple-400" />
                       <span className="text-sm">
                         {initialProfile.phone || "Not set"}
@@ -240,10 +240,10 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Account Role
                   </Label>
-                  <div className="mt-1.5 flex items-center gap-2 text-gray-900">
+                  <div className="mt-1.5 flex items-center gap-2 text-gray-900 dark:text-white">
                     <Shield className="h-4 w-4 text-purple-400" />
                     <span className="text-sm capitalize">
                       {initialProfile.role}
@@ -290,10 +290,10 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                       <item.icon className="h-3.5 w-3.5 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-lg font-medium text-gray-900">
+                      <p className="text-lg font-medium text-gray-900 dark:text-white">
                         {item.count}
                       </p>
-                      <p className="text-xs text-gray-500">{item.label}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{item.label}</p>
                     </div>
                   </div>
                 ))}
@@ -310,10 +310,10 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       Email Verified
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Your email is confirmed
                     </p>
                   </div>
@@ -326,10 +326,10 @@ export function ProfileClient({ userId, initialProfile, stats }) {
                     <Shield className="h-4 w-4 text-purple-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       Password
                     </p>
-                    <p className="text-xs text-gray-500">Last updated: —</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Last updated: —</p>
                   </div>
                 </div>
                 <Button

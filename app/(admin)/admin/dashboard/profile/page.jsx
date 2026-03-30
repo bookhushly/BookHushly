@@ -28,11 +28,11 @@ import { createClient } from "@/lib/supabase/client";
 // ─── Section card ─────────────────────────────────────────────────────────────
 function Card({ title, action, children }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4">
       {(title || action) && (
         <div className="flex items-center justify-between">
           {title && (
-            <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{title}</h3>
           )}
           {action}
         </div>
@@ -45,8 +45,8 @@ function Card({ title, action, children }) {
 function InfoRow({ icon: Icon, label, value }) {
   return (
     <div>
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <div className="flex items-center gap-1.5 text-sm text-gray-800">
+      <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{label}</p>
+      <div className="flex items-center gap-1.5 text-sm text-gray-800 dark:text-gray-100">
         <Icon className="h-3.5 w-3.5 text-violet-400 shrink-0" />
         <span>{value || "—"}</span>
       </div>
@@ -134,7 +134,7 @@ export default function AdminProfilePage() {
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse h-32"
+            className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 animate-pulse h-32"
           />
         ))}
       </div>
@@ -145,8 +145,8 @@ export default function AdminProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-medium text-gray-900">Admin Profile</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h1 className="text-2xl font-medium text-gray-900 dark:text-white">Admin Profile</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           Manage your account information and security
         </p>
       </div>
@@ -162,10 +162,10 @@ export default function AdminProfilePage() {
             </Avatar>
 
             <div>
-              <h2 className="text-base font-medium text-gray-900">
+              <h2 className="text-base font-medium text-gray-900 dark:text-white">
                 {profile.name || "—"}
               </h2>
-              <p className="text-xs text-gray-400">{profile.email}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">{profile.email}</p>
             </div>
 
             <Badge className="bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-50">
@@ -173,7 +173,7 @@ export default function AdminProfilePage() {
             </Badge>
 
             {profile.created_at && (
-              <p className="text-xs text-gray-400 flex items-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 Admin since {format(new Date(profile.created_at), "MMMM yyyy")}
               </p>
@@ -216,7 +216,7 @@ export default function AdminProfilePage() {
                       setEditing(false);
                       setForm({ name: profile.name, phone: profile.phone });
                     }}
-                    className="border-gray-200 text-gray-600"
+                    className="border-gray-200 text-gray-600 dark:text-gray-400"
                   >
                     <X className="h-3.5 w-3.5 mr-1" />
                     Cancel
@@ -237,7 +237,7 @@ export default function AdminProfilePage() {
             {editing ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Full Name
                   </Label>
                   <Input
@@ -250,7 +250,7 @@ export default function AdminProfilePage() {
                   />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Phone
                   </Label>
                   <Input
@@ -308,16 +308,16 @@ export default function AdminProfilePage() {
               ].map((p) => (
                 <div
                   key={p.label}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl"
                 >
                   <div className="p-1.5 bg-violet-50 rounded-lg shrink-0">
                     <KeyRound className="h-3.5 w-3.5 text-violet-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       {p.label}
                     </p>
-                    <p className="text-xs text-gray-400">{p.desc}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{p.desc}</p>
                   </div>
                   <CheckCircle2 className="h-4 w-4 text-green-400 ml-auto shrink-0" />
                 </div>
@@ -328,29 +328,29 @@ export default function AdminProfilePage() {
           {/* Security */}
           <Card title="Account Security">
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-50 rounded-lg">
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       Email Verified
                     </p>
-                    <p className="text-xs text-gray-500">{profile.email}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{profile.email}</p>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-violet-50 rounded-lg">
                     <Lock className="h-4 w-4 text-violet-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       Password
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Keep your account secure
                     </p>
                   </div>

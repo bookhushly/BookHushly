@@ -427,7 +427,7 @@ export default function ApartmentCreationForm() {
         <div className="text-center max-w-md">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-medium mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             Complete vendor verification to access this page.
           </p>
           <Button
@@ -451,10 +451,10 @@ export default function ApartmentCreationForm() {
           {/* Header row */}
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-medium text-gray-900 leading-tight">
+              <h1 className="text-lg sm:text-2xl font-medium text-gray-900 dark:text-white leading-tight">
                 Create Serviced Apartment
               </h1>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                 Step {currentStep} of {STEPS_TOTAL}: {STEP_TITLES[currentStep]}
               </p>
             </div>
@@ -466,7 +466,7 @@ export default function ApartmentCreationForm() {
                 </div>
               )}
               {lastSaved && (
-                <span className="text-xs text-gray-400 hidden sm:inline">
+                <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">
                   Saved {lastSaved.toLocaleTimeString()}
                 </span>
               )}
@@ -498,7 +498,7 @@ export default function ApartmentCreationForm() {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-gray-400">
+            <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500">
               <span>{Math.round(progress)}% complete</span>
               {lastSaved && (
                 <span className="sm:hidden">Saved {lastSaved.toLocaleTimeString()}</span>
@@ -524,16 +524,16 @@ export default function ApartmentCreationForm() {
               />
             )
           ) : (
-            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-12 text-center">
+              <AlertCircle className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Step Under Construction
               </h3>
             </div>
           )}
         </div>
 
-        <div className="sticky bottom-0 flex items-center justify-between gap-3 py-4 px-4 sm:px-6 border-t border-gray-200 bg-white rounded-lg shadow-md">
+        <div className="sticky bottom-0 flex items-center justify-between gap-3 py-4 px-4 sm:px-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg shadow-md">
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -549,7 +549,7 @@ export default function ApartmentCreationForm() {
             size="sm"
             onClick={clearDraft}
             disabled={isSubmitting}
-            className="hidden sm:flex h-10 text-gray-400 hover:text-gray-600"
+            className="hidden sm:flex h-10 text-gray-400 hover:text-gray-600 dark:text-gray-400"
           >
             Clear Draft
           </Button>

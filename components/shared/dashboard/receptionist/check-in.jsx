@@ -184,7 +184,7 @@ export function CheckInTab({ hotelId, onUpdate }) {
     if (hours < 0) return { text: "Overdue", color: "text-red-600" };
     if (hours < 6) return { text: `${hours}h left`, color: "text-red-600" };
     if (hours < 24) return { text: `${hours}h left`, color: "text-yellow-600" };
-    return { text: `${Math.ceil(hours / 24)}d left`, color: "text-gray-600" };
+    return { text: `${Math.ceil(hours / 24)}d left`, color: "text-gray-600 dark:text-gray-400" };
   };
 
   if (loading) {
@@ -207,7 +207,7 @@ export function CheckInTab({ hotelId, onUpdate }) {
           </CardHeader>
           <CardContent>
             <div className="relative mb-6">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
               <Input
                 placeholder="Search by guest name, email, or room number..."
                 value={searchTerm}
@@ -218,7 +218,7 @@ export function CheckInTab({ hotelId, onUpdate }) {
 
             {filteredBookings.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">No bookings found</p>
+                <p className="text-gray-600 dark:text-gray-400">No bookings found</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -229,7 +229,7 @@ export function CheckInTab({ hotelId, onUpdate }) {
                   return (
                     <div
                       key={booking.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 space-y-2">
@@ -244,7 +244,7 @@ export function CheckInTab({ hotelId, onUpdate }) {
                             </Badge>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400">
                             <div className="flex items-center gap-2">
                               <Mail className="h-4 w-4" />
                               <span>{booking.guest_email}</span>
@@ -340,26 +340,26 @@ export function CheckInTab({ hotelId, onUpdate }) {
           {selectedBooking && (
             <div className="space-y-2 py-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Guest:</span>
+                <span className="text-gray-600 dark:text-gray-400">Guest:</span>
                 <span className="font-medium">
                   {selectedBooking.guest_name}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Room:</span>
+                <span className="text-gray-600 dark:text-gray-400">Room:</span>
                 <span className="font-medium">
                   #{selectedBooking.hotel_rooms?.room_number}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Room Type:</span>
+                <span className="text-gray-600 dark:text-gray-400">Room Type:</span>
                 <span className="font-medium">
                   {selectedBooking.hotel_rooms?.hotel_room_types?.name}
                 </span>
               </div>
               {selectedBooking.action === "checkin" && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Check-in Date:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Check-in Date:</span>
                   <span className="font-medium">
                     {new Date(
                       selectedBooking.check_in_date

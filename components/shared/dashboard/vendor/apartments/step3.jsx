@@ -58,7 +58,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               Price Per Night (₦) <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 ₦
               </span>
               <Input
@@ -79,7 +79,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
             {errors?.price_per_night && (
               <p className="text-sm text-red-500">{errors.price_per_night}</p>
             )}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Your base rate for single-night bookings
             </p>
           </div>
@@ -99,7 +99,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
                 })
               }
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Minimum number of nights required for booking (default: 1)
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
             <TrendingDown className="h-5 w-5 text-green-600" />
             Discounted Rates (Optional)
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Attract longer stays with discounted weekly and monthly rates
           </p>
         </CardHeader>
@@ -121,7 +121,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
           <div className="space-y-2">
             <Label htmlFor="price_per_week">Weekly Rate (₦)</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 ₦
               </span>
               <Input
@@ -145,7 +145,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
             </div>
             {suggestedWeekly > 0 && !formData.price_per_week && (
               <div className="flex items-center gap-2">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Suggested: ₦{suggestedWeekly.toLocaleString()} (10% off)
                 </p>
                 <button
@@ -159,7 +159,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
                 </button>
               </div>
             )}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Total price for 7 nights (leave empty if not offering)
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
           <div className="space-y-2">
             <Label htmlFor="price_per_month">Monthly Rate (₦)</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 ₦
               </span>
               <Input
@@ -191,7 +191,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
             </div>
             {suggestedMonthly > 0 && !formData.price_per_month && (
               <div className="flex items-center gap-2">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Suggested: ₦{suggestedMonthly.toLocaleString()} (~23% off)
                 </p>
                 <button
@@ -205,7 +205,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
                 </button>
               </div>
             )}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Total price for 30 nights - popular with corporate clients
             </p>
           </div>
@@ -226,7 +226,7 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               Caution/Security Deposit (₦)
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 ₦
               </span>
               <Input
@@ -244,16 +244,16 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
                 className="pl-8"
               />
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Refundable deposit held for damages
             </p>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <p className="text-sm font-medium text-gray-900 mb-2">
+          <div className="bg-gray-50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">
               Deposit Guidelines
             </p>
-            <ul className="text-xs text-gray-700 space-y-1">
+            <ul className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
               <li>
                 • Typical range: ₦50,000 - ₦200,000 depending on apartment value
               </li>
@@ -274,16 +274,16 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-700">Per Night:</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-sm text-gray-700 dark:text-gray-300">Per Night:</span>
+                <span className="font-medium text-gray-900 dark:text-white">
                   ₦{parseFloat(formData.price_per_night).toLocaleString()}
                 </span>
               </div>
               {formData.price_per_week && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-700">Per Week:</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Per Week:</span>
                   <div className="text-right">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 dark:text-white">
                       ₦{parseFloat(formData.price_per_week).toLocaleString()}
                     </span>
                     <span className="block text-xs text-green-600">
@@ -298,9 +298,9 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               )}
               {formData.price_per_month && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-700">Per Month:</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Per Month:</span>
                   <div className="text-right">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 dark:text-white">
                       ₦{parseFloat(formData.price_per_month).toLocaleString()}
                     </span>
                     <span className="block text-xs text-green-600">
@@ -315,10 +315,10 @@ export default function Step3Pricing({ formData, updateFormData, errors }) {
               )}
               {formData.caution_deposit && (
                 <div className="flex justify-between items-center pt-3 border-t border-purple-200">
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
                     Security Deposit:
                   </span>
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     ₦{parseFloat(formData.caution_deposit).toLocaleString()}
                   </span>
                 </div>

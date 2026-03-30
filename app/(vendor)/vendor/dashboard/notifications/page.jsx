@@ -94,11 +94,11 @@ export default function VendorNotificationsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-medium text-gray-900 flex items-center gap-2">
+          <h1 className="text-xl font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <Bell className="h-5 w-5 text-violet-600" />
             Notifications
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             Bookings, payments, and updates for your listings
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function VendorNotificationsPage() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
               filter === f.key
                 ? "bg-violet-600 text-white border-violet-600"
-                : "bg-white text-gray-600 border-gray-200 hover:border-violet-300 hover:text-violet-600"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-violet-300 hover:text-violet-600"
             }`}
           >
             {f.label}
@@ -136,12 +136,12 @@ export default function VendorNotificationsPage() {
 
       {/* List */}
       {isLoading ? (
-        <div className="flex flex-col items-center gap-4 py-20 text-gray-400">
+        <div className="flex flex-col items-center gap-4 py-20 text-gray-400 dark:text-gray-500">
           <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-600 animate-spin" />
           <p className="text-sm">Loading notifications…</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
+        <div className="flex flex-col items-center gap-3 py-20 text-gray-400 dark:text-gray-500">
           <BellOff className="h-10 w-10 opacity-30" />
           <p className="text-base font-medium">No notifications</p>
           <p className="text-sm text-center max-w-xs">
@@ -163,8 +163,8 @@ export default function VendorNotificationsPage() {
                 onClick={() => handleClick(n)}
                 className={`relative flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all group
                   ${isNew
-                    ? "bg-violet-50/60 border-violet-100 hover:bg-violet-50"
-                    : "bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
+                    ? "bg-violet-50/60 dark:bg-violet-900/20 border-violet-100 dark:border-violet-800 hover:bg-violet-50 dark:hover:bg-violet-900/30"
+                    : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-800"
                   }`}
               >
                 {/* Unread pip */}
@@ -180,14 +180,14 @@ export default function VendorNotificationsPage() {
                 {/* Body */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900" : "text-gray-700"}`}>
+                    <p className={`text-sm font-medium leading-snug ${isNew ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
                       {n.title}
                     </p>
-                    <span className="text-[11px] text-gray-400 shrink-0 mt-0.5">
+                    <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0 mt-0.5">
                       {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                     </span>
                   </div>
-                  <p className="text-[13px] text-gray-500 mt-1 leading-relaxed">
+                  <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     {n.message}
                   </p>
                 </div>
@@ -197,7 +197,7 @@ export default function VendorNotificationsPage() {
                   {isNew && (
                     <button
                       onClick={(e) => { e.stopPropagation(); handleMarkRead(n.id); }}
-                      className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                      className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors"
                       title="Mark as read"
                     >
                       <CheckCircle className="h-4 w-4" />
@@ -205,7 +205,7 @@ export default function VendorNotificationsPage() {
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDelete(n.id); }}
-                    className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="h-7 w-7 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
                     title="Delete"
                   >
                     <X className="h-4 w-4" />

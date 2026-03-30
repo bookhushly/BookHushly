@@ -164,7 +164,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
           ) : (
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Apartment Type</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Apartment Type</p>
                 <Badge variant="secondary" className="text-base">
                   {apartment.apartment_type?.replace("_", " ").toUpperCase()}
                 </Badge>
@@ -172,22 +172,22 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Bedrooms</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Bedrooms</p>
                   <p className="text-lg font-medium">{apartment.bedrooms}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Bathrooms</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Bathrooms</p>
                   <p className="text-lg font-medium">{apartment.bathrooms}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Max Guests</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Max Guests</p>
                   <p className="text-lg font-medium">
                     {apartment.max_guests}
                   </p>
                 </div>
                 {apartment.square_meters && (
                   <div>
-                    <p className="text-sm text-gray-600">Size</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Size</p>
                     <p className="text-lg font-medium">
                       {apartment.square_meters}m²
                     </p>
@@ -217,7 +217,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
 
               {apartment.description && (
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-gray-600 mb-2">Description</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Description</p>
                   <RichContentRenderer
                     content={apartment.description}
                     className="prose prose-sm max-w-none"
@@ -283,7 +283,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
           ) : (
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600">Address</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Address</p>
                 <p className="font-medium">
                   {apartment.area && `${apartment.area}, `}
                   {apartment.city}, {apartment.state}
@@ -291,14 +291,14 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               </div>
               {apartment.address && (
                 <div>
-                  <p className="text-sm text-gray-600">Full Address</p>
-                  <p className="text-gray-800">{apartment.address}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Full Address</p>
+                  <p className="text-gray-800 dark:text-gray-100">{apartment.address}</p>
                 </div>
               )}
               {apartment.landmark && (
                 <div>
-                  <p className="text-sm text-gray-600">Nearby Landmarks</p>
-                  <p className="text-gray-800">{apartment.landmark}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Nearby Landmarks</p>
+                  <p className="text-gray-800 dark:text-gray-100">{apartment.landmark}</p>
                 </div>
               )}
             </div>
@@ -360,14 +360,14 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
           ) : (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Per Night:</span>
+                <span className="text-gray-600 dark:text-gray-400">Per Night:</span>
                 <span className="text-xl font-medium">
                   ₦{parseFloat(apartment.price_per_night).toLocaleString()}
                 </span>
               </div>
               {apartment.price_per_week && (
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Per Week:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Per Week:</span>
                   <span className="text-lg font-medium">
                     ₦{parseFloat(apartment.price_per_week).toLocaleString()}
                   </span>
@@ -375,7 +375,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               )}
               {apartment.price_per_month && (
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Per Month:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Per Month:</span>
                   <span className="text-lg font-medium">
                     ₦{parseFloat(apartment.price_per_month).toLocaleString()}
                   </span>
@@ -383,14 +383,14 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
               )}
               {apartment.caution_deposit && (
                 <div className="flex justify-between items-center pt-3 border-t">
-                  <span className="text-gray-600">Security Deposit:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Security Deposit:</span>
                   <span className="font-medium">
                     ₦{parseFloat(apartment.caution_deposit).toLocaleString()}
                   </span>
                 </div>
               )}
               <div className="pt-3 border-t">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Minimum Stay: {apartment.minimum_stay} night(s)
                 </p>
               </div>
@@ -562,12 +562,12 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-600">No amenities listed</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">No amenities listed</p>
               )}
 
               {selectedSecurity.length > 0 && (
                 <div className="pt-3 border-t">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Security Features:
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -661,7 +661,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-600">No photos uploaded</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">No photos uploaded</p>
               )}
             </div>
           )}
@@ -723,11 +723,11 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Check-in Time</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Check-in Time</p>
                   <p className="font-medium">{apartment.check_in_time}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Check-out Time</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Check-out Time</p>
                   <p className="font-medium">{apartment.check_out_time}</p>
                 </div>
               </div>
@@ -742,10 +742,10 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
 
               {apartment.cancellation_policy && (
                 <div className="pt-3 border-t">
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     Cancellation Policy
                   </p>
-                  <p className="text-gray-800 text-sm">
+                  <p className="text-gray-800 dark:text-gray-100 text-sm">
                     {apartment.cancellation_policy}
                   </p>
                 </div>
@@ -753,7 +753,7 @@ export default function OverviewTab({ apartment, apartmentId, onUpdate }) {
 
               {apartment.house_rules && (
                 <div className="pt-3 border-t">
-                  <p className="text-sm text-gray-600 mb-2">House Rules</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">House Rules</p>
                   <div
                     className="prose prose-sm max-w-none"
                     dangerouslySetInnerHTML={{ __html: apartment.house_rules }}

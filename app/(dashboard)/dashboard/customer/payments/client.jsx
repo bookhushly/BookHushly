@@ -130,7 +130,7 @@ export function PaymentsClient({ userId, initialData }) {
       ) : (
         <SectionCard title="Transactions">
           <div
-            className={`divide-y divide-gray-50 ${isFetching ? "opacity-60" : ""}`}
+            className={`divide-y divide-gray-50 dark:divide-gray-800 ${isFetching ? "opacity-60" : ""}`}
           >
             {payments.map((payment) => {
               const statusConf =
@@ -147,10 +147,10 @@ export function PaymentsClient({ userId, initialData }) {
                       <StatusIcon className={`h-4 w-4 ${statusConf.color}`} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {payment.reference}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {format(
                           new Date(payment.created_at),
                           "MMM d, yyyy · h:mm a",
@@ -166,7 +166,7 @@ export function PaymentsClient({ userId, initialData }) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       ₦{parseFloat(payment.amount || 0).toLocaleString("en-NG")}
                     </p>
                     <span

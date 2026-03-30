@@ -211,8 +211,8 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-medium text-gray-900">Room Types</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-medium text-gray-900 dark:text-white">Room Types</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Define the different types of rooms available at your hotel
             </p>
           </div>
@@ -230,12 +230,12 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
             <CardContent className="text-center py-12">
               <div className="max-w-md mx-auto">
                 <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Plus className="h-8 w-8 text-gray-400" />
+                  <Plus className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   No room types yet
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Start by creating your first room type (e.g., Standard,
                   Deluxe, Suite)
                 </p>
@@ -286,25 +286,25 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <Users className="h-4 w-4" />
                       <span>Max {type.max_occupancy} guests</span>
                     </div>
                     {type.size_sqm && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <Maximize2 className="h-4 w-4" />
                         <span>{type.size_sqm} m²</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100">
+                  <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Base Price</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Base Price</p>
                         <p className="text-lg font-medium text-purple-600">
                           {formatPrice(type.base_price)}
-                          <span className="text-xs text-gray-500 font-normal">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
                             /night
                           </span>
                         </p>
@@ -314,8 +314,8 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
 
                   {type.amenities &&
                     Object.values(type.amenities).some((v) => v) && (
-                      <div className="pt-4 border-t border-gray-100">
-                        <p className="text-xs text-gray-500 mb-2">Amenities</p>
+                      <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Amenities</p>
                         <div className="flex flex-wrap gap-1">
                           {Object.entries(type.amenities)
                             .filter(([_, value]) => value)
@@ -323,14 +323,14 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                             .map(([key]) => (
                               <span
                                 key={key}
-                                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                                className="px-2 py-1 bg-gray-100 text-gray-700 dark:text-gray-300 text-xs rounded"
                               >
                                 {amenityLabels[key] || key}
                               </span>
                             ))}
                           {Object.values(type.amenities).filter((v) => v)
                             .length > 4 && (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 dark:text-gray-300 text-xs rounded">
                               +
                               {Object.values(type.amenities).filter((v) => v)
                                 .length - 4}
@@ -353,14 +353,14 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
           onClick={() => setDialogOpen(false)}
         >
           <div
-            className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4"
+            className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                 {editingType ? "Edit Room Type" : "Create Room Type"}
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Define the characteristics and pricing for this room type
               </p>
             </div>
@@ -450,7 +450,7 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
                           onChange={() => handleAmenityChange(amenity)}
                           className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600"
                         />
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
                           {amenityLabels[amenity]}
                         </span>
                       </label>
@@ -496,13 +496,13 @@ export function RoomTypesSection({ hotelId, roomTypes, onUpdate, loading }) {
           onClick={() => setDeleteDialogOpen(false)}
         >
           <div
-            className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
+            className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-md mx-4 p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-medium text-gray-900 mb-2">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Delete Room Type
             </h2>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to delete this room type? This will also
               delete all individual rooms of this type. This action cannot be
               undone.

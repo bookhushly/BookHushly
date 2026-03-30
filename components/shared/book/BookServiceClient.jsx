@@ -84,6 +84,15 @@ export default function BookServiceClient() {
         return;
       }
 
+      // Block booking for past events
+      if (data.category === "events") {
+        const src = data.event_time || data.event_date;
+        if (src && new Date(src) < new Date()) {
+          setError("This event has already ended and is no longer accepting bookings.");
+          return;
+        }
+      }
+
       setService(data);
     } catch (err) {
       console.error("Exception fetching service:", err);

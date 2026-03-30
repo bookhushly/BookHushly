@@ -12,7 +12,7 @@ export function CustomerInfo({ customer, analytics }) {
             <ShoppingBag className="w-4 h-4" />
             <span className="text-xs font-medium">Total Bookings</span>
           </div>
-          <p className="text-2xl font-medium text-gray-900">
+          <p className="text-2xl font-medium text-gray-900 dark:text-white">
             {analytics?.totalBookings || 0}
           </p>
         </div>
@@ -22,7 +22,7 @@ export function CustomerInfo({ customer, analytics }) {
             <DollarSign className="w-4 h-4" />
             <span className="text-xs font-medium">Total Spent</span>
           </div>
-          <p className="text-2xl font-medium text-gray-900">
+          <p className="text-2xl font-medium text-gray-900 dark:text-white">
             {formatCurrency(analytics?.totalSpent || 0)}
           </p>
         </div>
@@ -32,7 +32,7 @@ export function CustomerInfo({ customer, analytics }) {
             <TrendingUp className="w-4 h-4" />
             <span className="text-xs font-medium">Avg Booking</span>
           </div>
-          <p className="text-2xl font-medium text-gray-900">
+          <p className="text-2xl font-medium text-gray-900 dark:text-white">
             {formatCurrency(
               analytics?.totalBookings > 0
                 ? analytics.totalSpent / analytics.totalBookings
@@ -46,7 +46,7 @@ export function CustomerInfo({ customer, analytics }) {
             <Calendar className="w-4 h-4" />
             <span className="text-xs font-medium">Last Booking</span>
           </div>
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-gray-900 dark:text-white">
             {analytics?.lastBookingDate
               ? formatDate(analytics.lastBookingDate, "short")
               : "None"}
@@ -55,26 +55,26 @@ export function CustomerInfo({ customer, analytics }) {
       </div>
 
       {/* Booking Breakdown */}
-      <div className="pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           Booking Breakdown
         </h3>
         <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">Hotels</p>
-            <p className="text-2xl font-medium text-gray-900 mt-1">
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Hotels</p>
+            <p className="text-2xl font-medium text-gray-900 dark:text-white mt-1">
               {analytics?.hotelBookings || 0}
             </p>
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">Apartments</p>
-            <p className="text-2xl font-medium text-gray-900 mt-1">
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Apartments</p>
+            <p className="text-2xl font-medium text-gray-900 dark:text-white mt-1">
               {analytics?.apartmentBookings || 0}
             </p>
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">Events</p>
-            <p className="text-2xl font-medium text-gray-900 mt-1">
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Events</p>
+            <p className="text-2xl font-medium text-gray-900 dark:text-white mt-1">
               {analytics?.eventBookings || 0}
             </p>
           </div>
@@ -82,30 +82,30 @@ export function CustomerInfo({ customer, analytics }) {
       </div>
 
       {/* Account Details */}
-      <div className="pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
           Account Details
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-500">Name</p>
-            <p className="text-base text-gray-900 mt-1">{customer.name}</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</p>
+            <p className="text-base text-gray-900 dark:text-white mt-1">{customer.name}</p>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Email</p>
-            <p className="text-base text-gray-900 mt-1 break-words">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</p>
+            <p className="text-base text-gray-900 dark:text-white mt-1 break-words">
               {customer.email}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Role</p>
-            <p className="text-base text-gray-900 mt-1 capitalize">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</p>
+            <p className="text-base text-gray-900 dark:text-white mt-1 capitalize">
               {customer.role}
             </p>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Joined</p>
-            <p className="text-base text-gray-900 mt-1">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Joined</p>
+            <p className="text-base text-gray-900 dark:text-white mt-1">
               {formatDate(customer.created_at, "long")}
             </p>
           </div>

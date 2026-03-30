@@ -121,7 +121,7 @@ export function EmailCustomerModal({ customer, onClose }) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Email Customer</DialogTitle>
-          <p className="text-sm text-gray-600">Sending to: {customer.email}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Sending to: {customer.email}</p>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -162,7 +162,7 @@ export function EmailCustomerModal({ customer, onClose }) {
             />
           </div>
 
-          <div className="flex gap-3 justify-end pt-4 border-t">
+          <div className="flex gap-3 justify-end pt-4 border-t dark:border-gray-700">
             <Button variant="outline" onClick={onClose} disabled={sending}>
               Cancel
             </Button>

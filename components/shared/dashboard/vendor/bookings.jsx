@@ -7,10 +7,10 @@ const BookingsTab = ({filteredBookings}) => {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-medium text-slate-900 mb-1">
+        <h2 className="text-2xl font-medium text-slate-900 dark:text-white mb-1">
           Booking Requests
         </h2>
-        <p className="text-slate-600 text-sm">
+        <p className="text-slate-600 dark:text-slate-400 text-sm">
           Manage customer bookings and reservations
         </p>
       </div>
@@ -25,57 +25,57 @@ const BookingsTab = ({filteredBookings}) => {
         <Card className="bg-white/60 backdrop-blur-md border-slate-200/50 shadow-xl overflow-hidden">
           <ScrollArea className="h-[600px]">
             <table className="w-full">
-              <thead className="bg-slate-50/80 sticky top-0 backdrop-blur-sm border-b-2 border-slate-200">
+              <thead className="bg-slate-50/80 dark:bg-gray-800/80 sticky top-0 backdrop-blur-sm border-b-2 border-slate-200 dark:border-gray-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Listing
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Schedule
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Guests
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-gray-800">
                 {filteredBookings.map((booking, idx) => (
                   <tr
                     key={booking.id}
-                    className="hover:bg-slate-50/50 transition-colors"
+                    className="hover:bg-slate-50/50 dark:hover:bg-gray-800/50 transition-colors"
                     style={{
                       animation: `fadeIn 0.3s ease-out ${idx * 0.05}s both`,
                     }}
                   >
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-slate-900">
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">
                         {booking.listings?.title}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-slate-700">
+                      <div className="text-sm text-slate-700 dark:text-slate-300">
                         {booking.booking_date}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
                         at {booking.booking_time}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-slate-400" />
+                        <Users className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <span className="text-sm font-medium text-slate-900">
                           {booking.guests}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-slate-900">
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">
                         ₦{booking.total_amount?.toLocaleString()}
                       </div>
                     </td>

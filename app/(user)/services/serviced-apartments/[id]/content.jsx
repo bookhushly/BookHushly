@@ -25,7 +25,6 @@ import {
   CheckCircle2,
   PlayCircle,
   Globe,
-  MessageCircle,
   Award,
 } from "lucide-react";
 import ImageGallery from "@/components/common/home/ImageGallery";
@@ -605,24 +604,6 @@ export default function ApartmentClient({ apartment }) {
                   </div>
                 </div>
               )}
-
-              {/* WhatsApp Contact */}
-              {apartment.agent_phone && (() => {
-                const rawPhone = apartment.agent_phone.replace(/\D/g, "");
-                const waPhone = rawPhone.startsWith("0") ? "234" + rawPhone.slice(1) : rawPhone.startsWith("234") ? rawPhone : "234" + rawPhone;
-                const waMsg = encodeURIComponent(`Hi, I'm interested in ${apartment.name}. Is it available?`);
-                return (
-                  <a
-                    href={`https://wa.me/${waPhone}?text=${waMsg}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 flex items-center justify-center gap-2 w-full h-11 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition-colors text-sm"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    Contact on WhatsApp
-                  </a>
-                );
-              })()}
 
               {/* Reviews */}
               <div className="mt-8">

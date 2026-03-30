@@ -17,7 +17,7 @@ export function CustomerBookings({ customerId }) {
 
   if (!bookings || bookings.total === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         No bookings found for this customer
       </div>
     );
@@ -30,7 +30,7 @@ export function CustomerBookings({ customerId }) {
       completed: { bg: "bg-green-100", text: "text-green-800" },
       cancelled: { bg: "bg-red-100", text: "text-red-800" },
       checked_in: { bg: "bg-purple-100", text: "text-purple-800" },
-      checked_out: { bg: "bg-gray-100", text: "text-gray-800" },
+      checked_out: { bg: "bg-gray-100", text: "text-gray-800 dark:text-gray-100" },
     };
 
     const config = statusConfig[status] || statusConfig.pending;
@@ -45,30 +45,30 @@ export function CustomerBookings({ customerId }) {
     <div className="space-y-6">
       {bookings.hotels.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Hotel Bookings ({bookings.hotels.length})
           </h3>
           <div className="space-y-3">
             {bookings.hotels.map((booking) => (
               <div
                 key={booking.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 transition-colors dark:bg-gray-900"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex gap-3 flex-1 min-w-0">
-                    <Building2 className="w-5 h-5 text-gray-600 mt-1 shrink-0" />
+                    <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-1 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className="font-medium text-gray-900 dark:text-white">
                         {booking.hotels?.name || "Hotel"}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {booking.hotels?.city}, {booking.hotels?.state}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {formatDate(booking.check_in_date)} -{" "}
                         {formatDate(booking.check_out_date)}
                       </p>
-                      <p className="text-sm font-medium text-gray-900 mt-2">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">
                         {formatCurrency(booking.total_price)}
                       </p>
                     </div>
@@ -79,8 +79,8 @@ export function CustomerBookings({ customerId }) {
                       variant="outline"
                       className={
                         booking.payment_status === "completed"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                          : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400"
                       }
                     >
                       {booking.payment_status}
@@ -95,31 +95,31 @@ export function CustomerBookings({ customerId }) {
 
       {bookings.apartments.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Apartment Bookings ({bookings.apartments.length})
           </h3>
           <div className="space-y-3">
             {bookings.apartments.map((booking) => (
               <div
                 key={booking.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 transition-colors dark:bg-gray-900"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex gap-3 flex-1 min-w-0">
-                    <Home className="w-5 h-5 text-gray-600 mt-1 shrink-0" />
+                    <Home className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-1 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className="font-medium text-gray-900 dark:text-white">
                         {booking.serviced_apartments?.name || "Apartment"}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {booking.serviced_apartments?.city},{" "}
                         {booking.serviced_apartments?.state}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {formatDate(booking.check_in_date)} -{" "}
                         {formatDate(booking.check_out_date)}
                       </p>
-                      <p className="text-sm font-medium text-gray-900 mt-2">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">
                         {formatCurrency(booking.total_amount)}
                       </p>
                     </div>
@@ -130,8 +130,8 @@ export function CustomerBookings({ customerId }) {
                       variant="outline"
                       className={
                         booking.payment_status === "paid"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                          : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400"
                       }
                     >
                       {booking.payment_status}
@@ -146,29 +146,29 @@ export function CustomerBookings({ customerId }) {
 
       {bookings.events.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             Event Bookings ({bookings.events.length})
           </h3>
           <div className="space-y-3">
             {bookings.events.map((booking) => (
               <div
                 key={booking.id}
-                className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
+                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 transition-colors dark:bg-gray-900"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex gap-3 flex-1 min-w-0">
-                    <CalendarIcon className="w-5 h-5 text-gray-600 mt-1 shrink-0" />
+                    <CalendarIcon className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-1 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className="font-medium text-gray-900 dark:text-white">
                         {booking.listings?.title || "Event"}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {booking.listings?.location}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {formatDate(booking.booking_date)}
                       </p>
-                      <p className="text-sm font-medium text-gray-900 mt-2">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white mt-2">
                         {formatCurrency(booking.total_amount)}
                       </p>
                     </div>
@@ -179,8 +179,8 @@ export function CustomerBookings({ customerId }) {
                       variant="outline"
                       className={
                         booking.payment_status === "completed"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                          : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400"
                       }
                     >
                       {booking.payment_status}

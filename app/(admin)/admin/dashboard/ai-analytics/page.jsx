@@ -52,17 +52,17 @@ const FEATURE_META = {
 
 function StatCard({ icon: Icon, label, value, sub, color = "text-violet-600" }) {
   return (
-    <Card className="border border-gray-100">
+    <Card className="border border-gray-100 dark:border-gray-800">
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
               {label}
             </p>
             <p className={`text-3xl font-medium mt-1 ${color}`}>{value}</p>
-            {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+            {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
           </div>
-          <div className="h-10 w-10 rounded-xl bg-violet-50 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
             <Icon className="h-5 w-5 text-violet-500" strokeWidth={1.75} />
           </div>
         </div>
@@ -78,7 +78,7 @@ function FeatureRow({ feature }) {
   const pct = feature.total > 0 ? 100 : 0;
 
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0">
+    <div className="flex items-center gap-4 py-3 border-b border-gray-50 dark:border-gray-800 last:border-0">
       <div
         className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
         style={{ background: color + "15" }}
@@ -87,7 +87,7 @@ function FeatureRow({ feature }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-800 truncate">
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
             {feature.feature_name}
           </p>
           <Badge
@@ -95,13 +95,13 @@ function FeatureRow({ feature }) {
             className={
               feature.enabled
                 ? "text-emerald-700 border-emerald-200 bg-emerald-50 text-[10px] py-0"
-                : "text-gray-400 border-gray-200 bg-gray-50 text-[10px] py-0"
+                : "text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px] py-0"
             }
           >
             {feature.enabled ? "Active" : "Off"}
           </Badge>
         </div>
-        <div className="mt-1.5 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+        <div className="mt-1.5 h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{ width: `${pct}%`, background: color }}
@@ -109,8 +109,8 @@ function FeatureRow({ feature }) {
         </div>
       </div>
       <div className="text-right shrink-0">
-        <p className="text-sm font-medium text-gray-800">{feature.total.toLocaleString()}</p>
-        <p className="text-[11px] text-gray-400">{feature.unique_users} users</p>
+        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{feature.total.toLocaleString()}</p>
+        <p className="text-[11px] text-gray-400 dark:text-gray-500">{feature.unique_users} users</p>
       </div>
     </div>
   );
@@ -119,13 +119,13 @@ function FeatureRow({ feature }) {
 const CUSTOM_TOOLTIP = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-100 shadow-lg rounded-xl px-4 py-3 text-xs">
-      <p className="font-medium text-gray-700 mb-2">{label}</p>
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 shadow-lg rounded-xl px-4 py-3 text-xs">
+      <p className="font-medium text-gray-700 dark:text-gray-300 mb-2">{label}</p>
       {payload.map((p) => (
         <div key={p.dataKey} className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-gray-500">{p.name}:</span>
-          <span className="font-medium text-gray-800">{p.value}</span>
+          <span className="text-gray-500 dark:text-gray-400">{p.name}:</span>
+          <span className="font-medium text-gray-800 dark:text-gray-100">{p.value}</span>
         </div>
       ))}
     </div>
@@ -157,9 +157,9 @@ export default function AIAnalyticsPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="h-5 w-5 text-violet-600" strokeWidth={1.75} />
-              <h1 className="text-2xl font-medium text-gray-900">AI Analytics</h1>
+              <h1 className="text-2xl font-medium text-gray-900 dark:text-white">AI Analytics</h1>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Usage statistics across all AI features on the platform.
             </p>
           </div>
@@ -225,15 +225,15 @@ export default function AIAnalyticsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Daily trend chart */}
-              <Card className="lg:col-span-2 border border-gray-100">
+              <Card className="lg:col-span-2 border border-gray-100 dark:border-gray-800">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">
+                  <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Daily Requests — All Features
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {data.daily_trend.every((d) => d.total === 0) ? (
-                    <div className="flex items-center justify-center h-48 text-sm text-gray-400">
+                    <div className="flex items-center justify-center h-48 text-sm text-gray-400 dark:text-gray-500">
                       No usage data yet in this period.
                     </div>
                   ) : (
@@ -281,15 +281,15 @@ export default function AIAnalyticsPage() {
               </Card>
 
               {/* Feature breakdown list */}
-              <Card className="border border-gray-100">
+              <Card className="border border-gray-100 dark:border-gray-800">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">
+                  <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Feature Breakdown
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   {allFeatures.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-4">No features found.</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 py-4">No features found.</p>
                   ) : (
                     allFeatures
                       .slice()
@@ -302,9 +302,9 @@ export default function AIAnalyticsPage() {
 
             {/* Bar chart — calls vs users per feature */}
             {barData.some((d) => d.calls > 0) && (
-              <Card className="border border-gray-100">
+              <Card className="border border-gray-100 dark:border-gray-800">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">
+                  <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Requests vs Unique Users by Feature
                   </CardTitle>
                 </CardHeader>

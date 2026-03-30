@@ -83,15 +83,15 @@ export default function VendorBookingsPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 border-yellow-200";
       case "confirmed":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 border-blue-200";
       case "completed":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border-green-200";
       case "cancelled":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border-red-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 dark:text-gray-100 border-gray-200";
     }
   };
 
@@ -248,7 +248,7 @@ export default function VendorBookingsPage() {
         {booking.special_requests && booking.status === "pending" && (
           <div className="mb-4">
             <h5 className="font-medium text-sm mb-1">Special Requests:</h5>
-            <p className="text-sm text-muted-foreground bg-white p-3 rounded border">
+            <p className="text-sm text-muted-foreground bg-white dark:bg-gray-900 p-3 rounded border dark:border-gray-700">
               {booking.special_requests}
             </p>
           </div>
