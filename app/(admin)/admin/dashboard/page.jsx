@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import {
   Card,
   CardContent,
@@ -41,9 +39,11 @@ import { format } from "date-fns";
 import { useAdminDashboardData } from "@/hooks/useAdminDashboardData";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
+import lazyLoad from "next/dynamic";
 
-const SupportStaffPanel = dynamic(
+export const dynamic = "force-dynamic";
+
+const SupportStaffPanel = lazyLoad(
   () => import("@/components/shared/dashboard/admin/SupportStaffPanel"),
   { ssr: false },
 );
