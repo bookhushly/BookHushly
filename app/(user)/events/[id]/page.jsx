@@ -49,6 +49,7 @@ export async function generateMetadata({ params }) {
 
 export async function generateStaticParams() {
   try {
+    const supabase = createStaticClient();
     const { data: services, error } = await supabase
       .from("listings")
       .select("id")
