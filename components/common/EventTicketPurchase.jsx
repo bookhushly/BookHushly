@@ -34,15 +34,15 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [selectedTickets, setSelectedTickets] = useState({});
-  const [waitlistEmail, setWaitlistEmail] = useState(contactDetails.email || "");
-  const [waitlistName, setWaitlistName] = useState(contactDetails.name || "");
-  const [waitlistJoined, setWaitlistJoined] = useState(false);
-  const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [contactDetails, setContactDetails] = useState({
     name: "",
     email: "",
     phone: "",
   });
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistName, setWaitlistName] = useState("");
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [questionAnswers, setQuestionAnswers] = useState({});
   const [ageAcknowledged, setAgeAcknowledged] = useState(false);
 

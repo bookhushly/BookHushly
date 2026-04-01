@@ -97,7 +97,6 @@ export default function RootLayout({ children }) {
       </head>
       <body className="font-bricolage antialiased">
         <PostHogProvider>
-          {children}
           <ThemeProvider>
             <QueryProvider>{children}</QueryProvider>
           </ThemeProvider>
