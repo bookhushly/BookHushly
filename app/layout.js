@@ -4,6 +4,7 @@ import QueryProvider from "@/components/common/QueryProvider";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PostHogProvider } from "@/providers/post-hog";
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
@@ -83,7 +84,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-NG" className={`${bricolage.variable} ${fraunces.variable}`} suppressHydrationWarning>
+    <html
+      lang="en-NG"
+      className={`${bricolage.variable} ${fraunces.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <meta
           name="google-site-verification"
@@ -91,11 +96,14 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="font-bricolage antialiased">
-        <ThemeProvider>
-          <QueryProvider>{children}</QueryProvider>
-        </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        <PostHogProvider>
+          {children}
+          <ThemeProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </ThemeProvider>
+          <Analytics />
+          <SpeedInsights />
+        </PostHogProvider>
       </body>
     </html>
   );
