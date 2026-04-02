@@ -279,7 +279,7 @@ export function EventBookingsClient({ userId, initialData, userEmail }) {
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
                       <Amount value={booking.total_amount} size="lg" />
                       <div className="flex gap-2">
-                        {booking.payment_status === "pending" && (
+                        {booking.payment_status === "pending" && !["confirmed", "completed"].includes(booking.status) && (
                           <Button
                             size="sm"
                             asChild

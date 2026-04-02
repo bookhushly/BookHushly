@@ -127,9 +127,12 @@ function buildInvoicePDF(booking, invoiceNumber) {
   y += 10;
 
   const nights = nightsBetween(booking.check_in_date, booking.check_out_date);
+  const securityDeposit = parseFloat(booking.hotel?.security_deposit) || 0;
   const totalPaid = parseFloat(booking.total_price) || 0;
-  const netAmount = totalPaid / (1 + VAT_RATE);
-  const vatAmount = totalPaid - netAmount;
+  // Room amount is total minus security deposit (deposit is not VAT-able)
+  const roomAmount = totalPaid - securityDeposit;
+  const netAmount = roomAmount / (1 + VAT_RATE);
+  const vatAmount = roomAmount - netAmount;
   const ratePerNight = nights > 0 ? netAmount / nights : netAmount;
 
   const rowDesc = `${booking.room_type?.name || "Room"} — ${fmtDate(booking.check_in_date)} to ${fmtDate(booking.check_out_date)}`;
@@ -138,6 +141,19 @@ function buildInvoicePDF(booking, invoiceNumber) {
   text(fmt(ratePerNight), 152, y, { size: 9, align: "right" });
   text(fmt(netAmount), W - margin, y, { size: 9, align: "right" });
   y += 6;
+
+  // Security deposit line item
+  if (securityDeposit > 0) {
+    const depositLabel = booking.hotel?.security_deposit_notes
+      ? `Security Deposit (${booking.hotel.security_deposit_notes})`
+      : "Security / Caution Deposit";
+    text(depositLabel, margin + 3, y, { size: 9, color: gray });
+    text("—", 120, y, { size: 9, align: "center", color: gray });
+    text("—", 152, y, { size: 9, align: "right", color: gray });
+    text(fmt(securityDeposit), W - margin, y, { size: 9, align: "right" });
+    y += 6;
+  }
+
   line(y, [229, 231, 235]);
   y += 10;
 
@@ -145,18 +161,26 @@ function buildInvoicePDF(booking, invoiceNumber) {
   const totX = 130;
   const valX = W - margin;
 
-  text("Subtotal (excl. VAT)", totX, y, { size: 9 });
+  text("Room subtotal (excl. VAT)", totX, y, { size: 9 });
   text(fmt(netAmount), valX, y, { size: 9, align: "right" });
   y += 6;
 
   text(`VAT (7.5% — FIRS)`, totX, y, { size: 9, color: gray });
   text(fmt(vatAmount), valX, y, { size: 9, align: "right", color: gray });
-  y += 2;
+  y += 6;
+
+  if (securityDeposit > 0) {
+    text("Security deposit", totX, y, { size: 9, color: gray });
+    text(fmt(securityDeposit), valX, y, { size: 9, align: "right", color: gray });
+    y += 6;
+  }
+
+  y -= 4;
   line(y);
   y += 6;
 
   rect(totX - 4, y - 4, W - margin - totX + 4 + 4, 9, [237, 233, 254]);
-  text("TOTAL (incl. VAT)", totX, y + 2, { bold: true, size: 10 });
+  text("TOTAL PAID", totX, y + 2, { bold: true, size: 10 });
   text(fmt(totalPaid), valX, y + 2, { bold: true, size: 10, align: "right", color: purple });
   y += 14;
 
@@ -216,7 +240,7 @@ export async function GET(request) {
       check_in_date, check_out_date, total_price,
       booking_status, payment_status,
       user_id,
-      hotel:hotel_id(name, address, city, state),
+      hotel:hotel_id(name, address, city, state, security_deposit, security_deposit_notes),
       room_type:room_type_id(name)
     `)
     .eq("id", bookingId)

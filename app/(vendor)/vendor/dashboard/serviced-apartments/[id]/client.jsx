@@ -49,6 +49,7 @@ import CalendarTab from "../../../../../../components/shared/dashboard/vendor/ap
 import SettingsTab from "../../../../../../components/shared/dashboard/vendor/apartments/details/settings";
 import BookingsTab from "../../../../../../components/shared/dashboard/vendor/apartments/details/booking";
 import AnalyticsTab from "../../../../../../components/shared/dashboard/vendor/apartments/details/analytics";
+import { ApartmentAirportPricingTab } from "../../../../../../components/shared/dashboard/vendor/apartments/details/airport-pricing";
 
 export default function ApartmentDetailsPage({
   apartment: initialApartment,
@@ -230,7 +231,7 @@ export default function ApartmentDetailsPage({
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -246,6 +247,10 @@ export default function ApartmentDetailsPage({
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="airport" className="flex items-center gap-2">
+              <span className="text-base leading-none">✈️</span>
+              <span className="hidden sm:inline">Airport</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -275,6 +280,15 @@ export default function ApartmentDetailsPage({
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
             <AnalyticsTab apartmentId={apartmentId} apartment={apartment} />
+          </TabsContent>
+
+          {/* Airport Pricing Tab */}
+          <TabsContent value="airport" className="space-y-6">
+            <ApartmentAirportPricingTab
+              apartmentId={apartmentId}
+              apartment={apartment}
+              onUpdate={() => {}}
+            />
           </TabsContent>
 
           {/* Settings Tab */}

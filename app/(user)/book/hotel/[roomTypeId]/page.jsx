@@ -21,6 +21,7 @@ import {
   Bed,
 } from "lucide-react";
 import { toast } from "sonner";
+import { NIGERIAN_AIRPORTS, getAirportByCode } from "@/lib/constants/airports";
 
 export default function HotelBookingPage() {
   const router = useRouter();
@@ -32,12 +33,18 @@ export default function HotelBookingPage() {
   const roomTypeId = params.roomTypeId;
 
   const [mounted, setMounted] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!user);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session?.user);
+    });
+  }, []);
 
   const [hotel, setHotel] = useState(null);
   const [roomType, setRoomType] = useState(null);
@@ -60,6 +67,7 @@ export default function HotelBookingPage() {
   const [airportTransfer, setAirportTransfer] = useState(false);
   const [airportTransferType, setAirportTransferType] = useState("pickup");
   const [airportTransferNotes, setAirportTransferNotes] = useState("");
+  const [selectedAirport, setSelectedAirport] = useState("");
   const [pricingResult, setPricingResult] = useState(null);
 
   useEffect(() => {
@@ -100,7 +108,8 @@ export default function HotelBookingPage() {
             policies,
             pay_at_hotel_enabled,
             airport_transfer_enabled,
-            airport_transfer_fee
+            airport_transfer_fee,
+            airport_prices
           )
         `,
         )
@@ -171,9 +180,21 @@ export default function HotelBookingPage() {
   };
 
   const calculateTotal = () => {
-    if (pricingResult) return pricingResult.totalPrice;
-    const nights = calculateNights();
-    return nights * (roomType?.base_price || 0);
+    const basePrice = pricingResult
+      ? pricingResult.totalPrice
+      : calculateNights() * (roomType?.base_price || 0);
+
+    let airportFee = 0;
+    if (airportTransfer && selectedAirport && hotel?.airport_prices?.[selectedAirport]) {
+      airportFee = hotel.airport_prices[selectedAirport];
+      if (airportTransferType === "both") airportFee *= 2;
+    } else if (airportTransfer && !hotel?.airport_prices && hotel?.airport_transfer_fee) {
+      // Fallback to flat fee if no per-airport prices configured
+      airportFee = hotel.airport_transfer_fee;
+      if (airportTransferType === "both") airportFee *= 2;
+    }
+
+    return basePrice + airportFee;
   };
 
   const validateBookingDetails = () => {
@@ -254,6 +275,7 @@ export default function HotelBookingPage() {
         airportTransfer,
         airportTransferType:  airportTransfer ? airportTransferType : null,
         airportTransferNotes: airportTransfer ? airportTransferNotes : null,
+        airportCode:          airportTransfer && selectedAirport ? selectedAirport : null,
       });
 
       if (!result.success) {
@@ -480,7 +502,7 @@ export default function HotelBookingPage() {
                     Guest Information
                   </h2>
 
-                  {mounted && !user && (
+                  {mounted && !isAuthenticated && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                       <p className="text-sm text-blue-800 mb-2">
                         <strong>
@@ -583,36 +605,73 @@ export default function HotelBookingPage() {
                         />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">
-                            🚗 Add Airport Transfer
+                            ✈️ Add Airport Transfer
                           </p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {hotel.airport_transfer_fee
+                            {hotel.airport_prices && Object.keys(hotel.airport_prices).length > 0
+                              ? `Prices from ₦${Math.min(...Object.values(hotel.airport_prices)).toLocaleString("en-NG")} per trip`
+                              : hotel.airport_transfer_fee
                               ? `₦${Number(hotel.airport_transfer_fee).toLocaleString("en-NG")} per trip`
-                              : "Fee to be confirmed by hotel"}{" "}
-                            · Hotel will contact you to arrange
+                              : "Fee varies by airport"}
+                            {" · "}Select your airport below
                           </p>
                         </div>
                       </div>
 
                       {airportTransfer && (
                         <div className="space-y-3 pl-2">
+                          {/* Airport selector */}
+                          {hotel.airport_prices && Object.keys(hotel.airport_prices).length > 0 && (
+                            <div className="space-y-1.5">
+                              <Label className="text-xs text-gray-600">Select airport *</Label>
+                              <select
+                                value={selectedAirport}
+                                onChange={(e) => setSelectedAirport(e.target.value)}
+                                className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                              >
+                                <option value="">— Choose your airport —</option>
+                                {NIGERIAN_AIRPORTS
+                                  .filter((a) => hotel.airport_prices[a.code] > 0)
+                                  .map((airport) => (
+                                    <option key={airport.code} value={airport.code}>
+                                      {airport.city} ({airport.code}) — ₦{Number(hotel.airport_prices[airport.code]).toLocaleString("en-NG")} per trip
+                                    </option>
+                                  ))}
+                              </select>
+                              {selectedAirport && (
+                                <p className="text-xs text-purple-600 font-medium">
+                                  {getAirportByCode(selectedAirport)?.name}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
                           <div className="space-y-1.5">
                             <Label className="text-xs text-gray-600">Transfer type</Label>
                             <div className="flex gap-2">
-                              {["pickup", "dropoff", "both"].map((t) => (
-                                <button
-                                  key={t}
-                                  type="button"
-                                  onClick={() => setAirportTransferType(t)}
-                                  className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
-                                    airportTransferType === t
-                                      ? "border-purple-500 bg-purple-50 text-purple-700"
-                                      : "border-gray-200 text-gray-600 hover:border-purple-300"
-                                  }`}
-                                >
-                                  {t === "pickup" ? "Airport → Hotel" : t === "dropoff" ? "Hotel → Airport" : "Both ways"}
-                                </button>
-                              ))}
+                              {["pickup", "dropoff", "both"].map((t) => {
+                                const airportFee = selectedAirport && hotel.airport_prices?.[selectedAirport]
+                                  ? hotel.airport_prices[selectedAirport]
+                                  : hotel.airport_transfer_fee || 0;
+                                const feeLabel = airportFee > 0
+                                  ? ` · ₦${(t === "both" ? airportFee * 2 : airportFee).toLocaleString("en-NG")}`
+                                  : "";
+                                return (
+                                  <button
+                                    key={t}
+                                    type="button"
+                                    onClick={() => setAirportTransferType(t)}
+                                    className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
+                                      airportTransferType === t
+                                        ? "border-purple-500 bg-purple-50 text-purple-700"
+                                        : "border-gray-200 text-gray-600 hover:border-purple-300"
+                                    }`}
+                                  >
+                                    {t === "pickup" ? "Airport → Hotel" : t === "dropoff" ? "Hotel → Airport" : "Both ways"}
+                                    <span className="block text-[10px] opacity-70">{feeLabel}</span>
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                           <div className="space-y-1.5">
@@ -815,17 +874,22 @@ export default function HotelBookingPage() {
                           </span>
                         </div>
                       )}
-                      {airportTransfer && hotel?.airport_transfer_fee && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">
-                            Airport transfer
-                            {airportTransferType === "both" ? " (×2)" : ""}
-                          </span>
-                          <span className="font-medium">
-                            ₦{(Number(hotel.airport_transfer_fee) * (airportTransferType === "both" ? 2 : 1)).toLocaleString()}
-                          </span>
-                        </div>
-                      )}
+                      {airportTransfer && (() => {
+                        const airportFee = selectedAirport && hotel?.airport_prices?.[selectedAirport]
+                          ? hotel.airport_prices[selectedAirport]
+                          : hotel?.airport_transfer_fee || 0;
+                        if (!airportFee) return null;
+                        const totalFee = airportFee * (airportTransferType === "both" ? 2 : 1);
+                        const airportLabel = selectedAirport
+                          ? ` (${selectedAirport}${airportTransferType === "both" ? " ×2" : ""})`
+                          : airportTransferType === "both" ? " (×2)" : "";
+                        return (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Airport transfer{airportLabel}</span>
+                            <span className="font-medium">₦{totalFee.toLocaleString()}</span>
+                          </div>
+                        );
+                      })()}
                       <div className="flex justify-between font-medium text-lg pt-2 border-t">
                         <span>Total</span>
                         <span className="text-purple-600">

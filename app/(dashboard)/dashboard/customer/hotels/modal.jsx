@@ -241,7 +241,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
             )}
 
             {/* Actions */}
-            {booking.payment_status === "pending" && (
+            {booking.payment_status === "pending" && !["confirmed", "checked_in", "completed", "checked_out"].includes(booking.booking_status) && (
               <Button
                 asChild
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white"

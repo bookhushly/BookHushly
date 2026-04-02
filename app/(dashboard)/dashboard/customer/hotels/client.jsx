@@ -170,7 +170,7 @@ export function HotelBookingsClient({ userId, initialData }) {
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50 dark:border-gray-800">
                       <Amount value={booking.total_price} size="lg" />
                       <div className="flex gap-2">
-                        {booking.payment_status === "pending" && (
+                        {booking.payment_status === "pending" && !["confirmed", "checked_in", "completed", "checked_out"].includes(booking.booking_status) && (
                           <Button
                             size="sm"
                             asChild

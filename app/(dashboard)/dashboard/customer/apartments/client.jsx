@@ -152,7 +152,7 @@ export function ApartmentBookingsClient({ userId, initialData }) {
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          {booking.payment_status === "pending" && (
+                          {booking.payment_status === "pending" && !["confirmed", "checked_in", "completed", "checked_out"].includes(booking.booking_status) && (
                             <Button
                               size="sm"
                               asChild

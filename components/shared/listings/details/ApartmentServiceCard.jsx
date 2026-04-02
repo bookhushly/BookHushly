@@ -55,34 +55,21 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
             className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
             sizes="(max-width: 640px) 110px, (max-width: 1024px) 50vw, 25vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-
-          {/* Type label */}
-          <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
-            <span className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider bg-gray-950/70 text-white backdrop-blur-sm px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg">
-              {typeLabel}
-            </span>
-          </div>
-
-          {/* Discount badge */}
-          {bestPct >= 5 && (
-            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-green-500 text-white text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded-lg">
-              Save {bestPct}%
-            </div>
-          )}
-
-          {/* Price badge — sm+ only (shown in content on mobile) */}
-          <div className="hidden sm:block absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg">
-            <p className="text-[10px] text-gray-400">From</p>
-            <p className="text-base font-medium text-gray-900">
-              ₦{apt.price?.toLocaleString()}
-              <span className="text-xs font-normal text-gray-400">/night</span>
-            </p>
-          </div>
         </div>
 
         {/* Content */}
         <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
+          {/* Type label + discount badge */}
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+            <span className="text-[9px] sm:text-[10px] font-medium uppercase tracking-wider bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+              {typeLabel}
+            </span>
+            {bestPct >= 5 && (
+              <span className="bg-green-100 text-green-700 text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded-md">
+                Save {bestPct}%
+              </span>
+            )}
+          </div>
           {/* Title + verified badge */}
           <div className="flex items-start gap-1.5 mb-1">
             <h3 className="font-medium text-gray-900 text-[13px] sm:text-base leading-snug line-clamp-2 group-hover:text-violet-700 transition-colors">
@@ -184,25 +171,20 @@ const ApartmentCard = React.memo(({ service: apt, lastListingRef }) => {
           )}
 
           {/* Price + CTA */}
-          <div className="mt-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-            {/* Mobile: price left, book button right */}
-            <div className="flex items-end justify-between sm:hidden">
+          <div className="mt-auto pt-2 border-t border-gray-100">
+            <div className="flex items-end justify-between">
               <div>
                 <p className="text-[10px] text-gray-400">From</p>
                 <div className="flex items-baseline gap-0.5">
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm sm:text-base font-medium text-gray-900">
                     ₦{apt.price?.toLocaleString()}
                   </span>
                   <span className="text-[10px] text-gray-400">/night</span>
                 </div>
               </div>
-              <span className="h-7 px-3 inline-flex items-center text-[11px] font-medium bg-violet-600 text-white rounded-lg shrink-0">
+              <span className="h-7 sm:h-9 px-3 sm:px-4 inline-flex items-center text-[11px] sm:text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-lg sm:rounded-xl shrink-0">
                 Book
               </span>
-            </div>
-            {/* sm+: full-width button */}
-            <div className="hidden sm:flex w-full h-10 items-center justify-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors duration-150 cursor-pointer">
-              View details
             </div>
           </div>
         </div>

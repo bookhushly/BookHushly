@@ -94,29 +94,6 @@ const HotelCard = ({ service }) => {
             </>
           )}
 
-          {/* Badges — sm+ only */}
-          <div className="hidden sm:flex absolute top-3 left-3 z-10 flex-col gap-1">
-            {service.checkout_policy && (
-              <span className="text-[10px] font-medium bg-green-500 text-white px-2 py-1 rounded-lg">
-                Free cancellation
-              </span>
-            )}
-            {service.nihotour_certified && (
-              <span className="text-[10px] font-medium bg-amber-500 text-white px-2 py-1 rounded-lg flex items-center gap-0.5">
-                🏅 NIHOTOUR
-              </span>
-            )}
-          </div>
-
-          {/* Rating badge — sm+ only */}
-          {service.avg_rating && (
-            <div className="hidden sm:block absolute top-3 right-3 z-10">
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-white/95 text-gray-900 px-2 py-1 rounded-lg shadow-sm">
-                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                {service.avg_rating}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Content */}
@@ -134,8 +111,8 @@ const HotelCard = ({ service }) => {
             </span>
           </div>
 
-          {/* Mobile-only: rating + free cancel inline */}
-          <div className="flex sm:hidden items-center gap-2 mb-2 flex-wrap">
+          {/* Rating + badges row */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             {service.avg_rating && (
               <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-gray-700">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
@@ -145,6 +122,11 @@ const HotelCard = ({ service }) => {
             {service.checkout_policy && (
               <span className="text-[10px] font-medium text-green-700 bg-green-50 px-1.5 py-0.5 rounded-md">
                 Free cancel
+              </span>
+            )}
+            {service.nihotour_certified && (
+              <span className="text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md">
+                🏅 NIHOTOUR
               </span>
             )}
           </div>

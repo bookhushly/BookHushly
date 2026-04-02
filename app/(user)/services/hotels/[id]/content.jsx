@@ -103,7 +103,7 @@ function DateSelectionPanel({ dates, onChange, roomTypes, panelRef }) {
       {open && (
         <div className="mt-3 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
           <HotelDateRangePicker
-            roomTypeId={roomTypes[0]?.id}
+            roomTypeId={null}
             checkIn={dates.checkIn}
             checkOut={dates.checkOut}
             onChange={handleChange}

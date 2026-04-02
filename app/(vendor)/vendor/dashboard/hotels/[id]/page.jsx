@@ -13,6 +13,7 @@ import { HotelRoomsTab } from "@/components/shared/dashboard/vendor/hotels/detai
 import { HotelStaffTab } from "@/components/shared/dashboard/vendor/hotels/details/staff";
 import { HotelPricingTab } from "@/components/shared/dashboard/vendor/hotels/details/pricing";
 import { HotelOccupancyTab } from "@/components/shared/dashboard/vendor/hotels/details/occupancy";
+import { HotelAirportPricingTab } from "@/components/shared/dashboard/vendor/hotels/details/airport-pricing";
 
 export default function HotelManagementPage() {
   const params = useParams();
@@ -102,11 +103,12 @@ export default function HotelManagementPage() {
       {/* Tabs */}
       <div className="container max-w-7xl py-8">
         <Tabs defaultValue="details">
-          <TabsList className="mb-8">
+          <TabsList className="mb-8 flex-wrap">
             <TabsTrigger value="details">Hotel Details</TabsTrigger>
             <TabsTrigger value="rooms">Rooms & Types</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="occupancy">Occupancy</TabsTrigger>
+            <TabsTrigger value="airport">Airport Pickup</TabsTrigger>
             <TabsTrigger value="staff">Staff Management</TabsTrigger>
           </TabsList>
 
@@ -124,6 +126,10 @@ export default function HotelManagementPage() {
 
           <TabsContent value="occupancy">
             <HotelOccupancyTab hotelId={hotel.id} />
+          </TabsContent>
+
+          <TabsContent value="airport">
+            <HotelAirportPricingTab hotelId={hotel.id} hotel={hotel} onUpdate={loadHotel} />
           </TabsContent>
 
           <TabsContent value="staff">
