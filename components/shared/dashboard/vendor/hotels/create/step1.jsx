@@ -1,8 +1,9 @@
-import { Building2, Upload } from "lucide-react";
+import { Building2, Upload, Plane, ToggleLeft, ToggleRight } from "lucide-react";
 import { ImagePreview, AmenityButton, InfoBanner } from "./shared";
 import { AMENITY_ICONS } from "@/lib/hotel";
 import RichTextEditor from "@/components/common/rich-text-editor";
 import { NIGERIAN_STATES } from "@/lib/constants";
+import { NIGERIAN_AIRPORTS } from "@/lib/constants/airports";
 
 export default function Step1HotelDetails({
   hotelData,
@@ -541,6 +542,78 @@ export default function Step1HotelDetails({
             Include important information like cancellation deadlines, deposit
             requirements, and house rules.
           </p>
+        </div>
+
+        {/* ── Airport Pickup / Drop-off ──────────────────────────────────────── */}
+        <div className="md:col-span-2">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  <Plane className="h-4 w-4 text-purple-600" />
+                  Airport Pickup / Drop-off
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Allow guests to add airport transfers when booking. Set a price per trip for each airport you service.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHotelData((prev) => ({ ...prev, airport_transfer_enabled: !prev.airport_transfer_enabled }))}
+                aria-label="Toggle airport transfer"
+                className="ml-4 shrink-0"
+              >
+                {hotelData.airport_transfer_enabled
+                  ? <ToggleRight className="h-9 w-9 text-purple-600" />
+                  : <ToggleLeft className="h-9 w-9 text-gray-400" />}
+              </button>
+            </div>
+
+            {hotelData.airport_transfer_enabled && (
+              <div className="space-y-2">
+                <p className="text-xs text-blue-700 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg px-3 py-2">
+                  Leave blank for airports you don't cover — only filled-in airports will be shown to guests.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+                  {NIGERIAN_AIRPORTS.map((airport) => (
+                    <div
+                      key={airport.code}
+                      className="flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-purple-200 dark:hover:border-purple-700 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">
+                          {airport.city} — {airport.code}
+                        </p>
+                        <p className="text-[10px] text-gray-400 truncate">{airport.name}</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-xs text-gray-500">₦</span>
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="—"
+                          value={hotelData.airport_prices?.[airport.code] ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setHotelData((prev) => {
+                              const updated = { ...prev.airport_prices };
+                              if (val === "" || Number(val) <= 0) {
+                                delete updated[airport.code];
+                              } else {
+                                updated[airport.code] = Number(val);
+                              }
+                              return { ...prev, airport_prices: updated };
+                            });
+                          }}
+                          className="w-24 h-7 px-2 text-right text-xs border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

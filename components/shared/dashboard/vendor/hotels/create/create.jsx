@@ -73,6 +73,8 @@ export default function HotelRegistration({ onComplete }) {
     weekend_pricing: "none",
     vat_inclusive: false,
     whatsapp_number: "",
+    airport_transfer_enabled: false,
+    airport_prices: {},
   });
 
   // Custom hooks

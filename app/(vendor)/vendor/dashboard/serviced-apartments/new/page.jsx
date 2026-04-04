@@ -115,6 +115,8 @@ const INITIAL_FORM_DATA = {
   agent_phone: "",
   agent_image_url: "",
   agent_bio: "",
+  airport_transfer_enabled: false,
+  airport_prices: {},
 };
 
 export default function ApartmentCreationForm() {

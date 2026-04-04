@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { jsPDF } from "jspdf";
 import { createClient } from "@/lib/supabase/server";
+import fs from "fs/promises";
+import path from "path";
+import sharp from "sharp";
 
 export const runtime = "nodejs";
 
@@ -60,11 +63,33 @@ export async function POST(request) {
     // Header
     doc.setFillColor(109, 40, 217);
     doc.rect(0, 0, pageWidth, 40, "F");
+
+    // Logo — top-left of header band, 28 × 28 mm (square, standard invoice placement)
+    const LOGO_SIZE = 28;
+    try {
+      // Convert via sharp → JPEG to strip alpha channel (required for jsPDF Node compat)
+      const logoJpeg = await sharp(path.join(process.cwd(), "public", "logo.png"))
+        .flatten({ background: { r: 109, g: 40, b: 217 } }) // blend transparency onto header purple
+        .jpeg({ quality: 95 })
+        .toBuffer();
+      const logoBase64 = `data:image/jpeg;base64,${logoJpeg.toString("base64")}`;
+      doc.addImage(logoBase64, "JPEG", 13, 6, LOGO_SIZE, LOGO_SIZE);
+    } catch (err) {
+      console.error("[quote pdf] logo load failed:", err);
+      // Fall back to text wordmark only
+      doc.setFontSize(24);
+      doc.text("BookHushly", 15, 20);
+    }
+
+    // Company name + document type — right of logo
+    const infoX = 13 + LOGO_SIZE + 4;
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.text("BookHushly", 15, 20);
-    doc.setFontSize(12);
-    doc.text("Service Quote", 15, 30);
+    doc.setFontSize(18);
+    doc.setFont(undefined, "bold");
+    doc.text("BookHushly", infoX, 18);
+    doc.setFontSize(11);
+    doc.setFont(undefined, "normal");
+    doc.text("Service Quote", infoX, 28);
     doc.setTextColor(0, 0, 0);
 
     // Quote details

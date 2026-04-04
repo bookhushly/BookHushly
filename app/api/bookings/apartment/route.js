@@ -19,10 +19,10 @@ export async function POST(request) {
     );
     const apartmentId = formData.get("apartment_id");
 
-    // Fetch apartment base price and any active pricing rules (server-authoritative)
+    // Fetch apartment base price, pricing rules, and airport config (server-authoritative)
     const { data: apt } = await supabase
       .from("serviced_apartments")
-      .select("price_per_night, price_per_week, price_per_month")
+      .select("price_per_night, price_per_week, price_per_month, airport_transfer_enabled, airport_prices")
       .eq("id", apartmentId)
       .single();
 
@@ -48,7 +48,21 @@ export async function POST(request) {
     const pricePerNight = parseFloat(apt?.price_per_night || 0);
     const serviceFee = parseFloat(formData.get("service_fee") || "0");
     const cautionDeposit = parseFloat(formData.get("caution_deposit") || "0");
-    const totalAmount = subtotal + serviceFee + cautionDeposit;
+
+    // Airport transfer — validate server-side; ignore if vendor hasn't enabled it
+    const wantsAirport = formData.get("airport_transfer") === "true";
+    const airportTransfer = wantsAirport && apt?.airport_transfer_enabled === true;
+    const airportTransferType = airportTransfer ? (formData.get("airport_transfer_type") || "pickup") : null;
+    const airportTransferNotes = airportTransfer ? (formData.get("airport_transfer_notes") || null) : null;
+    const airportCode = airportTransfer ? (formData.get("airport_code") || null) : null;
+
+    let airportFee = 0;
+    if (airportTransfer && airportCode && apt?.airport_prices?.[airportCode]) {
+      airportFee = parseFloat(apt.airport_prices[airportCode]);
+      if (airportTransferType === "both") airportFee *= 2;
+    }
+
+    const totalAmount = subtotal + serviceFee + cautionDeposit + airportFee;
 
     const bookingData = {
       apartment_id: apartmentId,
@@ -70,6 +84,10 @@ export async function POST(request) {
       special_requests: formData.get("special_requests") || null,
       booking_status: "pending", // must match constraint: pending/confirmed/checked_in/checked_out/cancelled/no_show
       payment_status: "pending",
+      airport_transfer: airportTransfer,
+      airport_transfer_type: airportTransferType,
+      airport_transfer_notes: airportTransferNotes,
+      airport_fee: airportFee,
     };
 
     // Check for active booking lock by another user

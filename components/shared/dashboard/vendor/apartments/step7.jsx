@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, FileText, Calendar, AlertCircle, User, Phone, Camera, Loader2, X } from "lucide-react";
+import { Clock, FileText, Calendar, AlertCircle, User, Phone, Camera, Loader2, X, Plane, ToggleLeft, ToggleRight } from "lucide-react";
 import RichTextEditor from "@/components/common/rich-text-editor";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import { NIGERIAN_AIRPORTS } from "@/lib/constants/airports";
 
 const CANCELLATION_TEMPLATES = [
   {
@@ -453,6 +454,73 @@ export default function Step7Policies({ formData, updateFormData }) {
             </p>
           </div>
         </CardContent>
+      </Card>
+
+      {/* ── Airport Pickup / Drop-off ──────────────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Plane className="h-5 w-5 text-purple-600" />
+              Airport Pickup / Drop-off
+            </span>
+            <button
+              type="button"
+              onClick={() => updateFormData({ airport_transfer_enabled: !formData.airport_transfer_enabled })}
+              aria-label="Toggle airport transfer"
+            >
+              {formData.airport_transfer_enabled
+                ? <ToggleRight className="h-9 w-9 text-purple-600" />
+                : <ToggleLeft className="h-9 w-9 text-gray-400" />}
+            </button>
+          </CardTitle>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Allow guests to request airport transportation when booking. Set a price per trip for each airport you service.
+          </p>
+        </CardHeader>
+
+        {formData.airport_transfer_enabled && (
+          <CardContent className="space-y-3">
+            <p className="text-xs text-blue-700 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg px-3 py-2">
+              Leave blank for airports you don't cover — only airports with a price set will appear to guests.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+              {NIGERIAN_AIRPORTS.map((airport) => (
+                <div
+                  key={airport.code}
+                  className="flex items-center gap-3 p-2.5 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-purple-200 dark:hover:border-purple-700 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">
+                      {airport.city} — {airport.code}
+                    </p>
+                    <p className="text-[10px] text-gray-400 truncate">{airport.name}</p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-xs text-gray-500">₦</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="—"
+                      value={formData.airport_prices?.[airport.code] ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const updated = { ...(formData.airport_prices || {}) };
+                        if (val === "" || Number(val) <= 0) {
+                          delete updated[airport.code];
+                        } else {
+                          updated[airport.code] = Number(val);
+                        }
+                        updateFormData({ airport_prices: updated });
+                      }}
+                      className="w-24 h-8 text-sm text-right"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        )}
       </Card>
     </div>
   );

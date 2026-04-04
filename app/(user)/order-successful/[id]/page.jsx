@@ -126,7 +126,7 @@ const OrderSuccessful = () => {
         .from("hotel_bookings")
         .select(
           `*,
-          hotels:hotel_id ( id, name, city, state, address ),
+          hotels:hotel_id ( id, name, city, state, address, vendors:vendor_id(phone_number) ),
           room_types:room_type_id ( id, name, base_price, max_occupancy )`,
         )
         .eq("id", bookingId)

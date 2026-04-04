@@ -34,8 +34,11 @@ import ApartmentBookingCard from "../../../../../components/shared/apartment/boo
 import { useSavedListing } from "@/hooks/use-saved-listing";
 import { useViewTracker } from "@/hooks/use-view-tracker";
 
+const AMENITIES_LIMIT = 6;
+
 export default function ApartmentClient({ apartment }) {
   useViewTracker(apartment.id, "apartment", apartment.vendor_id);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
@@ -419,7 +422,7 @@ export default function ApartmentClient({ apartment }) {
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {selectedAmenities.map((amenityKey) => (
+                  {(showAllAmenities ? selectedAmenities : selectedAmenities.slice(0, AMENITIES_LIMIT)).map((amenityKey) => (
                     <div
                       key={amenityKey}
                       className="flex items-center gap-3 text-gray-700"
@@ -431,6 +434,16 @@ export default function ApartmentClient({ apartment }) {
                     </div>
                   ))}
                 </div>
+                {selectedAmenities.length > AMENITIES_LIMIT && (
+                  <button
+                    onClick={() => setShowAllAmenities((prev) => !prev)}
+                    className="mt-4 text-sm font-medium text-purple-600 hover:text-purple-700 underline underline-offset-2"
+                  >
+                    {showAllAmenities
+                      ? "Show less"
+                      : `Show all ${selectedAmenities.length} amenities`}
+                  </button>
+                )}
               </div>
             )}
 

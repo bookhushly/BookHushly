@@ -162,6 +162,17 @@ export async function createServicedApartment(formData) {
       agent_image_url: formData.get("agent_image_url") || null,
       agent_bio: formData.get("agent_bio") || null,
 
+      // Airport Transfer
+      airport_transfer_enabled: formData.get("airport_transfer_enabled") === "true",
+      airport_prices: (() => {
+        const raw = JSON.parse(formData.get("airport_prices") || "{}");
+        const clean = {};
+        Object.entries(raw).forEach(([code, val]) => {
+          if (val !== "" && Number(val) > 0) clean[code] = Number(val);
+        });
+        return clean;
+      })(),
+
       // Vendor ID
       vendor_id: formData.get("vendor_id"),
     };

@@ -170,6 +170,20 @@ export async function createHotelWithRoomsAction(
           : null,
         vat_inclusive: hotelData.vat_inclusive || false,
         whatsapp_number: hotelData.whatsapp_number || null,
+        airport_transfer_enabled: hotelData.airport_transfer_enabled || false,
+        airport_prices: (() => {
+          const raw = hotelData.airport_prices || {};
+          const clean = {};
+          Object.entries(raw).forEach(([code, val]) => {
+            if (val !== "" && Number(val) > 0) clean[code] = Number(val);
+          });
+          return clean;
+        })(),
+        airport_transfer_fee: (() => {
+          const raw = hotelData.airport_prices || {};
+          const vals = Object.values(raw).map(Number).filter((v) => v > 0);
+          return vals.length > 0 ? Math.min(...vals) : null;
+        })(),
       })
       .select()
       .single();

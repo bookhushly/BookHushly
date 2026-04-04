@@ -10,12 +10,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import jsPDF from "jspdf";
+import fs from "fs/promises";
+import path from "path";
+import sharp from "sharp";
 
 const VAT_RATE = 0.075; // 7.5%
-const COMPANY_NAME = "Bookhushly Technologies Ltd";
+const COMPANY_NAME = "Bookhushly";
 const COMPANY_ADDRESS = "Lagos, Nigeria";
-const COMPANY_EMAIL = "billing@bookhushly.com";
-const COMPANY_TIN = "20123456-0001"; // placeholder TIN
+const COMPANY_EMAIL = "support@bookhushly.com";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -43,7 +45,7 @@ function nightsBetween(checkIn, checkOut) {
 
 // ── PDF builder ───────────────────────────────────────────────────────────────
 
-function buildInvoicePDF(booking, invoiceNumber) {
+async function buildInvoicePDF(booking, invoiceNumber) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210;
   const margin = 16;
@@ -75,15 +77,50 @@ function buildInvoicePDF(booking, invoiceNumber) {
 
   // ── Header band ────────────────────────────────────────────────────────────
   rect(0, 0, W, 38, purple);
-  text("BOOKHUSHLY", margin, 14, { color: [255, 255, 255], size: 18, bold: true });
-  text("VAT INVOICE", margin, 22, { color: [221, 214, 254], size: 11 });
-  text(COMPANY_ADDRESS, margin, 29, { color: [221, 214, 254], size: 9 });
-  text(COMPANY_EMAIL, margin, 35, { color: [221, 214, 254], size: 9 });
 
-  text(`Invoice #${invoiceNumber}`, W - margin, 14, { color: [255, 255, 255], size: 11, bold: true, align: "right" });
-  text(`Date: ${fmtDate(new Date().toISOString())}`, W - margin, 22, { color: [221, 214, 254], size: 9, align: "right" });
-  text(`TIN: ${COMPANY_TIN}`, W - margin, 29, { color: [221, 214, 254], size: 9, align: "right" });
+  // Logo — top-left of header band, 28 × 28 mm (square logo, aspect 1:1)
+  // Industry standard: logo anchored to top-left of document header
+  const LOGO_SIZE = 28; // mm — 90% of typical UI logo footprint (minimum per design spec)
+  try {
+    // Convert via sharp → JPEG to strip alpha channel (required for jsPDF Node compat)
+    const logoJpeg = await sharp(path.join(process.cwd(), "public", "logo.png"))
+      .flatten({ background: { r: 124, g: 58, b: 237 } }) // blend transparency onto brand purple
+      .jpeg({ quality: 95 })
+      .toBuffer();
+    const logoBase64 = `data:image/jpeg;base64,${logoJpeg.toString("base64")}`;
+    doc.addImage(logoBase64, "JPEG", margin - 2, 5, LOGO_SIZE, LOGO_SIZE);
+  } catch (err) {
+    console.error("[hotel invoice] logo load failed:", err);
+    // Fall back to text wordmark only
+    text("BOOKHUSHLY", margin, 14, {
+      color: [255, 255, 255],
+      size: 18,
+      bold: true,
+    });
+  }
 
+  // Company info — right of logo
+  const infoX = margin - 2 + LOGO_SIZE + 4; // 4 mm gap after logo
+  text("BOOKHUSHLY", infoX, 14, {
+    color: [255, 255, 255],
+    size: 14,
+    bold: true,
+  });
+  text("VAT INVOICE", infoX, 21, { color: [221, 214, 254], size: 9 });
+  text(COMPANY_ADDRESS, infoX, 28, { color: [221, 214, 254], size: 8 });
+  text(COMPANY_EMAIL, infoX, 34, { color: [221, 214, 254], size: 8 });
+
+  text(`Invoice #${invoiceNumber}`, W - margin, 14, {
+    color: [255, 255, 255],
+    size: 11,
+    bold: true,
+    align: "right",
+  });
+  text(`Date: ${fmtDate(new Date().toISOString())}`, W - margin, 22, {
+    color: [221, 214, 254],
+    size: 9,
+    align: "right",
+  });
   let y = 52;
 
   // ── Billed to ─────────────────────────────────────────────────────────────
@@ -94,7 +131,9 @@ function buildInvoicePDF(booking, invoiceNumber) {
   text(booking.id.slice(0, 8).toUpperCase(), col2, y, { bold: true });
   y += 5;
   text(booking.guest_email || "", margin, y, { color: gray, size: 9 });
-  text(`Status: ${(booking.booking_status || "").toUpperCase()}`, col2, y, { size: 9 });
+  text(`Status: ${(booking.booking_status || "").toUpperCase()}`, col2, y, {
+    size: 9,
+  });
   y += 5;
   text(booking.guest_phone || "", margin, y, { color: gray, size: 9 });
 
@@ -108,11 +147,22 @@ function buildInvoicePDF(booking, invoiceNumber) {
   text(booking.hotel?.name || "Hotel", margin, y, { bold: true, size: 11 });
   y += 5;
   text(
-    [booking.hotel?.address, booking.hotel?.city, booking.hotel?.state].filter(Boolean).join(", "),
-    margin, y, { color: gray, size: 9 }
+    [booking.hotel?.address, booking.hotel?.city, booking.hotel?.state]
+      .filter(Boolean)
+      .join(", "),
+    margin,
+    y,
+    { color: gray, size: 9 },
   );
   y += 5;
-  text(`Room type: ${booking.room_type?.name || "Standard Room"}`, margin, y, { size: 9 });
+  text(`Room type: ${booking.room_type?.name || "Standard Room"}`, margin, y, {
+    size: 9,
+  });
+  const vendorPhone = booking.hotel?.vendors?.phone_number;
+  if (vendorPhone) {
+    y += 5;
+    text(`Emergency contact: ${vendorPhone}`, margin, y, { size: 9, color: gray });
+  }
 
   y += 12;
   line(y);
@@ -141,6 +191,28 @@ function buildInvoicePDF(booking, invoiceNumber) {
   text(fmt(ratePerNight), 152, y, { size: 9, align: "right" });
   text(fmt(netAmount), W - margin, y, { size: 9, align: "right" });
   y += 6;
+
+  // Breakfast inclusion note
+  const breakfastOffered = booking.hotel?.breakfast_offered;
+  if (breakfastOffered && breakfastOffered !== "none") {
+    const breakfastType = booking.hotel?.breakfast_type;
+    const breakfastLabel =
+      breakfastOffered === "included"
+        ? `Breakfast — ${breakfastType ? breakfastType.replace(/_/g, " ") : "included in room rate"}`
+        : `Breakfast — available for purchase (${breakfastType || "ask at check-in"})`;
+    text(breakfastLabel, margin + 3, y, { size: 9, color: [22, 101, 52] });
+    text(
+      breakfastOffered === "included" ? "Complimentary" : "Paid separately",
+      W - margin,
+      y,
+      {
+        size: 9,
+        align: "right",
+        color: [22, 101, 52],
+      },
+    );
+    y += 6;
+  }
 
   // Security deposit line item
   if (securityDeposit > 0) {
@@ -171,7 +243,11 @@ function buildInvoicePDF(booking, invoiceNumber) {
 
   if (securityDeposit > 0) {
     text("Security deposit", totX, y, { size: 9, color: gray });
-    text(fmt(securityDeposit), valX, y, { size: 9, align: "right", color: gray });
+    text(fmt(securityDeposit), valX, y, {
+      size: 9,
+      align: "right",
+      color: gray,
+    });
     y += 6;
   }
 
@@ -181,7 +257,12 @@ function buildInvoicePDF(booking, invoiceNumber) {
 
   rect(totX - 4, y - 4, W - margin - totX + 4 + 4, 9, [237, 233, 254]);
   text("TOTAL PAID", totX, y + 2, { bold: true, size: 10 });
-  text(fmt(totalPaid), valX, y + 2, { bold: true, size: 10, align: "right", color: purple });
+  text(fmt(totalPaid), valX, y + 2, {
+    bold: true,
+    size: 10,
+    align: "right",
+    color: purple,
+  });
   y += 14;
 
   // ── Payment info ───────────────────────────────────────────────────────────
@@ -190,9 +271,16 @@ function buildInvoicePDF(booking, invoiceNumber) {
     doc.setDrawColor(134, 239, 172);
     doc.setLineWidth(0.4);
     doc.rect(margin, y - 3, W - margin * 2, 8);
-    text("✓  PAYMENT RECEIVED — Thank you for your business", margin + 4, y + 2, {
-      size: 9, bold: true, color: [22, 163, 74],
-    });
+    text(
+      "✓  PAYMENT RECEIVED — Thank you for your business",
+      margin + 4,
+      y + 2,
+      {
+        size: 9,
+        bold: true,
+        color: [22, 163, 74],
+      },
+    );
     y += 14;
   }
 
@@ -202,12 +290,16 @@ function buildInvoicePDF(booking, invoiceNumber) {
   y += 5;
   text(
     "This is a computer-generated VAT invoice issued pursuant to FIRS requirements (Finance Act 2019, 7.5% VAT).",
-    W / 2, y, { size: 7, color: gray, align: "center" }
+    W / 2,
+    y,
+    { size: 7, color: gray, align: "center" },
   );
   y += 4;
   text(
-    `${COMPANY_NAME} · ${COMPANY_ADDRESS} · TIN: ${COMPANY_TIN} · ${COMPANY_EMAIL}`,
-    W / 2, y, { size: 7, color: gray, align: "center" }
+    `${COMPANY_NAME} · ${COMPANY_ADDRESS} · ${COMPANY_EMAIL}`,
+    W / 2,
+    y,
+    { size: 7, color: gray, align: "center" },
   );
 
   return doc.output("arraybuffer");
@@ -220,12 +312,17 @@ export async function GET(request) {
   const bookingId = searchParams.get("booking_id");
 
   if (!bookingId) {
-    return NextResponse.json({ error: "booking_id is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "booking_id is required" },
+      { status: 400 },
+    );
   }
 
   // Auth check
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -235,14 +332,16 @@ export async function GET(request) {
   // Fetch booking with hotel and room type
   const { data: booking, error } = await admin
     .from("hotel_bookings")
-    .select(`
+    .select(
+      `
       id, guest_name, guest_email, guest_phone,
       check_in_date, check_out_date, total_price,
       booking_status, payment_status,
       user_id,
-      hotel:hotel_id(name, address, city, state, security_deposit, security_deposit_notes),
+      hotel:hotel_id(name, address, city, state, security_deposit, security_deposit_notes, breakfast_offered, breakfast_type, vendors:vendor_id(phone_number)),
       room_type:room_type_id(name)
-    `)
+    `,
+    )
     .eq("id", bookingId)
     .single();
 
@@ -267,14 +366,14 @@ export async function GET(request) {
   if (!INVOICEABLE.includes(booking.booking_status)) {
     return NextResponse.json(
       { error: "Invoice only available for confirmed bookings" },
-      { status: 422 }
+      { status: 422 },
     );
   }
 
   const invoiceNumber = `BH-HTL-${booking.id.slice(0, 8).toUpperCase()}`;
 
   try {
-    const pdfBuffer = buildInvoicePDF(booking, invoiceNumber);
+    const pdfBuffer = await buildInvoicePDF(booking, invoiceNumber);
 
     return new NextResponse(pdfBuffer, {
       status: 200,
@@ -286,6 +385,9 @@ export async function GET(request) {
     });
   } catch (err) {
     console.error("[hotel invoice]", err);
-    return NextResponse.json({ error: "Failed to generate invoice" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate invoice" },
+      { status: 500 },
+    );
   }
 }

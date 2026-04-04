@@ -9,7 +9,7 @@ import {
   MapPin, Users, Bed, Maximize, ChevronLeft, ChevronRight,
   Share2, Heart, Check, Info, AlertCircle, Building, Zap,
   ZapOff, Battery, Coffee, UtensilsCrossed, Clock, BadgePercent,
-  Star, Calendar, ChevronDown, Loader2, Ban, CalendarCheck,
+  Star, Loader2, Ban, CalendarCheck, CalendarDays,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import RichContentRenderer from "@/components/common/rich-text-renderer";
@@ -22,106 +22,6 @@ import { useSavedListing } from "@/hooks/use-saved-listing";
 import { useViewTracker } from "@/hooks/use-view-tracker";
 import { createClient } from "@/lib/supabase/client";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
-
-// ─── Date Selection Panel ─────────────────────────────────────────────────────
-function DateSelectionPanel({ dates, onChange, roomTypes, panelRef }) {
-  const [open, setOpen] = useState(false);
-
-  const nights = useMemo(() => {
-    if (!dates.checkIn || !dates.checkOut) return 0;
-    return differenceInCalendarDays(parseISO(dates.checkOut), parseISO(dates.checkIn));
-  }, [dates.checkIn, dates.checkOut]);
-
-  const bothSelected = dates.checkIn && dates.checkOut;
-
-  const handleChange = (newDates) => {
-    onChange(newDates);
-    if (newDates.checkIn && newDates.checkOut) setOpen(false);
-  };
-
-  return (
-    <div ref={panelRef} className="mb-8 scroll-mt-24">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[18px] font-medium text-gray-900 flex items-center gap-2">
-          <Calendar className="h-4.5 w-4.5 text-violet-500" />
-          When are you staying?
-        </h2>
-        {bothSelected && !open && (
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="text-[13px] font-medium text-violet-600 hover:text-violet-700 transition-colors"
-          >
-            Change dates
-          </button>
-        )}
-      </div>
-
-      {/* Date summary bar — shown when both dates are set and picker is closed */}
-      {bothSelected && !open ? (
-        <div className="flex items-center gap-3 p-4 bg-violet-50 border border-violet-200 rounded-2xl">
-          <CalendarCheck className="h-5 w-5 text-violet-600 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-medium text-gray-900">
-              {format(parseISO(dates.checkIn), "EEE d MMM")}
-              <span className="text-gray-400 mx-2">→</span>
-              {format(parseISO(dates.checkOut), "EEE d MMM")}
-            </p>
-            <p className="text-[12px] text-violet-600 mt-0.5">
-              {nights} night{nights !== 1 ? "s" : ""} · room availability shown below
-            </p>
-          </div>
-          <ChevronDown
-            className={`h-4 w-4 text-violet-400 transition-transform ${open ? "rotate-180" : ""}`}
-            onClick={() => setOpen(true)}
-          />
-        </div>
-      ) : (
-        /* Collapsed prompt — no dates selected yet */
-        !open && (
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="w-full flex items-center gap-4 p-4 bg-white border-2 border-dashed border-violet-200 rounded-2xl hover:border-violet-400 hover:bg-violet-50 transition-all group"
-          >
-            <div className="h-10 w-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0 group-hover:bg-violet-200 transition-colors">
-              <Calendar className="h-5 w-5 text-violet-600" />
-            </div>
-            <div className="text-left">
-              <p className="text-[14px] font-medium text-gray-800">Select your dates</p>
-              <p className="text-[12px] text-gray-400 mt-0.5">
-                Pick arrival and departure to see which rooms are available
-              </p>
-            </div>
-            <ChevronDown className="h-4 w-4 text-gray-300 ml-auto" />
-          </button>
-        )
-      )}
-
-      {/* Inline calendar */}
-      {open && (
-        <div className="mt-3 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-          <HotelDateRangePicker
-            roomTypeId={null}
-            checkIn={dates.checkIn}
-            checkOut={dates.checkOut}
-            onChange={handleChange}
-          />
-          {bothSelected && (
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="mt-3 w-full h-10 bg-violet-600 hover:bg-violet-700 text-white text-[13px] font-medium rounded-xl transition-colors"
-            >
-              Done — show availability
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Availability Badge ───────────────────────────────────────────────────────
 function AvailBadge({ status }) {
@@ -143,10 +43,49 @@ function AvailBadge({ status }) {
   return null;
 }
 
-// ─── Room Type Card ───────────────────────────────────────────────────────────
-const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }) => {
+// ─── Room Type Card — self-contained with its own per-suite calendar ──────────
+const RoomTypeCard = React.memo(({ roomType }) => {
   const router = useRouter();
+  const supabase = createClient();
   const [imgIdx, setImgIdx] = useState(0);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [localDates, setLocalDates] = useState({ checkIn: "", checkOut: "" });
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
+  // 'idle' | 'loading' | 'available' | 'unavailable'
+  const [availStatus, setAvailStatus] = useState("idle");
+
+  // Check availability whenever dates change
+  useEffect(() => {
+    if (!localDates.checkIn || !localDates.checkOut) {
+      setAvailStatus("idle");
+      return;
+    }
+    setAvailStatus("loading");
+    (async () => {
+      const { data, error } = await supabase
+        .from("hotel_bookings")
+        .select("id")
+        .eq("room_type_id", roomType.id)
+        .in("booking_status", ["confirmed", "checked_in"])
+        .neq("payment_status", "failed")
+        .lt("check_in_date", localDates.checkOut)
+        .gt("check_out_date", localDates.checkIn);
+      if (error) { setAvailStatus("available"); return; }
+      const booked = data?.length ?? 0;
+      const total = roomType.available_rooms || 1;
+      setAvailStatus(booked < total ? "available" : "unavailable");
+    })();
+  }, [localDates.checkIn, localDates.checkOut]);
+
+  const handleDatesChange = ({ checkIn, checkOut }) => {
+    setLocalDates({ checkIn, checkOut });
+    if (checkIn && checkOut) setCalendarOpen(false);
+  };
+
+  const nights = useMemo(() => {
+    if (!localDates.checkIn || !localDates.checkOut) return 0;
+    return differenceInCalendarDays(parseISO(localDates.checkOut), parseISO(localDates.checkIn));
+  }, [localDates.checkIn, localDates.checkOut]);
 
   const images = useMemo(
     () => roomType.image_urls?.length > 0 ? roomType.image_urls : ["/placeholder-room.jpg"],
@@ -164,21 +103,16 @@ const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }
       .filter(Boolean);
   }, [roomType.amenities]);
 
-  const nights = useMemo(() => {
-    if (!dates.checkIn || !dates.checkOut) return 0;
-    return differenceInCalendarDays(parseISO(dates.checkOut), parseISO(dates.checkIn));
-  }, [dates.checkIn, dates.checkOut]);
-
   const isHtml = (c) => c && /<[a-z][\s\S]*>/i.test(c);
+  const datesSet = !!(localDates.checkIn && localDates.checkOut);
   const unavailable = availStatus === "unavailable";
-  const datesSet = !!(dates.checkIn && dates.checkOut);
 
   const handleReserve = () => {
-    if (!datesSet) { onSelectDates(); return; }
+    if (!datesSet) { setCalendarOpen(true); return; }
     if (unavailable) return;
     const params = new URLSearchParams({
-      checkIn: dates.checkIn,
-      checkOut: dates.checkOut,
+      checkIn: localDates.checkIn,
+      checkOut: localDates.checkOut,
       adults: "1",
       children: "0",
     });
@@ -266,56 +200,130 @@ const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }
 
             {amenities.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
-                {amenities.slice(0, 5).map((a) => (
+                {(showAllAmenities ? amenities : amenities.slice(0, 5)).map((a) => (
                   <span key={a.key} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-violet-50 text-violet-700 border border-violet-100">
                     <a.Icon className="h-3 w-3" />
                     {a.label}
                   </span>
                 ))}
                 {amenities.length > 5 && (
-                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-gray-50 text-gray-500 border border-gray-100">
-                    +{amenities.length - 5} more
-                  </span>
+                  <button
+                    onClick={() => setShowAllAmenities((v) => !v)}
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-gray-50 text-gray-500 border border-gray-100 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                  >
+                    {showAllAmenities ? "Show less" : `+${amenities.length - 5} more`}
+                  </button>
                 )}
               </div>
             )}
           </div>
 
-          {/* Price + CTA */}
-          <div className="flex items-end justify-between pt-5 mt-5 border-t border-gray-100 gap-4">
-            <div>
-              <p className="text-[11px] text-gray-400 uppercase tracking-[0.1em] mb-0.5">
-                {nights > 0 ? `${nights} night${nights !== 1 ? "s" : ""} total` : "Per night"}
-              </p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-medium text-gray-900">
-                  ₦{nights > 0
-                    ? (parseFloat(roomType.base_price) * nights).toLocaleString()
-                    : parseFloat(roomType.base_price).toLocaleString()}
-                </span>
-                {nights === 0 && <span className="text-sm text-gray-400">/night</span>}
+          {/* ── Per-suite date picker ─────────────────────────────────────── */}
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            {/* Date summary bar or open trigger */}
+            {datesSet && !calendarOpen ? (
+              <div className="flex items-center gap-3 p-3 bg-violet-50 border border-violet-100 rounded-xl mb-4">
+                <CalendarCheck className="h-4 w-4 text-violet-600 shrink-0" />
+                <div className="flex-1 min-w-0 text-[13px]">
+                  <span className="font-medium text-gray-900">
+                    {format(parseISO(localDates.checkIn), "d MMM")}
+                    <span className="text-gray-400 mx-1.5">→</span>
+                    {format(parseISO(localDates.checkOut), "d MMM")}
+                  </span>
+                  <span className="text-violet-600 ml-1.5">· {nights} night{nights !== 1 ? "s" : ""}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCalendarOpen(true)}
+                  className="text-[11px] font-medium text-violet-600 hover:text-violet-700 shrink-0"
+                >
+                  Change
+                </button>
               </div>
-              {nights > 0 && (
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  ₦{parseFloat(roomType.base_price).toLocaleString()} × {nights} nights
-                </p>
-              )}
-            </div>
+            ) : !calendarOpen ? (
+              <button
+                type="button"
+                onClick={() => setCalendarOpen(true)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-violet-200 hover:border-violet-400 hover:bg-violet-50 transition-all mb-4 group/cal"
+              >
+                <CalendarDays className="h-4 w-4 text-violet-400 group-hover/cal:text-violet-600 shrink-0" />
+                <span className="text-[13px] font-medium text-gray-500 group-hover/cal:text-violet-700">
+                  Select dates to check availability
+                </span>
+              </button>
+            ) : null}
 
-            <Button
-              onClick={handleReserve}
-              disabled={unavailable}
-              className={cn(
-                "h-10 px-5 rounded-xl text-sm font-medium shrink-0",
-                unavailable
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            {/* Inline calendar */}
+            {calendarOpen && (
+              <div className="mb-4 bg-gray-50 rounded-2xl border border-gray-200 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[13px] font-medium text-gray-700 flex items-center gap-1.5">
+                    <CalendarDays className="h-3.5 w-3.5 text-violet-500" />
+                    {roomType.name} availability
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarOpen(false)}
+                    className="text-[11px] text-gray-400 hover:text-gray-600"
+                  >
+                    Close
+                  </button>
+                </div>
+                <HotelDateRangePicker
+                  roomTypeId={roomType.id}
+                  checkIn={localDates.checkIn}
+                  checkOut={localDates.checkOut}
+                  onChange={handleDatesChange}
+                />
+              </div>
+            )}
+
+            {/* Price + CTA */}
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[11px] text-gray-400 uppercase tracking-[0.1em] mb-0.5">
+                  {nights > 0 ? `${nights} night${nights !== 1 ? "s" : ""} total` : "Per night"}
+                </p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-medium text-gray-900">
+                    ₦{nights > 0
+                      ? (parseFloat(roomType.base_price) * nights).toLocaleString()
+                      : parseFloat(roomType.base_price).toLocaleString()}
+                  </span>
+                  {nights === 0 && <span className="text-sm text-gray-400">/night</span>}
+                </div>
+                {nights > 0 && (
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    ₦{parseFloat(roomType.base_price).toLocaleString()} × {nights} nights
+                  </p>
+                )}
+              </div>
+
+              <Button
+                onClick={handleReserve}
+                disabled={unavailable}
+                className={cn(
+                  "h-10 px-5 rounded-xl text-sm font-medium shrink-0",
+                  unavailable
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : datesSet && availStatus === "available"
+                    ? "bg-violet-600 hover:bg-violet-700 text-white"
+                    : datesSet && availStatus === "loading"
+                    ? "bg-violet-400 text-white"
+                    : "bg-amber-500 hover:bg-amber-600 text-white",
+                )}
+              >
+                {unavailable
+                  ? "Not available"
+                  : datesSet && availStatus === "available"
+                  ? "Reserve →"
+                  : datesSet && availStatus === "loading"
+                  ? "Checking…"
                   : datesSet
-                  ? "bg-violet-600 hover:bg-violet-700 text-white"
-                  : "bg-amber-500 hover:bg-amber-600 text-white",
-              )}
-            >
-              {unavailable ? "Not available" : datesSet ? "Reserve →" : "Select dates first"}
-            </Button>
+                  ? "Reserve →"
+                  : "Select dates →"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -325,78 +333,63 @@ const RoomTypeCard = React.memo(({ roomType, dates, availStatus, onSelectDates }
 RoomTypeCard.displayName = "RoomTypeCard";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
+const SECTION_TABS = [
+  { id: "overview",   label: "Overview" },
+  { id: "amenities",  label: "Amenities" },
+  { id: "rooms",      label: "Rooms & Suites" },
+  { id: "location",   label: "Location" },
+  { id: "reviews",    label: "Reviews" },
+];
+
 const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
   useViewTracker(hotel.id, "hotel", hotel.vendor_id);
-  const supabase = createClient();
-  const datePanelRef = useRef(null);
 
+  const overviewRef  = useRef(null);
+  const amenitiesRef = useRef(null);
+  const roomsRef     = useRef(null);
+  const locationRef  = useRef(null);
+  const reviewsRef   = useRef(null);
+
+  const sectionRefs = useMemo(() => ({
+    overview: overviewRef,
+    amenities: amenitiesRef,
+    rooms: roomsRef,
+    location: locationRef,
+    reviews: reviewsRef,
+  }), []);
+
+  const [activeSection, setActiveSection]     = useState("overview");
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+
   const { saved: isSaved, toggle: toggleSave } = useSavedListing(
     hotel.id, "hotel",
     { title: hotel.name, image: hotel.image_urls?.[0], location: hotel.city || hotel.state },
   );
 
-  // ── Single source-of-truth for dates ────────────────────────────────────
-  const [dates, setDates] = useState({ checkIn: "", checkOut: "" });
-
-  // ── Per-room-type availability when dates are set ───────────────────────
-  const [roomAvailability, setRoomAvailability] = useState({}); // { roomTypeId: 'available'|'unavailable'|'loading' }
-  const [availLoading, setAvailLoading] = useState(false);
-
+  // Track active section as user scrolls
   useEffect(() => {
-    if (!dates.checkIn || !dates.checkOut) {
-      setRoomAvailability({});
-      return;
-    }
+    const refs = Object.entries(sectionRefs);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          const id = visible[0].target.dataset.section;
+          if (id) setActiveSection(id);
+        }
+      },
+      { rootMargin: "-20% 0px -75% 0px" },
+    );
+    refs.forEach(([, ref]) => { if (ref.current) observer.observe(ref.current); });
+    return () => observer.disconnect();
+  }, [sectionRefs]);
 
-    const loading = {};
-    roomTypes.forEach((rt) => { loading[rt.id] = "loading"; });
-    setRoomAvailability(loading);
-    setAvailLoading(true);
+  const scrollTo = useCallback((id) => {
+    sectionRefs[id]?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [sectionRefs]);
 
-    (async () => {
-      const { data, error } = await supabase
-        .from("hotel_bookings")
-        .select("room_type_id")
-        .eq("hotel_id", hotel.id)
-        .in("booking_status", ["confirmed", "checked_in"])
-        .neq("payment_status", "failed")
-        .lt("check_in_date", dates.checkOut)
-        .gt("check_out_date", dates.checkIn);
-
-      setAvailLoading(false);
-
-      if (error) {
-        // On error default to available so we don't block users
-        const fallback = {};
-        roomTypes.forEach((rt) => { fallback[rt.id] = "available"; });
-        setRoomAvailability(fallback);
-        return;
-      }
-
-      // Count overlapping bookings per room type
-      const bookedCount = {};
-      for (const b of data || []) {
-        bookedCount[b.room_type_id] = (bookedCount[b.room_type_id] || 0) + 1;
-      }
-
-      const result = {};
-      roomTypes.forEach((rt) => {
-        const totalRooms = rt.available_rooms || 1;
-        result[rt.id] = (bookedCount[rt.id] || 0) < totalRooms ? "available" : "unavailable";
-      });
-      setRoomAvailability(result);
-    })();
-  }, [dates.checkIn, dates.checkOut]);
-
-  const scrollToDatePanel = useCallback(() => {
-    datePanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    // Briefly highlight the panel
-    datePanelRef.current?.classList.add("ring-2", "ring-violet-400", "ring-offset-2", "rounded-2xl");
-    setTimeout(() => {
-      datePanelRef.current?.classList.remove("ring-2", "ring-violet-400", "ring-offset-2", "rounded-2xl");
-    }, 1800);
-  }, []);
+  const scrollToRooms = useCallback(() => scrollTo("rooms"), [scrollTo]);
 
   const allImages = useMemo(
     () => hotel.image_urls?.length > 0 ? hotel.image_urls : ["/placeholder-hotel.jpg"],
@@ -424,11 +417,6 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
     [roomTypes],
   );
 
-  const nights = useMemo(() => {
-    if (!dates.checkIn || !dates.checkOut) return 0;
-    return differenceInCalendarDays(parseISO(dates.checkOut), parseISO(dates.checkIn));
-  }, [dates.checkIn, dates.checkOut]);
-
   const isHtml = (c) => c && /<[a-z][\s\S]*>/i.test(c);
 
   const handleShare = useCallback(async () => {
@@ -440,14 +428,9 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
     }
   }, [hotel.name, hotel.city, hotel.state]);
 
-  const availableCount = useMemo(
-    () => Object.values(roomAvailability).filter((s) => s === "available").length,
-    [roomAvailability],
-  );
-
   return (
     <div className="min-h-screen pt-16" style={{ background: "#faf9f7" }}>
-      {/* Sticky top nav */}
+      {/* Back nav */}
       <header className="h-14 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30 flex items-center justify-between px-5 sm:px-8">
         <Link
           href="/services?category=hotels"
@@ -466,14 +449,37 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
         </div>
       </header>
 
+      {/* ── Section tab nav (Radisson-style) ──────────────────────────────────── */}
+      <div className="sticky top-14 z-20 bg-white border-b border-gray-100 shadow-[0_1px_0_0_rgba(0,0,0,0.04)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {SECTION_TABS.map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => { setActiveSection(id); scrollTo(id); }}
+                className={cn(
+                  "px-5 py-4 text-[13px] font-medium whitespace-nowrap border-b-2 transition-colors shrink-0",
+                  activeSection === id
+                    ? "border-violet-600 text-violet-700"
+                    : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* ── Gallery ─────────────────────────────────────────────────────────── */}
         <ImageGallery images={allImages} altPrefix={hotel.name} />
 
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
           {/* ── Left column ──────────────────────────────────────────────────── */}
           <div>
             {/* Hotel header */}
-            <div className="mb-8">
+            <div ref={overviewRef} data-section="overview" className="mb-8">
               <div className="flex items-center gap-2 mb-3">
                 <MapPin className="h-3.5 w-3.5 text-violet-500 shrink-0" />
                 <span className="text-[13px] text-gray-500">{location}</span>
@@ -501,13 +507,48 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                       {avgRating >= 4.8 ? "Exceptional" : avgRating >= 4.5 ? "Excellent" : avgRating >= 4.0 ? "Very Good" : avgRating >= 3.5 ? "Good" : "Okay"}
                     </span>
                   </div>
-                  <a
-                    href="#reviews"
+                  <button
+                    onClick={() => { setActiveSection("reviews"); scrollTo("reviews"); }}
                     className="text-[13px] text-violet-600 hover:underline"
-                    onClick={(e) => { e.preventDefault(); document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth" }); }}
                   >
                     {reviewCount} review{reviewCount !== 1 ? "s" : ""}
-                  </a>
+                  </button>
+                </div>
+              )}
+
+              {/* ── Key facts strip (Radisson-style) ────────────────────────── */}
+              {(hotel.check_in_time || hotel.check_out_time || hotel.breakfast_offered !== "none" || hotel.generator_available || hotel.inverter_available) && (
+                <div className="flex flex-wrap gap-2 mt-5">
+                  {hotel.check_in_time && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 text-[12px] text-gray-600">
+                      <Clock className="h-3.5 w-3.5 text-gray-400" />
+                      Check-in from {hotel.check_in_time}
+                    </div>
+                  )}
+                  {hotel.check_out_time && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 text-[12px] text-gray-600">
+                      <Clock className="h-3.5 w-3.5 text-gray-400" />
+                      Check-out by {hotel.check_out_time}
+                    </div>
+                  )}
+                  {hotel.breakfast_offered && hotel.breakfast_offered !== "none" && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 rounded-lg border border-orange-100 text-[12px] text-orange-700">
+                      <Coffee className="h-3.5 w-3.5" />
+                      Breakfast included
+                    </div>
+                  )}
+                  {hotel.generator_available && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 rounded-lg border border-amber-100 text-[12px] text-amber-700">
+                      <Zap className="h-3.5 w-3.5" />
+                      {hotel.generator_available === "24hrs" ? "24hr generator" : "Generator available"}
+                    </div>
+                  )}
+                  {hotel.inverter_available && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 rounded-lg border border-green-100 text-[12px] text-green-700">
+                      <Battery className="h-3.5 w-3.5" />
+                      Inverter / Solar
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -523,7 +564,7 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
 
             {/* Amenities */}
             {hotelAmenities.length > 0 && (
-              <section className="mb-10">
+              <section ref={amenitiesRef} data-section="amenities" className="mb-10">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-[18px] font-medium text-gray-900">What's included</h2>
                   {hotelAmenities.length > 6 && (
@@ -670,16 +711,9 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
               </section>
             )}
 
-            {/* ── DATE SELECTION — single point of entry ──────────────────── */}
-            <section>
+            {/* ── ROOM TYPES ───────────────────────────────────────────────── */}
+            <section ref={roomsRef} data-section="rooms">
               <h2 className="text-[18px] font-medium text-gray-900 mb-5">Choose your room</h2>
-
-              <DateSelectionPanel
-                dates={dates}
-                onChange={setDates}
-                roomTypes={roomTypes}
-                panelRef={datePanelRef}
-              />
 
               {roomTypes.length === 0 ? (
                 <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
@@ -690,34 +724,66 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                   <p className="text-[13px] text-gray-400 mt-1">Please check back soon or contact the property directly.</p>
                 </div>
               ) : (
-                <>
-                  {/* Availability summary when dates selected */}
-                  {dates.checkIn && dates.checkOut && !availLoading && (
-                    <div className="mb-4 flex items-center gap-2 text-[13px] text-gray-500">
-                      {availableCount > 0
-                        ? <><Check className="h-4 w-4 text-green-500" /> <span><strong className="text-gray-800">{availableCount} room type{availableCount !== 1 ? "s" : ""}</strong> available for your dates</span></>
-                        : <><Ban className="h-4 w-4 text-red-400" /> <span>No rooms available for these dates — try different dates</span></>
-                      }
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    {roomTypes.map((rt) => (
-                      <RoomTypeCard
-                        key={rt.id}
-                        roomType={rt}
-                        dates={dates}
-                        availStatus={roomAvailability[rt.id] || "idle"}
-                        onSelectDates={scrollToDatePanel}
-                      />
-                    ))}
-                  </div>
-                </>
+                <div className="space-y-4">
+                  {roomTypes.map((rt) => (
+                    <RoomTypeCard key={rt.id} roomType={rt} />
+                  ))}
+                </div>
               )}
             </section>
 
+            {/* ── LOCATION ─────────────────────────────────────────────────── */}
+            <section ref={locationRef} data-section="location" className="mt-10 mb-10">
+              <h2 className="text-[18px] font-medium text-gray-900 mb-5">Location</h2>
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                {/* Address card */}
+                <div className="flex items-start gap-4 p-6">
+                  <div className="h-11 w-11 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
+                    <MapPin className="h-5 w-5 text-violet-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-medium text-gray-900">{hotel.name}</p>
+                    {location && <p className="text-[13px] text-gray-500 mt-0.5">{location}</p>}
+                  </div>
+                  {(hotel.city || hotel.state) && (
+                    <a
+                      href={`https://maps.google.com/?q=${encodeURIComponent([hotel.name, hotel.address, hotel.city, hotel.state].filter(Boolean).join(", "))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 text-[12px] font-medium text-violet-600 hover:text-violet-700 underline underline-offset-2"
+                    >
+                      Open in Maps
+                    </a>
+                  )}
+                </div>
+                {/* Map placeholder */}
+                <div className="h-52 bg-gray-50 border-t border-gray-100 flex flex-col items-center justify-center gap-2 relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-[0.04]" style={{
+                    backgroundImage: "repeating-linear-gradient(0deg,#6d28d9 0,#6d28d9 1px,transparent 0,transparent 50%),repeating-linear-gradient(90deg,#6d28d9 0,#6d28d9 1px,transparent 0,transparent 50%)",
+                    backgroundSize: "40px 40px",
+                  }} />
+                  <div className="h-10 w-10 rounded-full bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-200">
+                    <MapPin className="h-5 w-5 text-white fill-white" />
+                  </div>
+                  <p className="text-[13px] text-gray-500 font-medium z-10">
+                    {[hotel.city, hotel.state].filter(Boolean).join(", ")}
+                  </p>
+                  {(hotel.city || hotel.state) && (
+                    <a
+                      href={`https://maps.google.com/?q=${encodeURIComponent([hotel.name, hotel.address, hotel.city, hotel.state].filter(Boolean).join(", "))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 px-4 py-1.5 bg-white rounded-lg border border-gray-200 text-[12px] font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm z-10"
+                    >
+                      View on Google Maps →
+                    </a>
+                  )}
+                </div>
+              </div>
+            </section>
+
             {/* Reviews */}
-            <section id="reviews" className="mt-10">
+            <section ref={reviewsRef} data-section="reviews" className="mt-10">
               <h2 className="text-[18px] font-medium text-gray-900 mb-5">
                 Guest Reviews
                 {avgRating !== null && reviewCount > 0 && (
@@ -744,40 +810,9 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
                 </div>
               )}
 
-              {/* Dates summary in sidebar */}
-              {dates.checkIn && dates.checkOut ? (
-                <div className="mb-5 p-3.5 bg-violet-50 rounded-xl border border-violet-100 space-y-2">
-                  <div className="flex justify-between text-[13px] text-gray-600">
-                    <span>Check-in</span>
-                    <span className="font-medium text-gray-900">{format(parseISO(dates.checkIn), "d MMM")}</span>
-                  </div>
-                  <div className="flex justify-between text-[13px] text-gray-600">
-                    <span>Check-out</span>
-                    <span className="font-medium text-gray-900">{format(parseISO(dates.checkOut), "d MMM")}</span>
-                  </div>
-                  {nights > 0 && lowestPrice && (
-                    <div className="flex justify-between text-[13px] pt-2 border-t border-violet-200">
-                      <span className="text-gray-600">{nights} night{nights !== 1 ? "s" : ""} (from)</span>
-                      <span className="font-medium text-violet-700">₦{(nights * lowestPrice).toLocaleString()}</span>
-                    </div>
-                  )}
-                  <button onClick={scrollToDatePanel} className="text-[11px] text-violet-500 hover:text-violet-700 w-full text-center mt-1">
-                    Change dates
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={scrollToDatePanel}
-                  className="mb-5 w-full flex items-center justify-center gap-2 h-11 border-2 border-dashed border-violet-200 rounded-xl text-[13px] font-medium text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all"
-                >
-                  <Calendar className="h-4 w-4" />
-                  Select your dates
-                </button>
-              )}
-
               <Button
-                className="w-full h-11 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-medium"
-                onClick={scrollToDatePanel}
+                className="w-full h-11 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-medium mb-5"
+                onClick={scrollToRooms}
                 disabled={roomTypes.length === 0}
               >
                 {roomTypes.length === 0 ? "No rooms available" : "See available rooms ↓"}
@@ -807,21 +842,19 @@ const HotelDetails = ({ hotel, roomTypes, avgRating, reviewCount }) => {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 py-3 flex items-center justify-between z-30">
         {lowestPrice !== null && (
           <div>
-            <p className="text-[11px] text-gray-400">{nights > 0 ? `${nights} nights` : "From"}</p>
+            <p className="text-[11px] text-gray-400">From</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-xl font-medium text-gray-900">
-                ₦{nights > 0 ? (nights * lowestPrice).toLocaleString() : lowestPrice.toLocaleString()}
-              </span>
-              {nights === 0 && <span className="text-xs text-gray-400">/night</span>}
+              <span className="text-xl font-medium text-gray-900">₦{lowestPrice.toLocaleString()}</span>
+              <span className="text-xs text-gray-400">/night</span>
             </div>
           </div>
         )}
         <Button
-          onClick={scrollToDatePanel}
+          onClick={scrollToRooms}
           disabled={roomTypes.length === 0}
           className="h-11 px-8 bg-violet-600 hover:bg-violet-700 rounded-xl text-sm font-medium"
         >
-          {dates.checkIn && dates.checkOut ? "View rooms ↓" : "Check availability"}
+          {roomTypes.length === 0 ? "No rooms available" : "View rooms ↓"}
         </Button>
       </div>
     </div>

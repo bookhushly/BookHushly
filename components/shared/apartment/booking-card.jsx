@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, CalendarCheck, Loader2, ChevronDown } from "lucide-react";
+import { NIGERIAN_AIRPORTS, getAirportByCode } from "@/lib/constants/airports";
 import { toast } from "sonner";
 import { differenceInCalendarDays, parseISO, format } from "date-fns";
 import HotelDateRangePicker from "@/components/shared/hotels/HotelDateRangePicker";
@@ -101,6 +102,11 @@ export default function ApartmentBookingCard({ apartment }) {
   const [requests, setRequests]     = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const [airportTransfer, setAirportTransfer]           = useState(false);
+  const [airportTransferType, setAirportTransferType]   = useState("pickup");
+  const [airportTransferNotes, setAirportTransferNotes] = useState("");
+  const [selectedAirport, setSelectedAirport]           = useState("");
+
   const pricingRules = usePricingRules(apartment.id);
 
   const nights = useMemo(() => {
@@ -108,10 +114,18 @@ export default function ApartmentBookingCard({ apartment }) {
     return Math.max(0, differenceInCalendarDays(parseISO(checkOut), parseISO(checkIn)));
   }, [checkIn, checkOut]);
 
-  const totalPrice = useMemo(
+  const basePrice = useMemo(
     () => calculateTotalWithRules(checkIn, nights, apartment, pricingRules),
     [checkIn, nights, apartment, pricingRules],
   );
+
+  const airportFee = useMemo(() => {
+    if (!airportTransfer || !selectedAirport) return 0;
+    const perTrip = apartment.airport_prices?.[selectedAirport] || 0;
+    return airportTransferType === "both" ? perTrip * 2 : perTrip;
+  }, [airportTransfer, selectedAirport, airportTransferType, apartment.airport_prices]);
+
+  const totalPrice = useMemo(() => basePrice + airportFee, [basePrice, airportFee]);
 
   const priceLabel = useMemo(() => {
     if (nights <= 0) return null;
@@ -162,6 +176,11 @@ export default function ApartmentBookingCard({ apartment }) {
       formData.append("special_requests", requests);
       formData.append("price_per_night", apartment.price_per_night.toString());
       formData.append("caution_deposit", (apartment.caution_deposit || 0).toString());
+      formData.append("airport_transfer", airportTransfer ? "true" : "false");
+      formData.append("airport_transfer_type", airportTransfer ? airportTransferType : "");
+      formData.append("airport_transfer_notes", airportTransfer ? airportTransferNotes : "");
+      formData.append("airport_code", airportTransfer && selectedAirport ? selectedAirport : "");
+      formData.append("airport_fee", airportFee.toString());
 
       const res = await fetch("/api/bookings/apartment", { method: "POST", body: formData });
       const data = await res.json();
@@ -243,7 +262,7 @@ export default function ApartmentBookingCard({ apartment }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Amara Okafor"
-            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition"
+            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition"
           />
         </div>
 
@@ -255,7 +274,7 @@ export default function ApartmentBookingCard({ apartment }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition"
+            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition"
           />
         </div>
 
@@ -267,7 +286,7 @@ export default function ApartmentBookingCard({ apartment }) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+234 800 000 0000"
-            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition"
+            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition"
           />
         </div>
 
@@ -280,18 +299,125 @@ export default function ApartmentBookingCard({ apartment }) {
             onChange={(e) => setRequests(e.target.value)}
             rows={2}
             placeholder="Early check-in, dietary needs, etc."
-            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition resize-none"
+            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[14px] bg-white text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition resize-none"
           />
         </div>
       </div>
+
+      {/* ── Airport transfer add-on ── */}
+      {apartment.airport_transfer_enabled && (
+        <div className="space-y-3 pt-4 border-t border-gray-100">
+          <div
+            className="flex items-start gap-3 p-4 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-violet-300 transition-colors"
+            onClick={() => setAirportTransfer((v) => !v)}
+          >
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 accent-violet-600 cursor-pointer"
+              checked={airportTransfer}
+              onChange={(e) => setAirportTransfer(e.target.checked)}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="flex-1">
+              <p className="text-[13px] font-medium text-gray-900">✈️ Add Airport Transfer</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                {apartment.airport_prices && Object.keys(apartment.airport_prices).length > 0
+                  ? `From ₦${Math.min(...Object.values(apartment.airport_prices)).toLocaleString("en-NG")} per trip`
+                  : "Fee varies by airport"}
+                {" · "}Select your airport below
+              </p>
+            </div>
+          </div>
+
+          {airportTransfer && (
+            <div className="space-y-3 pl-1">
+              {/* Airport selector */}
+              {apartment.airport_prices && Object.keys(apartment.airport_prices).length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="block text-[12px] text-gray-600">Select airport *</label>
+                  <select
+                    value={selectedAirport}
+                    onChange={(e) => setSelectedAirport(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white"
+                  >
+                    <option value="">— Choose your airport —</option>
+                    {NIGERIAN_AIRPORTS
+                      .filter((a) => apartment.airport_prices[a.code] > 0)
+                      .map((airport) => (
+                        <option key={airport.code} value={airport.code}>
+                          {airport.city} ({airport.code}) — ₦{Number(apartment.airport_prices[airport.code]).toLocaleString("en-NG")} per trip
+                        </option>
+                      ))}
+                  </select>
+                  {selectedAirport && (
+                    <p className="text-[11px] text-violet-600 font-medium">
+                      {getAirportByCode(selectedAirport)?.name}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Transfer type */}
+              <div className="space-y-1.5">
+                <label className="block text-[12px] text-gray-600">Transfer type</label>
+                <div className="flex gap-2">
+                  {["pickup", "dropoff", "both"].map((t) => {
+                    const perTrip = selectedAirport && apartment.airport_prices?.[selectedAirport]
+                      ? apartment.airport_prices[selectedAirport]
+                      : 0;
+                    const fee = perTrip > 0
+                      ? ` · ₦${(t === "both" ? perTrip * 2 : perTrip).toLocaleString("en-NG")}`
+                      : "";
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setAirportTransferType(t)}
+                        className={`flex-1 py-2 rounded-xl border text-[11px] font-medium transition-all ${
+                          airportTransferType === t
+                            ? "border-violet-500 bg-violet-50 text-violet-700"
+                            : "border-gray-200 text-gray-600 hover:border-violet-300"
+                        }`}
+                      >
+                        {t === "pickup" ? "Airport → Apt" : t === "dropoff" ? "Apt → Airport" : "Both ways"}
+                        <span className="block text-[10px] opacity-70">{fee}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Flight details */}
+              <div className="space-y-1.5">
+                <label className="block text-[12px] text-gray-600">
+                  Flight details <span className="text-gray-400">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Arik Air W3 200, Terminal 1, arrives 14:30"
+                  value={airportTransferNotes}
+                  onChange={(e) => setAirportTransferNotes(e.target.value)}
+                  className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-[13px] bg-white placeholder:text-gray-400 focus:ring-2 focus:ring-violet-400 focus:border-transparent outline-none transition"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Price breakdown (shows once dates are picked) ── */}
       {isDateValid && (
         <div className="bg-violet-50 rounded-xl border border-violet-100 p-3.5 space-y-2 text-[13px]">
           <div className="flex justify-between text-gray-600">
             <span>{priceLabel}</span>
-            <span className="font-medium text-gray-900">₦{totalPrice.toLocaleString()}</span>
+            <span className="font-medium text-gray-900">₦{basePrice.toLocaleString()}</span>
           </div>
+          {airportFee > 0 && (
+            <div className="flex justify-between text-gray-600">
+              <span>✈️ Airport transfer ({airportTransferType === "both" ? "both ways" : airportTransferType})</span>
+              <span className="font-medium text-gray-900">₦{airportFee.toLocaleString()}</span>
+            </div>
+          )}
           {apartment.caution_deposit > 0 && (
             <div className="flex justify-between text-gray-500">
               <span>Security deposit (refundable)</span>
