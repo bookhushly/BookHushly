@@ -126,7 +126,7 @@ const OrderSuccessful = () => {
         .from("hotel_bookings")
         .select(
           `*,
-          hotels:hotel_id ( id, name, city, state, address, vendors:vendor_id(phone_number) ),
+          hotels:hotel_id ( id, name, city, state, address, security_deposit, security_deposit_notes, vendors:vendor_id(phone_number) ),
           room_types:room_type_id ( id, name, base_price, max_occupancy )`,
         )
         .eq("id", bookingId)
@@ -142,7 +142,8 @@ const OrderSuccessful = () => {
           apartment:apartment_id (
             id, name, city, state, area, address,
             check_in_time, check_out_time, vendor_id,
-            agent_name, agent_phone, agent_image_url, agent_bio
+            agent_name, agent_phone, agent_image_url, agent_bio,
+            caution_deposit
           )`,
         )
         .eq("id", bookingId)

@@ -211,7 +211,8 @@ export const generateBookingConfirmationPDF = async (
     t("PROPERTY", ML, y, { color: gray, size: 7, bold: true });
     y += 7;
 
-    let propertyName, fullAddress, roomLabel, emergencyPhone, checkTimes;
+    let propertyName, fullAddress, roomLabel, emergencyPhone, checkTimes,
+        securityDeposit, securityDepositLabel;
 
     if (bookingType === "hotel") {
       const h = booking.hotels || {};
@@ -219,12 +220,18 @@ export const generateBookingConfirmationPDF = async (
       fullAddress = [h.address, h.city, h.state].filter(Boolean).join(", ");
       roomLabel = booking.room_types?.name || null;
       emergencyPhone = h.vendors?.phone_number || null;
+      securityDeposit = parseFloat(h.security_deposit) || 0;
+      securityDepositLabel = h.security_deposit_notes
+        ? `Security Deposit (${h.security_deposit_notes})`
+        : "Security / Caution Deposit";
     } else {
       const a = booking.apartment || {};
       propertyName = a.name || "Apartment";
       fullAddress = [a.address, a.city, a.state].filter(Boolean).join(", ");
       roomLabel = null;
       emergencyPhone = a.agent_phone || null;
+      securityDeposit = parseFloat(a.caution_deposit) || 0;
+      securityDepositLabel = "Caution Deposit";
       checkTimes =
         a.check_in_time || a.check_out_time
           ? `Check-in from ${a.check_in_time || "2:00 PM"}  ·  Check-out by ${a.check_out_time || "12:00 PM"}`
@@ -312,6 +319,9 @@ export const generateBookingConfirmationPDF = async (
       ...(bookingType === "apartment" && booking.number_of_nights
         ? [["Nights", String(booking.number_of_nights)]]
         : []),
+      ...(securityDeposit > 0
+        ? [[securityDepositLabel, fmtAmount(securityDeposit)]]
+        : []),
     ];
 
     tableRows.forEach(([label, value], i) => {
@@ -349,6 +359,21 @@ export const generateBookingConfirmationPDF = async (
       currency === "NGN"
         ? fmtAmount(totalPaid)
         : `${currency} ${totalPaid.toLocaleString()}`;
+
+    // Breakdown: accommodation + deposit lines when a deposit applies
+    if (securityDeposit > 0) {
+      const accommodationAmount = totalPaid - securityDeposit;
+      const subRows = [
+        ["Accommodation", fmtAmount(accommodationAmount)],
+        [securityDepositLabel, fmtAmount(securityDeposit)],
+      ];
+      subRows.forEach(([label, value]) => {
+        t(label, ML + 4, y + 2.5, { color: gray, size: 8.5 });
+        t(value, MR - 4, y + 2.5, { color: gray, size: 8.5, align: "right" });
+        y += 7;
+      });
+      y += 2;
+    }
 
     const TOTAL_H = 14;
     fill(ML, y, IW, TOTAL_H, purple);
