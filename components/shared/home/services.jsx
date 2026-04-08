@@ -42,8 +42,7 @@ const categories = [
     label: "Logistics",
     icon: "Truck",
     desc: "Fast, reliable logistics and delivery services across cities.",
-    image:
-      "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=80",
+    image: "/logistics.jpeg",
     alt: "Logistics and delivery trucks",
     span: "lg:col-span-3 lg:row-span-1",
   },
@@ -52,8 +51,7 @@ const categories = [
     label: "Security",
     icon: "Shield",
     desc: "Professional and trusted security services for your peace of mind.",
-    image:
-      "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&auto=format&fit=crop&q=80",
+    image: "/security.jpeg",
     alt: "Professional security services",
     span: "col-span-1 row-span-1",
   },
