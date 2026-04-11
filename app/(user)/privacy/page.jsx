@@ -154,7 +154,9 @@ export default function PrivacyPage() {
                 <h4 className="font-medium mb-3">2.3 Payment Information</h4>
                 <p>
                   Payment information is processed by our secure payment
-                  partners (Paystack). We do not store complete payment card
+                  partners — Paystack (card &amp; bank transfers) and
+                  NOWPayments (cryptocurrency). We also offer an internal wallet
+                  for platform credits. We do not store complete payment card
                   information on our servers.
                 </p>
               </div>
@@ -238,8 +240,9 @@ export default function PrivacyPage() {
                 <div className="border-l-4 border-green-500 pl-4">
                   <h5 className="font-medium">With Payment Processors</h5>
                   <p className="text-sm text-muted-foreground">
-                    Payment information is shared with Paystack to process
-                    transactions securely.
+                    Payment information is shared with Paystack (card &amp;
+                    bank transfers) and NOWPayments (cryptocurrency) solely to
+                    process transactions securely.
                   </p>
                 </div>
 

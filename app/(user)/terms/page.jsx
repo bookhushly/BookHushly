@@ -191,9 +191,11 @@ export default function TermsPage() {
 
                 <h4 className="font-medium">4.2 Payment Processing</h4>
                 <p>
-                  All payments are processed through our secure payment partners
-                  (Paystack). We do not store payment information on our
-                  servers.
+                  All payments are processed through our secure payment
+                  partners — Paystack (card &amp; bank transfers) and
+                  NOWPayments (cryptocurrency). You may also pay using your
+                  Bookhushly wallet balance. We do not store payment card
+                  information on our servers.
                 </p>
 
                 <h4 className="font-medium">4.3 Refunds</h4>
