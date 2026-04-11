@@ -99,7 +99,7 @@ export default function ContactPage() {
     {
       question: "What payment methods do you accept?",
       answer:
-        "We accept all major payment methods through Paystack and Flutterwave, including cards, bank transfers, USSD, and mobile money.",
+        "We accept all major payment methods through Paystack including cards & bank transfers",
     },
     {
       question: "How do I cancel a booking?",

@@ -192,8 +192,8 @@ export default function TermsPage() {
                 <h4 className="font-medium">4.2 Payment Processing</h4>
                 <p>
                   All payments are processed through our secure payment partners
-                  (Paystack and Flutterwave). We do not store payment
-                  information on our servers.
+                  (Paystack). We do not store payment information on our
+                  servers.
                 </p>
 
                 <h4 className="font-medium">4.3 Refunds</h4>

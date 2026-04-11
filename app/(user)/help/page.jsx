@@ -5,7 +5,8 @@ export const metadata = {
   alternates: { canonical: "https://bookhushly.com/help" },
   openGraph: {
     title: "BookHushly Help Centre",
-    description: "Answers to your questions about BookHushly bookings and services.",
+    description:
+      "Answers to your questions about BookHushly bookings and services.",
     url: "https://bookhushly.com/help",
   },
 };
@@ -82,7 +83,7 @@ export default function HelpPage() {
         {
           question: "What payment methods do you accept?",
           answer:
-            "We accept all major payment methods through Paystack and Flutterwave, including cards, bank transfers, USSD, and mobile money.",
+            "We accept all major payment methods through Paystack, including cards & bank transfers",
         },
         {
           question: "How do I know if my booking is confirmed?",

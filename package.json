@@ -78,7 +78,6 @@
     "eslint": "8.49.0",
     "eslint-config-next": "16.0.7",
     "file-saver": "^2.0.5",
-    "flutterwave-node-v3": "^1.3.0",
     "framer-motion": "^12.23.12",
     "input-otp": "^1.2.4",
     "jspdf": "^3.0.4",
