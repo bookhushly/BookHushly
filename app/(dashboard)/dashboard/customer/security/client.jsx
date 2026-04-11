@@ -10,6 +10,8 @@ import {
   Users,
   AlertTriangle,
   FileText,
+  Dog,
+  Car,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -148,13 +150,13 @@ export function SecurityClient({ userId, initialData }) {
                         </span>
                       )}
                       {req.requires_canine && (
-                        <span className="text-xs px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-full">
-                          🐕 Canine
+                        <span className="text-xs px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-full flex items-center gap-1">
+                          <Dog className="h-3 w-3" /> Canine
                         </span>
                       )}
                       {req.requires_vehicle && (
-                        <span className="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full">
-                          🚗 Vehicle
+                        <span className="text-xs px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full flex items-center gap-1">
+                          <Car className="h-3 w-3" /> Vehicle
                         </span>
                       )}
                     </div>

@@ -370,8 +370,8 @@ export default function AdminDashboard() {
                               {vendor.business_description}
                             </p>
                             <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                              <span>📍 {vendor.business_address}</span>
-                              <span>📞 {vendor.phone_number}</span>
+                              <span>{vendor.business_address}</span>
+                              <span>{vendor.phone_number}</span>
                             </div>
                           </div>
                           <div className="flex space-x-2 shrink-0">

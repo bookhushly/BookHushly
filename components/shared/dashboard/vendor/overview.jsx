@@ -25,7 +25,7 @@ const OverviewTab = ({ user, vendor }) => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-medium text-slate-900 dark:text-white mb-1">
-            Welcome back, {user?.user_metadata?.name || "there"}! 👋
+            Welcome back, {user?.user_metadata?.name || "there"}!
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
             Here&#39;s what&lsquo;s happening with your business today

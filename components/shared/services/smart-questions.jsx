@@ -11,9 +11,9 @@ const QUESTIONS = {
       question: "What's your stay for?",
       filterKeys: ["amenities", "max_occupancy"],
       options: [
-        { label: "💼 Business",  value: "business", filters: { amenities: ["wifi", "briefcase"] } },
-        { label: "🏖️ Leisure",   value: "leisure",  filters: {} },
-        { label: "👨‍👩‍👧 Family",  value: "family",   filters: { max_occupancy: 3 } },
+        { label: "Business",  value: "business", filters: { amenities: ["wifi", "briefcase"] } },
+        { label: "Leisure",   value: "leisure",  filters: {} },
+        { label: "Family",    value: "family",   filters: { max_occupancy: 3 } },
       ],
     },
     {
@@ -21,9 +21,9 @@ const QUESTIONS = {
       question: "Power backup needed?",
       filterKeys: ["hotel_has_generator"],
       options: [
-        { label: "⚡ Essential",     value: "essential", filters: { hotel_has_generator: true } },
-        { label: "✅ Nice to have",  value: "nice",      filters: {} },
-        { label: "🤷 No preference", value: "any",       filters: {} },
+        { label: "Essential",     value: "essential", filters: { hotel_has_generator: true } },
+        { label: "Nice to have",  value: "nice",      filters: {} },
+        { label: "No preference", value: "any",       filters: {} },
       ],
     },
     {
@@ -31,9 +31,9 @@ const QUESTIONS = {
       question: "Breakfast preference?",
       filterKeys: ["breakfast_offered"],
       options: [
-        { label: "🍳 Must be included",   value: "included", filters: { breakfast_offered: "included" } },
-        { label: "💰 Happy to pay extra", value: "paid",     filters: { breakfast_offered: "paid" } },
-        { label: "🤷 No preference",      value: "any",      filters: {} },
+        { label: "Must be included",   value: "included", filters: { breakfast_offered: "included" } },
+        { label: "Happy to pay extra", value: "paid",     filters: { breakfast_offered: "paid" } },
+        { label: "No preference",      value: "any",      filters: {} },
       ],
     },
   ],
@@ -43,10 +43,10 @@ const QUESTIONS = {
       question: "Who's coming with you?",
       filterKeys: ["max_guests"],
       options: [
-        { label: "🙋 Just me",    value: "solo",   filters: { max_guests: 1 } },
-        { label: "💑 Couple",     value: "couple", filters: { max_guests: 2 } },
-        { label: "👨‍👩‍👧 Family",  value: "family", filters: { max_guests: 4 } },
-        { label: "👥 Group (6+)", value: "group",  filters: { max_guests: 6 } },
+        { label: "Just me",    value: "solo",   filters: { max_guests: 1 } },
+        { label: "Couple",     value: "couple", filters: { max_guests: 2 } },
+        { label: "Family",     value: "family", filters: { max_guests: 4 } },
+        { label: "Group (6+)", value: "group",  filters: { max_guests: 6 } },
       ],
     },
     {
@@ -54,9 +54,9 @@ const QUESTIONS = {
       question: "Constant power important?",
       filterKeys: ["generator_available", "inverter_available"],
       options: [
-        { label: "⚡ Must have generator", value: "generator", filters: { generator_available: true } },
-        { label: "🔋 Inverter is fine",    value: "inverter",  filters: { inverter_available: true } },
-        { label: "🤷 No preference",       value: "any",       filters: {} },
+        { label: "Must have generator", value: "generator", filters: { generator_available: true } },
+        { label: "Inverter is fine",    value: "inverter",  filters: { inverter_available: true } },
+        { label: "No preference",       value: "any",       filters: {} },
       ],
     },
     {
@@ -64,9 +64,9 @@ const QUESTIONS = {
       question: "Utilities preference?",
       filterKeys: ["utilities_included", "internet_included"],
       options: [
-        { label: "✅ All included",  value: "all",      filters: { utilities_included: true } },
-        { label: "🌐 At least WiFi", value: "internet", filters: { internet_included: true } },
-        { label: "🤷 No preference", value: "any",      filters: {} },
+        { label: "All included",  value: "all",      filters: { utilities_included: true } },
+        { label: "At least WiFi", value: "internet", filters: { internet_included: true } },
+        { label: "No preference", value: "any",      filters: {} },
       ],
     },
   ],
@@ -76,10 +76,10 @@ const QUESTIONS = {
       question: "What's the occasion?",
       filterKeys: ["capacity"],
       options: [
-        { label: "💒 Wedding",          value: "wedding",    filters: { capacity: 100 } },
-        { label: "🏢 Corporate",        value: "corporate",  filters: { capacity: 50 } },
-        { label: "🎉 Birthday / Party", value: "party",      filters: { capacity: 30 } },
-        { label: "🎤 Conference",       value: "conference", filters: { capacity: 200 } },
+        { label: "Wedding",          value: "wedding",    filters: { capacity: 100 } },
+        { label: "Corporate",        value: "corporate",  filters: { capacity: 50 } },
+        { label: "Birthday / Party", value: "party",      filters: { capacity: 30 } },
+        { label: "Conference",       value: "conference", filters: { capacity: 200 } },
       ],
     },
     {
@@ -87,9 +87,9 @@ const QUESTIONS = {
       question: "What's your budget?",
       filterKeys: ["price_min", "price_max"],
       options: [
-        { label: "💚 Under ₦100k",   value: "budget",  filters: { price_max: 100000 } },
-        { label: "💛 ₦100k–₦500k",  value: "mid",     filters: { price_min: 100000, price_max: 500000 } },
-        { label: "💜 ₦500k+",       value: "premium", filters: { price_min: 500000 } },
+        { label: "Under ₦100k",   value: "budget",  filters: { price_max: 100000 } },
+        { label: "₦100k–₦500k",  value: "mid",     filters: { price_min: 100000, price_max: 500000 } },
+        { label: "₦500k+",       value: "premium", filters: { price_min: 500000 } },
       ],
     },
   ],

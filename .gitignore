@@ -425,3 +425,4 @@ supabase/migrations/20260326_refund_requests.sql
 supabase/migrations/20260326_hotel_airport_transfer.sql
 supabase/migrations/20260326_hotel_ratings_nihotour.sql
 supabase/migrations/20260326_hotel_booking_total_amount.sql
+supabase/functions/send-auth-email/SETUP.md

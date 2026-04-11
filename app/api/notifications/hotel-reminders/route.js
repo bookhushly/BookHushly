@@ -58,7 +58,7 @@ function buildPreArrivalEmailHtml(booking) {
 
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:32px 40px;text-align:center">
-      <div style="font-size:40px;margin-bottom:8px">🏨</div>
+      <div style="font-size:40px;margin-bottom:8px"></div>
       <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">Your stay is in 2 days!</h1>
       <p style="color:#e9d5ff;margin:8px 0 0;font-size:14px">Here's everything you need to know</p>
     </div>
@@ -76,8 +76,8 @@ function buildPreArrivalEmailHtml(booking) {
       <div style="background:#f5f3ff;border-radius:10px;padding:20px;margin-bottom:24px;border-left:4px solid #7c3aed">
         <p style="color:#111827;font-size:16px;font-weight:700;margin:0 0 4px">${hotel.name}</p>
         ${room_type?.name ? `<p style="color:#6b7280;font-size:13px;margin:0 0 12px">Room type: ${room_type.name}</p>` : ""}
-        ${hotelAddress ? `<p style="color:#374151;font-size:14px;margin:0 0 8px">📍 ${hotelAddress}</p>` : ""}
-        <p style="color:#374151;font-size:14px;margin:0">🕐 Checkout: ${checkoutPolicy}</p>
+        ${hotelAddress ? `<p style="color:#374151;font-size:14px;margin:0 0 8px">${hotelAddress}</p>` : ""}
+        <p style="color:#374151;font-size:14px;margin:0">Checkout: ${checkoutPolicy}</p>
       </div>
 
       ${
@@ -111,7 +111,7 @@ function buildPreArrivalEmailHtml(booking) {
           whatsappLink
             ? `<a href="${whatsappLink}"
             style="display:inline-block;background:#25d366;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600">
-            💬 WhatsApp Hotel
+            WhatsApp Hotel
           </a>`
             : ""
         }
@@ -172,7 +172,7 @@ export async function POST(request) {
   if (userIds.length > 0) {
     await notifyMany(userIds, {
       type: "booking_updated",
-      title: "🏨 Check-in reminder: 2 days to go!",
+      title: "Check-in reminder: 2 days to go!",
       message: "Your hotel stay is coming up. Tap to view your check-in code and hotel details.",
       link: "/dashboard/customer/hotels",
     }).catch((err) =>
@@ -188,7 +188,7 @@ export async function POST(request) {
   const emailPayloads = validBookings.map((b) => ({
     from: FROM_EMAIL,
     to: b.guest_email,
-    subject: `🏨 Check-in reminder: ${b.hotel?.name} — ${b.check_in_date}`,
+    subject: `Check-in reminder: ${b.hotel?.name} — ${b.check_in_date}`,
     html: buildPreArrivalEmailHtml(b),
   }));
 

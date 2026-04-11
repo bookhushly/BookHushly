@@ -894,7 +894,7 @@ export default function EventsTicketPurchase({ service, onSubmit }) {
                     <>
                       <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                         <p className="text-sm font-medium text-green-700 mb-1">
-                          🎉 This is a free event!
+                          This is a free event!
                         </p>
                         <p className="text-sm text-green-600">
                           No payment required. Click below to confirm your free registration.

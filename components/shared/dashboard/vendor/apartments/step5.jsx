@@ -223,7 +223,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
         <Card className="border-green-200 bg-green-50">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-green-900 mb-2">
-              ✓ Great Selection!
+              Great Selection!
             </p>
             <p className="text-xs text-green-800">
               You've selected {selectedCount} amenities and{" "}
@@ -232,7 +232,7 @@ export default function Step5Amenities({ formData, updateFormData }) {
             </p>
             {selectedCount < 10 && (
               <p className="text-xs text-green-800 mt-2">
-                💡 Tip: Apartments with 10+ amenities get 40% more bookings on
+                Tip: Apartments with 10+ amenities get 40% more bookings on
                 average.
               </p>
             )}

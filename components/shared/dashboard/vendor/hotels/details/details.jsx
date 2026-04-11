@@ -420,7 +420,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <span>🚗</span> Airport Transfer
+            Airport Transfer
           </CardTitle>
           <CardDescription>
             Offer guests an optional airport pickup/drop-off when booking.
@@ -475,7 +475,7 @@ export function HotelDetailsTab({ hotel, onUpdate }) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <span>🏅</span> NIHOTOUR Certification
+            NIHOTOUR Certification
           </CardTitle>
           <CardDescription>
             Display your Nigeria Hotel &amp; Tourism Association registration badge on your listing.

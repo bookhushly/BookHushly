@@ -15,6 +15,7 @@ import {
   XCircle,
   AlertTriangle,
   FileText,
+  Car,
 } from "lucide-react";
 import {
   Dialog,
@@ -208,7 +209,7 @@ export function HotelBookingDetailModal({ bookingId, userId, onClose }) {
             {/* Airport transfer info */}
             {booking.airport_transfer && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2">
-                <span className="text-lg leading-none">🚗</span>
+                <Car className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-blue-900">Airport Transfer Requested</p>
                   <p className="text-xs text-blue-700 mt-0.5 capitalize">

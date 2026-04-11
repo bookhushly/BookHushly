@@ -107,7 +107,7 @@ export async function createHotelWithRoomsAction(
       return { success: false, error: "Not authenticated" };
     }
 
-    console.log("🚀 Starting hotel creation for user:", user.id);
+    console.log("Starting hotel creation for user:", user.id);
 
     // Fetch vendor profile
     const { data: vendor, error: vendorError } = await supabase
@@ -117,7 +117,7 @@ export async function createHotelWithRoomsAction(
       .single();
 
     if (vendorError || !vendor) {
-      console.error("❌ Vendor not found:", vendorError);
+      console.error("Vendor not found:", vendorError);
       return { success: false, error: "Vendor profile not found" };
     }
 
@@ -128,7 +128,7 @@ export async function createHotelWithRoomsAction(
       };
     }
 
-    console.log("✅ Vendor verified:", vendor.id);
+    console.log("Vendor verified:", vendor.id);
 
     // Transform amenities array to JSONB object for hotel
     const hotelAmenities =
@@ -189,11 +189,11 @@ export async function createHotelWithRoomsAction(
       .single();
 
     if (hotelError) {
-      console.error("❌ Hotel creation error:", hotelError);
+      console.error("Hotel creation error:", hotelError);
       return { success: false, error: hotelError.message };
     }
 
-    console.log("✅ Hotel created:", hotel.id);
+    console.log("Hotel created:", hotel.id);
 
     // 2. Create Suite Types in parallel
     const suitePromises = suiteTypes.map((suite) => {
@@ -223,7 +223,7 @@ export async function createHotelWithRoomsAction(
     const suiteErrors = suiteResults.filter((r) => r.error);
 
     if (suiteErrors.length > 0) {
-      console.error("❌ Suite creation errors:", suiteErrors);
+      console.error("Suite creation errors:", suiteErrors);
 
       // Rollback: Delete hotel
       await supabase.from("hotels").delete().eq("id", hotel.id);
@@ -239,7 +239,7 @@ export async function createHotelWithRoomsAction(
       tempId: suiteTypes[index].id,
     }));
 
-    console.log("✅ Suite types created:", createdSuiteTypes.length);
+    console.log("Suite types created:", createdSuiteTypes.length);
 
     // 3. Generate and create rooms
     const allRooms = [];
@@ -261,7 +261,7 @@ export async function createHotelWithRoomsAction(
         );
 
         if (!suite) {
-          console.error("❌ Suite not found for room group:", roomGroup);
+          console.error("Suite not found for room group:", roomGroup);
           continue;
         }
 
@@ -314,7 +314,7 @@ export async function createHotelWithRoomsAction(
       return { success: false, error: "No rooms were generated" };
     }
 
-    console.log(`✅ Generated ${allRooms.length} rooms`);
+    console.log(`Generated ${allRooms.length} rooms`);
 
     // 4. Bulk insert rooms (chunked for better performance)
     const CHUNK_SIZE = 100;
@@ -330,7 +330,7 @@ export async function createHotelWithRoomsAction(
         .insert(chunk);
 
       if (roomsError) {
-        console.error("❌ Room creation error:", roomsError);
+        console.error("Room creation error:", roomsError);
 
         // Rollback
         await supabase.from("hotels").delete().eq("id", hotel.id);
@@ -339,7 +339,7 @@ export async function createHotelWithRoomsAction(
       }
     }
 
-    console.log("✅ All rooms created successfully");
+    console.log("All rooms created successfully");
 
     // Revalidate paths
     revalidatePath("/vendor/dashboard");
@@ -353,7 +353,7 @@ export async function createHotelWithRoomsAction(
       suiteTypeCount: createdSuiteTypes.length,
     };
   } catch (error) {
-    console.error("💥 Server action error:", error);
+    console.error("Server action error:", error);
     return { success: false, error: error.message };
   }
 }

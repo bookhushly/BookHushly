@@ -122,7 +122,7 @@ export function DashboardOverviewClient({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-medium text-gray-900 dark:text-white">
-            {greeting()}, {userName.split(" ")[0]} 👋
+            {greeting()}, {userName.split(" ")[0]}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {memberSince

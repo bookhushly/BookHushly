@@ -1,5 +1,7 @@
 "use client";
 
+import { Hotel, Home, PartyPopper, Truck } from "lucide-react";
+
 // Root loading screen — CSS-only, zero JS deps (no framer-motion).
 // This keeps the loading chunk small so it doesn't delay FCP.
 
@@ -75,9 +77,9 @@ export default function Loading() {
 
         {/* Service icons */}
         <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
-          {["🏨", "🏠", "🎉", "🚛"].map((icon, i) => (
-            <span key={i} className="bh-loading-icon" style={{ fontSize: "1.5rem" }}>
-              {icon}
+          {[Hotel, Home, PartyPopper, Truck].map((Icon, i) => (
+            <span key={i} className="bh-loading-icon" style={{ color: "#c4b5fd" }}>
+              <Icon size={24} />
             </span>
           ))}
         </div>

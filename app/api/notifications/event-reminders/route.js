@@ -41,13 +41,13 @@ function buildReminderEmailHtml(eventTitle, eventDate, eventTime, location) {
 <body style="margin:0;padding:0;background:#f9fafb;font-family:'Segoe UI',Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
     <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:32px 40px;text-align:center">
-      <div style="font-size:40px;margin-bottom:8px">🎟️</div>
+      <div style="font-size:40px;margin-bottom:8px"></div>
       <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">Your Event is Tomorrow!</h1>
     </div>
     <div style="padding:32px 40px">
       <h2 style="color:#111827;font-size:20px;margin:0 0 8px;font-weight:700">${eventTitle}</h2>
       <p style="color:#374151;font-size:15px;margin:0 0 20px">
-        📅 ${dateStr}${timeStr ? ` · ⏰ ${timeStr}` : ""}${location ? `<br>📍 ${location}` : ""}
+        ${dateStr}${timeStr ? ` · ${timeStr}` : ""}${location ? `<br>${location}` : ""}
       </p>
       <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin-bottom:24px">
         <p style="color:#374151;font-size:14px;margin:0 0 8px;font-weight:600">Before you go:</p>
@@ -120,7 +120,7 @@ export async function POST(request) {
     if (userIds.length > 0) {
       await notifyMany(userIds, {
         type: "booking_updated",
-        title: `⏰ Reminder: ${listing.title} is tomorrow!`,
+        title: `Reminder: ${listing.title} is tomorrow!`,
         message: `Your event starts ${listing.event_time ? `at ${String(listing.event_time).slice(0, 5)}` : "tomorrow"}. Remember to bring your ticket and arrive early.`,
         link: "/dashboard/customer/events",
       }).catch(() => {});
@@ -147,7 +147,7 @@ export async function POST(request) {
           batch.map((to) => ({
             from: FROM_EMAIL,
             to,
-            subject: `⏰ Reminder: ${listing.title} is tomorrow!`,
+            subject: `Reminder: ${listing.title} is tomorrow!`,
             html,
           })),
         )

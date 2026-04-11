@@ -123,7 +123,7 @@ export default function AboutPage() {
         <div className="container relative z-20">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
             <Badge className="mb-4 glass text-white border-white/30 backdrop-blur-sm">
-              🇳🇬 Made in Nigeria, Built for Africa
+              Made in Nigeria, Built for Africa
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-display font-medium mb-6 text-balance">
               About Bookhushly
@@ -173,7 +173,7 @@ export default function AboutPage() {
             </div>
             <div className="relative animate-fade-in">
               <div className="bg-gradient-to-br from-brand-50 to-hospitality-warm rounded-3xl shadow-brand h-80 flex items-center justify-center transform hover:scale-105 transition-all duration-300">
-                <div className="text-8xl opacity-30">🏢</div>
+                <div className="text-8xl opacity-30"></div>
               </div>
             </div>
           </div>

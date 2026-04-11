@@ -27,7 +27,7 @@ export default function OfflinePage() {
           <WifiOff className="w-10 h-10 text-brand-purple" strokeWidth={1.5} />
         </div>
         <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center border-2 border-white">
-          <span className="text-sm">📶</span>
+          <WifiOff className="w-3.5 h-3.5 text-amber-600" />
         </div>
       </div>
 

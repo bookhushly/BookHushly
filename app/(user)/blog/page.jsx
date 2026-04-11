@@ -149,7 +149,7 @@ export default function BlogPage() {
         <div className="container">
           <div className="max-w-3xl mx-auto text-center">
             <Badge variant="secondary" className="mb-4">
-              📝 Insights & Stories
+              Insights & Stories
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-medium mb-6">
               Bookhushly Blog
@@ -174,7 +174,7 @@ export default function BlogPage() {
               
               <Card className="overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                  <div className="text-6xl opacity-50">📰</div>
+                  <div className="text-6xl opacity-50"></div>
                 </div>
                 <CardHeader>
                   <div className="flex items-center space-x-2 mb-2">
@@ -225,7 +225,7 @@ export default function BlogPage() {
                 {blogPosts.map((post) => (
                   <Card key={post.id} className="hover:shadow-lg transition-shadow group cursor-pointer">
                     <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg flex items-center justify-center">
-                      <div className="text-4xl opacity-50">📄</div>
+                      <div className="text-4xl opacity-50"></div>
                     </div>
                     <CardHeader className="pb-2">
                       <div className="flex items-center space-x-2 mb-2">

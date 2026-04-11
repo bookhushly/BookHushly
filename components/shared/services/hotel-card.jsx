@@ -126,7 +126,7 @@ const HotelCard = ({ service }) => {
             )}
             {service.nihotour_certified && (
               <span className="text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md">
-                🏅 NIHOTOUR
+                NIHOTOUR
               </span>
             )}
           </div>

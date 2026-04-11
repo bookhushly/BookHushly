@@ -115,7 +115,7 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
   const recipientEmail = booking.contact_email;
   const templatePath = path.join(process.cwd(), "public", "ticket.jpg");
 
-  console.log("🎫 Generating ticket PDFs...");
+  console.log("Generating ticket PDFs...");
 
   const ticketPDFs = await generateAllTicketPDFsServer(
     booking,
@@ -123,7 +123,7 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
     templatePath,
   );
 
-  console.log(`✅ Generated ${ticketPDFs.length} PDF(s)`);
+  console.log(`Generated ${ticketPDFs.length} PDF(s)`);
 
   const signedUrls = [];
 
@@ -170,7 +170,7 @@ async function sendEventTicketEmail({ booking, payment }, bookingId) {
     .map(([name, qty]) => `${qty} × ${name}`)
     .join(", ");
 
-  console.log(`📧 Sending email to ${recipientEmail}`);
+  console.log(`Sending email to ${recipientEmail}`);
 
   const { error } = await withRetry(() =>
     resend.emails.send({
@@ -203,7 +203,7 @@ function generateEventEmailTemplate(
   signedUrls,
 ) {
   return `
-    <h2>Your tickets are ready 🎉</h2>
+    <h2>Your tickets are ready</h2>
 
     <p><strong>Event:</strong> ${booking.listing?.title}</p>
     <p><strong>Tickets:</strong> ${ticketSummary}</p>
@@ -260,7 +260,7 @@ export async function POST(request) {
     );
     if (existing) {
       console.log(
-        `⏭️  Email already sent for ${bookingType} booking ${bookingId}, skipping`,
+        `Email already sent for ${bookingType} booking ${bookingId}, skipping`,
       );
       return Response.json({
         success: true,
@@ -270,7 +270,7 @@ export async function POST(request) {
     }
 
     console.log(
-      `📧 Processing email for ${bookingType} booking ${bookingId}...`,
+      `Processing email for ${bookingType} booking ${bookingId}...`,
     );
 
     // Create pending log
@@ -279,7 +279,7 @@ export async function POST(request) {
     // If emailLog is null, it means email was already sent
     if (!emailLog) {
       console.log(
-        `⏭️  Email already sent for ${bookingType} booking ${bookingId} (from log check)`,
+        `Email already sent for ${bookingType} booking ${bookingId} (from log check)`,
       );
       return Response.json({
         success: true,
@@ -337,7 +337,7 @@ export async function POST(request) {
        HOTEL BOOKING - FIXED
     --------------------------------- */
     if (bookingType === "hotel") {
-      console.log(`🏨 Fetching hotel booking ${bookingId}...`);
+      console.log(`Fetching hotel booking ${bookingId}...`);
 
       const { data: hotelBooking, error } = await supabase
         .from("hotel_bookings")
@@ -368,7 +368,7 @@ export async function POST(request) {
         .single();
 
       if (error) {
-        console.error("❌ Hotel booking fetch error:", error);
+        console.error("Hotel booking fetch error:", error);
       }
 
       if (error || !hotelBooking) {
@@ -390,7 +390,7 @@ export async function POST(request) {
         );
       }
 
-      console.log(`✅ Hotel booking fetched: ${hotelBooking.hotels?.name}`);
+      console.log(`Hotel booking fetched: ${hotelBooking.hotels?.name}`);
 
       const { data: hotelPayment, error: paymentError } = await supabase
         .from("payments")
@@ -399,11 +399,11 @@ export async function POST(request) {
         .single();
 
       if (paymentError) {
-        console.error("❌ Hotel payment fetch error:", paymentError);
+        console.error("Hotel payment fetch error:", paymentError);
       }
 
       if (!hotelPayment) {
-        console.warn("⚠️ No payment found for hotel booking");
+        console.warn("No payment found for hotel booking");
       }
 
       booking = hotelBooking;
@@ -505,7 +505,7 @@ export async function POST(request) {
 
     return result;
   } catch (error) {
-    console.error("❌ Email sending error:", error);
+    console.error("Email sending error:", error);
 
     if (emailLog) {
       try {

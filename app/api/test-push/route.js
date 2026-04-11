@@ -12,7 +12,7 @@ export async function GET(request) {
   }
 
   await sendPushToUser(userId, {
-    title: "Test Notification 🔔",
+    title: "Test Notification",
     body: "Push notifications are working on Bookhushly!",
     url: "/dashboard/customer",
   });

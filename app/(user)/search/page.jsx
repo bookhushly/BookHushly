@@ -404,7 +404,7 @@ function SearchContent() {
             return (
               <Card key={result.id} className="hover:shadow-lg transition-shadow group cursor-pointer">
                 <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg relative overflow-hidden flex items-center justify-center">
-                  <div className="text-6xl opacity-50">{category?.icon}</div>
+                  <div className="opacity-50 [&>svg]:h-16 [&>svg]:w-16">{category?.icon}</div>
                   <Badge className="absolute top-2 left-2 bg-blue-600">
                     {category?.label}
                   </Badge>

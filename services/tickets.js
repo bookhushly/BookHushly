@@ -21,35 +21,35 @@ export const generateEventTicketsZip = async (booking) => {
   }
 
   try {
-    console.log("🎫 Starting ticket generation for booking:", booking.id);
+    console.log("Starting ticket generation for booking:", booking.id);
 
     const baseUrl = window.location.origin;
     const templateUrl = "/ticket.jpg";
 
-    console.log("📍 Base URL:", baseUrl);
-    console.log("🖼️ Template URL:", templateUrl);
+    console.log("Base URL:", baseUrl);
+    console.log("Template URL:", templateUrl);
 
-    console.log("⚙️ Calling generateAllTicketPDFs...");
+    console.log("Calling generateAllTicketPDFs...");
     const tickets = await generateAllTicketPDFs(booking, baseUrl, templateUrl);
 
-    console.log(`✅ Generated ${tickets.length} tickets`);
+    console.log(`Generated ${tickets.length} tickets`);
 
     const zip = new JSZip();
     tickets.forEach((ticket) => {
-      console.log(`📦 Adding ${ticket.filename} to ZIP`);
+      console.log(`Adding ${ticket.filename} to ZIP`);
       zip.file(ticket.filename, ticket.content);
     });
 
-    console.log("💾 Generating ZIP file...");
+    console.log("Generating ZIP file...");
     const zipBlob = await zip.generateAsync({ type: "blob" });
 
-    console.log("⬇️ Triggering download...");
+    console.log("Triggering download...");
     saveAs(zipBlob, `BookHushly-Tickets-${booking.id}.zip`);
 
-    console.log("🎉 Ticket generation complete!");
+    console.log("Ticket generation complete!");
     return tickets.length;
   } catch (error) {
-    console.error("❌ Error generating event tickets:", error);
+    console.error("Error generating event tickets:", error);
     console.error("Error stack:", error.stack);
     throw new Error(`Failed to generate tickets: ${error.message}`);
   }
@@ -434,7 +434,7 @@ export const generateBookingConfirmationPDF = async (
 
     doc.save(`BookHushly-Confirmation-${booking.id}.pdf`);
   } catch (error) {
-    console.error("❌ Error generating confirmation PDF:", error);
+    console.error("Error generating confirmation PDF:", error);
     throw new Error(`Failed to generate confirmation: ${error.message}`);
   }
 };

@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   MapPin, ArrowRight, Loader2, LocateFixed, X, RefreshCw, Navigation,
+  Hotel, Home, PartyPopper,
 } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { Button } from "@/components/ui/button";
@@ -16,9 +17,9 @@ const ServiceCardWrapper = dynamic(
 );
 
 const TABS = [
-  { value: "hotels",               label: "Hotels",     emoji: "🏨" },
-  { value: "serviced_apartments",  label: "Apartments", emoji: "🏢" },
-  { value: "events",               label: "Events",     emoji: "🎉" },
+  { value: "hotels",               label: "Hotels",     Icon: Hotel },
+  { value: "serviced_apartments",  label: "Apartments", Icon: Home },
+  { value: "events",               label: "Events",     Icon: PartyPopper },
 ];
 
 const PROXIMITY_LABEL = {
@@ -245,7 +246,7 @@ export default function NearbyListings() {
                     : "bg-white text-gray-600 border-gray-200 hover:border-violet-300 hover:text-violet-600"
                 }`}
               >
-                <span>{tab.emoji}</span>
+                <tab.Icon className="h-4 w-4" />
                 {tab.label}
                 {count > 0 && (
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${

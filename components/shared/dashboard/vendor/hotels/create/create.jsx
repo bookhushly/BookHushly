@@ -193,7 +193,7 @@ export default function HotelRegistration({ onComplete }) {
 
   // Submission handler with Server Action
   const handleSubmit = useCallback(async () => {
-    console.log("🚀 Submit button clicked");
+    console.log("Submit button clicked");
 
     startTransition(async () => {
       try {
@@ -211,7 +211,7 @@ export default function HotelRegistration({ onComplete }) {
           return;
         }
 
-        console.log("✅ Room configuration validated");
+        console.log("Room configuration validated");
 
         // Create hotel with all data using Server Action
         const result = await createHotelWithRoomsAction(
@@ -224,7 +224,7 @@ export default function HotelRegistration({ onComplete }) {
           throw new Error(result.error);
         }
 
-        console.log("✅ Hotel created successfully:", result.hotel.id);
+        console.log("Hotel created successfully:", result.hotel.id);
 
         toast.success(
           `Hotel "${result.hotel.name}" created with ${result.roomCount} rooms!`,
@@ -238,7 +238,7 @@ export default function HotelRegistration({ onComplete }) {
           onComplete(result.hotel);
         }
       } catch (error) {
-        console.error("💥 Submission error:", error);
+        console.error("Submission error:", error);
 
         let errorMessage = "Failed to create hotel";
 

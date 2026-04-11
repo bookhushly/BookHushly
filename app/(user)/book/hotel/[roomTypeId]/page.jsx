@@ -19,6 +19,8 @@ import {
   AlertCircle,
   CheckCircle,
   Bed,
+  CreditCard,
+  Hotel,
 } from "lucide-react";
 import { toast } from "sonner";
 import { NIGERIAN_AIRPORTS, getAirportByCode } from "@/lib/constants/airports";
@@ -605,7 +607,7 @@ export default function HotelBookingPage() {
                         />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">
-                            ✈️ Add Airport Transfer
+                            Add Airport Transfer
                           </p>
                           <p className="text-xs text-gray-500 mt-0.5">
                             {hotel.airport_prices && Object.keys(hotel.airport_prices).length > 0
@@ -699,13 +701,13 @@ export default function HotelBookingPage() {
                             value: false,
                             title: "Pay Online",
                             desc: "Paystack or crypto — secure instant payment",
-                            icon: "💳",
+                            icon: CreditCard,
                           },
                           {
                             value: true,
                             title: "Pay at Hotel",
                             desc: "Pay cash or transfer when you arrive",
-                            icon: "🏨",
+                            icon: Hotel,
                           },
                         ].map((opt) => (
                           <button
@@ -718,7 +720,7 @@ export default function HotelBookingPage() {
                                 : "border-gray-200 hover:border-purple-300"
                             }`}
                           >
-                            <p className="text-lg mb-1">{opt.icon}</p>
+                            <opt.icon className="h-5 w-5 mb-1 text-gray-600" />
                             <p className="text-sm font-medium text-gray-900">{opt.title}</p>
                             <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
                           </button>

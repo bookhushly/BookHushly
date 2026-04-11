@@ -366,7 +366,7 @@ export default function CareersPage() {
             </div>
             <div className="relative">
               <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg shadow-2xl h-80 flex items-center justify-center">
-                <div className="text-8xl opacity-30">👥</div>
+                <div className="text-8xl opacity-30"></div>
               </div>
             </div>
           </div>

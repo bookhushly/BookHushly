@@ -9,6 +9,9 @@ import {
   ArrowRight,
   Calendar,
   FileText,
+  Bike,
+  Car,
+  Van,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -23,11 +26,11 @@ import {
 } from "@/components/shared/customer/shared-ui";
 
 const VEHICLE_ICONS = {
-  bike: "🏍️",
-  car: "🚗",
-  van: "🚐",
-  truck: "🚛",
-  trailer: "🚚",
+  bike: Bike,
+  car: Car,
+  van: Van,
+  truck: Truck,
+  trailer: Truck,
 };
 const SERVICE_LABELS = {
   delivery: "Delivery",
@@ -95,9 +98,7 @@ export function LogisticsClient({ userId, initialData }) {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">
-                          {VEHICLE_ICONS[req.vehicle_type] || "📦"}
-                        </span>
+                        {(() => { const VIcon = VEHICLE_ICONS[req.vehicle_type] || Package; return <VIcon className="h-5 w-5 text-gray-500" />; })()}
                         <div>
                           <h3 className="font-medium text-gray-900 dark:text-white">
                             {SERVICE_LABELS[req.service_type] ||
