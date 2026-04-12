@@ -11,7 +11,7 @@ import {
   FileText,
   Bike,
   Car,
-  Van,
+  BusFront,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -28,7 +28,7 @@ import {
 const VEHICLE_ICONS = {
   bike: Bike,
   car: Car,
-  van: Van,
+  van: BusFront,
   truck: Truck,
   trailer: Truck,
 };
