@@ -46,6 +46,7 @@ import {
   Loader2,
   X,
   Save,
+  Armchair,
 } from "lucide-react";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -396,6 +397,8 @@ function TicketsTab({
   errors,
   lowStockThreshold,
   setLowStockThreshold,
+  seatsConfig,
+  setSeatsConfig,
 }) {
   const [tempTicket, setTempTicket] = useState({
     name: "",
@@ -818,6 +821,228 @@ function TicketsTab({
           className="max-w-[120px]"
         />
       </div>
+
+      {/* Seat numbering */}
+      <SeatsConfigSection
+        seatsConfig={seatsConfig}
+        setSeatsConfig={setSeatsConfig}
+        useMultiplePackages={useMultiplePackages}
+        tickets={tickets}
+      />
+    </div>
+  );
+}
+
+// ─── Seats Config Section ─────────────────────────────────────────────────────
+
+/**
+ * Seat-numbering configuration panel, rendered inside the Tickets tab.
+ *
+ * seatsConfig shape:
+ *   {
+ *     enabled : boolean
+ *     mode    : 'unified' | 'per_tier'
+ *     unified : { prefix: string, start: number }
+ *     tiers   : { [tierName]: { prefix: string, start: number } }
+ *   }
+ *
+ * Modes:
+ *   unified   – one sequential pool for all tickets (A1, A2, A3…)
+ *   per_tier  – each ticket tier gets its own numbering (VIP → A1-A50, Regular → B1-B200)
+ */
+function SeatsConfigSection({ seatsConfig, setSeatsConfig, useMultiplePackages, tickets }) {
+  const toggle = () =>
+    setSeatsConfig((p) => ({ ...p, enabled: !p.enabled }));
+
+  const setMode = (mode) =>
+    setSeatsConfig((p) => ({ ...p, mode }));
+
+  const setUnified = (field, raw) =>
+    setSeatsConfig((p) => ({
+      ...p,
+      unified: {
+        ...p.unified,
+        [field]: field === "start" ? Math.max(1, parseInt(raw) || 1) : raw,
+      },
+    }));
+
+  const setTierField = (tierName, field, raw) =>
+    setSeatsConfig((p) => ({
+      ...p,
+      tiers: {
+        ...p.tiers,
+        [tierName]: {
+          prefix: "",
+          start: 1,
+          ...(p.tiers[tierName] || {}),
+          [field]: field === "start" ? Math.max(1, parseInt(raw) || 1) : raw,
+        },
+      },
+    }));
+
+  const { prefix: uPrefix = "", start: uStart = 1 } = seatsConfig.unified || {};
+  const previewUnified = `${uPrefix}${uStart}, ${uPrefix}${uStart + 1}, ${uPrefix}${uStart + 2}…`;
+
+  const effectiveMode = useMultiplePackages ? (seatsConfig.mode || "per_tier") : "unified";
+
+  return (
+    <div className="pt-4 border-t border-gray-100 space-y-4">
+      {/* Toggle row */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-800 flex items-center gap-1.5">
+            <Armchair className="w-4 h-4 text-purple-500" />
+            Seat Numbers
+            <span className="text-xs font-normal text-gray-400 ml-1">(optional)</span>
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Assign numbered seats to each ticket — printed on the PDF
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={seatsConfig.enabled}
+          onClick={toggle}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            seatsConfig.enabled ? "bg-purple-600" : "bg-gray-300"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              seatsConfig.enabled ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+
+      {seatsConfig.enabled && (
+        <div className="space-y-4 p-4 bg-purple-50 border border-purple-200 rounded-xl">
+          {/* Mode selector — only shown when multiple tiers exist */}
+          {useMultiplePackages && tickets.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-purple-800">Numbering mode</p>
+              <div className="flex gap-2">
+                {[
+                  { value: "per_tier", label: "Per ticket tier", desc: "Each tier has its own range" },
+                  { value: "unified", label: "Unified pool", desc: "All tickets share one sequence" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setMode(opt.value)}
+                    className={`flex-1 p-3 text-left rounded-lg border-2 transition-all ${
+                      effectiveMode === opt.value
+                        ? "border-purple-600 bg-white"
+                        : "border-purple-200 bg-purple-50 hover:border-purple-400"
+                    }`}
+                  >
+                    <p className={`text-xs font-semibold ${effectiveMode === opt.value ? "text-purple-700" : "text-gray-600"}`}>
+                      {opt.label}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Unified mode config */}
+          {effectiveMode === "unified" && (
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-purple-800">
+                {useMultiplePackages ? "Shared seat pool" : "Seat numbering"}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium text-purple-900">
+                    Prefix <span className="text-gray-400 font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    value={uPrefix}
+                    onChange={(e) => setUnified("prefix", e.target.value)}
+                    placeholder='e.g. "S" or "Seat "'
+                    className="border-purple-300 bg-white focus-visible:ring-purple-400 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium text-purple-900">Starting number</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={uStart}
+                    onChange={(e) => setUnified("start", e.target.value)}
+                    className="border-purple-300 bg-white focus-visible:ring-purple-400 text-sm"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-purple-700 bg-white border border-purple-200 rounded-lg px-3 py-2">
+                Preview: <span className="font-medium">{previewUnified}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Per-tier mode config */}
+          {effectiveMode === "per_tier" && useMultiplePackages && (
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-purple-800">Seat range per ticket tier</p>
+              {tickets.length === 0 ? (
+                <p className="text-xs text-gray-500 italic">Add ticket tiers above to configure their seat ranges.</p>
+              ) : (
+                tickets.map((ticket) => {
+                  const tierCfg = seatsConfig.tiers?.[ticket.name] || { prefix: "", start: 1 };
+                  const qty = parseInt(ticket.quantity) || 0;
+                  const last = tierCfg.start + qty - 1;
+                  const preview =
+                    qty > 0
+                      ? `${tierCfg.prefix}${tierCfg.start} → ${tierCfg.prefix}${last}`
+                      : "—";
+                  return (
+                    <div key={ticket.name} className="bg-white border border-purple-200 rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-gray-800">{ticket.name}</p>
+                        <span className="text-xs text-gray-400">
+                          {qty.toLocaleString()} seat{qty !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium text-purple-900">
+                            Prefix <span className="text-gray-400 font-normal">(optional)</span>
+                          </Label>
+                          <Input
+                            value={tierCfg.prefix}
+                            onChange={(e) => setTierField(ticket.name, "prefix", e.target.value)}
+                            placeholder='e.g. "A" or "VIP-"'
+                            className="border-purple-300 focus-visible:ring-purple-400 text-sm h-8"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-medium text-purple-900">Starting number</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={tierCfg.start}
+                            onChange={(e) => setTierField(ticket.name, "start", e.target.value)}
+                            className="border-purple-300 focus-visible:ring-purple-400 text-sm h-8"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-purple-600">
+                        Seats: <span className="font-medium">{preview}</span>
+                      </p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          <p className="text-xs text-purple-600">
+            Seats are assigned sequentially at the time of booking. Each attendee&apos;s ticket PDF will show their seat number.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -1516,6 +1741,12 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
   const [ageRestriction, setAgeRestriction] = useState("all");
   const [customQuestions, setCustomQuestions] = useState([]);
   const [recurrence, setRecurrence] = useState({ enabled: false, type: "weekly", end_date: "" });
+  const [seatsConfig, setSeatsConfig] = useState({
+    enabled: false,
+    mode: "per_tier",
+    unified: { prefix: "", start: 1 },
+    tiers: {},
+  });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -1537,6 +1768,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         if (p.ageRestriction) setAgeRestriction(p.ageRestriction);
         if (p.customQuestions) setCustomQuestions(p.customQuestions);
         if (p.recurrence) setRecurrence(p.recurrence);
+        if (p.seatsConfig) setSeatsConfig(p.seatsConfig);
       }
     } catch {}
   }, [draftKey]);
@@ -1547,12 +1779,12 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
       try {
         localStorage.setItem(
           draftKey,
-          JSON.stringify({ formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence })
+          JSON.stringify({ formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence, seatsConfig })
         );
       } catch {}
     }, 800);
     return () => clearTimeout(id);
-  }, [formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence, draftKey]);
+  }, [formData, tickets, useMultiplePackages, visibility, ageRestriction, customQuestions, recurrence, seatsConfig, draftKey]);
 
   // ── Populate state from existing listing (edit mode or clone pre-fill) ──────
   useEffect(() => {
@@ -1603,6 +1835,15 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
     setCustomQuestions(Array.isArray(initialData.custom_questions) ? initialData.custom_questions : []);
     if (initialData.category_data?.recurrence) {
       setRecurrence(initialData.category_data.recurrence);
+    }
+    if (initialData.seats_config) {
+      setSeatsConfig({
+        enabled: false,
+        mode: "per_tier",
+        unified: { prefix: "", start: 1 },
+        tiers: {},
+        ...initialData.seats_config,
+      });
     }
 
     if (initialData.media_urls?.length > 0) {
@@ -1735,6 +1976,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
         is_online: !!formData.is_online,
         stream_url: formData.is_online ? (formData.stream_url || null) : null,
         active: visibility !== "draft",
+        seats_config: seatsConfig.enabled ? seatsConfig : null,
       };
 
       const result = await createListing(listingData);
@@ -1855,6 +2097,7 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
           is_online: !!formData.is_online,
           stream_url: formData.is_online ? (formData.stream_url || null) : null,
         },
+        seats_config: seatsConfig.enabled ? seatsConfig : null,
       };
 
       setUploadProgress(80);
@@ -1956,6 +2199,8 @@ export default function EventListingEditor({ vendor, user, eventType = "event_or
               errors={errors}
               lowStockThreshold={formData.low_stock_threshold}
               setLowStockThreshold={(v) => setFormData((p) => ({ ...p, low_stock_threshold: v }))}
+              seatsConfig={seatsConfig}
+              setSeatsConfig={setSeatsConfig}
             />
           )}
           {activeTab === "media" && (

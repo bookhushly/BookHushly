@@ -34,12 +34,28 @@ const safeText = (value, fallback = "N/A") => {
 };
 
 /**
- * Generate a single ticket PDF with exact positioning
- * @param {Object} booking - Booking data
- * @param {number} ticketNumber - Ticket number (1-indexed)
- * @param {string} ticketTypeText - Formatted ticket type text
- * @param {string} baseUrl - Base URL for QR code
- * @param {string} templatePath - File system path to template image
+ * Expand { [ticketType]: quantity } into an ordered flat array of ticket-type strings.
+ * Order matches computeSeatAssignments() in the booking routes.
+ */
+const expandTicketDetails = (ticketDetails) => {
+  const tickets = [];
+  for (const [ticketType, quantity] of Object.entries(ticketDetails)) {
+    for (let i = 0; i < quantity; i++) {
+      tickets.push(ticketType);
+    }
+  }
+  return tickets;
+};
+
+/**
+ * Generate a single ticket PDF with exact positioning.
+ *
+ * @param {Object}      booking        - Booking object (with `.listing`)
+ * @param {number}      ticketNumber   - 1-indexed position within this booking
+ * @param {string}      ticketTypeText - Ticket tier name shown on the ticket
+ * @param {string}      baseUrl        - App base URL for QR code
+ * @param {string}      templatePath   - File-system path to template image
+ * @param {string|null} seatNumber     - Assigned seat label (e.g. "A5"), or null
  * @returns {Promise<Buffer>} PDF buffer
  */
 export async function generateSingleTicketPDF(
@@ -47,7 +63,8 @@ export async function generateSingleTicketPDF(
   ticketNumber,
   ticketTypeText,
   baseUrl,
-  templatePath
+  templatePath,
+  seatNumber = null
 ) {
   // Get template dimensions
   const { width: imgWidthPx, height: imgHeightPx } =
@@ -104,14 +121,13 @@ export async function generateSingleTicketPDF(
     placeholders.listingTitle.y
   );
 
-  // Ticket Type
+  // Ticket Type (with optional seat number appended)
+  const ticketDisplay = seatNumber
+    ? `${ticketTypeText}  ·  Seat ${seatNumber}`
+    : ticketTypeText;
   doc.setFontSize(placeholders.ticketType.fontSize);
   doc.setTextColor(...placeholders.ticketType.color);
-  doc.text(
-    ticketTypeText,
-    placeholders.ticketType.x,
-    placeholders.ticketType.y
-  );
+  doc.text(ticketDisplay, placeholders.ticketType.x, placeholders.ticketType.y);
 
   // Date
   doc.setFontSize(placeholders.date.fontSize);
@@ -172,10 +188,12 @@ export async function generateSingleTicketPDF(
 }
 
 /**
- * Generate all tickets for a booking
- * @param {Object} booking - Booking data
- * @param {string} baseUrl - Base URL for QR codes
- * @param {string} templatePath - File system path to template image
+ * Generate all tickets for a booking, one PDF per ticket.
+ * Expands ticket_details by type so each ticket shows its own tier and seat.
+ *
+ * @param {Object} booking      - Booking data (seat_assignments must be included)
+ * @param {string} baseUrl      - Base URL for QR codes
+ * @param {string} templatePath - File-system path to template image
  * @returns {Promise<Array<{filename: string, content: Buffer}>>}
  */
 export async function generateAllTicketPDFs(booking, baseUrl, templatePath) {
@@ -189,33 +207,37 @@ export async function generateAllTicketPDFs(booking, baseUrl, templatePath) {
     throw new Error("Invalid ticket details format");
   }
 
-  const totalTickets = Object.values(ticketDetails).reduce(
-    (sum, qty) => sum + Number(qty || 0),
-    0
-  );
+  // Expand into individual ticket-type entries (matches booking-route order)
+  const individualTickets = expandTicketDetails(ticketDetails);
+  const totalTickets = individualTickets.length;
 
   if (totalTickets === 0 || totalTickets !== booking.guests) {
     throw new Error("Invalid ticket details or guest count mismatch");
   }
 
-  const ticketTypeText = Object.entries(ticketDetails)
-    .filter(([_, qty]) => qty > 0)
-    .map(([name, qty]) => `${name} x${qty}`)
-    .join(", ");
+  // seat_assignments is ordered to match individualTickets by index
+  const seatAssignments = Array.isArray(booking.seat_assignments)
+    ? booking.seat_assignments
+    : [];
 
   const tickets = [];
 
   for (let i = 0; i < totalTickets; i++) {
+    const ticketType = individualTickets[i];
+    const seatNumber = seatAssignments[i]?.seat ?? null;
+
     const pdfBuffer = await generateSingleTicketPDF(
       booking,
       i + 1,
-      ticketTypeText,
+      ticketType,
       baseUrl,
-      templatePath
+      templatePath,
+      seatNumber
     );
 
+    const seatSuffix = seatNumber ? `-${seatNumber.replace(/\s+/g, "")}` : "";
     tickets.push({
-      filename: `Ticket-${safeText(booking.id, "0")}-${i + 1}.pdf`,
+      filename: `Ticket-${i + 1}-${ticketType.replace(/\s+/g, "-")}${seatSuffix}.pdf`,
       content: pdfBuffer,
     });
   }

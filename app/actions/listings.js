@@ -282,6 +282,7 @@ export async function createListing(listingData) {
       ...(listingData.ticket_packages && {
         ticket_packages: listingData.ticket_packages,
       }),
+      seats_config: listingData.seats_config ?? null,
 
       // Status fields
       active: listingData.active !== false,

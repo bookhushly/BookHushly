@@ -23,7 +23,7 @@ export async function POST(request) {
       .select(
         `
         id, listing_id, ticket_details, guests, total_amount, booking_date, booking_time,
-        status, payment_status, contact_email, contact_phone,
+        status, payment_status, contact_email, contact_phone, seat_assignments,
         listing:listings (
           title, event_date, location, vendor_name, vendor_phone, ticket_packages, media_urls
         )

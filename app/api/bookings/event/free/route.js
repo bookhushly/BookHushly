@@ -1,4 +1,61 @@
 /**
+ * Compute seat assignments for a booking based on the listing's seats_config.
+ *
+ * Strategy: derive "already sold" from (pkg.total - pkg.remaining) so we
+ * don't need an extra query. Assignments are returned in the same iteration
+ * order as expandTicketDetails() uses, so PDF generation can match by index.
+ *
+ * @param {Object|null} seatsConfig   - listing.seats_config
+ * @param {Object}      ticketDetails - { [packageName]: qty }
+ * @param {Array}       packages      - listing.ticket_packages
+ * @returns {Array}  [{ ticket_type: string, seat: string }, …]
+ */
+function computeSeatAssignments(seatsConfig, ticketDetails, packages) {
+  if (!seatsConfig?.enabled) return [];
+
+  const mode = seatsConfig.mode || "per_tier";
+  const assignments = [];
+
+  if (mode === "unified") {
+    const { prefix = "", start = 1 } = seatsConfig.unified || {};
+    // Total tickets sold so far across all packages
+    const totalSold = packages.reduce(
+      (sum, pkg) => sum + ((parseInt(pkg.total) || 0) - (parseInt(pkg.remaining ?? pkg.total) || 0)),
+      0,
+    );
+    let counter = start + totalSold;
+    for (const [ticketType, qty] of Object.entries(ticketDetails)) {
+      const count = parseInt(qty) || 0;
+      for (let i = 0; i < count; i++) {
+        assignments.push({ ticket_type: ticketType, seat: `${prefix}${counter}` });
+        counter++;
+      }
+    }
+  } else {
+    // per_tier: each ticket tier has its own prefix + starting number
+    const tiers = seatsConfig.tiers || {};
+    for (const [ticketType, qty] of Object.entries(ticketDetails)) {
+      const count = parseInt(qty) || 0;
+      if (count === 0) continue;
+      const tierCfg = tiers[ticketType];
+      if (!tierCfg) continue; // tier not configured — skip seat assignment for it
+      const { prefix = "", start = 1 } = tierCfg;
+      const pkg = packages.find((p) => p.name === ticketType);
+      const tierSold = pkg
+        ? (parseInt(pkg.total) || 0) - (parseInt(pkg.remaining ?? pkg.total) || 0)
+        : 0;
+      let counter = start + tierSold;
+      for (let i = 0; i < count; i++) {
+        assignments.push({ ticket_type: ticketType, seat: `${prefix}${counter}` });
+        counter++;
+      }
+    }
+  }
+
+  return assignments;
+}
+
+/**
  * POST /api/bookings/event/free
  * Creates a confirmed event booking with total_amount = 0.
  * Server validates that the chosen ticket packages are genuinely free
@@ -50,7 +107,7 @@ export async function POST(request) {
   // Fetch listing with package data
   const { data: listing, error: listingErr } = await admin
     .from("listings")
-    .select("id, title, event_date, event_time, location, ticket_packages, remaining_tickets, total_tickets, vendor_id")
+    .select("id, title, event_date, event_time, location, ticket_packages, remaining_tickets, total_tickets, vendor_id, seats_config")
     .eq("id", listing_id)
     .eq("visibility", "public")
     .maybeSingle();
@@ -107,6 +164,12 @@ export async function POST(request) {
     return NextResponse.json({ error: "Not enough tickets remaining" }, { status: 409 });
   }
 
+  // Compute seat assignments if seat system is enabled on this listing.
+  // We derive "seats already sold" from (total - remaining) so no extra DB
+  // query is needed. Order of assignments matches expandTicketDetails() so
+  // generateAllTicketPDFsServer() can correlate by index.
+  const seatAssignments = computeSeatAssignments(listing.seats_config, ticket_details, packages);
+
   // Insert booking
   const bookingDate = listing.event_date
     ? new Date(listing.event_date).toISOString().split("T")[0]
@@ -122,6 +185,7 @@ export async function POST(request) {
       guests: totalTicketsRequested,
       ticket_details,
       custom_answers: custom_answers ?? null,
+      seat_assignments: seatAssignments.length > 0 ? seatAssignments : [],
       booking_date: bookingDate,
       booking_time: listing.event_time ?? null,
       total_amount: 0,
