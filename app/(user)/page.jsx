@@ -1,12 +1,11 @@
-import Services from "@/components/shared/home/services";
-import Features from "@/components/shared/home/features";
 import Hero from "@/components/shared/home/hero";
+import Differentiators from "@/components/shared/home/differentiators";
+import Services from "@/components/shared/home/services";
 import HowItWorks from "@/components/shared/home/how-it-works";
+import AIFeaturesSection from "@/components/shared/home/ai-features";
 import VendorOnboardingSection from "@/components/shared/home/vendor";
-import CTA from "@/components/shared/home/cta";
 import FAQSection from "@/components/shared/home/faq";
-import QuoteConversionSection from "../../components/common/home/quote-services";
-import NearbyListings from "@/components/shared/home/nearby-listings";
+import CTA from "@/components/shared/home/cta";
 
 export const metadata = {
   title: "BookHushly — Book Hotels, Apartments & Services in Nigeria",
@@ -76,6 +75,16 @@ const organizationSchema = {
   ],
 };
 
+// ── Page narrative ────────────────────────────────────────────────────────────
+//  Hero            → "Five services. One platform. Every vendor verified."
+//  Differentiators → [new] Four proof points: KYC, 5 services, payments, AI
+//  Services        → Browse the five categories
+//  How It Works    → Three-step booking flow
+//  AI Features     → Intelligence layer (Claude-powered)
+//  Vendor Section  → Pitch for vendors
+//  FAQ             → Objection handling
+//  CTA             → Final push
+
 export default function Home() {
   return (
     <>
@@ -92,14 +101,29 @@ export default function Home() {
         }}
       />
       <div className="flex flex-col">
+        {/* 1. Hook — what we do and why to trust us */}
         <Hero />
-        <NearbyListings />
+
+        {/* 2. Proof — the four things that make us different */}
+        <Differentiators />
+
+        {/* 3. Explore — the five categories a visitor can book */}
         <Services />
-        <QuoteConversionSection />
+
+        {/* 4. Process — how simple booking actually is */}
         <HowItWorks />
+
+        {/* 5. Intelligence — AI features embedded throughout */}
+        <AIFeaturesSection />
+
+        {/* 6. Vendor pitch — for business owners reading the page */}
         <VendorOnboardingSection />
-        <CTA />
+
+        {/* 7. Objection handling */}
         <FAQSection />
+
+        {/* 8. Final conversion push */}
+        <CTA />
       </div>
     </>
   );

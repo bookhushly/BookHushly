@@ -2,148 +2,148 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { ChevronDown, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
-// FAQ Data
 const faqs = [
   {
-    question: "How do I verify as a vendor?",
+    question: "How does vendor verification work?",
     answer:
-      "After signing up as a vendor, you’ll be guided through our quick verification process. Upload your business credentials and relevant documents — once reviewed, your profile will display a verified badge.",
+      "Every vendor submits NIN and CAC documents before their listing goes live. Our team reviews each application manually. Verified vendors display a badge — there are no anonymous operators on Bookhushly.",
   },
   {
-    question: "Is Bookhushly free to use?",
+    question: "What payment methods are accepted?",
     answer:
-      "Yes! Signing up and browsing services is completely free. Vendors only pay a small commission per successful booking, with no hidden charges.",
-  },
-  {
-    question: "How secure are payments?",
-    answer:
-      "All transactions are handled through encrypted gateways and verified payment providers. Your financial information is never stored or shared with third parties.",
+      "We accept Naira via Paystack (debit card, bank transfer, USSD) and cryptocurrency via NOWPayments (BTC, ETH, USDT and more). Your Bookhushly wallet balance carries across all services.",
   },
   {
     question: "Can I cancel or modify a booking?",
     answer:
-      "Yes, you can modify or cancel bookings based on each vendor’s policy. Bookhushly ensures transparent communication between you and the service provider.",
+      "Yes — cancellations and modifications are handled based on each vendor's published policy. Bookhushly coordinates the communication and, where eligible, the refund to your wallet or original payment method.",
   },
   {
-    question: "What kind of support can I expect?",
+    question: "How do logistics and security services work?",
     answer:
-      "Our dedicated support team is available 24/7 to help you with bookings, disputes, or vendor management. You can reach us anytime via chat or email.",
+      "Unlike instant-book services, logistics and security run on a quote model. Submit your requirements, receive a detailed breakdown, review it, and pay only after approving the quote.",
+  },
+  {
+    question: "Is there a fee to use the platform?",
+    answer:
+      "Browsing and booking is free for customers. Vendors pay a small commission per successful booking — no upfront listing fees, no hidden charges.",
   },
 ];
+
+const EASE = [0.22, 1, 0.36, 1];
 
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState(null);
 
-  // Motion variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.12,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-  };
-
   return (
-    <section className="relative py-24 md:py-32 bg-gradient-to-b from-white via-purple-50/25 to-white overflow-hidden">
-      {/* Decorative background accent */}
-      <motion.div
-        className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-purple-200/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.3, 0.4, 0.3],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
+    <section className="bg-white py-20 md:py-32">
+      <div className="container mx-auto px-6 lg:px-10 max-w-5xl">
 
-      <div className="container max-w-4xl mx-auto px-6 relative">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center bg-purple-100 text-purple-700 px-4 py-2 rounded-full font-medium mb-4">
-            <HelpCircle className="w-4 h-4 mr-2" />
-            FAQs
-          </div>
-          <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            We’ve gathered answers to common questions from both customers and
-            vendors to make your experience seamless.
-          </p>
-        </motion.div>
+        {/* ── Two-column grid ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-16 lg:gap-24 items-start">
 
-        {/* Accordion List */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-50px" }}
-          className="space-y-4"
-        >
-          {faqs.map((faq, index) => {
-            const isOpen = openIndex === index;
-            return (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                className="border border-purple-100 bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm hover:shadow-md transition-shadow"
-              >
-                <button
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="flex justify-between items-center w-full px-6 py-5 text-left focus:outline-none"
+          {/* ── Left: header column ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: EASE }}
+            className="lg:sticky lg:top-32"
+          >
+            <span className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-violet-600 mb-6">
+              <span className="h-px w-8 bg-violet-500" />
+              FAQ
+            </span>
+
+            <h2 className="text-[clamp(1.9rem,3.8vw,2.75rem)] leading-[1.1] font-medium text-[#1A0D4D] mb-6">
+              <span className="font-fraunces font-medium italic">Common questions,</span>
+              <br />
+              <span className="font-bricolage text-[#1A0D4D]/45">straight answers.</span>
+            </h2>
+
+            <p className="text-sm text-[#6B6987] leading-relaxed mb-8 max-w-xs">
+              Everything you need to know about bookings, payments, and how Bookhushly works.
+            </p>
+
+            <Link
+              href="/support"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors group"
+            >
+              Visit the support center
+              <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </motion.div>
+
+          {/* ── Right: accordion column ── */}
+          <div>
+            {/* Top border */}
+            <div className="border-t border-gray-100" />
+
+            {faqs.map((faq, index) => {
+              const isOpen = openIndex === index;
+              const num = String(index + 1).padStart(2, "0");
+
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, ease: EASE, delay: index * 0.07 }}
+                  className="border-b border-gray-100"
                 >
-                  <span className="text-gray-900 font-medium text-lg">
-                    {faq.question}
-                  </span>
-                  <motion.span
-                    animate={{ rotate: isOpen ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
+                  <button
+                    onClick={() => setOpenIndex(isOpen ? null : index)}
+                    className="group flex items-start justify-between w-full py-6 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 rounded-sm"
+                    aria-expanded={isOpen}
                   >
-                    <ChevronDown className="w-6 h-6 text-purple-600" />
-                  </motion.span>
-                </button>
+                    {/* Number + question */}
+                    <div className="flex items-start gap-4 pr-6">
+                      <span className="shrink-0 font-mono text-[11px] text-[#1A0D4D]/25 mt-[0.35em] select-none tracking-tight">
+                        {num}
+                      </span>
+                      <span className="font-fraunces italic text-base md:text-[1.05rem] font-medium text-[#1A0D4D] leading-snug group-hover:text-violet-700 transition-colors duration-200">
+                        {faq.question}
+                      </span>
+                    </div>
 
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{
-                        duration: 0.4,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      className="overflow-hidden px-6 pb-5"
+                    {/* Chevron */}
+                    <motion.span
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.28, ease: EASE }}
+                      className="shrink-0 mt-0.5"
                     >
-                      <p className="text-gray-600 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                      <ChevronDown
+                        className={`w-[18px] h-[18px] transition-colors duration-200 ${
+                          isOpen ? "text-violet-600" : "text-[#1A0D4D]/30 group-hover:text-violet-400"
+                        }`}
+                      />
+                    </motion.span>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.32, ease: EASE }}
+                        className="overflow-hidden"
+                      >
+                        <p className="font-bricolage text-[0.9375rem] text-[#6B6987] leading-[1.75] pb-6 pl-10">
+                          {faq.answer}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );
