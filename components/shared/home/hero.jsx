@@ -1,513 +1,254 @@
-"use client";
-
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useTransform,
-  useSpring,
-  useMotionValue,
-} from "framer-motion";
-import { useRef, useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Zap, CreditCard, Sparkles } from "lucide-react";
-import { CATEGORIES } from "@/lib/constants";
+import { ArrowRight, ShieldCheck, MapPin, CreditCard } from "lucide-react";
 
-// ── constants ────────────────────────────────────────────────────────────────
-
-const SERVICES = [
-  { word: "Hotels",      color: "text-violet-400",        img: "https://images.unsplash.com/photo-1535827841776-24afc1e255ac?w=800&auto=format&fit=crop&q=70", tag: "🏨 Stay" },
-  { word: "Apartments",  color: "text-amber-400",          img: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&auto=format&fit=crop&q=70", tag: "🏢 Live" },
-  { word: "Events",      color: "text-emerald-400",       img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=70", tag: "🎉 Celebrate" },
-  { word: "Logistics",   color: "text-sky-400",           img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=70", tag: "🚚 Move" },
-  { word: "Security",    color: "text-rose-400",          img: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&auto=format&fit=crop&q=70", tag: "🛡 Protect" },
-];
+// ── constants ─────────────────────────────────────────────────────────────────
 
 const TRUST = [
-  { icon: ShieldCheck, label: "KYC-verified vendors" },
-  { icon: Zap,         label: "Instant confirmation" },
-  { icon: CreditCard,  label: "NGN & crypto" },
-  { icon: Sparkles,    label: "AI-powered" },
+  { Icon: ShieldCheck, label: "Every vendor verified before listing" },
+  { Icon: MapPin,      label: "All 36 states covered" },
+  { Icon: CreditCard,  label: "Pay in Naira or crypto" },
 ];
 
-const TICKER_ITEMS = [
-  "Lagos", "Hotels", "Abuja", "Security", "Port Harcourt",
-  "Events", "Kano", "Logistics", "Ibadan", "Apartments",
-  "Enugu", "Verified", "Calabar", "Nigeria",
+// These appear as real listing thumbnails inside the product preview card.
+// Showing actual content (not a blank form) is what makes the preview feel
+// like a real product rather than a marketing mockup.
+const THUMBS = [
+  {
+    img: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=480&auto=format&fit=crop&q=70",
+    alt: "Warmly lit luxury hotel lounge",
+    label: "Hotel",
+    city: "Lagos",
+    from: "₦45,000",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=480&auto=format&fit=crop&q=70",
+    alt: "Modern serviced apartment interior",
+    label: "Apartment",
+    city: "Abuja",
+    from: "₦28,000",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=480&auto=format&fit=crop&q=70",
+    alt: "Elegant event venue with ambient lighting",
+    label: "Event",
+    city: "Port Harcourt",
+    from: "₦95,000",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=480&auto=format&fit=crop&q=70",
+    alt: "Luxury resort pool and architecture",
+    label: "Hotel",
+    city: "Enugu",
+    from: "₦62,000",
+  },
 ];
 
-const GLOW_COLORS = [
-  "rgba(139,92,246,0.12)",   // violet  — Hotels
-  "rgba(251,191,36,0.10)",   // amber   — Apartments
-  "rgba(52,211,153,0.10)",   // emerald — Events
-  "rgba(56,189,248,0.10)",   // sky     — Logistics
-  "rgba(251,113,133,0.10)",  // rose    — Security
-];
+const TABS = ["Hotels", "Apartments", "Events", "Logistics", "Security"];
 
-const EASE_EXPO = [0.16, 1, 0.3, 1];
-const INTERVAL_MS = 2800;
-
-// ── sub-components ───────────────────────────────────────────────────────────
-
-function ServiceSlot({ active }) {
-  const service = SERVICES[active];
-  return (
-    <span className="relative inline-block overflow-hidden align-bottom h-[1.05em]">
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
-          key={service.word}
-          className={`inline-block font-fraunces font-medium italic ${service.color}`}
-          initial={{ y: "100%", opacity: 0, filter: "blur(4px)" }}
-          animate={{ y: "0%", opacity: 1, filter: "blur(0px)" }}
-          exit={{ y: "-100%", opacity: 0, filter: "blur(4px)" }}
-          transition={{ duration: 0.55, ease: EASE_EXPO }}
-        >
-          {service.word}
-        </motion.span>
-      </AnimatePresence>
-    </span>
-  );
-}
-
-function ServicePhotoStack({ active }) {
-  return (
-    <div className="relative w-full h-full">
-      <AnimatePresence mode="sync" initial={false}>
-        <motion.div
-          key={active}
-          className="absolute inset-0 rounded-2xl overflow-hidden"
-          initial={{ clipPath: "inset(100% 0% 0% 0%)", scale: 1.06 }}
-          animate={{ clipPath: "inset(0% 0% 0% 0%)", scale: 1 }}
-          exit={{ clipPath: "inset(0% 0% 100% 0%)", scale: 0.97 }}
-          transition={{ duration: 0.72, ease: EASE_EXPO }}
-        >
-          <Image
-            src={SERVICES[active].img}
-            alt={SERVICES[active].word}
-            fill
-            quality={85}
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 via-gray-950/10 to-transparent" />
-
-          {/* service tag */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.4, ease: "easeOut" }}
-            className="absolute bottom-5 left-5"
-          >
-            <span className="font-mono text-xs tracking-widest uppercase bg-gray-950/70 backdrop-blur-md text-white/90 px-3 py-1.5 rounded-full border border-white/10">
-              {SERVICES[active].tag}
-            </span>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* dot indicators */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-10">
-        {SERVICES.map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              height: i === active ? 20 : 4,
-              backgroundColor: i === active ? "#a78bfa" : "rgba(255,255,255,0.25)",
-            }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="w-[3px] rounded-full"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function HorizontalTicker() {
-  return (
-    <div
-      aria-hidden
-      className="absolute top-0 left-0 right-0 flex overflow-hidden border-b border-white/[0.06] h-8 select-none"
-    >
-      <motion.div
-        className="flex gap-8 whitespace-nowrap shrink-0 items-center pr-8"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 28, ease: "linear", repeat: Infinity }}
-      >
-        {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-          <span
-            key={i}
-            className="font-mono text-[10px] tracking-[0.25em] uppercase text-white/20"
-          >
-            {item}
-            <span className="ml-8 text-violet-700">·</span>
-          </span>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
-function CounterBadge({ value, label }) {
-  return (
-    <div className="flex flex-col">
-      <span className="font-fraunces font-medium italic text-2xl text-white leading-none">
-        {value}
-      </span>
-      <span className="font-mono text-[10px] tracking-widest uppercase text-white/35 mt-0.5">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-// ── main component ────────────────────────────────────────────────────────────
+// ── component ─────────────────────────────────────────────────────────────────
+// Server component — no "use client" needed.
+// All motion is pure CSS via .hero-slide-up / .hero-fade-up in globals.css,
+// wrapped in @media (prefers-reduced-motion: no-preference).
 
 export default function Hero() {
-  const [active, setActive] = useState(0);
-  const containerRef = useRef(null);
-  const tickRef = useRef(null);
-
-  const mouseX = useMotionValue(0.5);
-  const mouseY = useMotionValue(0.5);
-  const spring = { damping: 28, stiffness: 70 };
-  const smoothX = useSpring(mouseX, spring);
-  const smoothY = useSpring(mouseY, spring);
-
-  const bgX = useTransform(smoothX, [0, 1], ["-1.5%", "1.5%"]);
-  const bgY = useTransform(smoothY, [0, 1], ["-1.5%", "1.5%"]);
-
-  const { scrollY } = useScroll();
-  const heroOpacity = useTransform(scrollY, [0, 380], [1, 0]);
-  const heroY = useTransform(scrollY, [0, 380], [0, 60]);
-
-  const handleMouseMove = useCallback(
-    (e) => {
-      mouseX.set(e.clientX / window.innerWidth);
-      mouseY.set(e.clientY / window.innerHeight);
-    },
-    [mouseX, mouseY],
-  );
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [handleMouseMove]);
-
-  useEffect(() => {
-    tickRef.current = setInterval(() => {
-      setActive((prev) => (prev + 1) % SERVICES.length);
-    }, INTERVAL_MS);
-    return () => clearInterval(tickRef.current);
-  }, []);
-
-  const featuredCategories = CATEGORIES.slice(0, 5);
-
-  // stagger animation factory
-  const reveal = (delay = 0) => ({
-    initial: { opacity: 0, y: 32, filter: "blur(3px)" },
-    animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-    transition: { duration: 0.8, ease: EASE_EXPO, delay },
-  });
-
   return (
-    <section
-      ref={containerRef}
-      className="relative min-h-screen flex flex-col overflow-hidden bg-gray-950"
-    >
-      {/* ── top ticker tape ── */}
-      <HorizontalTicker />
+    <header className="relative flex min-h-[100svh] flex-col overflow-hidden bg-white">
 
-      {/* ── noise grain overlay ── */}
-      <svg
-        aria-hidden
-        className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none z-[1]"
-      >
-        <filter id="noise">
-          <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="4" stitchTiles="stitch" />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#noise)" />
-      </svg>
+      {/*
+        A single tightly focused glow — not a wide ambient blur but a sharp
+        ellipse directly behind the headline. The narrowness creates depth
+        without polluting the white field around it.
+        No dot grid: the confidence to use pure white IS the premium signal.
+      */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+        style={{
+          top: "-60px",
+          width: "680px",
+          height: "520px",
+          background:
+            "radial-gradient(ellipse 60% 55% at 50% 28%, rgba(124,58,237,0.11) 0%, rgba(124,58,237,0.04) 55%, transparent 100%)",
+        }}
+      />
 
-      {/* ── content grid ── */}
-      <motion.div
-        style={{ opacity: heroOpacity, y: heroY }}
-        className="relative z-10 flex-1 container mx-auto px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-[1fr_0.88fr] gap-8 xl:gap-12 items-center pt-20 pb-6 lg:pt-24 lg:pb-8"
-      >
-        {/* ── LEFT: editorial type column ── */}
-        <div className="flex flex-col justify-center">
+      {/* ── Centered copy ─────────────────────────────────────────────────── */}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-12 pt-28 text-center">
 
-          {/* eyebrow line */}
-          <motion.div {...reveal(0.05)} className="flex items-center gap-3 mb-8 lg:mb-10">
-            <span className="h-px w-10 bg-violet-500/70" />
-            <span className="font-mono text-[10px] tracking-[0.28em] uppercase text-violet-400/80">
-              Nigeria&apos;s booking platform
-            </span>
-          </motion.div>
+        {/*
+          Headline — the typographic statement that defines the hero.
 
-          {/* headline — the poster */}
-          <div className="space-y-1 mb-8 lg:mb-10">
-            {/* line 1: huge static word */}
-            <motion.div {...reveal(0.12)}>
-              <h1
-                className="font-bricolage font-semibold text-white leading-[0.95] tracking-tight"
-                style={{ fontSize: "clamp(3.4rem, 9vw, 7.5rem)" }}
-              >
-                Book
-              </h1>
-            </motion.div>
+          "Nigeria's services,"    ← normal weight, comma creates a pause
+          "every vendor verified." ← bold, <em> gives "verified." violet italic
 
-            {/* line 2: animated service word */}
-            <motion.div {...reveal(0.2)}>
-              <div
-                className="font-bricolage font-semibold leading-[0.95] tracking-tight"
-                style={{ fontSize: "clamp(3.4rem, 9vw, 7.5rem)" }}
-              >
-                <ServiceSlot active={active} />
-                <span className="text-white/20">.</span>
-              </div>
-            </motion.div>
-
-            {/* line 3: smaller sub-statement */}
-            <motion.div {...reveal(0.28)}>
-              <p
-                className="font-fraunces font-medium italic text-white/40 leading-[1.1] tracking-tight"
-                style={{ fontSize: "clamp(1.6rem, 3.8vw, 3rem)" }}
-              >
-                Every vendor verified.
-              </p>
-            </motion.div>
-          </div>
-
-          {/* body copy */}
-          <motion.p
-            {...reveal(0.38)}
-            className="font-bricolage text-white/50 text-base md:text-lg leading-relaxed max-w-md mb-10"
-          >
-            Hotels, apartments, events, logistics &amp; security —&nbsp;
-            KYC-checked vendors. Pay with Naira or crypto. Powered by Claude AI.
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div {...reveal(0.46)} className="flex flex-wrap items-center gap-3 mb-10 lg:mb-12">
-            <Link
-              href="/services"
-              className="group inline-flex items-center gap-2 h-12 px-7 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-violet-900/50 font-bricolage"
-            >
-              Explore services
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200" />
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex items-center h-12 px-7 border border-white/15 hover:border-white/35 text-white/65 hover:text-white text-sm font-medium rounded-xl transition-all duration-200 backdrop-blur-sm font-bricolage"
-            >
-              Create free account
-            </Link>
-          </motion.div>
-
-          {/* stats row */}
-          <motion.div {...reveal(0.54)} className="flex items-center gap-8">
-            <CounterBadge value="5×" label="Services" />
-            <div className="w-px h-8 bg-white/10" />
-            <CounterBadge value="KYC" label="Verified" />
-            <div className="w-px h-8 bg-white/10" />
-            <CounterBadge value="₦ + ₿" label="Payments" />
-          </motion.div>
-
-          {/* trust pills */}
-          <motion.div
-            {...reveal(0.62)}
-            className="flex flex-wrap gap-2 mt-8"
-          >
-            {TRUST.map(({ icon: Icon, label }) => (
-              <div
-                key={label}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm"
-              >
-                <Icon className="h-3 w-3 text-violet-400 shrink-0" strokeWidth={1.5} />
-                <span className="font-mono text-[10px] tracking-widest uppercase text-white/45">
-                  {label}
-                </span>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* ── RIGHT: photo stack ── */}
-        <motion.div
-          {...reveal(0.18)}
-          className="hidden lg:block relative"
-          style={{ height: "clamp(420px, 70vh, 680px)" }}
+          The weight swing (normal → bold) and the colour accent on the
+          resolution word do the work without needing any decorative elements.
+          Size: clamp(3.25rem → 5.5rem), larger than the previous version.
+        */}
+        <h1
+          className="mb-7 font-fraunces text-[#1A0D4D]"
+          style={{ fontSize: "clamp(3.25rem, 6vw, 5.5rem)", lineHeight: 1.06 }}
         >
-          {/* subtle ambient behind the photo */}
-          <div
-            className="absolute inset-0 -m-8 rounded-3xl"
-            style={{
-              background: `radial-gradient(ellipse 70% 60% at 55% 45%, ${GLOW_COLORS[active]} 0%, transparent 70%)`,
-              transition: "background 0.6s ease",
-            }}
-          />
-
-          {/* main photo */}
-          <ServicePhotoStack active={active} />
-
-          {/* service index labels — editorial-style right-edge strip */}
-          <div className="absolute -right-6 top-1/2 -translate-y-1/2 flex flex-col gap-3">
-            {SERVICES.map((s, i) => (
-              <button
-                key={s.word}
-                onClick={() => {
-                  clearInterval(tickRef.current);
-                  setActive(i);
-                  tickRef.current = setInterval(
-                    () => setActive((p) => (p + 1) % SERVICES.length),
-                    INTERVAL_MS,
-                  );
-                }}
-                className="group flex items-center gap-2 cursor-pointer"
-                aria-label={`Show ${s.word}`}
-              >
-                <motion.span
-                  animate={{ opacity: i === active ? 1 : 0.3 }}
-                  className="font-mono text-[9px] tracking-[0.2em] uppercase text-white hidden xl:block"
-                >
-                  {s.word}
-                </motion.span>
-                <motion.div
-                  animate={{
-                    width: i === active ? 20 : 4,
-                    backgroundColor: i === active ? "#a78bfa" : "rgba(255,255,255,0.2)",
-                  }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="h-[2px] rounded-full"
-                />
-              </button>
-            ))}
+          <div className="overflow-hidden">
+            <span
+              className="hero-slide-up block font-normal"
+              style={{ animationDelay: "0.05s" }}
+            >
+              Five services. One platform.
+            </span>
           </div>
-
-          {/* floating "Nigeria" geography tag */}
-          <motion.div
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9, duration: 0.6, ease: EASE_EXPO }}
-            className="absolute -left-4 top-6 bg-gray-900/90 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2.5"
-          >
-            <p className="font-mono text-[9px] tracking-[0.2em] uppercase text-white/40 mb-0.5">
-              Built for
-            </p>
-            <p className="font-bricolage text-sm font-semibold text-white">
-              🇳🇬 Nigeria
-            </p>
-          </motion.div>
-
-          {/* floating "AI-powered" tag */}
-          <motion.div
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.05, duration: 0.6, ease: EASE_EXPO }}
-            className="absolute -left-4 bottom-8 bg-violet-950/90 backdrop-blur-md border border-violet-800/40 rounded-xl px-4 py-2.5"
-          >
-            <p className="font-mono text-[9px] tracking-[0.2em] uppercase text-violet-400/70 mb-0.5">
-              Powered by
-            </p>
-            <p className="font-bricolage text-sm font-semibold text-violet-300">
-              ✦ Claude AI
-            </p>
-          </motion.div>
-        </motion.div>
-      </motion.div>
-
-      {/* ── mobile photo strip (portrait, full-width) ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        className="lg:hidden relative z-10 h-48 mx-6 mb-4 rounded-2xl overflow-hidden"
-      >
-        <ServicePhotoStack active={active} />
-      </motion.div>
-
-      {/* ── mobile service pills ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.65, duration: 0.6 }}
-        className="lg:hidden relative z-10 flex gap-2 px-6 mb-4 overflow-x-auto scrollbar-none"
-      >
-        {SERVICES.map((s, i) => (
-          <button
-            key={s.word}
-            onClick={() => setActive(i)}
-            className={`shrink-0 font-mono text-[10px] tracking-widest uppercase px-3 py-1.5 rounded-full border transition-all duration-200 ${
-              i === active
-                ? "border-violet-500/50 bg-violet-950/60 text-violet-300"
-                : "border-white/10 bg-white/[0.04] text-white/40"
-            }`}
-          >
-            {s.word}
-          </button>
-        ))}
-      </motion.div>
-
-      {/* ── category strip — always visible at bottom ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.72, duration: 0.7, ease: EASE_EXPO }}
-        className="relative z-10 border-t border-white/[0.07] bg-gray-950/80 backdrop-blur-md"
-      >
-        <div className="container mx-auto px-6 lg:px-10">
-          <div className="flex items-stretch divide-x divide-white/[0.07] overflow-x-auto scrollbar-none">
-            {featuredCategories.map((cat, i) => (
-              <Link
-                key={cat.value}
-                href={
-                  cat.value === "logistics"
-                    ? "/quote-services?tab=logistics"
-                    : cat.value === "security"
-                      ? "/quote-services?tab=security"
-                      : `/services?category=${cat.value}`
-                }
-                className="group relative flex items-center gap-3 px-5 py-4 min-w-max hover:bg-white/[0.04] transition-colors duration-200"
-                onMouseEnter={() => setActive(i)}
-              >
-                <motion.span
-                  animate={{ scale: active === i ? 1.15 : 1 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="text-lg"
-                >
-                  {cat.icon}
-                </motion.span>
-                <span
-                  className={`font-bricolage text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
-                    active === i ? "text-white" : "text-white/45 group-hover:text-white/75"
-                  }`}
-                >
-                  {cat.label}
-                </span>
-                <ArrowRight
-                  className={`h-3 w-3 transition-all duration-200 ${
-                    active === i
-                      ? "text-violet-400 translate-x-0.5"
-                      : "text-white/20 group-hover:text-white/40"
-                  }`}
-                />
-
-                {/* active indicator line */}
-                {active === i && (
-                  <motion.div
-                    layoutId="cat-underline"
-                    className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-violet-500"
-                    transition={{ duration: 0.3, ease: EASE_EXPO }}
-                  />
-                )}
-              </Link>
-            ))}
+          <div className="overflow-hidden">
+            <span
+              className="hero-slide-up block font-bold"
+              style={{ animationDelay: "0.2s" }}
+            >
+              Every vendor,{" "}
+              <em className="text-violet-600">verified.</em>
+            </span>
           </div>
+        </h1>
+
+        <p
+          className="hero-fade-up mb-10 max-w-[480px] font-bricolage text-[1.0625rem] leading-relaxed text-[#6B6987]"
+          style={{ animationDelay: "0.34s" }}
+        >
+          Hotels, serviced apartments, events, logistics and security —
+          all on one platform. AI-powered search finds exactly what you
+          need. Every vendor is vetted before they can list. Book
+          anywhere in Nigeria. Pay in Naira or crypto.
+        </p>
+
+        {/* Single CTA */}
+        <div
+          className="hero-fade-up mb-9"
+          style={{ animationDelay: "0.46s" }}
+        >
+          <Link
+            href="/services"
+            className="group inline-flex h-[3.375rem] items-center gap-2.5 rounded-xl bg-violet-600 px-9 font-bricolage text-[0.9375rem] font-semibold text-white shadow-[0_4px_24px_rgba(124,58,237,0.35),0_1px_2px_rgba(124,58,237,0.2)] transition-all duration-200 hover:bg-violet-700 hover:shadow-[0_8px_40px_rgba(124,58,237,0.45)]"
+          >
+            Explore services
+            <ArrowRight
+              className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+              aria-hidden="true"
+            />
+          </Link>
         </div>
-      </motion.div>
-    </section>
+
+        {/* Trust — separated by a subtle mid-dot, no redundant icons */}
+        <ul
+          className="hero-fade-up flex flex-wrap items-center justify-center gap-y-2"
+          style={{ animationDelay: "0.58s", columnGap: "1.5rem" }}
+          aria-label="Platform guarantees"
+        >
+          {TRUST.map(({ Icon, label }, i) => (
+            <li key={label} className="flex items-center gap-1.5 text-[#7B75A1]">
+              {i > 0 && (
+                <span className="mr-2.5 inline-block h-1 w-1 rounded-full bg-[#D4CFF0]" aria-hidden="true" />
+              )}
+              <Icon className="h-3.5 w-3.5 shrink-0 text-violet-500" strokeWidth={1.75} aria-hidden="true" />
+              <span className="font-bricolage text-sm">{label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/*
+        ── Product preview ──────────────────────────────────────────────────
+        The dark card at the bottom shows REAL content — listing thumbnails
+        with images, categories, cities, and starting prices. This is the key
+        difference from the previous version (which showed an empty search form).
+
+        cal.com shows a real calendar. Clerk shows a real auth widget.
+        We show real listings. The product proof is in the content, not the chrome.
+
+        The card is rounded-t-2xl with no bottom radius — it bleeds past the
+        viewport edge, inviting the scroll. The upward shadow reinforces depth.
+      */}
+      <div
+        className="hero-fade-in relative z-10 mx-auto mt-auto w-full max-w-3xl px-4 sm:px-6"
+        style={{ animationDelay: "0.72s" }}
+      >
+        <Link
+          href="/services"
+          className="group block"
+          aria-label="Browse available listings on BookHushly"
+        >
+          <div className="rounded-t-2xl bg-[#130B33] px-5 pt-5 pb-8 shadow-[0_-20px_80px_rgba(19,11,51,0.18)] ring-1 ring-white/[0.06]">
+
+            {/* Service tabs — shows platform scope immediately */}
+            <div
+              className="mb-5 flex gap-1.5 overflow-x-auto scrollbar-none"
+              role="tablist"
+              aria-label="Service categories"
+            >
+              {TABS.map((tab, i) => (
+                <span
+                  key={tab}
+                  role="tab"
+                  aria-selected={i === 0}
+                  className={[
+                    "shrink-0 rounded-lg px-3.5 py-1.5 font-bricolage text-xs font-medium transition-colors duration-150",
+                    i === 0
+                      ? "bg-violet-600 text-white"
+                      : "text-white/45 hover:text-white/70",
+                  ].join(" ")}
+                >
+                  {tab}
+                </span>
+              ))}
+            </div>
+
+            {/*
+              4-column listing thumbnail grid.
+              Each thumbnail: real image + gradient overlay + category chip +
+              city + starting price. This is what actual search results look like.
+            */}
+            <div
+              className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+              role="list"
+              aria-label="Sample listings"
+            >
+              {THUMBS.map((t) => (
+                <div
+                  key={t.city + t.label}
+                  role="listitem"
+                  className="overflow-hidden rounded-xl ring-1 ring-white/[0.07] transition-transform duration-300 group-hover:scale-[1.01]"
+                >
+                  {/* Image with bottom gradient for text legibility */}
+                  <div className="relative aspect-[3/2]">
+                    <Image
+                      src={t.img}
+                      alt={t.alt}
+                      fill
+                      quality={70}
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+
+                    {/* Category chip — top left */}
+                    <span className="absolute left-2.5 top-2.5 rounded-md bg-white/15 px-2 py-0.5 font-mono text-[8px] tracking-[0.18em] uppercase text-white/80 backdrop-blur-sm">
+                      {t.label}
+                    </span>
+
+                    {/* City + price — bottom left */}
+                    <div className="absolute bottom-2.5 left-2.5">
+                      <p className="font-bricolage text-[11px] font-semibold leading-tight text-white">
+                        {t.city}
+                      </p>
+                      <p className="font-bricolage text-[10px] leading-tight text-white/60">
+                        from {t.from}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Link>
+      </div>
+    </header>
   );
 }

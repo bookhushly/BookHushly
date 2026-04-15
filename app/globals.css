@@ -72,6 +72,10 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: #ffffff;
     color: #0a0a0f;
@@ -1010,5 +1014,202 @@
   }
   50% {
     transform: translateY(-12px);
+  }
+}
+
+/* ── Hero entrance animations ────────────────────────────────────────────────
+   Only applied when the user has not requested reduced motion.
+   animation-fill-mode: both means:
+     • before the delay expires  → element stays at the `from` state (hidden)
+     • after the animation ends  → element stays at the `to` state (visible)
+   This guarantees no flash-of-content before the animation begins.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes heroSlideUp {
+    from { transform: translateY(112%); }
+    to   { transform: translateY(0%);   }
+  }
+
+  @keyframes heroFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0);    }
+  }
+
+  @keyframes heroScaleX {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  .hero-slide-up {
+    animation: heroSlideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .hero-fade-up {
+    animation: heroFadeUp 0.55s ease-out both;
+  }
+
+  .hero-scale-x {
+    animation: heroScaleX 0.6s ease-out both;
+    transform-origin: left center;
+  }
+
+  @keyframes heroFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .hero-fade-in {
+    animation: heroFadeIn 0.7s ease-out both;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   REVEAL SYSTEM — fire-once IntersectionObserver (PageReveal component)
+   ══════════════════════════════════════════════════════════════════════════════
+
+   PageReveal (components/common/page-reveal.jsx) watches every .reveal and
+   .reveal-stagger element. When 8% enters the viewport it adds .in-view once
+   and unobserves — so animations never reverse on scroll-up.
+
+   Two patterns:
+     .reveal            — single element fades up (or from a direction)
+     .reveal-stagger    — grid/list whose direct children stagger in sequence
+
+   Direction variants (add alongside .reveal):
+     .reveal-left       — slides in from the left
+     .reveal-right      — slides in from the right
+
+   Delay variants (add alongside .reveal):
+     .reveal-delay-1    — 100ms delay
+     .reveal-delay-2    — 200ms delay
+     .reveal-delay-3    — 300ms delay
+   ────────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* ── Single-element reveal ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity  0.72s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.reveal-left  { transform: translateX(-28px); }
+  .reveal.reveal-right { transform: translateX(28px);  }
+
+  .reveal.reveal-delay-1 { transition-delay: 100ms; }
+  .reveal.reveal-delay-2 { transition-delay: 200ms; }
+  .reveal.reveal-delay-3 { transition-delay: 300ms; }
+
+  .reveal.in-view {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── Stagger grid / list ── */
+  .reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity  0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* nth-child delays — covers up to 7 children (bar chart bars) */
+  .reveal-stagger.in-view > *:nth-child(1) { transition-delay:   0ms; }
+  .reveal-stagger.in-view > *:nth-child(2) { transition-delay:  80ms; }
+  .reveal-stagger.in-view > *:nth-child(3) { transition-delay: 160ms; }
+  .reveal-stagger.in-view > *:nth-child(4) { transition-delay: 240ms; }
+  .reveal-stagger.in-view > *:nth-child(5) { transition-delay: 320ms; }
+  .reveal-stagger.in-view > *:nth-child(6) { transition-delay: 400ms; }
+  .reveal-stagger.in-view > *:nth-child(7) { transition-delay: 480ms; }
+
+  .reveal-stagger.in-view > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── Bar chart variant — grows up instead of fading up ── */
+  .reveal-bars > * {
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal-bars.in-view > *:nth-child(1) { transition-delay:   0ms; }
+  .reveal-bars.in-view > *:nth-child(2) { transition-delay:  50ms; }
+  .reveal-bars.in-view > *:nth-child(3) { transition-delay: 100ms; }
+  .reveal-bars.in-view > *:nth-child(4) { transition-delay: 150ms; }
+  .reveal-bars.in-view > *:nth-child(5) { transition-delay: 200ms; }
+  .reveal-bars.in-view > *:nth-child(6) { transition-delay: 250ms; }
+  .reveal-bars.in-view > *:nth-child(7) { transition-delay: 300ms; }
+  .reveal-bars.in-view > * { transform: scaleY(1); }
+}
+
+/* ── FAQ section — native details/summary accordion ─────────────────────────
+   No JS. Browser toggles [open] attribute. CSS handles all transitions.
+   ────────────────────────────────────────────────────────────────────────── */
+
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+
+details[open] summary .faq-chevron {
+  transform: rotate(180deg);
+  color: #7C3AED;
+}
+.faq-chevron {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
+}
+
+.faq-answer { overflow: hidden; }
+details:not([open]) > .faq-answer { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (transition-behavior: allow-discrete) {
+    details[open] > .faq-answer {
+      animation: faqAnswerEnter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes faqAnswerEnter {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+  }
+}
+
+/* ── AI Features — micro-animations (always on, no scroll trigger) ───────────
+   These run continuously and are not tied to scroll position.
+   ────────────────────────────────────────────────────────────────────────── */
+
+@keyframes aiCursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.ai-cursor { animation: aiCursorBlink 0.9s linear infinite; }
+
+@keyframes aiLivePulse {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.3; }
+}
+.ai-live-dot { animation: aiLivePulse 1.8s ease-in-out infinite; }
+
+@keyframes aiTypingBounce {
+  0%, 80%, 100% { transform: translateY(0);   }
+  40%           { transform: translateY(-4px); }
+}
+.ai-typing-dot { animation: aiTypingBounce 0.6s ease-in-out infinite; }
+
+/* Confidence bar — scroll-driven fill (this one stays scroll-linked intentionally) */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    @keyframes aiBarFill {
+      from { width: 0;   }
+      to   { width: 92%; }
+    }
+    .ai-bar-fill {
+      animation: aiBarFill 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 60%;
+    }
   }
 }

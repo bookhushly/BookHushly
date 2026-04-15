@@ -1,148 +1,112 @@
-"use client";
+// Server component — no "use client", no Framer Motion.
+// Accordion uses native <details>/<summary> — zero JS, browser-native toggle.
+// Open animation: CSS @starting-style (Chrome 117+, Firefox 129+, Safari 17.5+).
+// Browsers without @starting-style see answers appear instantly — graceful.
+// Chevron rotation: CSS `details[open] summary .faq-chevron` selector.
+// Scroll entry: animation-timeline:view() via .faq-* classes in globals.css.
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 
-const faqs = [
+const FAQS = [
   {
-    question: "How does vendor verification work?",
-    answer:
-      "Every vendor submits NIN and CAC documents before their listing goes live. Our team reviews each application manually. Verified vendors display a badge — there are no anonymous operators on Bookhushly.",
+    q: "How does vendor verification work?",
+    a: "Every vendor submits NIN and CAC documents before their listing goes live. Our team reviews each application manually. Verified vendors display a badge — there are no anonymous operators on BookHushly.",
   },
   {
-    question: "What payment methods are accepted?",
-    answer:
-      "We accept Naira via Paystack (debit card, bank transfer, USSD) and cryptocurrency via NOWPayments (BTC, ETH, USDT and more). Your Bookhushly wallet balance carries across all services.",
+    q: "What payment methods are accepted?",
+    a: "We accept Naira via Paystack (debit card, bank transfer, USSD) and cryptocurrency via NOWPayments (BTC, ETH, USDT and more). Your BookHushly wallet balance carries across all services.",
   },
   {
-    question: "Can I cancel or modify a booking?",
-    answer:
-      "Yes — cancellations and modifications are handled based on each vendor's published policy. Bookhushly coordinates the communication and, where eligible, the refund to your wallet or original payment method.",
+    q: "Can I cancel or modify a booking?",
+    a: "Yes — cancellations and modifications follow each vendor's published policy. BookHushly coordinates the communication and, where eligible, processes refunds to your wallet or original payment method.",
   },
   {
-    question: "How do logistics and security services work?",
-    answer:
-      "Unlike instant-book services, logistics and security run on a quote model. Submit your requirements, receive a detailed breakdown, review it, and pay only after approving the quote.",
+    q: "How do logistics and security services work?",
+    a: "Unlike instant-book services, logistics and security run on a quote model. Submit your requirements, receive a detailed breakdown, review it, and pay only after approving the quote.",
   },
   {
-    question: "Is there a fee to use the platform?",
-    answer:
-      "Browsing and booking is free for customers. Vendors pay a small commission per successful booking — no upfront listing fees, no hidden charges.",
+    q: "Is there a fee to use the platform?",
+    a: "Browsing and booking is completely free for customers. Vendors pay a small commission per confirmed booking — no upfront listing fees, no hidden charges.",
   },
 ];
 
-const EASE = [0.22, 1, 0.36, 1];
-
 export default function FAQSection() {
-  const [openIndex, setOpenIndex] = useState(null);
-
   return (
-    <section className="bg-white py-20 md:py-32">
-      <div className="container mx-auto px-6 lg:px-10 max-w-5xl">
+    <section className="bg-white py-24 md:py-36 border-t border-[#EDEAF5]">
+      <div className="mx-auto max-w-5xl px-6 lg:px-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.7fr] gap-16 lg:gap-24 items-start">
 
-        {/* ── Two-column grid ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-16 lg:gap-24 items-start">
-
-          {/* ── Left: header column ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: EASE }}
-            className="lg:sticky lg:top-32"
-          >
-            <span className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-violet-600 mb-6">
-              <span className="h-px w-8 bg-violet-500" />
-              FAQ
-            </span>
-
-            <h2 className="text-[clamp(1.9rem,3.8vw,2.75rem)] leading-[1.1] font-medium text-[#1A0D4D] mb-6">
-              <span className="font-fraunces font-medium italic">Common questions,</span>
-              <br />
-              <span className="font-bricolage text-[#1A0D4D]/45">straight answers.</span>
+          {/*
+            ── Left — sticky header ──────────────────────────────────────────
+            No eyebrow label. Headline carries the section identity.
+          */}
+          <div className="faq-header lg:sticky lg:top-32">
+            <h2
+              className="text-[clamp(2rem,3.8vw,2.75rem)] leading-[1.08] mb-6"
+              style={{ letterSpacing: "-0.025em" }}
+            >
+              <span className="font-bricolage font-semibold text-[#1A0D4D] block">
+                Common questions,
+              </span>
+              <span className="font-fraunces font-medium italic block" style={{ color: "#7C69C4" }}>
+                straight answers.
+              </span>
             </h2>
 
-            <p className="text-sm text-[#6B6987] leading-relaxed mb-8 max-w-xs">
-              Everything you need to know about bookings, payments, and how Bookhushly works.
+            <p className="font-bricolage text-[0.9375rem] text-[#4A4665] leading-relaxed mb-8 max-w-[34ch]">
+              Everything you need to know about bookings, payments, and how BookHushly works.
             </p>
 
             <Link
               href="/support"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors group"
+              className="group inline-flex items-center gap-1.5 font-bricolage text-[0.9375rem] font-medium text-violet-600 hover:text-violet-700 transition-colors"
             >
-              Visit the support center
-              <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              Visit the support centre
+              <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
-          </motion.div>
-
-          {/* ── Right: accordion column ── */}
-          <div>
-            {/* Top border */}
-            <div className="border-t border-gray-100" />
-
-            {faqs.map((faq, index) => {
-              const isOpen = openIndex === index;
-              const num = String(index + 1).padStart(2, "0");
-
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.55, ease: EASE, delay: index * 0.07 }}
-                  className="border-b border-gray-100"
-                >
-                  <button
-                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="group flex items-start justify-between w-full py-6 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 rounded-sm"
-                    aria-expanded={isOpen}
-                  >
-                    {/* Number + question */}
-                    <div className="flex items-start gap-4 pr-6">
-                      <span className="shrink-0 font-mono text-[11px] text-[#1A0D4D]/25 mt-[0.35em] select-none tracking-tight">
-                        {num}
-                      </span>
-                      <span className="font-fraunces italic text-base md:text-[1.05rem] font-medium text-[#1A0D4D] leading-snug group-hover:text-violet-700 transition-colors duration-200">
-                        {faq.question}
-                      </span>
-                    </div>
-
-                    {/* Chevron */}
-                    <motion.span
-                      animate={{ rotate: isOpen ? 180 : 0 }}
-                      transition={{ duration: 0.28, ease: EASE }}
-                      className="shrink-0 mt-0.5"
-                    >
-                      <ChevronDown
-                        className={`w-[18px] h-[18px] transition-colors duration-200 ${
-                          isOpen ? "text-violet-600" : "text-[#1A0D4D]/30 group-hover:text-violet-400"
-                        }`}
-                      />
-                    </motion.span>
-                  </button>
-
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.32, ease: EASE }}
-                        className="overflow-hidden"
-                      >
-                        <p className="font-bricolage text-[0.9375rem] text-[#6B6987] leading-[1.75] pb-6 pl-10">
-                          {faq.answer}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
           </div>
+
+          {/*
+            ── Right — accordion (native <details>/<summary>) ───────────────
+            No JS needed. The browser toggles [open] attribute natively.
+            CSS in globals.css handles:
+              - answer reveal animation via @starting-style
+              - chevron rotation via details[open] selector
+              - scroll entry via .faq-item-N
+          */}
+          <div className="border-t border-[#EDEAF5]">
+            {FAQS.map(({ q, a }, i) => (
+              <details
+                key={i}
+                className={`faq-item-${i + 1} group border-b border-[#EDEAF5]`}
+              >
+                <summary className="flex items-start justify-between w-full py-6 cursor-pointer select-none list-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 rounded-sm">
+                  {/* Number + question */}
+                  <div className="flex items-start gap-4 pr-6">
+                    <span className="shrink-0 font-mono text-[12px] text-[#C4BDD8] mt-[0.3em] tabular-nums select-none">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="font-fraunces italic font-medium text-[#1A0D4D] text-[1rem] md:text-[1.0625rem] leading-snug group-hover:text-violet-700 transition-colors duration-200">
+                      {q}
+                    </span>
+                  </div>
+
+                  {/* Chevron — rotates via CSS details[open] selector */}
+                  <ChevronDown
+                    className="faq-chevron shrink-0 mt-0.5 w-[18px] h-[18px] text-[#6B6987] group-hover:text-violet-600 transition-colors duration-200"
+                    aria-hidden="true"
+                  />
+                </summary>
+
+                {/* Answer — animates open via @starting-style in globals.css */}
+                <p className="faq-answer font-bricolage text-[0.9375rem] text-[#4A4665] leading-[1.75] pb-6 pl-10">
+                  {a}
+                </p>
+              </details>
+            ))}
+          </div>
+
         </div>
       </div>
     </section>

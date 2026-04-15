@@ -80,7 +80,7 @@ const organizationSchema = {
 //  Differentiators → [new] Four proof points: KYC, 5 services, payments, AI
 //  Services        → Browse the five categories
 //  How It Works    → Three-step booking flow
-//  AI Features     → Intelligence layer (Claude-powered)
+//  AI Features     → Intelligence layer (AI-powered)
 //  Vendor Section  → Pitch for vendors
 //  FAQ             → Objection handling
 //  CTA             → Final push
