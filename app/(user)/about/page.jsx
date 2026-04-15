@@ -1,7 +1,25 @@
+// Server Component — no "use client"
+// Typography: font-fraunces italic for expressive lines, font-bricolage for body/UI
+// Colors: #1A0D4D (deep navy), #4A4665 (muted), violet-600 accent, #EDEAF5 borders
+// Sections alternate: white → #F8F7FB → white → #F8F7FB → dark CTA
+// Scroll entry: .reveal / .reveal-stagger via PageReveal (IntersectionObserver, fire-once)
+
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowRight,
+  Shield,
+  Users,
+  Zap,
+  Heart,
+  CheckCircle,
+} from "lucide-react";
+import PageReveal from "@/components/common/page-reveal";
+
 export const metadata = {
-  title: "About Us",
+  title: "About BookHushly — Nigeria's #1 Hospitality Platform",
   description:
-    "Learn about BookHushly — Nigeria's leading hospitality and services booking platform. Our mission, team, and the story behind connecting Nigerians with quality verified service providers.",
+    "The story behind BookHushly — Nigeria's leading platform to book hotels, apartments, events, logistics and security services. Our mission, values, and the team behind it all.",
   alternates: { canonical: "https://bookhushly.com/about" },
   openGraph: {
     title: "About BookHushly",
@@ -11,379 +29,423 @@ export const metadata = {
   },
 };
 
-import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Users,
-  Globe,
-  Shield,
-  Award,
-  Heart,
-  Target,
-  Zap,
-  CheckCircle,
-} from "lucide-react";
+// ── data ──────────────────────────────────────────────────────────────────────
+
+
+const VALUES = [
+  {
+    index: "01",
+    Icon: Shield,
+    title: "Trust & Verification",
+    body: "Every vendor submits NIN and CAC documents before their listing goes live. No anonymous operators — only verified Nigerian businesses.",
+  },
+  {
+    index: "02",
+    Icon: Users,
+    title: "Community First",
+    body: "We exist to connect Nigerian businesses with the people who need them. Not to extract value from either side — just to make the match.",
+  },
+  {
+    index: "03",
+    Icon: Zap,
+    title: "Built for Nigeria",
+    body: "Naira payments, local addresses, Nigerian phone numbers. Every product decision starts with what actually works here, not a Western template.",
+  },
+  {
+    index: "04",
+    Icon: Heart,
+    title: "Relentless Quality",
+    body: "Ratings and reviews keep vendors accountable. Low-performing listings are reviewed and removed. Standards only go up.",
+  },
+];
+
+const TEAM = [
+  {
+    initials: "AS",
+    name: "Adebanjo Samson",
+    role: "CEO & Founder",
+    image: "/team/ceo.jpg",
+    bio: "Passionate about connecting African businesses with the customers they deserve, through technology built for the continent.",
+  },
+  {
+    initials: "DA",
+    name: "Aboderin Daniel",
+    role: "Software Architect",
+    image: "/team/daniel.jpeg",
+    bio: "Built BookHushly from scratch — every line of code, every system, every integration. Passionate about crafting software that solves real problems for real people.",
+  },
+];
+
+const CHECKLIST = [
+  "KYC-verified vendors on every listing",
+  "Naira & cryptocurrency payments",
+  "Hotels, apartments, events, logistics, security",
+  "AI-generated listing copy",
+  "24/7 support chatbot",
+];
+
+// ── component ─────────────────────────────────────────────────────────────────
 
 export default function AboutPage() {
-  const values = [
-    {
-      icon: <Shield className="h-6 w-6" />,
-      title: "Trust & Security",
-      description:
-        "Every vendor undergoes thorough KYC verification to ensure quality and reliability.",
-    },
-    {
-      icon: <Users className="h-6 w-6" />,
-      title: "Community First",
-      description:
-        "Building strong connections between service providers and customers across Africa.",
-    },
-    {
-      icon: <Zap className="h-6 w-6" />,
-      title: "Innovation",
-      description:
-        "Leveraging technology to simplify service discovery and booking processes.",
-    },
-    {
-      icon: <Heart className="h-6 w-6" />,
-      title: "Excellence",
-      description:
-        "Committed to delivering exceptional experiences for both customers and vendors.",
-    },
-  ];
-
-  const stats = [
-    { value: "500+", label: "Verified Vendors" },
-    { value: "10,000+", label: "Happy Customers" },
-    { value: "50+", label: "Cities Covered" },
-    { value: "99%", label: "Success Rate" },
-  ];
-
-  const team = [
-    {
-      name: "Adebanjo Samson",
-      role: "CEO & Founder",
-      description:
-        "Passionate about connecting African businesses with global opportunities.",
-      image: "/team/ceo.jpg", // Add your image path here
-      alt: "Adebanjo Samson - CEO & Founder of Bookhushly",
-    },
-    // {
-    //   name: "Aboderin Daniel",
-    //   role: "CTO",
-    //   description:
-    //     "Tech enthusiast building scalable solutions for the African market.",
-    //   image: "/team/aboderin-daniel.jpg", // Add your image path here
-    //   alt: "Aboderin Daniel - CTO of Bookhushly",
-    // },
-    // {
-    //   name: "Adedeji Ifedayo",
-    //   role: "Head of ICT",
-    //   description:
-    //     "Ensuring smooth operations and exceptional experiences through technology.",
-    //   image: "/team/adedeji-ifedayo.jpg", // Add your image path here
-    //   alt: "Adedeji Ifedayo - Head of ICT at Bookhushly",
-    // },
-  ];
-
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative py-20 text-white overflow-hidden">
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage:
-              'url("https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop")',
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        >
-          {/* Overlay using hospitality colors */}
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-900/90 via-brand-800/85 to-hospitality-luxury/90"></div>
-          <div className="absolute inset-0 bg-black/20"></div>
-        </div>
+    <>
+      <PageReveal />
+      <div className="flex flex-col">
 
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 z-10">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-hospitality-gold/10 rounded-full blur-3xl animate-pulse-slow delay-1000"></div>
-          <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-brand-400/10 rounded-full blur-3xl animate-float delay-2000"></div>
-        </div>
+        {/* ── 1. Hero ───────────────────────────────────────────────────── */}
+        <section className="relative bg-white overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32">
+          {/* Ambient violet glow */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 65%)",
+            }}
+          />
 
-        <div className="container relative z-20">
-          <div className="max-w-3xl mx-auto text-center animate-fade-in">
-            <Badge className="mb-4 glass text-white border-white/30 backdrop-blur-sm">
-              Made in Nigeria, Built for Africa
-            </Badge>
-            <h1 className="text-4xl lg:text-6xl font-display font-medium mb-6 text-balance">
-              About Bookhushly
-            </h1>
-            <p className="text-xl text-white/90 mb-8 font-body text-balance">
-              We&apos;re on a mission to connect Nigeria and Africa with quality
-              hospitality, logistics, and security services through technology
-              and trust.
-            </p>
+          <div className="relative mx-auto max-w-4xl px-6 text-center">
+            <div className="reveal">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-violet-500 mb-8">
+                Made in Nigeria · Built for Africa
+              </p>
+              <h1
+                className="leading-[1.04] tracking-tight text-balance mb-6"
+                style={{ fontSize: "clamp(2.8rem, 6vw, 5.5rem)" }}
+              >
+                <span className="font-fraunces font-medium italic block" style={{ color: "#7C3AED" }}>
+                  One platform
+                </span>
+                <span className="font-bricolage font-semibold text-[#1A0D4D] block">
+                  for every service
+                </span>
+                <span className="font-bricolage font-semibold block" style={{ color: "#7B75A1" }}>
+                  in Nigeria.
+                </span>
+              </h1>
+              <p className="font-bricolage text-[1.0625rem] text-[#4A4665] max-w-[52ch] mx-auto leading-relaxed">
+                BookHushly connects travelers and customers with verified hotels,
+                apartments, event organizers, logistics operators, and security
+                providers across Nigeria.
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Mission Section */}
-      <section className="py-16">
-        <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in">
-              <h2 className="text-3xl font-display font-medium mb-6 text-foreground">
-                Our Mission
+        {/* ── 2. Mission ────────────────────────────────────────────────── */}
+        <section className="bg-white py-24 md:py-36 border-b border-[#EDEAF5]">
+          <div className="mx-auto max-w-5xl px-6 lg:px-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+
+              {/* Left — copy */}
+              <div className="reveal reveal-left">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-violet-500 mb-6">
+                  Our Mission
+                </p>
+                <h2
+                  className="leading-[1.06] mb-6"
+                  style={{
+                    fontSize: "clamp(2rem, 4vw, 3rem)",
+                    letterSpacing: "-0.025em",
+                  }}
+                >
+                  <span className="font-bricolage font-semibold text-[#1A0D4D] block">
+                    Simplifying service
+                  </span>
+                  <span
+                    className="font-fraunces font-medium italic block"
+                    style={{ color: "#7C69C4" }}
+                  >
+                    discovery in Nigeria.
+                  </span>
+                </h2>
+                <p className="font-bricolage text-[1rem] text-[#4A4665] leading-relaxed mb-5 max-w-[46ch]">
+                  Finding quality, reliable services in Nigeria was unnecessarily
+                  hard. BookHushly exists to change that — one verified vendor
+                  at a time.
+                </p>
+                <p className="font-bricolage text-[0.9375rem] text-[#4A4665] leading-relaxed max-w-[46ch]">
+                  Every Nigerian business deserves to reach customers beyond their
+                  street. Every customer deserves to find what they need without
+                  the guesswork.
+                </p>
+              </div>
+
+              {/* Right — feature checklist */}
+              <div className="reveal reveal-right">
+                <div className="rounded-2xl border border-[#EDEAF5] bg-[#F8F7FB] overflow-hidden">
+                  {CHECKLIST.map((item, i) => (
+                    <div
+                      key={item}
+                      className={`flex items-center gap-4 px-6 py-5 ${
+                        i < CHECKLIST.length - 1 ? "border-b border-[#EDEAF5]" : ""
+                      }`}
+                    >
+                      <CheckCircle
+                        className="w-4 h-4 text-emerald-500 shrink-0"
+                        strokeWidth={2}
+                      />
+                      <span className="font-bricolage text-[0.9375rem] text-[#1A0D4D]">
+                        {item}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4. Values ─────────────────────────────────────────────────── */}
+        <section className="bg-[#F8F7FB] py-24 md:py-36 border-b border-[#EDEAF5]">
+          <div className="mx-auto max-w-5xl px-6 lg:px-10">
+
+            {/* Header */}
+            <div className="reveal mb-14">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-violet-500 mb-4">
+                What we stand for
+              </p>
+              <h2
+                className="leading-[1.06]"
+                style={{
+                  fontSize: "clamp(2rem, 4vw, 3rem)",
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                <span className="font-bricolage font-semibold text-[#1A0D4D] block">
+                  Our values —
+                </span>
+                <span
+                  className="font-fraunces font-medium italic block"
+                  style={{ color: "#7C69C4" }}
+                >
+                  not just words.
+                </span>
               </h2>
-              <p className="text-lg text-muted-foreground mb-6 font-body">
-                To revolutionize how Africans discover, book, and experience
-                quality services by creating a trusted platform that empowers
-                local businesses and delights customers.
-              </p>
-              <p className="text-muted-foreground mb-8 font-body">
-                We believe that every African business deserves the opportunity
-                to showcase their services to a wider audience, and every
-                customer deserves access to verified, quality service providers
-                in their area.
-              </p>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <Target className="h-5 w-5 text-brand-500" />
-                  <span className="font-medium text-foreground">
-                    Customer-Centric
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Globe className="h-5 w-5 text-hospitality-trust" />
-                  <span className="font-medium text-foreground">
-                    Africa-Wide
-                  </span>
-                </div>
-              </div>
             </div>
-            <div className="relative animate-fade-in">
-              <div className="bg-gradient-to-br from-brand-50 to-hospitality-warm rounded-3xl shadow-brand h-80 flex items-center justify-center transform hover:scale-105 transition-all duration-300">
-                <div className="text-8xl opacity-30"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-hospitality-comfort">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
-              Our Impact
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto font-body text-balance">
-              Numbers that reflect our commitment to connecting Africa through
-              quality services
-            </p>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="text-center card-hospitality animate-fade-in"
-                style={{ animationDelay: `${index * 0.2}s` }}
-              >
-                <div className="text-3xl lg:text-4xl font-display font-medium text-brand-500 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground font-body">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            {/* 2×2 card grid — window-pane separator */}
+            <div className="reveal-stagger grid grid-cols-1 md:grid-cols-2 gap-px bg-[#E0DBF0]">
+              {VALUES.map((v) => (
+                <div key={v.index} className="relative bg-[#F8F7FB] p-8 md:p-10 group">
+                  {/* Ghost index */}
+                  <span
+                    className="absolute top-6 right-8 font-mono font-bold leading-none select-none"
+                    style={{
+                      fontSize: "clamp(3rem, 5vw, 4.5rem)",
+                      color: "rgba(124,58,237,0.10)",
+                    }}
+                    aria-hidden="true"
+                  >
+                    {v.index}
+                  </span>
 
-      {/* Values Section */}
-      <section className="py-16">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
-              Our Values
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto font-body text-balance">
-              The principles that guide everything we do at Bookhushly
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <Card
-                key={index}
-                className="text-center card-hospitality group hover:shadow-brand transition-all duration-300 transform hover:scale-105"
-              >
-                <CardHeader>
-                  <div className="mx-auto mb-4 text-brand-500 group-hover:text-hospitality-gold transition-colors duration-300">
-                    {value.icon}
+                  {/* Icon */}
+                  <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center mb-5">
+                    <v.Icon className="w-4 h-4 text-violet-600" strokeWidth={1.6} />
                   </div>
-                  <CardTitle className="text-lg font-display text-foreground">
-                    {value.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="font-body">
-                    {value.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Team Section - Updated with Next.js Image optimization */}
-      <section className="py-16 bg-hospitality-warm">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
-              Meet Our Team
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto font-body text-balance">
-              Passionate Africans building the future of service discovery
-            </p>
+                  <p className="font-bricolage font-semibold text-[#1A0D4D] text-[1.0625rem] mb-2.5 group-hover:text-violet-700 transition-colors duration-200">
+                    {v.title}
+                  </p>
+                  <p className="font-bricolage text-[0.875rem] text-[#4A4665] leading-relaxed max-w-[36ch]">
+                    {v.body}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {team.map((member, index) => (
-              <Card
-                key={index}
-                className="text-center card-hospitality group hover:shadow-gold transition-all duration-300 transform hover:scale-105"
+        </section>
+
+        {/* ── 5. Team ───────────────────────────────────────────────────── */}
+        <section className="bg-white py-24 md:py-36 border-b border-[#EDEAF5]">
+          <div className="mx-auto max-w-5xl px-6 lg:px-10">
+            <div className="reveal mb-14">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-violet-500 mb-4">
+                The team
+              </p>
+              <h2
+                className="leading-[1.06]"
+                style={{
+                  fontSize: "clamp(2rem, 4vw, 3rem)",
+                  letterSpacing: "-0.025em",
+                }}
               >
-                <CardHeader>
-                  <div className="relative w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full ring-4 ring-brand-100 group-hover:ring-hospitality-gold transition-all duration-300">
+                <span className="font-bricolage font-semibold text-[#1A0D4D] block">
+                  People behind
+                </span>
+                <span
+                  className="font-fraunces font-medium italic block"
+                  style={{ color: "#7C69C4" }}
+                >
+                  BookHushly.
+                </span>
+              </h2>
+            </div>
+
+            <div className="reveal-stagger grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {TEAM.map((member) => (
+                <div
+                  key={member.name}
+                  className="rounded-2xl border border-[#EDEAF5] bg-[#F8F7FB] overflow-hidden group"
+                >
+                  {/* Full-bleed portrait */}
+                  <div className="relative w-full aspect-[3/4] bg-violet-100">
                     <Image
                       src={member.image}
-                      alt={member.alt}
+                      alt={member.name}
                       fill
-                      sizes="(max-width: 768px) 96px, 96px"
-                      className="object-cover object-center transition-transform duration-300 group-hover:scale-110"
-                      priority={index === 0} // Prioritize loading the first image
-                      placeholder="blur"
-                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                      className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                    {/* Initials fallback sits behind the photo */}
+                    <span className="absolute inset-0 flex items-center justify-center text-violet-300 font-mono font-bold text-5xl select-none -z-10">
+                      {member.initials}
+                    </span>
+                    {/* Subtle bottom gradient so text below doesn't clash */}
+                    <div
+                      className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+                      style={{
+                        background:
+                          "linear-gradient(to top, rgba(248,247,251,0.6) 0%, transparent 100%)",
+                      }}
                     />
                   </div>
-                  <CardTitle className="font-display text-foreground">
-                    {member.name}
-                  </CardTitle>
-                  <CardDescription className="font-medium text-brand-500 font-body">
-                    {member.role}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground font-body">
-                    {member.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Story Section */}
-      <section className="py-16">
-        <div className="container">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-display font-medium mb-4 text-foreground">
-                Our Story
+                  {/* Text block */}
+                  <div className="px-6 py-5">
+                    <p className="font-bricolage font-semibold text-[#1A0D4D] mb-0.5">
+                      {member.name}
+                    </p>
+                    <p className="font-bricolage text-sm text-violet-600 mb-3">
+                      {member.role}
+                    </p>
+                    <p className="font-bricolage text-[0.875rem] text-[#4A4665] leading-relaxed">
+                      {member.bio}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 6. Story ──────────────────────────────────────────────────── */}
+        <section className="bg-[#F8F7FB] py-24 md:py-36 border-b border-[#EDEAF5]">
+          <div className="mx-auto max-w-4xl px-6 lg:px-10">
+            <div className="reveal">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-violet-500 mb-6">
+                Our story
+              </p>
+              <h2
+                className="leading-[1.06] mb-12"
+                style={{
+                  fontSize: "clamp(2rem, 4vw, 3rem)",
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                <span className="font-bricolage font-semibold text-[#1A0D4D] block">
+                  How we started —
+                </span>
+                <span
+                  className="font-fraunces font-medium italic block"
+                  style={{ color: "#7C69C4" }}
+                >
+                  and where we're going.
+                </span>
               </h2>
-              <p className="text-muted-foreground font-body">
-                How Bookhushly came to be
-              </p>
-            </div>
-            <div className="prose prose-lg max-w-none">
-              <p className="text-muted-foreground mb-6 font-body text-balance">
-                Bookhushly was born from a simple observation: finding quality,
-                reliable services in Nigeria and across Africa was unnecessarily
-                difficult. Whether you needed a hotel for a business trip,
-                catering for an event, or security services for your business,
-                the process was fragmented, unreliable, and often frustrating.
-              </p>
-              <p className="text-muted-foreground mb-6 font-body text-balance">
-                Our founders, having experienced these challenges firsthand,
-                envisioned a platform where customers could easily discover
-                verified service providers, and where local businesses could
-                showcase their offerings to a broader audience.
-              </p>
-              <p className="text-muted-foreground mb-8 font-body text-balance">
-                Today, Bookhushly serves thousands of customers and hundreds of
-                verified vendors across Nigeria, with plans to expand throughout
-                Africa. We're not just a booking platform – we're a community
-                that celebrates African entrepreneurship and excellence.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center space-x-3 p-4 bg-success-50 rounded-xl border border-success-100">
-                <CheckCircle className="h-5 w-5 text-success-600" />
-                <span className="text-sm font-body font-medium text-success-900">
-                  KYC Verified Vendors
-                </span>
-              </div>
-              <div className="flex items-center space-x-3 p-4 bg-hospitality-trust-light rounded-xl border border-hospitality-trust/20">
-                <CheckCircle className="h-5 w-5 text-hospitality-trust" />
-                <span className="text-sm font-body font-medium text-hospitality-trust">
-                  Secure Payment Processing
-                </span>
-              </div>
-              <div className="flex items-center space-x-3 p-4 bg-brand-50 rounded-xl border border-brand-200">
-                <CheckCircle className="h-5 w-5 text-brand-600" />
-                <span className="text-sm font-body font-medium text-brand-800">
-                  24/7 Customer Support
-                </span>
+
+              <div className="space-y-6 max-w-[60ch]">
+                <p className="font-bricolage text-[1rem] text-[#4A4665] leading-[1.9]">
+                  BookHushly was born from a simple frustration: finding quality,
+                  reliable services in Nigeria was unnecessarily hard. Hotels,
+                  event caterers, security firms — the process was fragmented,
+                  unreliable, and exhausting.
+                </p>
+                <p className="font-bricolage text-[1rem] text-[#4A4665] leading-[1.9]">
+                  Our founders experienced this firsthand and decided to build the
+                  platform they wished existed — one where every vendor is
+                  verified, every booking is frictionless, and every Nigerian
+                  city is covered.
+                </p>
+                <p className="font-bricolage text-[1rem] text-[#4A4665] leading-[1.9]">
+                  Today, BookHushly serves thousands of customers and hundreds of
+                  verified vendors across Nigeria, with plans to expand across
+                  Africa. We're not just a booking platform — we're infrastructure
+                  for African hospitality.
+                </p>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-brand-600 to-hospitality-gold text-white overflow-hidden relative">
-        {/* Animated background elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-10 left-10 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse-slow"></div>
-        </div>
+        {/* ── 7. CTA ────────────────────────────────────────────────────── */}
+        {/* Dark section — mirrors landing page CTA exactly */}
+        <section className="relative bg-[#0F0A28] overflow-hidden py-28 md:py-44">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(124,58,237,0.13) 0%, transparent 65%)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-32 -right-32 w-[440px] h-[440px] rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 65%)",
+            }}
+          />
 
-        <div className="container text-center relative z-10">
-          <h2 className="text-3xl font-display font-medium mb-4 text-balance">
-            Join Our Mission
-          </h2>
-          <p className="text-white/90 mb-8 max-w-2xl mx-auto font-body text-balance">
-            Whether you're a customer looking for quality services or a business
-            ready to grow, we invite you to be part of the Bookhushly community.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/register"
-              className="btn-hospitality bg-white text-brand-600 hover:bg-hospitality-warm hover:shadow-soft focus:ring-2 focus:ring-white/50"
-            >
-              Get Started Today
-            </a>
-            <a
-              href="/contact"
-              className="btn-hospitality border-2 border-white text-white hover:bg-white/20 hover:shadow-soft focus:ring-2 focus:ring-white/50"
-            >
-              Contact Us
-            </a>
+          <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
+            <div className="reveal-stagger">
+              <h2
+                className="font-fraunces italic text-white leading-[1.04] tracking-tight text-balance"
+                style={{ fontSize: "clamp(2.8rem, 7.5vw, 6rem)" }}
+              >
+                Join our{" "}
+                <span style={{ color: "#A78BFA" }}>mission.</span>
+              </h2>
+
+              <div
+                className="mx-auto mt-12 mb-12 h-px max-w-xs"
+                style={{ background: "rgba(255,255,255,0.08)" }}
+                aria-hidden="true"
+              />
+
+              <p
+                className="font-bricolage text-[1rem] leading-relaxed max-w-[44ch] mx-auto mb-10"
+                style={{ color: "rgba(255,255,255,0.55)" }}
+              >
+                Whether you're a customer looking for quality services or a
+                business ready to grow — BookHushly is built for you.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/register"
+                  className="group inline-flex items-center gap-2.5 h-[3.375rem] px-9 bg-violet-600 hover:bg-violet-500 text-white font-bricolage font-semibold text-[0.9375rem] rounded-xl transition-all duration-200 shadow-[0_4px_24px_rgba(124,58,237,0.4)]"
+                >
+                  Get started free
+                  <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center h-[3.375rem] px-9 font-bricolage font-semibold text-[0.9375rem] rounded-xl transition-all duration-200"
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    color: "rgba(255,255,255,0.75)",
+                  }}
+                >
+                  Contact us
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+
+      </div>
+    </>
   );
 }

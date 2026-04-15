@@ -254,58 +254,65 @@ export function Header() {
       </header>
 
       {/* ── Mobile bottom sheet ── */}
+      {/* Outer: pointer-events only. Backdrop and sheet animate independently. */}
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${
-          isMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-40 md:hidden ${
+          isMenuOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        {/* Backdrop */}
+        {/* Backdrop — fades on its own */}
         <div
-          className="absolute inset-0 bg-gray-950/75 backdrop-blur-sm"
+          className={`absolute inset-0 bg-[#1A0D4D]/20 backdrop-blur-sm transition-opacity duration-300 ${
+            isMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
           onClick={close}
         />
 
-        {/* Sheet */}
+        {/* Sheet — spring open, snappy close */}
         <aside
           ref={sheetRef}
-          className={`absolute bottom-0 left-0 right-0 bg-[#1e1b2e] rounded-t-[2rem] flex flex-col max-h-[88vh] transition-transform duration-300 ease-out ${
+          style={{
+            transition: isMenuOpen
+              ? "transform 420ms cubic-bezier(0.32, 0.72, 0, 1)"
+              : "transform 280ms cubic-bezier(0.4, 0, 1, 1)",
+          }}
+          className={`absolute bottom-0 left-0 right-0 bg-white rounded-t-[2rem] flex flex-col max-h-[88vh] shadow-[0_-4px_32px_rgba(26,13,77,0.12)] ${
             isMenuOpen ? "translate-y-0" : "translate-y-full"
           }`}
         >
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-white/20" />
+            <div className="w-10 h-1 rounded-full bg-[#E0DBF0]" />
           </div>
 
           {/* Sheet header */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-white/8 shrink-0">
+          <div className="flex items-center justify-between px-6 py-0.5 border-b border-[#EDEAF5] shrink-0">
             <div className="relative w-44 h-28">
               <Image
                 src="/logo.png"
                 alt="BookHushly"
                 fill
-                className="object-contain object-left brightness-0 invert"
+                className="object-contain object-left"
               />
             </div>
             <button
               onClick={close}
-              className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/15 hover:text-white transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full bg-[#F0EDF8] text-[#6B6987] hover:bg-violet-100 hover:text-violet-700 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Scrollable body */}
-          <div className="flex-1 overflow-y-auto px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] space-y-5 pt-5">
+          <div className="flex-1 overflow-y-auto px-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] space-y-4 pt-5">
+
             {/* Auth */}
             {isLoading ? (
               <div className="flex justify-center py-4">
-                <LoadingSpinner className="h-5 w-5 text-white/30" />
+                <LoadingSpinner className="h-5 w-5 text-[#C4BDD8]" />
               </div>
             ) : user ? (
-              <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/8">
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#F8F7FB] border border-[#EDEAF5]">
                 <Avatar className="h-10 w-10 shrink-0">
                   <AvatarImage src={undefined} alt={displayName} />
                   <AvatarFallback className="bg-violet-600 text-white text-xs font-medium">
@@ -313,11 +320,13 @@ export function Header() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="font-bricolage text-sm font-semibold text-[#1A0D4D] truncate">
                     {displayName}
                   </p>
-                  <p className="text-xs text-white/40 truncate">{user.email}</p>
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-violet-400">
+                  <p className="font-bricolage text-xs text-[#9E98BB] truncate">
+                    {user.email}
+                  </p>
+                  <span className="font-bricolage text-[10px] font-medium uppercase tracking-wide text-violet-600">
                     {userRole}
                   </span>
                 </div>
@@ -327,7 +336,7 @@ export function Header() {
                     close();
                   }}
                   disabled={logoutMutation.isPending}
-                  className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                  className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full bg-[#F0EDF8] text-[#9E98BB] hover:bg-red-50 hover:text-red-500 transition-colors"
                   aria-label="Log out"
                 >
                   {logoutMutation.isPending ? (
@@ -342,14 +351,14 @@ export function Header() {
                 <Link
                   href="/login"
                   onClick={close}
-                  className="flex items-center justify-center h-11 rounded-xl border border-white/15 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
+                  className="font-bricolage flex items-center justify-center h-11 rounded-xl border border-[#EDEAF5] text-sm font-medium text-[#4A4665] hover:bg-[#F8F7FB] transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/register"
                   onClick={close}
-                  className="flex items-center justify-center h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-medium text-white transition-colors"
+                  className="font-bricolage flex items-center justify-center h-11 rounded-xl bg-violet-600 hover:bg-violet-700 text-sm font-semibold text-white transition-colors shadow-[0_2px_10px_rgba(124,58,237,0.3)]"
                 >
                   Get started
                 </Link>
@@ -361,7 +370,7 @@ export function Header() {
               <button
                 onClick={install}
                 disabled={isInstalling}
-                className="flex items-center justify-center gap-2 w-full h-11 rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300 text-sm font-medium hover:bg-violet-500/20 transition-colors disabled:opacity-60"
+                className="font-bricolage flex items-center justify-center gap-2 w-full h-11 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 text-sm font-medium hover:bg-violet-100 transition-colors disabled:opacity-60"
               >
                 <Download className="h-4 w-4" />
                 {isInstalling ? "Installing…" : "Install BookHushly App"}
@@ -369,7 +378,7 @@ export function Header() {
             )}
 
             {/* Divider */}
-            <div className="h-px bg-white/8" />
+            <div className="h-px bg-[#EDEAF5]" />
 
             {/* Nav links */}
             <nav className="space-y-0.5">
@@ -378,7 +387,7 @@ export function Header() {
                   key={name}
                   href={href}
                   onClick={close}
-                  className="font-bricolage flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
+                  className="font-bricolage flex items-center h-11 px-3 rounded-xl text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] hover:bg-[#F0EDF8] transition-colors"
                 >
                   {name}
                 </Link>
@@ -388,14 +397,14 @@ export function Header() {
                   <Link
                     href={dashboardHref}
                     onClick={close}
-                    className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
+                    className="font-bricolage flex items-center h-11 px-3 rounded-xl text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] hover:bg-[#F0EDF8] transition-colors"
                   >
                     Dashboard
                   </Link>
                   <Link
                     href={profileHref}
                     onClick={close}
-                    className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
+                    className="font-bricolage flex items-center h-11 px-3 rounded-xl text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] hover:bg-[#F0EDF8] transition-colors"
                   >
                     Profile
                   </Link>
@@ -403,7 +412,7 @@ export function Header() {
                     <Link
                       href="/vendor/dashboard/listings"
                       onClick={close}
-                      className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
+                      className="font-bricolage flex items-center h-11 px-3 rounded-xl text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] hover:bg-[#F0EDF8] transition-colors"
                     >
                       My Listings
                     </Link>
@@ -413,11 +422,11 @@ export function Header() {
             </nav>
 
             {/* Divider */}
-            <div className="h-px bg-white/8" />
+            <div className="h-px bg-[#EDEAF5]" />
 
             {/* Services grid */}
             <div>
-              <p className="text-[11px] font-medium text-white/30 uppercase tracking-[0.15em] mb-3 px-1">
+              <p className="font-bricolage text-[11px] font-medium text-[#9E98BB] uppercase tracking-[0.15em] mb-3 px-1">
                 Explore Services
               </p>
               <div className="grid grid-cols-3 gap-2">
@@ -432,7 +441,7 @@ export function Header() {
                           : `/services?category=${cat.value}`
                     }
                     onClick={close}
-                    className="group relative overflow-hidden rounded-2xl h-[4.5rem] border border-white/5"
+                    className="group relative overflow-hidden rounded-2xl h-[4.5rem] border border-[#EDEAF5]"
                   >
                     <Image
                       src={cat.image}
@@ -440,12 +449,12 @@ export function Header() {
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
                     <div className="absolute bottom-1.5 left-2 right-1">
                       <span className="text-sm block leading-none mb-0.5">
                         {cat.icon}
                       </span>
-                      <span className="text-[9px] font-medium text-white leading-tight line-clamp-1 uppercase tracking-wide">
+                      <span className="font-bricolage text-[9px] font-medium text-white leading-tight line-clamp-1 uppercase tracking-wide">
                         {cat.label}
                       </span>
                     </div>
@@ -453,6 +462,7 @@ export function Header() {
                 ))}
               </div>
             </div>
+
           </div>
         </aside>
       </div>
