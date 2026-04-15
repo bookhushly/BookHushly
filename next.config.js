@@ -30,6 +30,7 @@ const nextConfig = {
     ],
     // Serve modern formats automatically
     formats: ["image/avif", "image/webp"],
+    qualities: [70, 75],
   },
   experimental: {
     serverActions: {

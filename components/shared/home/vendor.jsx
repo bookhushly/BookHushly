@@ -64,7 +64,7 @@ export default function VendorOnboardingSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_440px] xl:grid-cols-[1fr_480px] gap-16 xl:gap-24 items-start">
 
           {/* ── LEFT COLUMN ─────────────────────────────────────────────── */}
-          <div className="vendor-left flex flex-col">
+          <div className="reveal reveal-left flex flex-col">
 
             {/* Headline */}
             <h2
@@ -93,7 +93,7 @@ export default function VendorOnboardingSection() {
             </p>
 
             {/* Numbered benefits */}
-            <ol className="mb-12 border-t border-[#EDEAF5]" aria-label="Vendor benefits">
+            <ol className="reveal-stagger mb-12 border-t border-[#EDEAF5]" aria-label="Vendor benefits">
               {BENEFITS.map((b, i) => (
                 <li
                   key={b.index}
@@ -130,7 +130,7 @@ export default function VendorOnboardingSection() {
           </div>
 
           {/* ── RIGHT COLUMN — Dashboard mockup ─────────────────────────── */}
-          <div className="vendor-right lg:sticky lg:top-28 flex flex-col gap-3">
+          <div className="reveal reveal-right lg:sticky lg:top-28 flex flex-col gap-3">
 
             {/* Main dashboard card */}
             <div className="rounded-2xl border border-[#EDEAF5] bg-white shadow-[0_4px_32px_rgba(26,13,77,0.08)] overflow-hidden">
@@ -199,7 +199,7 @@ export default function VendorOnboardingSection() {
                     transform-origin: bottom — set inline to avoid Tailwind purging.
                     animation-timeline:view() in globals.css drives the grow-up effect.
                   */}
-                  <div className="flex items-end gap-1.5 h-14">
+                  <div className="reveal-bars flex items-end gap-1.5 h-14">
                     {BARS.map((pct, i) => (
                       <div
                         key={i}

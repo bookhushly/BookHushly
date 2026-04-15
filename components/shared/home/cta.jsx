@@ -37,6 +37,7 @@ export default function CTA() {
       />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 sm:px-10 text-center">
+        <div className="reveal-stagger">
 
         {/*
           ── Headline ───────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ export default function CTA() {
           deserves the most expressive type treatment.
           "Anywhere" in violet so the geographic claim lands with emphasis.
         */}
-        <div className="cta-headline">
+        <div>
           <h2
             className="font-fraunces italic text-white leading-[1.04] tracking-tight text-balance"
             style={{ fontSize: "clamp(2.8rem, 7.5vw, 6.5rem)" }}
@@ -59,7 +60,7 @@ export default function CTA() {
 
         {/* Divider */}
         <div
-          className="cta-divider mx-auto mt-12 mb-12 h-px max-w-xs"
+          className="mx-auto mt-12 mb-12 h-px max-w-xs"
           style={{ background: "rgba(255,255,255,0.08)" }}
           aria-hidden="true"
         />
@@ -69,12 +70,12 @@ export default function CTA() {
           Single sentence. Everything the user needs to know at this point
           has already been covered above — this just confirms the decision.
         */}
-        <p className="cta-body font-bricolage text-[1rem] md:text-[1.0625rem] leading-relaxed max-w-[44ch] mx-auto mb-10" style={{ color: "rgba(255,255,255,0.55)" }}>
+        <p className="font-bricolage text-[1rem] md:text-[1.0625rem] leading-relaxed max-w-[44ch] mx-auto mb-10" style={{ color: "rgba(255,255,255,0.55)" }}>
           Hotels, serviced apartments, events, logistics, security — every vendor verified. Pay in Naira or crypto.
         </p>
 
         {/* ── CTAs ─────────────────────────────────────────────────────── */}
-        <div className="cta-buttons flex flex-col sm:flex-row items-center justify-center gap-3 mb-14">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14">
           <Link
             href="/services"
             className="group inline-flex items-center gap-2.5 h-[3.375rem] px-9 bg-violet-600 hover:bg-violet-500 text-white font-bricolage font-semibold text-[0.9375rem] rounded-xl transition-all duration-200 shadow-[0_4px_24px_rgba(124,58,237,0.4)]"
@@ -98,7 +99,7 @@ export default function CTA() {
 
         {/* ── Trust signals ─────────────────────────────────────────────── */}
         <ul
-          className="cta-trust flex flex-wrap items-center justify-center gap-y-2"
+          className="flex flex-wrap items-center justify-center gap-y-2"
           style={{ columnGap: "1.75rem" }}
           aria-label="Platform guarantees"
         >
@@ -120,6 +121,7 @@ export default function CTA() {
           ))}
         </ul>
 
+        </div>{/* reveal-stagger */}
       </div>
     </section>
   );

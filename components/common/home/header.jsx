@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, User, LogOut, ChevronDown, Download } from "lucide-react";
-import { ThemeToggle } from "@/components/common/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +38,8 @@ const getInitials = (name) => {
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const sheetRef = useRef(null);
   const { data: authData, isLoading } = useAuth();
   const logoutMutation = useLogout();
@@ -57,7 +58,22 @@ export function Header() {
       : `/${userRole}/dashboard/profile`;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
+    const onScroll = () => {
+      const y = window.scrollY;
+      const delta = y - lastScrollY.current;
+
+      setScrolled(y > 60);
+
+      if (y < 100) {
+        setHidden(false);
+      } else if (delta > 6) {
+        setHidden(true); // scrolling down — hide
+      } else if (delta < -6) {
+        setHidden(false); // scrolling up — reveal
+      }
+
+      lastScrollY.current = y;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -75,11 +91,14 @@ export function Header() {
     <>
       {/* ── Floating navbar ── */}
       <header
-        className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-6xl transition-all duration-300 ease-out rounded-2xl backdrop-blur-xl ${
-          scrolled
-            ? "bg-white/95 border border-gray-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.1)]"
-            : "bg-white/80 border border-white/60 shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
-        }`}
+        className={`fixed top-3 left-1/2 z-50 w-[92%] max-w-6xl rounded-2xl backdrop-blur-xl nav-float
+          transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out
+          ${hidden ? "-translate-x-1/2 -translate-y-[calc(100%+1rem)] pointer-events-none" : "-translate-x-1/2 translate-y-0"}
+          ${
+            scrolled
+              ? "bg-white/96 border border-[#E0DBF0] shadow-[0_4px_20px_rgba(26,13,77,0.08)]"
+              : "bg-white/85 border border-[#EDEAF5] shadow-[0_2px_12px_rgba(26,13,77,0.05)]"
+          }`}
       >
         <div className="flex items-center justify-between h-14 px-4 md:px-6">
           {/* Logo */}
@@ -105,7 +124,7 @@ export function Header() {
               <Link
                 key={name}
                 href={href}
-                className="relative text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-150 group"
+                className="relative font-bricolage text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] transition-colors duration-150 group"
               >
                 {name}
                 <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-violet-600 transition-all duration-200 group-hover:w-full" />
@@ -131,14 +150,14 @@ export function Header() {
               <>
                 <Link
                   href={dashboardHref}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  className="font-bricolage text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] transition-colors"
                 >
                   Dashboard
                 </Link>
                 {userRole === "vendor" && vendor && (
                   <Link
                     href="/vendor/dashboard/listings"
-                    className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                    className="font-bricolage text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] transition-colors"
                   >
                     My Listings
                   </Link>
@@ -152,7 +171,7 @@ export function Header() {
                           {getInitials(displayName)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
+                      <span className="font-bricolage text-sm font-medium text-[#1A0D4D] max-w-[100px] truncate">
                         {displayName}
                       </span>
                       <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
@@ -205,13 +224,13 @@ export function Header() {
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  className="font-bricolage text-sm font-medium text-[#4A4665] hover:text-[#1A0D4D] transition-colors"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/register"
-                  className="h-9 px-4 inline-flex items-center text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150"
+                  className="font-bricolage h-9 px-5 inline-flex items-center text-sm font-semibold bg-violet-600 hover:bg-violet-700 text-white rounded-xl transition-colors duration-150 shadow-[0_2px_10px_rgba(124,58,237,0.3)]"
                 >
                   Get started
                 </Link>
@@ -261,8 +280,7 @@ export function Header() {
           </div>
 
           {/* Sheet header */}
-          <div className="flex items-center justify-between px-6 py-0.5 border-b border-white/8 shrink-0">
-            {/* Wide shallow container — logo renders at full width, natural height */}
+          <div className="flex items-center justify-between px-6 py-3 border-b border-white/8 shrink-0">
             <div className="relative w-44 h-28">
               <Image
                 src="/logo.png"
@@ -271,15 +289,12 @@ export function Header() {
                 className="object-contain object-left brightness-0 invert"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle className="text-white/50 hover:bg-white/10 hover:text-white dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white" />
-              <button
-                onClick={close}
-                className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/15 hover:text-white transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+            <button
+              onClick={close}
+              className="h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/15 hover:text-white transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
           {/* Scrollable body */}
@@ -363,7 +378,7 @@ export function Header() {
                   key={name}
                   href={href}
                   onClick={close}
-                  className="flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
+                  className="font-bricolage flex items-center h-11 px-3 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/8 transition-colors"
                 >
                   {name}
                 </Link>

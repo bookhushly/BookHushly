@@ -56,7 +56,7 @@ export default function Differentiators() {
           Two-tone headline: "Built for trust," (dark) + "not for show." (muted)
           No eyebrow label — the context from the hero makes it unnecessary.
         */}
-        <div className="diff-header mb-16 md:mb-20 max-w-xl">
+        <div className="diff-header reveal mb-16 md:mb-20 max-w-xl">
           <h2
             className="text-[clamp(2.25rem,4.5vw,3.5rem)] leading-[1.06] text-[#1A0D4D]"
             style={{ letterSpacing: "-0.025em" }}
@@ -79,7 +79,7 @@ export default function Differentiators() {
           Each card uses .diff-card for scroll-driven entry animation.
           nth-child delay offsets create a natural stagger without JS.
         */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#F0EDF8] rounded-2xl overflow-hidden ring-1 ring-[#F0EDF8]">
+        <div className="reveal-stagger grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#F0EDF8] rounded-2xl overflow-hidden ring-1 ring-[#F0EDF8]">
           {POINTS.map(({ num, Icon, label, headline, accentIdx, body, tags }, i) => (
             <div
               key={num}

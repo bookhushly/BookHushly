@@ -1,7 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaFacebookF, FaInstagram, FaTiktok, FaTwitter } from "react-icons/fa";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 const YEAR = new Date().getFullYear();
 
@@ -42,12 +45,46 @@ const COMPANY = [
   ["Privacy", "/privacy"],
 ];
 
+function AccordionSection({ title, children }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="sm:contents">
+      {/* Mobile: collapsible header */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="sm:hidden w-full flex items-center justify-between py-4 border-b border-gray-200 text-left"
+      >
+        <span className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400">
+          {title}
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Mobile: collapsible body */}
+      <div className={`sm:hidden overflow-hidden transition-all duration-200 ${open ? "max-h-96 pb-4" : "max-h-0"}`}>
+        <div className="pt-3">{children}</div>
+      </div>
+
+      {/* Desktop: always visible */}
+      <div className="hidden sm:block">
+        <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-4">
+          {title}
+        </h4>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
       {/* ── Top CTA band ── */}
       <div className="border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 lg:px-10 py-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
           <div>
             <h2 className="font-fraunces text-2xl md:text-3xl font-medium text-gray-900 leading-tight mb-1">
               Ready to book something great?
@@ -67,10 +104,10 @@ export function Footer() {
       </div>
 
       {/* ── Main grid ── */}
-      <div className="max-w-6xl mx-auto px-6 lg:px-10 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-        {/* Brand */}
-        <div className="lg:col-span-1">
-          <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-5">
+      <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 sm:py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 sm:gap-10">
+        {/* Brand — always visible */}
+        <div className="lg:col-span-1 pb-6 sm:pb-0 border-b sm:border-b-0 border-gray-200">
+          <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-1">
             <Image
               src="/logo.png"
               alt="BookHushly"
@@ -78,7 +115,7 @@ export function Footer() {
               className="object-contain"
             />
           </div>
-          <p className="text-sm text-gray-500 leading-relaxed mb-6">
+          <p className="text-sm text-gray-500 leading-relaxed mb-5">
             Connecting Nigeria and Africa with quality hospitality, logistics,
             and security services.
           </p>
@@ -99,10 +136,7 @@ export function Footer() {
         </div>
 
         {/* Services */}
-        <div>
-          <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-4">
-            Services
-          </h4>
+        <AccordionSection title="Services">
           <ul className="space-y-2.5">
             {SERVICES.map(([label, href]) => (
               <li key={href}>
@@ -115,13 +149,10 @@ export function Footer() {
               </li>
             ))}
           </ul>
-        </div>
+        </AccordionSection>
 
         {/* Company */}
-        <div>
-          <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-4">
-            Company
-          </h4>
+        <AccordionSection title="Company">
           <ul className="space-y-2.5">
             {COMPANY.map(([label, href]) => (
               <li key={href}>
@@ -134,13 +165,10 @@ export function Footer() {
               </li>
             ))}
           </ul>
-        </div>
+        </AccordionSection>
 
         {/* Contact */}
-        <div>
-          <h4 className="text-xs font-medium uppercase tracking-[0.15em] text-gray-400 mb-4">
-            Get in touch
-          </h4>
+        <AccordionSection title="Get in touch">
           <p className="text-sm text-gray-500 leading-relaxed mb-5">
             Have a question or need a custom quote? We respond fast.
           </p>
@@ -158,7 +186,7 @@ export function Footer() {
               </span>
             </p>
           </div>
-        </div>
+        </AccordionSection>
       </div>
 
       {/* ── Bottom bar ── */}

@@ -1025,6 +1025,17 @@
    This guarantees no flash-of-content before the animation begins.
    ─────────────────────────────────────────────────────────────────────────── */
 
+/* ── Navbar entrance ─────────────────────────────────────────────────────── */
+/* Only animate opacity — transform is owned by JS scroll state via Tailwind. */
+@keyframes navEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.nav-float {
+  animation: navEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 120ms;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @keyframes heroSlideUp {
     from { transform: translateY(112%); }

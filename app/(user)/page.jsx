@@ -6,6 +6,7 @@ import AIFeaturesSection from "@/components/shared/home/ai-features";
 import VendorOnboardingSection from "@/components/shared/home/vendor";
 import FAQSection from "@/components/shared/home/faq";
 import CTA from "@/components/shared/home/cta";
+import PageReveal from "@/components/common/page-reveal";
 
 export const metadata = {
   title: "BookHushly — Book Hotels, Apartments & Services in Nigeria",
@@ -100,6 +101,7 @@ export default function Home() {
           __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c"),
         }}
       />
+      <PageReveal />
       <div className="flex flex-col">
         {/* 1. Hook — what we do and why to trust us */}
         <Hero />

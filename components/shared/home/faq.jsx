@@ -41,7 +41,7 @@ export default function FAQSection() {
             ── Left — sticky header ──────────────────────────────────────────
             No eyebrow label. Headline carries the section identity.
           */}
-          <div className="faq-header lg:sticky lg:top-32">
+          <div className="reveal lg:sticky lg:top-32">
             <h2
               className="text-[clamp(2rem,3.8vw,2.75rem)] leading-[1.08] mb-6"
               style={{ letterSpacing: "-0.025em" }}
@@ -75,7 +75,7 @@ export default function FAQSection() {
               - chevron rotation via details[open] selector
               - scroll entry via .faq-item-N
           */}
-          <div className="border-t border-[#EDEAF5]">
+          <div className="reveal-stagger border-t border-[#EDEAF5]">
             {FAQS.map(({ q, a }, i) => (
               <details
                 key={i}

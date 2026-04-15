@@ -170,7 +170,7 @@ export default function Services() {
           Left-aligned. Headline uses the same Bricolage + Fraunces italic
           pattern established in the hero and differentiators.
         */}
-        <div className="svc-header mb-14 md:mb-18 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="reveal mb-14 md:mb-18 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h2
               className="text-[clamp(2.25rem,4.5vw,3.5rem)] leading-[1.06] text-[#1A0D4D]"
@@ -195,6 +195,7 @@ export default function Services() {
         */}
         <div
           className="
+            reveal-stagger
             grid gap-3
             grid-cols-1
             md:grid-cols-3
@@ -224,7 +225,7 @@ export default function Services() {
           Quote-only services get a "Get a quote" hover label instead of
           a booking CTA, to set expectations clearly.
         */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="reveal-stagger grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="svc-tile-4 h-[200px] md:h-[220px]">
             <Tile svc={logistics} />
           </div>

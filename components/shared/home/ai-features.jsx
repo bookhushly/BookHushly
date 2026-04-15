@@ -377,7 +377,7 @@ export default function AIFeaturesSection() {
       <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
 
         {/* ── Header ── */}
-        <div className="ai-header mb-14 md:mb-16">
+        <div className="reveal mb-14 md:mb-16">
 
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-200 bg-violet-50 mb-7">
@@ -426,7 +426,7 @@ export default function AIFeaturesSection() {
           Row 2: [Listing — 1col] [Reviews — 1col] [Insights — 1col]
           Each card has its own .ai-card-N class for staggered scroll entry.
         */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="reveal-stagger grid grid-cols-1 md:grid-cols-3 gap-3">
           <FeatureCard feat={FEATURES[0]} cardClass="ai-card-1" />
           <FeatureCard feat={FEATURES[1]} cardClass="ai-card-2" />
           <FeatureCard feat={FEATURES[2]} cardClass="ai-card-3" />
@@ -435,7 +435,7 @@ export default function AIFeaturesSection() {
         </div>
 
         {/* Footer note */}
-        <div className="ai-footer mt-10 flex items-center gap-4">
+        <div className="reveal reveal-delay-2 mt-10 flex items-center gap-4">
           <div className="h-px w-8 bg-[#D4CFF0]" />
           <span className="font-bricolage text-[13px] text-[#6B6987]">
             All AI features are governed by platform feature flags — reviewed by our team before going live.

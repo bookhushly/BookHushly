@@ -53,7 +53,7 @@ export default function HowItWorks() {
           Left-aligned. "Three steps" in Fraunces italic (accent)
           + "to booked." in Bricolage semibold (white).
         */}
-        <div className="hiw-header mb-20 md:mb-28 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="reveal mb-20 md:mb-28 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <h2
               className="text-[clamp(2.25rem,4.5vw,3.5rem)] leading-[1.06]"
@@ -81,7 +81,7 @@ export default function HowItWorks() {
           Each column has a hollow node dot sitting on that line.
           No JS required — static structure, scroll entry via CSS.
         */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block reveal">
 
           {/* Connector rail + nodes */}
           <div className="relative mb-14 grid grid-cols-3">
@@ -163,7 +163,7 @@ export default function HowItWorks() {
           Left column: vertical line + node dot.
           Right column: label, headline, body.
         */}
-        <div className="lg:hidden flex flex-col gap-0">
+        <div className="reveal lg:hidden flex flex-col gap-0">
           {STEPS.map((step, i) => (
             <div key={step.num} className={`hiw-step-${i + 1} flex gap-6 ${i < STEPS.length - 1 ? "pb-14" : ""}`}>
 
