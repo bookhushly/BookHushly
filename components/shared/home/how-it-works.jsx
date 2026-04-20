@@ -9,7 +9,7 @@ const STEPS = [
     label: "Browse",
     headline: ["Search and", "discover."],
     accentIdx: 1,
-    body: "Use natural language or filters to find exactly what you need across hotels, apartments, events, logistics, and security. Every listed vendor has passed KYC.",
+    body: "Type what you're looking for the way you'd say it — or use filters. Every vendor on the platform has been verified by our team before they can list.",
   },
   {
     num: "02",

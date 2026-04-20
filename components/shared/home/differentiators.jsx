@@ -7,10 +7,10 @@ const POINTS = [
     num: "01",
     Icon: ShieldCheck,
     label: "Trust",
-    headline: ["Every vendor is", "KYC-verified."],
-    accentIdx: 1, // which line gets the Fraunces italic treatment
-    body: "NIN and CAC documents reviewed before any listing goes live. No anonymous operators, no unverified services — every name on this platform has been checked by a human.",
-    tags: ["NIN", "CAC", "Manual review"],
+    headline: ["Every vendor is", "verified by us."],
+    accentIdx: 1,
+    body: "Before any vendor can list on BookHushly, we check their government ID and business registration. No strangers, no fake listings — only real, confirmed businesses.",
+    tags: ["ID checked", "Business verified", "Human review"],
   },
   {
     num: "02",
@@ -27,17 +27,17 @@ const POINTS = [
     label: "Payments",
     headline: ["Pay exactly", "how you want."],
     accentIdx: 1,
-    body: "Naira cards, bank transfer, USSD, or crypto (BTC, ETH, USDT). Your wallet balance carries across every service and can be topped up any time.",
-    tags: ["Paystack", "NOWPayments", "Wallet"],
+    body: "Pay with your Nigerian debit card, bank transfer, USSD — or even cryptocurrency. Your wallet balance carries across every service you book.",
+    tags: ["Debit card", "Bank transfer", "USSD", "Crypto"],
   },
   {
     num: "04",
     Icon: Sparkles,
-    label: "AI layer",
-    headline: ["AI that reads", "your intent."],
+    label: "Smart Features",
+    headline: ["Tools that make", "booking easier."],
     accentIdx: 1,
-    body: "Type \"₦50k apartment VI Lagos\" and every filter sets itself. Review summaries, vendor insights, and a 24/7 support assistant — built specifically for this market.",
-    tags: ["Smart search", "Summaries", "Support bot"],
+    body: "Just type what you're looking for the way you'd say it. See a quick summary of what guests thought. Get answers to your questions at any time of the day.",
+    tags: ["Smart search", "Review summary", "24/7 help"],
   },
 ];
 

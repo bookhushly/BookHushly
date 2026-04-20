@@ -114,9 +114,9 @@ export default function Hero() {
           style={{ animationDelay: "0.34s" }}
         >
           Hotels, serviced apartments, events, logistics and security —
-          all on one platform. AI-powered search finds exactly what you
-          need. Every vendor is vetted before they can list. Book
-          anywhere in Nigeria. Pay in Naira or crypto.
+          all in one place. Every vendor is verified before they can
+          list. Find what you need fast. Book anywhere in Nigeria.
+          Pay with your card, bank transfer, or crypto.
         </p>
 
         {/* Single CTA */}

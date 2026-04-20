@@ -287,42 +287,31 @@ export default function AboutPage() {
               {TEAM.map((member) => (
                 <div
                   key={member.name}
-                  className="rounded-2xl border border-[#EDEAF5] bg-[#F8F7FB] overflow-hidden group"
+                  className="p-7 rounded-2xl border border-[#EDEAF5] bg-[#F8F7FB] group"
                 >
-                  {/* Full-bleed portrait */}
-                  <div className="relative w-full aspect-[3/4] bg-violet-100">
+                  {/* Avatar — photo with initials fallback */}
+                  <div className="relative w-36 h-36 rounded-2xl overflow-hidden mb-6 bg-violet-100">
                     <Image
                       src={member.image}
                       alt={member.name}
                       fill
-                      className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                      sizes="144px"
+                      className="object-cover object-top"
                     />
-                    {/* Initials fallback sits behind the photo */}
-                    <span className="absolute inset-0 flex items-center justify-center text-violet-300 font-mono font-bold text-5xl select-none -z-10">
+                    <span className="absolute inset-0 flex items-center justify-center text-violet-700 font-mono font-bold text-lg -z-10">
                       {member.initials}
                     </span>
-                    {/* Subtle bottom gradient so text below doesn't clash */}
-                    <div
-                      className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-                      style={{
-                        background:
-                          "linear-gradient(to top, rgba(248,247,251,0.6) 0%, transparent 100%)",
-                      }}
-                    />
                   </div>
 
-                  {/* Text block */}
-                  <div className="px-6 py-5">
-                    <p className="font-bricolage font-semibold text-[#1A0D4D] mb-0.5">
-                      {member.name}
-                    </p>
-                    <p className="font-bricolage text-sm text-violet-600 mb-3">
-                      {member.role}
-                    </p>
-                    <p className="font-bricolage text-[0.875rem] text-[#4A4665] leading-relaxed">
-                      {member.bio}
-                    </p>
-                  </div>
+                  <p className="font-bricolage font-semibold text-[#1A0D4D] mb-0.5">
+                    {member.name}
+                  </p>
+                  <p className="font-bricolage text-sm text-violet-600 mb-3">
+                    {member.role}
+                  </p>
+                  <p className="font-bricolage text-[0.875rem] text-[#4A4665] leading-relaxed">
+                    {member.bio}
+                  </p>
                 </div>
               ))}
             </div>
