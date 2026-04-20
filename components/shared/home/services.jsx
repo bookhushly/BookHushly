@@ -34,7 +34,7 @@ const SERVICES = [
     label: "Events",
     sub: "Venues, tickets and event production services",
     href: "/services?category=events",
-    img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=700&auto=format&fit=crop&q=80",
+    img: "/events.jpeg",
     alt: "Elegant event venue with ambient lighting",
     sizes: "(max-width: 768px) 100vw, 40vw",
     span: "svc-sm",
@@ -45,7 +45,7 @@ const SERVICES = [
     label: "Logistics",
     sub: "Freight and delivery across all Nigerian states",
     href: "/quote-services?tab=logistics",
-    img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=700&auto=format&fit=crop&q=80",
+    img: "/logistics.jpeg",
     alt: "Logistics and delivery vehicles on a highway",
     sizes: "(max-width: 768px) 100vw, 50vw",
     span: "svc-strip",
@@ -57,7 +57,7 @@ const SERVICES = [
     label: "Security",
     sub: "Vetted personnel for events and premises",
     href: "/quote-services?tab=security",
-    img: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=700&auto=format&fit=crop&q=80",
+    img: "/security.jpeg",
     alt: "Professional security team in formal wear",
     sizes: "(max-width: 768px) 100vw, 50vw",
     span: "svc-strip",
@@ -115,7 +115,6 @@ function Tile({ svc }) {
 
       {/* ── Bottom content ── */}
       <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-12 md:px-6 md:pb-6">
-
         {/* Label */}
         <h3
           className="font-fraunces font-medium italic text-white leading-none mb-0 transition-transform duration-500 ease-out group-hover:-translate-y-1"
@@ -164,7 +163,6 @@ export default function Services() {
   return (
     <section className="bg-[#F8F7FB] py-24 md:py-36 border-t border-[#EDEAF5]">
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
-
         {/*
           ── Header ──────────────────────────────────────────────────────────
           Left-aligned. Headline uses the same Bricolage + Fraunces italic
@@ -176,14 +174,20 @@ export default function Services() {
               className="text-[clamp(2.25rem,4.5vw,3.5rem)] leading-[1.06] text-[#1A0D4D]"
               style={{ letterSpacing: "-0.025em" }}
             >
-              <span className="font-bricolage font-semibold block">Five ways to book.</span>
-              <span className="font-fraunces font-medium italic block" style={{ color: "#7C69C4" }}>
+              <span className="font-bricolage font-semibold block">
+                Five ways to book.
+              </span>
+              <span
+                className="font-fraunces font-medium italic block"
+                style={{ color: "#7C69C4" }}
+              >
                 One platform.
               </span>
             </h2>
           </div>
           <p className="font-bricolage text-[0.9375rem] leading-relaxed text-[#7B75A1] max-w-[34ch] md:text-right">
-            Hotels, apartments, events, logistics, and security — all verified, all in one account.
+            Hotels, apartments, events, logistics, and security — all verified,
+            all in one account.
           </p>
         </div>
 
@@ -233,7 +237,6 @@ export default function Services() {
             <Tile svc={security} />
           </div>
         </div>
-
       </div>
     </section>
   );
